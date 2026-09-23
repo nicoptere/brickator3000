@@ -1,0 +1,5628 @@
+{
+  "model_architecture": "mobilenetv3_large_100",
+  "num_classes": 936,
+  "input_shape": [
+    1,
+    3,
+    224,
+    224
+  ],
+  "classes": [
+    {
+      "idx": 0,
+      "id": "10039",
+      "name": "Motor Pull Back  4 x  8 x  0.667 with White Axle",
+      "ldraw": "parts/10039.dat"
+    },
+    {
+      "idx": 1,
+      "id": "100943",
+      "name": "Technic Steering Wheel Bearing with 2 Towballs",
+      "ldraw": "parts/100943.dat"
+    },
+    {
+      "idx": 2,
+      "id": "10202",
+      "name": "Tile  6 x  6 with Groove and Underside Studs",
+      "ldraw": "parts/10202.dat"
+    },
+    {
+      "idx": 3,
+      "id": "11153",
+      "name": "Slope Brick Curved  4 x  1",
+      "ldraw": "parts/11153.dat"
+    },
+    {
+      "idx": 4,
+      "id": "11203",
+      "name": "Tile  2 x  2 Inverted",
+      "ldraw": "parts/11203.dat"
+    },
+    {
+      "idx": 5,
+      "id": "11212",
+      "name": "Plate  3 x  3",
+      "ldraw": "parts/11212.dat"
+    },
+    {
+      "idx": 6,
+      "id": "11213",
+      "name": "Plate  6 x  6 Round with Hole and Snapstud",
+      "ldraw": "parts/11213.dat"
+    },
+    {
+      "idx": 7,
+      "id": "11289",
+      "name": "Windscreen  4 x  4 x  4.667 Canopy with Handle",
+      "ldraw": "parts/11289.dat"
+    },
+    {
+      "idx": 8,
+      "id": "11290",
+      "name": "Slope Brick Curved  2 x  8 x  2 Double",
+      "ldraw": "parts/11290.dat"
+    },
+    {
+      "idx": 9,
+      "id": "11291",
+      "name": "Wedge  3 x  4 x  0.667 Cutout",
+      "ldraw": "parts/11291.dat"
+    },
+    {
+      "idx": 10,
+      "id": "11301",
+      "name": "Slope Brick Curved  2 x  8 x  2 Inverted Double",
+      "ldraw": "parts/11301.dat"
+    },
+    {
+      "idx": 11,
+      "id": "11399",
+      "name": "Plate  4 x  4 with 2 Clips Horizontal (Open C-Clips)",
+      "ldraw": "parts/11399.dat"
+    },
+    {
+      "idx": 12,
+      "id": "11455",
+      "name": "Technic Link  2 x  4 Bent 90 with One Offset Transverse Peghole",
+      "ldraw": "parts/11455.dat"
+    },
+    {
+      "idx": 13,
+      "id": "11458",
+      "name": "Plate  1 x  2 with Offset Peghole",
+      "ldraw": "parts/11458.dat"
+    },
+    {
+      "idx": 14,
+      "id": "11476",
+      "name": "Plate  1 x  2 with Clip Horizontal on Side (Thick C-Clip)",
+      "ldraw": "parts/11476.dat"
+    },
+    {
+      "idx": 15,
+      "id": "11477",
+      "name": "Slope Brick Curved  2 x  1",
+      "ldraw": "parts/11477.dat"
+    },
+    {
+      "idx": 16,
+      "id": "11478",
+      "name": "Technic Beam  5 x  0.5 Liftarm with Axle Holes at Both Ends",
+      "ldraw": "parts/11478.dat"
+    },
+    {
+      "idx": 17,
+      "id": "11610",
+      "name": "Cone  1 x  1 Inverted with Shaft",
+      "ldraw": "parts/11610.dat"
+    },
+    {
+      "idx": 18,
+      "id": "11767",
+      "name": "Motor Inertia Flywheel  4 x  7 x  1 with Metal Wheel and DkAzur Tyre",
+      "ldraw": "parts/11767.dat"
+    },
+    {
+      "idx": 19,
+      "id": "11833",
+      "name": "Plate  4 x  4 Round with  2 x  2 Round Hole",
+      "ldraw": "parts/11833.dat"
+    },
+    {
+      "idx": 20,
+      "id": "11949",
+      "name": "Technic Steering Wheel Bearing w/ 2 Pegholes & 2 Ball Joint Arms",
+      "ldraw": "parts/11949.dat"
+    },
+    {
+      "idx": 21,
+      "id": "11950",
+      "name": "Technic Steering Wheel Bearing with  2 Pegholes",
+      "ldraw": "parts/11950.dat"
+    },
+    {
+      "idx": 22,
+      "id": "13269",
+      "name": "Slope Brick 33/45  6 x  4 with  2 x  2 Cutout",
+      "ldraw": "parts/13269.dat"
+    },
+    {
+      "idx": 23,
+      "id": "13547",
+      "name": "Slope Brick Curved  4 x  1 Inverted",
+      "ldraw": "parts/13547.dat"
+    },
+    {
+      "idx": 24,
+      "id": "13548",
+      "name": "Slope Brick 45  2 x  2 Double Convex with 45 Corner",
+      "ldraw": "parts/13548.dat"
+    },
+    {
+      "idx": 25,
+      "id": "13965",
+      "name": "Arch  1 x  3 x  3 Pointed",
+      "ldraw": "parts/13965.dat"
+    },
+    {
+      "idx": 26,
+      "id": "14413",
+      "name": "Brick  4 x  4 Facet",
+      "ldraw": "parts/14413.dat"
+    },
+    {
+      "idx": 27,
+      "id": "14417",
+      "name": "Plate  1 x  2 with Ball Joint-8 on Side",
+      "ldraw": "parts/14417.dat"
+    },
+    {
+      "idx": 28,
+      "id": "14418",
+      "name": "Plate  1 x  2 with Socket Joint-8 with Friction",
+      "ldraw": "parts/14418.dat"
+    },
+    {
+      "idx": 29,
+      "id": "14419",
+      "name": "Plate  1 x  2 with Socket Joint-8 with Friction and Ball Joint-8",
+      "ldraw": "parts/14419.dat"
+    },
+    {
+      "idx": 30,
+      "id": "14682",
+      "name": "Exhaust Pipe with Pin and Flat Tip",
+      "ldraw": "parts/14682.dat"
+    },
+    {
+      "idx": 31,
+      "id": "14716",
+      "name": "Brick  1 x  1 x  3",
+      "ldraw": "parts/14716.dat"
+    },
+    {
+      "idx": 32,
+      "id": "14719",
+      "name": "Tile  2 x  2 Corner",
+      "ldraw": "parts/14719.dat"
+    },
+    {
+      "idx": 33,
+      "id": "14720",
+      "name": "Technic Beam  5 x  3 H-shaped",
+      "ldraw": "parts/14720.dat"
+    },
+    {
+      "idx": 34,
+      "id": "15068",
+      "name": "Slope Brick Curved  2 x  2 x  0.667",
+      "ldraw": "parts/15068.dat"
+    },
+    {
+      "idx": 35,
+      "id": "15070",
+      "name": "Plate  1 x  1 with Tooth Perpendicular",
+      "ldraw": "parts/15070.dat"
+    },
+    {
+      "idx": 36,
+      "id": "15071",
+      "name": "Brick  1 x  2 x  0.667 with 8 Studs and Angled Handle",
+      "ldraw": "parts/15071.dat"
+    },
+    {
+      "idx": 37,
+      "id": "15092",
+      "name": "Plate  2 x  2 with  2 Pins",
+      "ldraw": "parts/15092.dat"
+    },
+    {
+      "idx": 38,
+      "id": "15108",
+      "name": "Plate  2 x  2 with Peghole, Axlehole, Hinge and Rubberband Slots",
+      "ldraw": "parts/15108.dat"
+    },
+    {
+      "idx": 39,
+      "id": "15208",
+      "name": "Plate  1 x  2 with 3 Teeth In-line",
+      "ldraw": "parts/15208.dat"
+    },
+    {
+      "idx": 40,
+      "id": "15209",
+      "name": "Tile  1 x  2 with  2 Teeth Vertical",
+      "ldraw": "parts/15209.dat"
+    },
+    {
+      "idx": 41,
+      "id": "15303",
+      "name": "Bar  1 x  8 with Round End",
+      "ldraw": "parts/15303.dat"
+    },
+    {
+      "idx": 42,
+      "id": "15361",
+      "name": "Technic Cylinder Half  3 x  5 x  8 with Pin Holes",
+      "ldraw": "parts/15361.dat"
+    },
+    {
+      "idx": 43,
+      "id": "15362",
+      "name": "Claw  6.4L with Axle",
+      "ldraw": "parts/15362.dat"
+    },
+    {
+      "idx": 44,
+      "id": "15444",
+      "name": "Brick  1 x  1 x  2 with Square Hole in 1 Side",
+      "ldraw": "parts/15444.dat"
+    },
+    {
+      "idx": 45,
+      "id": "15461",
+      "name": "Technic Connector  3 x  1 x  2 with Peghole and Two Pins (Inline Slits)",
+      "ldraw": "parts/15461.dat"
+    },
+    {
+      "idx": 46,
+      "id": "15535",
+      "name": "Tile  2 x  2 Round with Hole",
+      "ldraw": "parts/15535.dat"
+    },
+    {
+      "idx": 47,
+      "id": "15540",
+      "name": "Landing Gear  1 x  6 with Peghole",
+      "ldraw": "parts/15540.dat"
+    },
+    {
+      "idx": 48,
+      "id": "15571",
+      "name": "Slope Brick 45  1 x  2 Triple with Bottom Stud Holder",
+      "ldraw": "parts/15571.dat"
+    },
+    {
+      "idx": 49,
+      "id": "15625",
+      "name": "Slope Brick Curved  5 x  8 x  0.667",
+      "ldraw": "parts/15625.dat"
+    },
+    {
+      "idx": 50,
+      "id": "15672",
+      "name": "Slope Plate 45  2 x  1",
+      "ldraw": "parts/15672.dat"
+    },
+    {
+      "idx": 51,
+      "id": "15706",
+      "name": "Plate  1 x  4 with Plate  1 x  4 at 45 Degrees",
+      "ldraw": "parts/15706.dat"
+    },
+    {
+      "idx": 52,
+      "id": "16577",
+      "name": "Arch  1 x  8 x  2 Raised",
+      "ldraw": "parts/16577.dat"
+    },
+    {
+      "idx": 53,
+      "id": "17114",
+      "name": "Brick  2 x  2 with Two Ball Joints and Axlehole",
+      "ldraw": "parts/17114.dat"
+    },
+    {
+      "idx": 54,
+      "id": "1744",
+      "name": "Cylinder  3 x  3 x  3 Dome Elongated",
+      "ldraw": "parts/1744.dat"
+    },
+    {
+      "idx": 55,
+      "id": "1745",
+      "name": "Plate  1 x  2 Half Round with 1 Centre Stud",
+      "ldraw": "parts/1745.dat"
+    },
+    {
+      "idx": 56,
+      "id": "1746",
+      "name": "Cone  4 x  8 x  6 Half with Roof Tiles",
+      "ldraw": "parts/1746.dat"
+    },
+    {
+      "idx": 57,
+      "id": "1748",
+      "name": "Tile  1 x  2 Half Round",
+      "ldraw": "parts/1748.dat"
+    },
+    {
+      "idx": 58,
+      "id": "1750",
+      "name": "Brick  2 x  2 x  1 with Curved Bottom",
+      "ldraw": "parts/1750.dat"
+    },
+    {
+      "idx": 59,
+      "id": "1751",
+      "name": "Tile  4 x  4",
+      "ldraw": "parts/1751.dat"
+    },
+    {
+      "idx": 60,
+      "id": "1762",
+      "name": "Slope Brick 31  2 x  2 Double, Curved",
+      "ldraw": "parts/1762.dat"
+    },
+    {
+      "idx": 61,
+      "id": "18352",
+      "name": "Technic Steering Wheel Yoke with Axle Hole and Hollow Stud",
+      "ldraw": "parts/18352.dat"
+    },
+    {
+      "idx": 62,
+      "id": "18455",
+      "name": "Hinge Brick  2 x  4 Locking with  1 Finger on Top at One End",
+      "ldraw": "parts/18455.dat"
+    },
+    {
+      "idx": 63,
+      "id": "1846",
+      "name": "Car Mudguard  4 x  3 x  1.667",
+      "ldraw": "parts/1846.dat"
+    },
+    {
+      "idx": 64,
+      "id": "18585",
+      "name": "Technic Brick  2 x  4 with Holes and Launcher",
+      "ldraw": "parts/18585.dat"
+    },
+    {
+      "idx": 65,
+      "id": "18587",
+      "name": "Technic Projectile Launcher Six-Shooter Trigger",
+      "ldraw": "parts/18587.dat"
+    },
+    {
+      "idx": 66,
+      "id": "18591",
+      "name": "Windscreen  4 x  4 x  5 Cone with Pins",
+      "ldraw": "parts/18591.dat"
+    },
+    {
+      "idx": 67,
+      "id": "18646",
+      "name": "Plate  3 x  6 Round Half with  1 x  2 Cutout",
+      "ldraw": "parts/18646.dat"
+    },
+    {
+      "idx": 68,
+      "id": "18653",
+      "name": "Arch  1 x  3 x  2 Inverted",
+      "ldraw": "parts/18653.dat"
+    },
+    {
+      "idx": 69,
+      "id": "18674",
+      "name": "Plate  2 x  2 Round with  1 Centre Stud",
+      "ldraw": "parts/18674.dat"
+    },
+    {
+      "idx": 70,
+      "id": "18675",
+      "name": "Dish  6 x  6 Inverted - No Studs with Handle",
+      "ldraw": "parts/18675.dat"
+    },
+    {
+      "idx": 71,
+      "id": "1871",
+      "name": "Brick  1 x  1 x  1.333 Round Quarter Dome with Curved Top",
+      "ldraw": "parts/1871.dat"
+    },
+    {
+      "idx": 72,
+      "id": "18859",
+      "name": "Dish  8 x  8 Inverted with Hollow Studs",
+      "ldraw": "parts/18859.dat"
+    },
+    {
+      "idx": 73,
+      "id": "18892",
+      "name": "Brick  2 x  4 with  2 x  2 x  0.667 Cutout and 2 Wheel Pins",
+      "ldraw": "parts/18892.dat"
+    },
+    {
+      "idx": 74,
+      "id": "18896",
+      "name": "Bike  2 Wheel Motorcycle Frame  2 x  7 x  3 with Clip for Handle",
+      "ldraw": "parts/18896.dat"
+    },
+    {
+      "idx": 75,
+      "id": "18897",
+      "name": "Brick  6 x  6 Round with Holes",
+      "ldraw": "parts/18897.dat"
+    },
+    {
+      "idx": 76,
+      "id": "18909",
+      "name": "Panel Cone  3 x  6 x  6 Elliptic Parabolic",
+      "ldraw": "parts/18909.dat"
+    },
+    {
+      "idx": 77,
+      "id": "18910",
+      "name": "Hinge Panel  3 x  4 x  3 Curved",
+      "ldraw": "parts/18910.dat"
+    },
+    {
+      "idx": 78,
+      "id": "18938",
+      "name": "Technic Turntable 60 Tooth Top",
+      "ldraw": "parts/18938.dat"
+    },
+    {
+      "idx": 79,
+      "id": "18943",
+      "name": "Technic Excavator Bucket  7 x  5 x  4.5 Clamshell",
+      "ldraw": "parts/18943.dat"
+    },
+    {
+      "idx": 80,
+      "id": "18972",
+      "name": "Windscreen  5 x  4 x  1.667 Curved",
+      "ldraw": "parts/18972.dat"
+    },
+    {
+      "idx": 81,
+      "id": "18974",
+      "name": "Car Mudguard  4 x  2.5 x  2.333",
+      "ldraw": "parts/18974.dat"
+    },
+    {
+      "idx": 82,
+      "id": "18975",
+      "name": "Plate  2 x  4 with Side Bricks  1 x  2 x  1.333 with Hole",
+      "ldraw": "parts/18975.dat"
+    },
+    {
+      "idx": 83,
+      "id": "18990",
+      "name": "Windscreen  4 x  4 x  1.667 Canopy Half Sphere with Handle Bar",
+      "ldraw": "parts/18990.dat"
+    },
+    {
+      "idx": 84,
+      "id": "19159",
+      "name": "Technic Connector  3 x  1 x  3 with 2 Clips and 2 Pins with Squared Inside",
+      "ldraw": "parts/19159.dat"
+    },
+    {
+      "idx": 85,
+      "id": "1936",
+      "name": "Technic Swashplate  5 x  5 Top with  5 Pin Holes",
+      "ldraw": "parts/1936.dat"
+    },
+    {
+      "idx": 86,
+      "id": "1938",
+      "name": "Technic Swashplate Ball Joint with  4 Grooves and Square Hole",
+      "ldraw": "parts/1938.dat"
+    },
+    {
+      "idx": 87,
+      "id": "1942",
+      "name": "Slope Curved  4 x  2 x  0.667 Double with Fresnel Lens",
+      "ldraw": "parts/1942.dat"
+    },
+    {
+      "idx": 88,
+      "id": "19727",
+      "name": "Plate  1 x  2 with Cube",
+      "ldraw": "parts/19727.dat"
+    },
+    {
+      "idx": 89,
+      "id": "1974",
+      "name": "Cylinder Hemisphere  7 x  7 Flat with 2 Pin Holes",
+      "ldraw": "parts/1974.dat"
+    },
+    {
+      "idx": 90,
+      "id": "1994",
+      "name": "Technic Cylinder with Peghole and Half Click Rotation Joint Ball",
+      "ldraw": "parts/1994.dat"
+    },
+    {
+      "idx": 91,
+      "id": "20309",
+      "name": "Window  1 x  4 x  1.667 Half Round with 3 Radial Dividers",
+      "ldraw": "parts/20309.dat"
+    },
+    {
+      "idx": 92,
+      "id": "20310",
+      "name": "Brick  1 x  1 with Scroll with Open Stud",
+      "ldraw": "parts/20310.dat"
+    },
+    {
+      "idx": 93,
+      "id": "20482",
+      "name": "Tile  1 x  1 Round with Pin and Pin Hole",
+      "ldraw": "parts/20482.dat"
+    },
+    {
+      "idx": 94,
+      "id": "20684",
+      "name": "Windscreen  3 x  8 x  3",
+      "ldraw": "parts/20684.dat"
+    },
+    {
+      "idx": 95,
+      "id": "20952",
+      "name": "Brick Round  1.4 x  1.4 x  0.667 Dome Top",
+      "ldraw": "parts/20952.dat"
+    },
+    {
+      "idx": 96,
+      "id": "20953",
+      "name": "Brick Round Sphere  2 x  2 x  1.667 with Stud",
+      "ldraw": "parts/20953.dat"
+    },
+    {
+      "idx": 97,
+      "id": "21",
+      "name": "Windscreen  2 x  4 x  1 & 2/3",
+      "ldraw": "parts/21.dat"
+    },
+    {
+      "idx": 98,
+      "id": "21229",
+      "name": "Fence Spindled  4 x  4 x  2 Quarter Round with  3 Studs",
+      "ldraw": "parts/21229.dat"
+    },
+    {
+      "idx": 99,
+      "id": "21445",
+      "name": "Plate  1 x  2 with 1 Wheel Pin",
+      "ldraw": "parts/21445.dat"
+    },
+    {
+      "idx": 100,
+      "id": "2145",
+      "name": "Arch  2 x  6 x  5 Ornamented",
+      "ldraw": "parts/2145.dat"
+    },
+    {
+      "idx": 101,
+      "id": "22385",
+      "name": "Tile  3 x  2 with Angled End",
+      "ldraw": "parts/22385.dat"
+    },
+    {
+      "idx": 102,
+      "id": "22388",
+      "name": "Slope Brick 50  1 x  1 x  0.667 Quadruple",
+      "ldraw": "parts/22388.dat"
+    },
+    {
+      "idx": 103,
+      "id": "22390",
+      "name": "Wedge  6 x  8 Double with Cutout",
+      "ldraw": "parts/22390.dat"
+    },
+    {
+      "idx": 104,
+      "id": "22885",
+      "name": "Brick  1 x  2 x  1.667 with Studs on 1 Side",
+      "ldraw": "parts/22885.dat"
+    },
+    {
+      "idx": 105,
+      "id": "22886",
+      "name": "Brick  1 x  2 x  3 without Understud",
+      "ldraw": "parts/22886.dat"
+    },
+    {
+      "idx": 106,
+      "id": "22888",
+      "name": "Plate  4 x  8 Round Semicircle",
+      "ldraw": "parts/22888.dat"
+    },
+    {
+      "idx": 107,
+      "id": "22889",
+      "name": "Slope Brick 45  6 x  2 Double Inverted with Open Centre",
+      "ldraw": "parts/22889.dat"
+    },
+    {
+      "idx": 108,
+      "id": "2310",
+      "name": "Slope Brick 45  2 x  1 Inverted with 0.667 Cutout",
+      "ldraw": "parts/2310.dat"
+    },
+    {
+      "idx": 109,
+      "id": "2336",
+      "name": "Wedge  2 x  3 with Brick  2 x  4 Side Studs and Plate  2 x  2",
+      "ldraw": "parts/2336.dat"
+    },
+    {
+      "idx": 110,
+      "id": "2337",
+      "name": "Windscreen  4 x  4 x  2 Canopy Extender",
+      "ldraw": "parts/2337.dat"
+    },
+    {
+      "idx": 111,
+      "id": "2339",
+      "name": "Arch  1 x  5 x  4",
+      "ldraw": "parts/2339.dat"
+    },
+    {
+      "idx": 112,
+      "id": "2341",
+      "name": "Slope Brick 45  3 x  1 Inverted Double without Inner Stopper Rings",
+      "ldraw": "parts/2341.dat"
+    },
+    {
+      "idx": 113,
+      "id": "2348a",
+      "name": "Glass for Hinge Car Roof  4 x  4 Sunroof without Ridges",
+      "ldraw": "parts/2348a.dat"
+    },
+    {
+      "idx": 114,
+      "id": "2356",
+      "name": "Brick  4 x  6",
+      "ldraw": "parts/2356.dat"
+    },
+    {
+      "idx": 115,
+      "id": "2357",
+      "name": "Brick  2 x  2 Corner",
+      "ldraw": "parts/2357.dat"
+    },
+    {
+      "idx": 116,
+      "id": "2376",
+      "name": "Tile  2 x  2 Round with Lifting Ring",
+      "ldraw": "parts/2376.dat"
+    },
+    {
+      "idx": 117,
+      "id": "23801",
+      "name": "Technic Steering Wheel Bearing with 2 Pegholes and 2 Slotted Axlehole Arms",
+      "ldraw": "parts/23801.dat"
+    },
+    {
+      "idx": 118,
+      "id": "2387",
+      "name": "Technic Panel Fairing Smooth #7 (Thin Very Short)",
+      "ldraw": "parts/2387.dat"
+    },
+    {
+      "idx": 119,
+      "id": "2393",
+      "name": "Technic Cross Block  1 x  3 (Pin/Pin/Pin) with  2 Pins",
+      "ldraw": "parts/2393.dat"
+    },
+    {
+      "idx": 120,
+      "id": "23949",
+      "name": "Slope Brick 45  2 x  6",
+      "ldraw": "parts/23949.dat"
+    },
+    {
+      "idx": 121,
+      "id": "2397",
+      "name": "Plate  2 x  2 with Angled Bars and Attached  1 x  2 Plate",
+      "ldraw": "parts/2397.dat"
+    },
+    {
+      "idx": 122,
+      "id": "2399",
+      "name": "Wedge  3 x  4",
+      "ldraw": "parts/2399.dat"
+    },
+    {
+      "idx": 123,
+      "id": "24014",
+      "name": "Technic Gear 12 Tooth Double Bevel with Axle Extension",
+      "ldraw": "parts/24014.dat"
+    },
+    {
+      "idx": 124,
+      "id": "2405",
+      "name": "Technic Wheel Spindle Axle Driver Bar  5L",
+      "ldraw": "parts/2405.dat"
+    },
+    {
+      "idx": 125,
+      "id": "24055",
+      "name": "Vehicle Base  4 x  6 x  1.667 Curved With Two Wheel Pins",
+      "ldraw": "parts/24055.dat"
+    },
+    {
+      "idx": 126,
+      "id": "24116",
+      "name": "Technic Panel Bent  4 x  5 x  3",
+      "ldraw": "parts/24116.dat"
+    },
+    {
+      "idx": 127,
+      "id": "24119",
+      "name": "Technic Panel Smooth  7 x  2 x  3",
+      "ldraw": "parts/24119.dat"
+    },
+    {
+      "idx": 128,
+      "id": "24120",
+      "name": "Technic Excavator Bucket  4 x  5",
+      "ldraw": "parts/24120.dat"
+    },
+    {
+      "idx": 129,
+      "id": "24151",
+      "name": "Car Mudguard  4 x  4",
+      "ldraw": "parts/24151.dat"
+    },
+    {
+      "idx": 130,
+      "id": "2418a",
+      "name": "Windscreen  6 x  6 Octagonal Canopy without Axlehole",
+      "ldraw": "parts/2418a.dat"
+    },
+    {
+      "idx": 131,
+      "id": "2419",
+      "name": "Plate  3 x  6 without Corners",
+      "ldraw": "parts/2419.dat"
+    },
+    {
+      "idx": 132,
+      "id": "2420",
+      "name": "Plate  2 x  2 Corner",
+      "ldraw": "parts/2420.dat"
+    },
+    {
+      "idx": 133,
+      "id": "24201",
+      "name": "Slope Brick Curved  2 x  1 Inverted",
+      "ldraw": "parts/24201.dat"
+    },
+    {
+      "idx": 134,
+      "id": "24248",
+      "name": "Windscreen  6 x  8 x  3",
+      "ldraw": "parts/24248.dat"
+    },
+    {
+      "idx": 135,
+      "id": "2429",
+      "name": "Hinge Plate  1 x  4 Base",
+      "ldraw": "parts/2429.dat"
+    },
+    {
+      "idx": 136,
+      "id": "24309",
+      "name": "Slope Brick Curved  3 x  2",
+      "ldraw": "parts/24309.dat"
+    },
+    {
+      "idx": 137,
+      "id": "2431",
+      "name": "Tile  1 x  4 with Groove",
+      "ldraw": "parts/2431.dat"
+    },
+    {
+      "idx": 138,
+      "id": "2432",
+      "name": "Tile  1 x  2 with Handle",
+      "ldraw": "parts/2432.dat"
+    },
+    {
+      "idx": 139,
+      "id": "24326",
+      "name": "Car Base  4 x  4 x  0.667 with 4 Wheel Pins",
+      "ldraw": "parts/24326.dat"
+    },
+    {
+      "idx": 140,
+      "id": "2434",
+      "name": "Brick  2 x  4 x  2 with Studs on Sides",
+      "ldraw": "parts/2434.dat"
+    },
+    {
+      "idx": 141,
+      "id": "2437",
+      "name": "Windscreen  3 x  4 x  1.333",
+      "ldraw": "parts/2437.dat"
+    },
+    {
+      "idx": 142,
+      "id": "2438",
+      "name": "Technic Panel  5 x  3 x  2 Corner Left",
+      "ldraw": "parts/2438.dat"
+    },
+    {
+      "idx": 143,
+      "id": "2444",
+      "name": "Plate  2 x  2 with Hole and Split Underside Ribs",
+      "ldraw": "parts/2444.dat"
+    },
+    {
+      "idx": 144,
+      "id": "2449",
+      "name": "Slope Brick 75  2 x  1 x  3 Inverted",
+      "ldraw": "parts/2449.dat"
+    },
+    {
+      "idx": 145,
+      "id": "2450",
+      "name": "Plate  3 x  3 without Corner",
+      "ldraw": "parts/2450.dat"
+    },
+    {
+      "idx": 146,
+      "id": "2453a",
+      "name": "Brick  1 x  1 x  5 with Hollow Stud",
+      "ldraw": "parts/2453a.dat"
+    },
+    {
+      "idx": 147,
+      "id": "2453b",
+      "name": "Brick  1 x  1 x  5 with Solid Stud",
+      "ldraw": "parts/2453b.dat"
+    },
+    {
+      "idx": 148,
+      "id": "2454a",
+      "name": "Brick  1 x  2 x  5 with Hollow Studs and Asymmetric Inner Ridges",
+      "ldraw": "parts/2454a.dat"
+    },
+    {
+      "idx": 149,
+      "id": "2454b",
+      "name": "Brick  1 x  2 x  5 with Blocked Open Studs and Symmetric Inner Ridges",
+      "ldraw": "parts/2454b.dat"
+    },
+    {
+      "idx": 150,
+      "id": "2456",
+      "name": "Brick  2 x  6",
+      "ldraw": "parts/2456.dat"
+    },
+    {
+      "idx": 151,
+      "id": "2457",
+      "name": "Technic Panel Curved  3 x  2 x  1 Angled #3",
+      "ldraw": "parts/2457.dat"
+    },
+    {
+      "idx": 152,
+      "id": "2458",
+      "name": "Brick  1 x  2 with Pin",
+      "ldraw": "parts/2458.dat"
+    },
+    {
+      "idx": 153,
+      "id": "24593",
+      "name": "Cylinder Half  2 x  4 x  2 with  1 x  2 Cutout",
+      "ldraw": "parts/24593.dat"
+    },
+    {
+      "idx": 154,
+      "id": "24599",
+      "name": "Brick  5 x  5 x  1 Corner Round with Curved Top",
+      "ldraw": "parts/24599.dat"
+    },
+    {
+      "idx": 155,
+      "id": "2460",
+      "name": "Tile  2 x  2 with Pin",
+      "ldraw": "parts/2460.dat"
+    },
+    {
+      "idx": 156,
+      "id": "2462",
+      "name": "Brick  3 x  3 Facet",
+      "ldraw": "parts/2462.dat"
+    },
+    {
+      "idx": 157,
+      "id": "2463",
+      "name": "Brick  3 x  3 x  2 Facet Top",
+      "ldraw": "parts/2463.dat"
+    },
+    {
+      "idx": 158,
+      "id": "2477",
+      "name": "Technic Beam  3 x  5 Bent 90 with Alternating Holes",
+      "ldraw": "parts/2477.dat"
+    },
+    {
+      "idx": 159,
+      "id": "2483",
+      "name": "Windscreen  4 x  4 x  3.667 Helicopter",
+      "ldraw": "parts/2483.dat"
+    },
+    {
+      "idx": 160,
+      "id": "2508",
+      "name": "Plate  1 x  2 with 3L Extension and Towball",
+      "ldraw": "parts/2508.dat"
+    },
+    {
+      "idx": 161,
+      "id": "2513",
+      "name": "Car Mudguard  3 x  4",
+      "ldraw": "parts/2513.dat"
+    },
+    {
+      "idx": 162,
+      "id": "25269",
+      "name": "Tile  1 x  1 Corner Round",
+      "ldraw": "parts/25269.dat"
+    },
+    {
+      "idx": 163,
+      "id": "2539",
+      "name": "Plate  6 x  6 Open Center without 4 Corners with 4 Clips",
+      "ldraw": "parts/2539.dat"
+    },
+    {
+      "idx": 164,
+      "id": "2540",
+      "name": "Plate  1 x  2 with Handle",
+      "ldraw": "parts/2540.dat"
+    },
+    {
+      "idx": 165,
+      "id": "2555",
+      "name": "Tile  1 x  1 with Clip",
+      "ldraw": "parts/2555.dat"
+    },
+    {
+      "idx": 166,
+      "id": "2571",
+      "name": "Panel  3 x  4 x  6 with Curved Top",
+      "ldraw": "parts/2571.dat"
+    },
+    {
+      "idx": 167,
+      "id": "2577",
+      "name": "Brick  4 x  4 Corner Round",
+      "ldraw": "parts/2577.dat"
+    },
+    {
+      "idx": 168,
+      "id": "26047",
+      "name": "Plate  1 x  1 Round with Horizontal Handle on Side",
+      "ldraw": "parts/26047.dat"
+    },
+    {
+      "idx": 169,
+      "id": "2609b",
+      "name": "Magnet Holder Tile  2 x  2 with Long Arms and Deep Notch",
+      "ldraw": "parts/2609b.dat"
+    },
+    {
+      "idx": 170,
+      "id": "2620",
+      "name": "Windscreen  4 x  4 x  3 with Hinge",
+      "ldraw": "parts/2620.dat"
+    },
+    {
+      "idx": 171,
+      "id": "2625",
+      "name": "Boat Bow Plate  6 x  7",
+      "ldraw": "parts/2625.dat"
+    },
+    {
+      "idx": 172,
+      "id": "2628",
+      "name": "Plate  8 x  8 x  0.667 with Cutouts and Recessed Studs",
+      "ldraw": "parts/2628.dat"
+    },
+    {
+      "idx": 173,
+      "id": "263",
+      "name": "Train Steam Cylinder  2 x  2 x  1.667 Sloped",
+      "ldraw": "parts/263.dat"
+    },
+    {
+      "idx": 174,
+      "id": "2639",
+      "name": "Plate  4 x  4 Corner",
+      "ldraw": "parts/2639.dat"
+    },
+    {
+      "idx": 175,
+      "id": "26599",
+      "name": "Plate  2 x  4 with Holes",
+      "ldraw": "parts/26599.dat"
+    },
+    {
+      "idx": 176,
+      "id": "26603",
+      "name": "Tile  2 x  3",
+      "ldraw": "parts/26603.dat"
+    },
+    {
+      "idx": 177,
+      "id": "272",
+      "name": "Cone  4 x  4 x  3",
+      "ldraw": "parts/272.dat"
+    },
+    {
+      "idx": 178,
+      "id": "2723",
+      "name": "Technic Disc  3 x  3 with Axlehole",
+      "ldraw": "parts/2723.dat"
+    },
+    {
+      "idx": 179,
+      "id": "27255",
+      "name": "Plate  6 x  6 Hexagonal with Pin Hole and Handles",
+      "ldraw": "parts/27255.dat"
+    },
+    {
+      "idx": 180,
+      "id": "27259",
+      "name": "Plate  1 x  2 with  3 x  6 Hexagonal Extension with  2 Bars",
+      "ldraw": "parts/27259.dat"
+    },
+    {
+      "idx": 181,
+      "id": "27262",
+      "name": "Windscreen  6 x  4 x  1 Pentagonal with Handle",
+      "ldraw": "parts/27262.dat"
+    },
+    {
+      "idx": 182,
+      "id": "2736",
+      "name": "Technic Axle Towball",
+      "ldraw": "parts/2736.dat"
+    },
+    {
+      "idx": 183,
+      "id": "2741",
+      "name": "Technic Steering Wheel Large",
+      "ldraw": "parts/2741.dat"
+    },
+    {
+      "idx": 184,
+      "id": "2743",
+      "name": "Technic Brick  1 x  4 x  1.667 Wing Front",
+      "ldraw": "parts/2743.dat"
+    },
+    {
+      "idx": 185,
+      "id": "2744",
+      "name": "Technic Brick  1 x  6 x  1.667 Wing Back",
+      "ldraw": "parts/2744.dat"
+    },
+    {
+      "idx": 186,
+      "id": "2745",
+      "name": "Technic Cylinder  4 x  4 x  1.667 with Axleholes",
+      "ldraw": "parts/2745.dat"
+    },
+    {
+      "idx": 187,
+      "id": "28192",
+      "name": "Slope Brick 45  2 x  1 with Cutout and without Stud",
+      "ldraw": "parts/28192.dat"
+    },
+    {
+      "idx": 188,
+      "id": "2825",
+      "name": "Technic Beam  4 x  0.5 Liftarm with Boss",
+      "ldraw": "parts/2825.dat"
+    },
+    {
+      "idx": 189,
+      "id": "2826",
+      "name": "Windscreen  5 x  8 x  3",
+      "ldraw": "parts/2826.dat"
+    },
+    {
+      "idx": 190,
+      "id": "2832",
+      "name": "Tile  2 x  8 x  0.833 with Channel on Ends and Holes on Side (Needs Work)",
+      "ldraw": "parts/2832.dat"
+    },
+    {
+      "idx": 191,
+      "id": "28326",
+      "name": "Car Mudguard  4 x  3 x  1",
+      "ldraw": "parts/28326.dat"
+    },
+    {
+      "idx": 192,
+      "id": "2833",
+      "name": "Tile  1 x  8 x  0.833 with Channel on Ends",
+      "ldraw": "parts/2833.dat"
+    },
+    {
+      "idx": 193,
+      "id": "2851",
+      "name": "Technic Engine Piston Round",
+      "ldraw": "parts/2851.dat"
+    },
+    {
+      "idx": 194,
+      "id": "28588",
+      "name": "Animal Snake Head with Open Mouth, Fangs and Curved Neck with Bar",
+      "ldraw": "parts/28588.dat"
+    },
+    {
+      "idx": 195,
+      "id": "28598",
+      "name": "Cone  2 x  2 x  3 Jagged",
+      "ldraw": "parts/28598.dat"
+    },
+    {
+      "idx": 196,
+      "id": "2873",
+      "name": "Hinge Tile  2 x  4 with Ribs",
+      "ldraw": "parts/2873.dat"
+    },
+    {
+      "idx": 197,
+      "id": "2875",
+      "name": "Slope Brick 45  2 x  6 x  0.667",
+      "ldraw": "parts/2875.dat"
+    },
+    {
+      "idx": 198,
+      "id": "2876",
+      "name": "Slope Brick 33/45  6 x  6 with  4 x  4 Cutout",
+      "ldraw": "parts/2876.dat"
+    },
+    {
+      "idx": 199,
+      "id": "2877",
+      "name": "Brick  1 x  2 with Grille",
+      "ldraw": "parts/2877.dat"
+    },
+    {
+      "idx": 200,
+      "id": "2904",
+      "name": "Technic Brick  2 x  2 with Motorcycle Steering Head",
+      "ldraw": "parts/2904.dat"
+    },
+    {
+      "idx": 201,
+      "id": "2905",
+      "name": "Technic Beam  5 x  3 x  0.5 Liftarm Triangle",
+      "ldraw": "parts/2905.dat"
+    },
+    {
+      "idx": 202,
+      "id": "29115",
+      "name": "Wedge  6 x  6 Triple Inverted",
+      "ldraw": "parts/29115.dat"
+    },
+    {
+      "idx": 203,
+      "id": "29119",
+      "name": "Slope Brick Curved  2 x  1 with Cutout Right",
+      "ldraw": "parts/29119.dat"
+    },
+    {
+      "idx": 204,
+      "id": "2916",
+      "name": "Wedge  4 x  6 x  2.333",
+      "ldraw": "parts/2916.dat"
+    },
+    {
+      "idx": 205,
+      "id": "2921",
+      "name": "Brick  1 x  1 with Handle",
+      "ldraw": "parts/2921.dat"
+    },
+    {
+      "idx": 206,
+      "id": "2926",
+      "name": "Plate  1 x  4 with 2 Wheel Pins",
+      "ldraw": "parts/2926.dat"
+    },
+    {
+      "idx": 207,
+      "id": "2937",
+      "name": "Slope Brick 55  1 x  6 x  5 with Bottom Stud Holders",
+      "ldraw": "parts/2937.dat"
+    },
+    {
+      "idx": 208,
+      "id": "2950",
+      "name": "Technic Excavator Bucket  4 x  4 x  9",
+      "ldraw": "parts/2950.dat"
+    },
+    {
+      "idx": 209,
+      "id": "2989",
+      "name": "Technic Brick  1 x  4 with Holes and Bumper Holder",
+      "ldraw": "parts/2989.dat"
+    },
+    {
+      "idx": 210,
+      "id": "30000",
+      "name": "Brick  2 x  2 with Pins and Axlehole",
+      "ldraw": "parts/30000.dat"
+    },
+    {
+      "idx": 211,
+      "id": "3001",
+      "name": "Brick  2 x  4",
+      "ldraw": "parts/3001.dat"
+    },
+    {
+      "idx": 212,
+      "id": "3001b",
+      "name": "Brick  2 x  4 with Hole in Top",
+      "ldraw": "parts/3001b.dat"
+    },
+    {
+      "idx": 213,
+      "id": "3002",
+      "name": "Brick  2 x  3",
+      "ldraw": "parts/3002.dat"
+    },
+    {
+      "idx": 214,
+      "id": "30027a",
+      "name": "Wheel Rim  8 x  8 Round Hole, for Wheel Holding Pin",
+      "ldraw": "parts/30027a.dat"
+    },
+    {
+      "idx": 215,
+      "id": "30027b",
+      "name": "Wheel Rim  8 x  8 Notched Hole, Two Slots, for Wheel Holding Pin",
+      "ldraw": "parts/30027b.dat"
+    },
+    {
+      "idx": 216,
+      "id": "3003",
+      "name": "Brick  2 x  2",
+      "ldraw": "parts/3003.dat"
+    },
+    {
+      "idx": 217,
+      "id": "3004",
+      "name": "Brick  1 x  2",
+      "ldraw": "parts/3004.dat"
+    },
+    {
+      "idx": 218,
+      "id": "3005",
+      "name": "Brick  1 x  1",
+      "ldraw": "parts/3005.dat"
+    },
+    {
+      "idx": 219,
+      "id": "3007",
+      "name": "Brick  2 x  8",
+      "ldraw": "parts/3007.dat"
+    },
+    {
+      "idx": 220,
+      "id": "30075",
+      "name": "Brick  2 x  6 x  3 with Curved Ends",
+      "ldraw": "parts/30075.dat"
+    },
+    {
+      "idx": 221,
+      "id": "3008",
+      "name": "Brick  1 x  8",
+      "ldraw": "parts/3008.dat"
+    },
+    {
+      "idx": 222,
+      "id": "30083",
+      "name": "Windscreen  6 x  6 x  3 Dome with Hinge",
+      "ldraw": "parts/30083.dat"
+    },
+    {
+      "idx": 223,
+      "id": "3009",
+      "name": "Brick  1 x  6",
+      "ldraw": "parts/3009.dat"
+    },
+    {
+      "idx": 224,
+      "id": "3010",
+      "name": "Brick  1 x  4",
+      "ldraw": "parts/3010.dat"
+    },
+    {
+      "idx": 225,
+      "id": "30100",
+      "name": "Panel Wall  3 x  6 x  6 Double Wedge with Window",
+      "ldraw": "parts/30100.dat"
+    },
+    {
+      "idx": 226,
+      "id": "30144",
+      "name": "Brick  2 x  4 x  3",
+      "ldraw": "parts/30144.dat"
+    },
+    {
+      "idx": 227,
+      "id": "30145",
+      "name": "Brick  2 x  2 x  3",
+      "ldraw": "parts/30145.dat"
+    },
+    {
+      "idx": 228,
+      "id": "30147",
+      "name": "Car Grille  1 x  2 x  2 Round Top with Lights",
+      "ldraw": "parts/30147.dat"
+    },
+    {
+      "idx": 229,
+      "id": "30161",
+      "name": "Windscreen  1 x  4 x  1.333 Bottom Hinge",
+      "ldraw": "parts/30161.dat"
+    },
+    {
+      "idx": 230,
+      "id": "30165",
+      "name": "Brick  2 x  2 with Curved Top and  2 Studs on Top",
+      "ldraw": "parts/30165.dat"
+    },
+    {
+      "idx": 231,
+      "id": "30182",
+      "name": "Slope Brick 45  4 x  4",
+      "ldraw": "parts/30182.dat"
+    },
+    {
+      "idx": 232,
+      "id": "30183",
+      "name": "Slope Brick 45  6 x  4 Double Inverted",
+      "ldraw": "parts/30183.dat"
+    },
+    {
+      "idx": 233,
+      "id": "3020",
+      "name": "Plate  2 x  4",
+      "ldraw": "parts/3020.dat"
+    },
+    {
+      "idx": 234,
+      "id": "30200",
+      "name": "Cockpit  6 x  6 x  3.333 Octagonal Canopy Base",
+      "ldraw": "parts/30200.dat"
+    },
+    {
+      "idx": 235,
+      "id": "30209",
+      "name": "Bracket  1 x  2 - Dish  4 x  4",
+      "ldraw": "parts/30209.dat"
+    },
+    {
+      "idx": 236,
+      "id": "3021",
+      "name": "Plate  2 x  3",
+      "ldraw": "parts/3021.dat"
+    },
+    {
+      "idx": 237,
+      "id": "3022",
+      "name": "Plate  2 x  2",
+      "ldraw": "parts/3022.dat"
+    },
+    {
+      "idx": 238,
+      "id": "30236",
+      "name": "Brick  1 x  2 with Handle",
+      "ldraw": "parts/30236.dat"
+    },
+    {
+      "idx": 239,
+      "id": "3024",
+      "name": "Plate  1 x  1",
+      "ldraw": "parts/3024.dat"
+    },
+    {
+      "idx": 240,
+      "id": "30251",
+      "name": "Windscreen  4 x  5 x  3",
+      "ldraw": "parts/30251.dat"
+    },
+    {
+      "idx": 241,
+      "id": "30261",
+      "name": "Roadsign Clip-on  2 x  2 Round",
+      "ldraw": "parts/30261.dat"
+    },
+    {
+      "idx": 242,
+      "id": "30274",
+      "name": "Brick  2 x  3 x  3 with Lion's Head Carving and Cutout",
+      "ldraw": "parts/30274.dat"
+    },
+    {
+      "idx": 243,
+      "id": "30303",
+      "name": "Plate  6 x  6 x  0.667 Cross with Dome",
+      "ldraw": "parts/30303.dat"
+    },
+    {
+      "idx": 244,
+      "id": "3031",
+      "name": "Plate  4 x  4",
+      "ldraw": "parts/3031.dat"
+    },
+    {
+      "idx": 245,
+      "id": "3032",
+      "name": "Plate  4 x  6",
+      "ldraw": "parts/3032.dat"
+    },
+    {
+      "idx": 246,
+      "id": "3034",
+      "name": "Plate  2 x  8",
+      "ldraw": "parts/3034.dat"
+    },
+    {
+      "idx": 247,
+      "id": "3035",
+      "name": "Plate  4 x  8",
+      "ldraw": "parts/3035.dat"
+    },
+    {
+      "idx": 248,
+      "id": "30357",
+      "name": "Plate  3 x  3 with  2 x  2 Corner Round",
+      "ldraw": "parts/30357.dat"
+    },
+    {
+      "idx": 249,
+      "id": "30358",
+      "name": "Plane Engine with 2 Top Studs and  2 x  2 Tile",
+      "ldraw": "parts/30358.dat"
+    },
+    {
+      "idx": 250,
+      "id": "30359a",
+      "name": "Bar  1 x  8 with Brick  1 x  2 Curved Top End",
+      "ldraw": "parts/30359a.dat"
+    },
+    {
+      "idx": 251,
+      "id": "30359b",
+      "name": "Bar  1 x  8 with Brick  1 x  2 Curved Top End With Axlehole",
+      "ldraw": "parts/30359b.dat"
+    },
+    {
+      "idx": 252,
+      "id": "3036",
+      "name": "Plate  6 x  8",
+      "ldraw": "parts/3036.dat"
+    },
+    {
+      "idx": 253,
+      "id": "30360",
+      "name": "Cylinder  3 x  6 x  2.667 Horizontal with Hollow Studs",
+      "ldraw": "parts/30360.dat"
+    },
+    {
+      "idx": 254,
+      "id": "30363",
+      "name": "Slope Brick 18  4 x  2",
+      "ldraw": "parts/30363.dat"
+    },
+    {
+      "idx": 255,
+      "id": "3037",
+      "name": "Slope Brick 45  2 x  4",
+      "ldraw": "parts/3037.dat"
+    },
+    {
+      "idx": 256,
+      "id": "30372",
+      "name": "Windscreen  4 x  7 x  1 & 2/3",
+      "ldraw": "parts/30372.dat"
+    },
+    {
+      "idx": 257,
+      "id": "30373",
+      "name": "Slope Brick 65  6 x  6 x  2 Inverted Quadruple",
+      "ldraw": "parts/30373.dat"
+    },
+    {
+      "idx": 258,
+      "id": "3038",
+      "name": "Slope Brick 45  2 x  3",
+      "ldraw": "parts/3038.dat"
+    },
+    {
+      "idx": 259,
+      "id": "30384",
+      "name": "Windscreen  4 x  7 x  2 Round Pointed",
+      "ldraw": "parts/30384.dat"
+    },
+    {
+      "idx": 260,
+      "id": "30386",
+      "name": "Hinge Brick  1 x  2 Locking Double, Two Finger End with  9 Teeth",
+      "ldraw": "parts/30386.dat"
+    },
+    {
+      "idx": 261,
+      "id": "30387",
+      "name": "Hinge Brick  1 x  4 Locking Double, Two Finger End with 9 Teeth",
+      "ldraw": "parts/30387.dat"
+    },
+    {
+      "idx": 262,
+      "id": "30388",
+      "name": "Hinge Brick  1 x  6 Locking Double",
+      "ldraw": "parts/30388.dat"
+    },
+    {
+      "idx": 263,
+      "id": "30389a",
+      "name": "Hinge Brick  2 x  2 Locking with Single Finger On Side",
+      "ldraw": "parts/30389a.dat"
+    },
+    {
+      "idx": 264,
+      "id": "30389b",
+      "name": "Hinge Brick  2 x  2 Locking with Axlehole and Single Finger",
+      "ldraw": "parts/30389b.dat"
+    },
+    {
+      "idx": 265,
+      "id": "3039",
+      "name": "Slope Brick 45  2 x  2",
+      "ldraw": "parts/3039.dat"
+    },
+    {
+      "idx": 266,
+      "id": "30414",
+      "name": "Brick  1 x  4 with Studs on Side",
+      "ldraw": "parts/30414.dat"
+    },
+    {
+      "idx": 267,
+      "id": "3049a",
+      "name": "Slope Brick 45  1 x  2 Double / Inverted with Centre Tube",
+      "ldraw": "parts/3049a.dat"
+    },
+    {
+      "idx": 268,
+      "id": "30504",
+      "name": "Plate  8 x  8 without Corner",
+      "ldraw": "parts/30504.dat"
+    },
+    {
+      "idx": 269,
+      "id": "30505",
+      "name": "Brick  3 x  3 without Corner",
+      "ldraw": "parts/30505.dat"
+    },
+    {
+      "idx": 270,
+      "id": "30520",
+      "name": "Brick  2 x  8 with Axleholes and  6 Notches",
+      "ldraw": "parts/30520.dat"
+    },
+    {
+      "idx": 271,
+      "id": "30526",
+      "name": "Brick  1 x  2 with 2 Pins",
+      "ldraw": "parts/30526.dat"
+    },
+    {
+      "idx": 272,
+      "id": "30528",
+      "name": "Arch  1 x  8 x  6",
+      "ldraw": "parts/30528.dat"
+    },
+    {
+      "idx": 273,
+      "id": "30562",
+      "name": "Panel  4 x  4 x  6 Corner Round",
+      "ldraw": "parts/30562.dat"
+    },
+    {
+      "idx": 274,
+      "id": "30565",
+      "name": "Plate  4 x  4 with Corner Round",
+      "ldraw": "parts/30565.dat"
+    },
+    {
+      "idx": 275,
+      "id": "30602",
+      "name": "Slope Brick Curved Top  2 x  2 x  1",
+      "ldraw": "parts/30602.dat"
+    },
+    {
+      "idx": 276,
+      "id": "30603",
+      "name": "Slope Brick  2 x  2 x  1 with Flanges and Pistons",
+      "ldraw": "parts/30603.dat"
+    },
+    {
+      "idx": 277,
+      "id": "30613",
+      "name": "Arch  3 x  6 x  5 Ornamented with Hollow Stud",
+      "ldraw": "parts/30613.dat"
+    },
+    {
+      "idx": 278,
+      "id": "30614",
+      "name": "Roof  6 x  6 x  3 with Hollow Top Stud",
+      "ldraw": "parts/30614.dat"
+    },
+    {
+      "idx": 279,
+      "id": "30622",
+      "name": "Technic Grille  1 x  4 with 2 Pins",
+      "ldraw": "parts/30622.dat"
+    },
+    {
+      "idx": 280,
+      "id": "30624",
+      "name": "Technic Connector  3 x  1 x  4 with Two Pins and Click Hinge",
+      "ldraw": "parts/30624.dat"
+    },
+    {
+      "idx": 281,
+      "id": "3062b",
+      "name": "Brick  1 x  1 Round with Hollow Stud",
+      "ldraw": "parts/3062b.dat"
+    },
+    {
+      "idx": 282,
+      "id": "30632",
+      "name": "Technic Grille  6 x  4 x  3 with  2 Pins and  2 Pin Holes",
+      "ldraw": "parts/30632.dat"
+    },
+    {
+      "idx": 283,
+      "id": "3063a",
+      "name": "Brick  2 x  2 Corner Round without Stud Notch",
+      "ldraw": "parts/3063a.dat"
+    },
+    {
+      "idx": 284,
+      "id": "3069b",
+      "name": "Tile  1 x  2 with Groove",
+      "ldraw": "parts/3069b.dat"
+    },
+    {
+      "idx": 285,
+      "id": "3070b",
+      "name": "Tile  1 x  1 with Groove",
+      "ldraw": "parts/3070b.dat"
+    },
+    {
+      "idx": 286,
+      "id": "30841",
+      "name": "Windscreen  2 x  4 x  1.333",
+      "ldraw": "parts/30841.dat"
+    },
+    {
+      "idx": 287,
+      "id": "30925",
+      "name": "Plate  1 x  2 with Spoiler  1 x  4",
+      "ldraw": "parts/30925.dat"
+    },
+    {
+      "idx": 288,
+      "id": "30987",
+      "name": "Cylinder Quarter  2 x  2 x  5 with  1 x  1 Cutout",
+      "ldraw": "parts/30987.dat"
+    },
+    {
+      "idx": 289,
+      "id": "313",
+      "name": "Hinge Plate  2 x  5 Pivot",
+      "ldraw": "parts/313.dat"
+    },
+    {
+      "idx": 290,
+      "id": "3134",
+      "name": "Brick  1 x  2 with Cable Cutout",
+      "ldraw": "parts/3134.dat"
+    },
+    {
+      "idx": 291,
+      "id": "3160",
+      "name": "Tile  6 x  6 x  0.667 with Angled Textured Surface",
+      "ldraw": "parts/3160.dat"
+    },
+    {
+      "idx": 292,
+      "id": "3167",
+      "name": "Technic Beam  2 x  3 C-shaped",
+      "ldraw": "parts/3167.dat"
+    },
+    {
+      "idx": 293,
+      "id": "3172",
+      "name": "Plate  1 x  3 with Offset Peghole on Underside",
+      "ldraw": "parts/3172.dat"
+    },
+    {
+      "idx": 294,
+      "id": "3176",
+      "name": "Plate  3 x  2 with Hole",
+      "ldraw": "parts/3176.dat"
+    },
+    {
+      "idx": 295,
+      "id": "3184",
+      "name": "Plate  1 x  4 with Towball",
+      "ldraw": "parts/3184.dat"
+    },
+    {
+      "idx": 296,
+      "id": "32001",
+      "name": "Technic Plate  2 x  6 with Holes",
+      "ldraw": "parts/32001.dat"
+    },
+    {
+      "idx": 297,
+      "id": "32012",
+      "name": "Technic Reel  2.5 x  2",
+      "ldraw": "parts/32012.dat"
+    },
+    {
+      "idx": 298,
+      "id": "32017",
+      "name": "Technic Beam  5 x  0.5",
+      "ldraw": "parts/32017.dat"
+    },
+    {
+      "idx": 299,
+      "id": "32056",
+      "name": "Technic Beam  3 x  3 x  0.5 Liftarm Bent 90",
+      "ldraw": "parts/32056.dat"
+    },
+    {
+      "idx": 300,
+      "id": "32059",
+      "name": "Plate  4 x  6 without Corners",
+      "ldraw": "parts/32059.dat"
+    },
+    {
+      "idx": 301,
+      "id": "32063",
+      "name": "Technic Beam  6 x  0.5",
+      "ldraw": "parts/32063.dat"
+    },
+    {
+      "idx": 302,
+      "id": "32065",
+      "name": "Technic Beam  7 x  0.5",
+      "ldraw": "parts/32065.dat"
+    },
+    {
+      "idx": 303,
+      "id": "32083",
+      "name": "Slope Brick 45  6 x  4 Double",
+      "ldraw": "parts/32083.dat"
+    },
+    {
+      "idx": 304,
+      "id": "32137",
+      "name": "Technic Connector Block  3 x  2 x  2",
+      "ldraw": "parts/32137.dat"
+    },
+    {
+      "idx": 305,
+      "id": "32140",
+      "name": "Technic Beam  2 x  4 Liftarm Bent 90",
+      "ldraw": "parts/32140.dat"
+    },
+    {
+      "idx": 306,
+      "id": "32165",
+      "name": "Technic Connector Block  3 x  6 x  1.667",
+      "ldraw": "parts/32165.dat"
+    },
+    {
+      "idx": 307,
+      "id": "32170",
+      "name": "Technic Gear Rack Double with Ball Joint",
+      "ldraw": "parts/32170.dat"
+    },
+    {
+      "idx": 308,
+      "id": "32173",
+      "name": "Technic Bionicle Leg  2 x  6 with  2 Ball Joints",
+      "ldraw": "parts/32173.dat"
+    },
+    {
+      "idx": 309,
+      "id": "32177",
+      "name": "Technic Beam  7 x  1 Liftarm with Ribs and Fan",
+      "ldraw": "parts/32177.dat"
+    },
+    {
+      "idx": 310,
+      "id": "32187",
+      "name": "Technic Transmission Driving Ring Extension",
+      "ldraw": "parts/32187.dat"
+    },
+    {
+      "idx": 311,
+      "id": "32205",
+      "name": "Znap Beam Curved  3 Holes",
+      "ldraw": "parts/32205.dat"
+    },
+    {
+      "idx": 312,
+      "id": "32250",
+      "name": "Technic Beam  3 x  5 x  0.5 Liftarm Bent 90 Quarter Ellipse",
+      "ldraw": "parts/32250.dat"
+    },
+    {
+      "idx": 313,
+      "id": "32251",
+      "name": "Technic Beam  5 x  7 x  0.5 Liftarm Bent 90 Quarter Ellipse",
+      "ldraw": "parts/32251.dat"
+    },
+    {
+      "idx": 314,
+      "id": "32305",
+      "name": "Technic Connector Block  7 x  4 x  3",
+      "ldraw": "parts/32305.dat"
+    },
+    {
+      "idx": 315,
+      "id": "32307",
+      "name": "Technic Connector Block  3 x  6 with 6 Axleholes and Groove",
+      "ldraw": "parts/32307.dat"
+    },
+    {
+      "idx": 316,
+      "id": "32308",
+      "name": "Technic Beam  7 x  3 x  2 Liftarm Split",
+      "ldraw": "parts/32308.dat"
+    },
+    {
+      "idx": 317,
+      "id": "32310",
+      "name": "Technic Connector Block  3 x  5 x  1.333",
+      "ldraw": "parts/32310.dat"
+    },
+    {
+      "idx": 318,
+      "id": "32324",
+      "name": "Technic Brick  4 x  4 with Open Centre  2 x  2",
+      "ldraw": "parts/32324.dat"
+    },
+    {
+      "idx": 319,
+      "id": "32333",
+      "name": "Technic Brick  5 x  3 x  1 with  8 Pegholes and  2 Studs",
+      "ldraw": "parts/32333.dat"
+    },
+    {
+      "idx": 320,
+      "id": "32348",
+      "name": "Technic Beam  4 x  4 Liftarm Bent 53.13",
+      "ldraw": "parts/32348.dat"
+    },
+    {
+      "idx": 321,
+      "id": "32489",
+      "name": "Technic Connector Block  4 x  5 x  7.667",
+      "ldraw": "parts/32489.dat"
+    },
+    {
+      "idx": 322,
+      "id": "3249",
+      "name": "Technic Chain Link with Bar",
+      "ldraw": "parts/3249.dat"
+    },
+    {
+      "idx": 323,
+      "id": "32523",
+      "name": "Technic Beam  3",
+      "ldraw": "parts/32523.dat"
+    },
+    {
+      "idx": 324,
+      "id": "32530",
+      "name": "Technic Tile  1 x  2 with Two Holes",
+      "ldraw": "parts/32530.dat"
+    },
+    {
+      "idx": 325,
+      "id": "32551",
+      "name": "Constraction Claw Hook with Axle",
+      "ldraw": "parts/32551.dat"
+    },
+    {
+      "idx": 326,
+      "id": "32555",
+      "name": "Technic Brick  5 x  5 Corner with Holes",
+      "ldraw": "parts/32555.dat"
+    },
+    {
+      "idx": 327,
+      "id": "32576",
+      "name": "Technic Connector  3 x  4.5 x  2.333 with Pin (Needs Work)",
+      "ldraw": "parts/32576.dat"
+    },
+    {
+      "idx": 328,
+      "id": "3263",
+      "name": "Plate  4 x  3 x  0.667 with Rounded Corners on one Side",
+      "ldraw": "parts/3263.dat"
+    },
+    {
+      "idx": 329,
+      "id": "32739",
+      "name": "Slope Brick 45  4 x  6 x  0.667 Double",
+      "ldraw": "parts/32739.dat"
+    },
+    {
+      "idx": 330,
+      "id": "32802",
+      "name": "Slope Brick 45  4 x  1 Double Inverted with Open Centre",
+      "ldraw": "parts/32802.dat"
+    },
+    {
+      "idx": 331,
+      "id": "32803",
+      "name": "Slope Brick Curved  2 x  2 Inverted",
+      "ldraw": "parts/32803.dat"
+    },
+    {
+      "idx": 332,
+      "id": "32828",
+      "name": "Plate  1 x  1 Round with Bar",
+      "ldraw": "parts/32828.dat"
+    },
+    {
+      "idx": 333,
+      "id": "3297",
+      "name": "Slope Brick 33  3 x  4",
+      "ldraw": "parts/3297.dat"
+    },
+    {
+      "idx": 334,
+      "id": "3298",
+      "name": "Slope Brick 33  3 x  2",
+      "ldraw": "parts/3298.dat"
+    },
+    {
+      "idx": 335,
+      "id": "3299",
+      "name": "Slope Brick 33  2 x  4 Double",
+      "ldraw": "parts/3299.dat"
+    },
+    {
+      "idx": 336,
+      "id": "3300",
+      "name": "Slope Brick 33  2 x  2 Double",
+      "ldraw": "parts/3300.dat"
+    },
+    {
+      "idx": 337,
+      "id": "3307",
+      "name": "Arch  1 x  6 x  2 with Thick Top and Reinforced Underside",
+      "ldraw": "parts/3307.dat"
+    },
+    {
+      "idx": 338,
+      "id": "3315",
+      "name": "Hinge Plate  2 x  4 with Digger Bucket Holder",
+      "ldraw": "parts/3315.dat"
+    },
+    {
+      "idx": 339,
+      "id": "33243",
+      "name": "Brick  1 x  3 x  2 Curved Top",
+      "ldraw": "parts/33243.dat"
+    },
+    {
+      "idx": 340,
+      "id": "33286",
+      "name": "Brick  1 x  1 x   2/3 Round with Scala Base",
+      "ldraw": "parts/33286.dat"
+    },
+    {
+      "idx": 341,
+      "id": "33287",
+      "name": "Cylinder  2 x  2 x  2.4 with Dome Top and Slots",
+      "ldraw": "parts/33287.dat"
+    },
+    {
+      "idx": 342,
+      "id": "33492",
+      "name": "Cone  1.5 x  1.5 x  0.667 Truncated",
+      "ldraw": "parts/33492.dat"
+    },
+    {
+      "idx": 343,
+      "id": "3383",
+      "name": "Windscreen  6 x  6 x  1.333 Sloped",
+      "ldraw": "parts/3383.dat"
+    },
+    {
+      "idx": 344,
+      "id": "3384",
+      "name": "Windscreen  6 x  4 x 1.333 Sloped",
+      "ldraw": "parts/3384.dat"
+    },
+    {
+      "idx": 345,
+      "id": "3386",
+      "name": "Plate  1 x  1 x  0.667 Half Round with Open Side Stud",
+      "ldraw": "parts/3386.dat"
+    },
+    {
+      "idx": 346,
+      "id": "3387",
+      "name": "Car Mudguard  4 x  2.5 x  2",
+      "ldraw": "parts/3387.dat"
+    },
+    {
+      "idx": 347,
+      "id": "3388",
+      "name": "Wedge  1 x  5 Straight Left",
+      "ldraw": "parts/3388.dat"
+    },
+    {
+      "idx": 348,
+      "id": "33909",
+      "name": "Plate  2 x  2 with 2 Studs on One Edge",
+      "ldraw": "parts/33909.dat"
+    },
+    {
+      "idx": 349,
+      "id": "3395",
+      "name": "Tile  2 x  4 Inverted with Groove",
+      "ldraw": "parts/3395.dat"
+    },
+    {
+      "idx": 350,
+      "id": "3396",
+      "name": "Tile  2 x  2 with Two  1 x  1 Curved Cutouts",
+      "ldraw": "parts/3396.dat"
+    },
+    {
+      "idx": 351,
+      "id": "3404bc01",
+      "name": "Turntable  4 x  4 Dimpled Top with Connector with Black Inside",
+      "ldraw": "parts/3404bc01.dat"
+    },
+    {
+      "idx": 352,
+      "id": "3455",
+      "name": "Arch  1 x  6",
+      "ldraw": "parts/3455.dat"
+    },
+    {
+      "idx": 353,
+      "id": "3460",
+      "name": "Plate  1 x  8",
+      "ldraw": "parts/3460.dat"
+    },
+    {
+      "idx": 354,
+      "id": "3475a",
+      "name": "Plate  1 x  2 with Jet Engine and Smooth Hole",
+      "ldraw": "parts/3475a.dat"
+    },
+    {
+      "idx": 355,
+      "id": "3475b",
+      "name": "Plate  1 x  2 with Jet Engine with Axle Hole",
+      "ldraw": "parts/3475b.dat"
+    },
+    {
+      "idx": 356,
+      "id": "3491",
+      "name": "Plate  2 x  5 with Towball Socket",
+      "ldraw": "parts/3491.dat"
+    },
+    {
+      "idx": 357,
+      "id": "3504",
+      "name": "Wedge  2 x  5 Straight Left",
+      "ldraw": "parts/3504.dat"
+    },
+    {
+      "idx": 358,
+      "id": "35044",
+      "name": "Plate  4 x  4 with  3 x  3 Quarter Circle Cutout",
+      "ldraw": "parts/35044.dat"
+    },
+    {
+      "idx": 359,
+      "id": "35186",
+      "name": "Technic Transmission Driving Ring Extension with Eight Clutch Teeth",
+      "ldraw": "parts/35186.dat"
+    },
+    {
+      "idx": 360,
+      "id": "3535",
+      "name": "Panel  3 x  3 x  2 Quarter Round",
+      "ldraw": "parts/3535.dat"
+    },
+    {
+      "idx": 361,
+      "id": "35365",
+      "name": "Bar  2.4 x  5.4 Round",
+      "ldraw": "parts/35365.dat"
+    },
+    {
+      "idx": 362,
+      "id": "35394",
+      "name": "Dish  4 x  4 Inverted with Hollow Stud",
+      "ldraw": "parts/35394.dat"
+    },
+    {
+      "idx": 363,
+      "id": "35442",
+      "name": "Plate Gear  6 Tooth  2 x  2",
+      "ldraw": "parts/35442.dat"
+    },
+    {
+      "idx": 364,
+      "id": "35443",
+      "name": "Plate Gear 10 Tooth  4 x  4",
+      "ldraw": "parts/35443.dat"
+    },
+    {
+      "idx": 365,
+      "id": "35446",
+      "name": "Plate Gear 14 Tooth  6 x  6",
+      "ldraw": "parts/35446.dat"
+    },
+    {
+      "idx": 366,
+      "id": "35459",
+      "name": "Tile  1 x  3 Inverted with Bar Hole",
+      "ldraw": "parts/35459.dat"
+    },
+    {
+      "idx": 367,
+      "id": "35463",
+      "name": "Tile  1 x  1 with Curved Triangle",
+      "ldraw": "parts/35463.dat"
+    },
+    {
+      "idx": 368,
+      "id": "35464",
+      "name": "Slope Brick 45  1 x  1 Double",
+      "ldraw": "parts/35464.dat"
+    },
+    {
+      "idx": 369,
+      "id": "35470",
+      "name": "Plate  3 x  5 Cloud Shape with  3 Studs",
+      "ldraw": "parts/35470.dat"
+    },
+    {
+      "idx": 370,
+      "id": "35477",
+      "name": "Brick  1 x  3 x  1.333 with Rounded Ends",
+      "ldraw": "parts/35477.dat"
+    },
+    {
+      "idx": 371,
+      "id": "35480",
+      "name": "Plate  1 x  2 with Round Ends and 2 Open Studs",
+      "ldraw": "parts/35480.dat"
+    },
+    {
+      "idx": 372,
+      "id": "35563",
+      "name": "Cone  4 x  2 x  4 Half with Roof Tiles",
+      "ldraw": "parts/35563.dat"
+    },
+    {
+      "idx": 373,
+      "id": "35565",
+      "name": "Panel  2 x  6 x  6  with Pointed Arch Opening and Rounded Sides",
+      "ldraw": "parts/35565.dat"
+    },
+    {
+      "idx": 374,
+      "id": "3563",
+      "name": "Brick  1 x  2 x  0.667 with Curved Top",
+      "ldraw": "parts/3563.dat"
+    },
+    {
+      "idx": 375,
+      "id": "3567",
+      "name": "Tile  2 x  2 Round Inverted with Groove",
+      "ldraw": "parts/3567.dat"
+    },
+    {
+      "idx": 376,
+      "id": "3569",
+      "name": "Cone  4 x  4 x  3 on Brick  2 x  2 Round",
+      "ldraw": "parts/3569.dat"
+    },
+    {
+      "idx": 377,
+      "id": "3572",
+      "name": "Arch  1 x  5 x  2",
+      "ldraw": "parts/3572.dat"
+    },
+    {
+      "idx": 378,
+      "id": "3573",
+      "name": "Slope Brick Curved  4 x  1 x  1.667",
+      "ldraw": "parts/3573.dat"
+    },
+    {
+      "idx": 379,
+      "id": "3614a",
+      "name": "Plate  1 x  1 Round with Towball",
+      "ldraw": "parts/3614a.dat"
+    },
+    {
+      "idx": 380,
+      "id": "3622",
+      "name": "Brick  1 x  3",
+      "ldraw": "parts/3622.dat"
+    },
+    {
+      "idx": 381,
+      "id": "3623",
+      "name": "Plate  1 x  3",
+      "ldraw": "parts/3623.dat"
+    },
+    {
+      "idx": 382,
+      "id": "3659",
+      "name": "Arch  1 x  4",
+      "ldraw": "parts/3659.dat"
+    },
+    {
+      "idx": 383,
+      "id": "3660b",
+      "name": "Slope Brick 45  2 x  2 Inverted with Flat Bottom Pin with Inner Stopper Ring",
+      "ldraw": "parts/3660b.dat"
+    },
+    {
+      "idx": 384,
+      "id": "3661",
+      "name": "Plate  1 x  1 with Vertical Bar",
+      "ldraw": "parts/3661.dat"
+    },
+    {
+      "idx": 385,
+      "id": "3665a",
+      "name": "Slope Brick 45  2 x  1 Inverted without Inner Stopper Ring",
+      "ldraw": "parts/3665a.dat"
+    },
+    {
+      "idx": 386,
+      "id": "3666",
+      "name": "Plate  1 x  6",
+      "ldraw": "parts/3666.dat"
+    },
+    {
+      "idx": 387,
+      "id": "3668",
+      "name": "Plate  2 x  6 with Side Bricks  1 x  2 x  1.333 with Axlehole with Underside Ridges",
+      "ldraw": "parts/3668.dat"
+    },
+    {
+      "idx": 388,
+      "id": "3673",
+      "name": "Technic Pin",
+      "ldraw": "parts/3673.dat"
+    },
+    {
+      "idx": 389,
+      "id": "3675",
+      "name": "Slope Brick 33  3 x  3 Double Convex",
+      "ldraw": "parts/3675.dat"
+    },
+    {
+      "idx": 390,
+      "id": "3676",
+      "name": "Slope Brick 45  2 x  2 Inverted Double Convex",
+      "ldraw": "parts/3676.dat"
+    },
+    {
+      "idx": 391,
+      "id": "3678a",
+      "name": "Slope Brick 65  2 x  2 x  2 without Centre Tube",
+      "ldraw": "parts/3678a.dat"
+    },
+    {
+      "idx": 392,
+      "id": "3685",
+      "name": "Slope Brick 75  2 x  2 x  3 Double Convex",
+      "ldraw": "parts/3685.dat"
+    },
+    {
+      "idx": 393,
+      "id": "3688",
+      "name": "Slope Brick 75  2 x  2 x  2 Quadruple Convex",
+      "ldraw": "parts/3688.dat"
+    },
+    {
+      "idx": 394,
+      "id": "3691",
+      "name": "Technic Holder Block  4 x  4 x  3",
+      "ldraw": "parts/3691.dat"
+    },
+    {
+      "idx": 395,
+      "id": "3702",
+      "name": "Technic Brick  1 x  8 with Holes",
+      "ldraw": "parts/3702.dat"
+    },
+    {
+      "idx": 396,
+      "id": "3704",
+      "name": "Technic Axle  2",
+      "ldraw": "parts/3704.dat"
+    },
+    {
+      "idx": 397,
+      "id": "3709a",
+      "name": "Brick  2 x  4 with Top/Side/End Holes and Hollow Studs",
+      "ldraw": "parts/3709a.dat"
+    },
+    {
+      "idx": 398,
+      "id": "3710",
+      "name": "Plate  1 x  4",
+      "ldraw": "parts/3710.dat"
+    },
+    {
+      "idx": 399,
+      "id": "3729",
+      "name": "Plate  2 x  2 with Towball",
+      "ldraw": "parts/3729.dat"
+    },
+    {
+      "idx": 400,
+      "id": "3738",
+      "name": "Technic Plate  2 x  8 with Holes",
+      "ldraw": "parts/3738.dat"
+    },
+    {
+      "idx": 401,
+      "id": "3743",
+      "name": "Technic Gear Rack  1 x  4",
+      "ldraw": "parts/3743.dat"
+    },
+    {
+      "idx": 402,
+      "id": "3747a",
+      "name": "Slope Brick 33  3 x  2 Inverted without Ribs between Studs",
+      "ldraw": "parts/3747a.dat"
+    },
+    {
+      "idx": 403,
+      "id": "3754",
+      "name": "Brick  1 x  6 x  5",
+      "ldraw": "parts/3754.dat"
+    },
+    {
+      "idx": 404,
+      "id": "3755a",
+      "name": "Brick  1 x  3 x  5 without Inner Ridges",
+      "ldraw": "parts/3755a.dat"
+    },
+    {
+      "idx": 405,
+      "id": "3776",
+      "name": "Plate  2 x  6 with Underside Worm Gear Rack",
+      "ldraw": "parts/3776.dat"
+    },
+    {
+      "idx": 406,
+      "id": "37762",
+      "name": "Cylinder  1 x  1.333 with  0.5L Bar and Bar Hole",
+      "ldraw": "parts/37762.dat"
+    },
+    {
+      "idx": 407,
+      "id": "3779",
+      "name": "Plate  2 x  4 with Towball Socket on Top",
+      "ldraw": "parts/3779.dat"
+    },
+    {
+      "idx": 408,
+      "id": "3794b",
+      "name": "Plate  1 x  2 with Groove with 1 Centre Stud",
+      "ldraw": "parts/3794b.dat"
+    },
+    {
+      "idx": 409,
+      "id": "3795",
+      "name": "Plate  2 x  6",
+      "ldraw": "parts/3795.dat"
+    },
+    {
+      "idx": 410,
+      "id": "3803",
+      "name": "Bar  1L Quadruple with  1L Peghole Hub",
+      "ldraw": "parts/3803.dat"
+    },
+    {
+      "idx": 411,
+      "id": "3823",
+      "name": "Windscreen  2 x  4 x  2",
+      "ldraw": "parts/3823.dat"
+    },
+    {
+      "idx": 412,
+      "id": "3830",
+      "name": "Hinge Brick  1 x  4 Top",
+      "ldraw": "parts/3830.dat"
+    },
+    {
+      "idx": 413,
+      "id": "38317",
+      "name": "Cone  4 x  2 x  3 Half",
+      "ldraw": "parts/38317.dat"
+    },
+    {
+      "idx": 414,
+      "id": "3863",
+      "name": "Brick  2 x  4 x  5 with Platform and Hole for Worm Screw",
+      "ldraw": "parts/3863.dat"
+    },
+    {
+      "idx": 415,
+      "id": "3894",
+      "name": "Technic Brick  1 x  6 with Holes",
+      "ldraw": "parts/3894.dat"
+    },
+    {
+      "idx": 416,
+      "id": "3939",
+      "name": "Slope Brick 33  3 x  6",
+      "ldraw": "parts/3939.dat"
+    },
+    {
+      "idx": 417,
+      "id": "3941",
+      "name": "Brick  2 x  2 Round without Reinforcement",
+      "ldraw": "parts/3941.dat"
+    },
+    {
+      "idx": 418,
+      "id": "3942b",
+      "name": "Cone  2 x  2 x  2 with Hollow Stud and Axlehole Teeth",
+      "ldraw": "parts/3942b.dat"
+    },
+    {
+      "idx": 419,
+      "id": "3943a",
+      "name": "Cone  4 x  4 x  2 without Axlehole",
+      "ldraw": "parts/3943a.dat"
+    },
+    {
+      "idx": 420,
+      "id": "3958",
+      "name": "Plate  6 x  6",
+      "ldraw": "parts/3958.dat"
+    },
+    {
+      "idx": 421,
+      "id": "3960",
+      "name": "Dish  4 x  4 Inverted",
+      "ldraw": "parts/3960.dat"
+    },
+    {
+      "idx": 422,
+      "id": "3961",
+      "name": "Dish  8 x  8 Inverted with Solid Studs",
+      "ldraw": "parts/3961.dat"
+    },
+    {
+      "idx": 423,
+      "id": "39611",
+      "name": "Plate  4 x  4 x  0.667 with Five Point Star Shape",
+      "ldraw": "parts/39611.dat"
+    },
+    {
+      "idx": 424,
+      "id": "3963",
+      "name": "Brick  2 x  1 with Positioning Rockets",
+      "ldraw": "parts/3963.dat"
+    },
+    {
+      "idx": 425,
+      "id": "39789",
+      "name": "Brick  2 x  4 with  3 Axleholes Vertical",
+      "ldraw": "parts/39789.dat"
+    },
+    {
+      "idx": 426,
+      "id": "4032a",
+      "name": "Plate  2 x  2 Round with Axlehole",
+      "ldraw": "parts/4032a.dat"
+    },
+    {
+      "idx": 427,
+      "id": "4041",
+      "name": "Panel  4 x  4 x  3 Corner Round",
+      "ldraw": "parts/4041.dat"
+    },
+    {
+      "idx": 428,
+      "id": "4042",
+      "name": "Bar Curved with Axle End and  2 Opposite Studs",
+      "ldraw": "parts/4042.dat"
+    },
+    {
+      "idx": 429,
+      "id": "4045",
+      "name": "Brick  1 x  4 x  1.333 with Curved Top and Corners (Obsolete)",
+      "ldraw": "parts/4045.dat"
+    },
+    {
+      "idx": 430,
+      "id": "40687",
+      "name": "Plate  2 x  4 with Reinforced Flatened Pins",
+      "ldraw": "parts/40687.dat"
+    },
+    {
+      "idx": 431,
+      "id": "4070",
+      "name": "Brick  1 x  1 with Headlight",
+      "ldraw": "parts/4070.dat"
+    },
+    {
+      "idx": 432,
+      "id": "4086",
+      "name": "Vehicle Roof  4 x  7.5 x  3.667",
+      "ldraw": "parts/4086.dat"
+    },
+    {
+      "idx": 433,
+      "id": "4089",
+      "name": "Slope Brick 33  3 x  2 Inverted Hollow with Towball",
+      "ldraw": "parts/4089.dat"
+    },
+    {
+      "idx": 434,
+      "id": "40902",
+      "name": "Hinge Brick  2 x  2 Locking with Reduced Axlehole and Dual Finger, 9 Teeth",
+      "ldraw": "parts/40902.dat"
+    },
+    {
+      "idx": 435,
+      "id": "4151a",
+      "name": "Plate  8 x  8 with Grille without Hole",
+      "ldraw": "parts/4151a.dat"
+    },
+    {
+      "idx": 436,
+      "id": "41529",
+      "name": "Hinge Wedge  1 x  3 Locking with 2 Fingers, 2 Studs and Clip",
+      "ldraw": "parts/41529.dat"
+    },
+    {
+      "idx": 437,
+      "id": "41531",
+      "name": "Technic Cylinder  4 x  4 x  2 with 3 Pin Holes and Center Bar",
+      "ldraw": "parts/41531.dat"
+    },
+    {
+      "idx": 438,
+      "id": "41533",
+      "name": "Brick  2 x  2  x  2 with  2 Holes and Click Rotation Ring",
+      "ldraw": "parts/41533.dat"
+    },
+    {
+      "idx": 439,
+      "id": "41539",
+      "name": "Plate  8 x  8",
+      "ldraw": "parts/41539.dat"
+    },
+    {
+      "idx": 440,
+      "id": "4162",
+      "name": "Tile  1 x  8",
+      "ldraw": "parts/4162.dat"
+    },
+    {
+      "idx": 441,
+      "id": "41665",
+      "name": "Technic Beam  1 x  4 x  7 with  5 Axleholes and  2 Holes and  1 Slot",
+      "ldraw": "parts/41665.dat"
+    },
+    {
+      "idx": 442,
+      "id": "41670",
+      "name": "Technic Bionicle Leg  4 x  4 with Two Ball Joints",
+      "ldraw": "parts/41670.dat"
+    },
+    {
+      "idx": 443,
+      "id": "41671",
+      "name": "Technic Windscreen  4 x  5 x  7",
+      "ldraw": "parts/41671.dat"
+    },
+    {
+      "idx": 444,
+      "id": "41672",
+      "name": "Technic Beam  1 x  3 x  7 with 4 Axleholes and 3 Holes",
+      "ldraw": "parts/41672.dat"
+    },
+    {
+      "idx": 445,
+      "id": "41677",
+      "name": "Technic Beam  2 x  0.5 Liftarm",
+      "ldraw": "parts/41677.dat"
+    },
+    {
+      "idx": 446,
+      "id": "41679",
+      "name": "Technic Beam  4 x  0.5 Liftarm with Click Rotation Hinge Half",
+      "ldraw": "parts/41679.dat"
+    },
+    {
+      "idx": 447,
+      "id": "41681",
+      "name": "Technic Beam  3.8 x  1 Liftarm with Click Rotation Ring Socket",
+      "ldraw": "parts/41681.dat"
+    },
+    {
+      "idx": 448,
+      "id": "41747",
+      "name": "Wedge  2 x  6 Double Right",
+      "ldraw": "parts/41747.dat"
+    },
+    {
+      "idx": 449,
+      "id": "41749",
+      "name": "Slope Brick Round  3 x  8 x  2 Right",
+      "ldraw": "parts/41749.dat"
+    },
+    {
+      "idx": 450,
+      "id": "4175",
+      "name": "Plate  1 x  2 with Ladder",
+      "ldraw": "parts/4175.dat"
+    },
+    {
+      "idx": 451,
+      "id": "41751",
+      "name": "Windscreen  8 x  6 x  2 Curved",
+      "ldraw": "parts/41751.dat"
+    },
+    {
+      "idx": 452,
+      "id": "4176",
+      "name": "Windscreen  2 x  6 x  2",
+      "ldraw": "parts/4176.dat"
+    },
+    {
+      "idx": 453,
+      "id": "41764",
+      "name": "Wedge  2 x  6 Double Inverted Right",
+      "ldraw": "parts/41764.dat"
+    },
+    {
+      "idx": 454,
+      "id": "41766",
+      "name": "Slope Brick Curved  8 x  2 x  2",
+      "ldraw": "parts/41766.dat"
+    },
+    {
+      "idx": 455,
+      "id": "41767",
+      "name": "Wedge  4 x  2 Right",
+      "ldraw": "parts/41767.dat"
+    },
+    {
+      "idx": 456,
+      "id": "4180c03",
+      "name": "Brick  2 x  4 Black with Wheel Rim 10 x 17.4 with  4 Studs and Freestyle Pinhole",
+      "ldraw": "parts/4180c03.dat"
+    },
+    {
+      "idx": 457,
+      "id": "41812",
+      "name": "Projectile Launcher  4 x  2 x  1 with Bottom Axle",
+      "ldraw": "parts/41812.dat"
+    },
+    {
+      "idx": 458,
+      "id": "41817",
+      "name": "Technic Beam  3 with Pneumatic Hose and Bladder Attachments",
+      "ldraw": "parts/41817.dat"
+    },
+    {
+      "idx": 459,
+      "id": "41855",
+      "name": "Slope Brick Rounded  2 x  2 x  0.667",
+      "ldraw": "parts/41855.dat"
+    },
+    {
+      "idx": 460,
+      "id": "41862",
+      "name": "Plate  2 x  2 With Raised Grilles",
+      "ldraw": "parts/41862.dat"
+    },
+    {
+      "idx": 461,
+      "id": "4190",
+      "name": "Plate  2 x  2 with Slope Inverted Corner",
+      "ldraw": "parts/4190.dat"
+    },
+    {
+      "idx": 462,
+      "id": "4201",
+      "name": "Brick  8 x  8",
+      "ldraw": "parts/4201.dat"
+    },
+    {
+      "idx": 463,
+      "id": "42074",
+      "name": "Constraction Hook Small with Peghole and Axle",
+      "ldraw": "parts/42074.dat"
+    },
+    {
+      "idx": 464,
+      "id": "4213",
+      "name": "Hinge Car Roof  4 x  4",
+      "ldraw": "parts/4213.dat"
+    },
+    {
+      "idx": 465,
+      "id": "4214",
+      "name": "Hinge Car Roof Holder  1 x  4 x  2",
+      "ldraw": "parts/4214.dat"
+    },
+    {
+      "idx": 466,
+      "id": "422",
+      "name": "Plate  2 x  2 with Axle Brackets",
+      "ldraw": "parts/422.dat"
+    },
+    {
+      "idx": 467,
+      "id": "4228",
+      "name": "Slope Brick 33  5 x  6 x  2 Inverted",
+      "ldraw": "parts/4228.dat"
+    },
+    {
+      "idx": 468,
+      "id": "42289",
+      "name": "Motor Pull Back  2 x  6 x  1.667 with Black Base/White Axle - Fast Variant",
+      "ldraw": "parts/42289.dat"
+    },
+    {
+      "idx": 469,
+      "id": "4229",
+      "name": "Plate  2 x  2 with Jet Engine with 12 Fins",
+      "ldraw": "parts/4229.dat"
+    },
+    {
+      "idx": 470,
+      "id": "42608",
+      "name": "Plate  2 x  4 with Holes and Pins",
+      "ldraw": "parts/42608.dat"
+    },
+    {
+      "idx": 471,
+      "id": "4262",
+      "name": "Technic Plate  1 x  6 with Holes",
+      "ldraw": "parts/4262.dat"
+    },
+    {
+      "idx": 472,
+      "id": "4263",
+      "name": "Technic Plate  1 x  4 with Holes",
+      "ldraw": "parts/4263.dat"
+    },
+    {
+      "idx": 473,
+      "id": "4275a",
+      "name": "Hinge Plate  1 x  2 with 3 Fingers and Solid Studs",
+      "ldraw": "parts/4275a.dat"
+    },
+    {
+      "idx": 474,
+      "id": "4284",
+      "name": "Windscreen  2 x  4 x  2 Inverted",
+      "ldraw": "parts/4284.dat"
+    },
+    {
+      "idx": 475,
+      "id": "4286",
+      "name": "Slope Brick 33  3 x  1",
+      "ldraw": "parts/4286.dat"
+    },
+    {
+      "idx": 476,
+      "id": "42862",
+      "name": "Wedge  3 x  3 Sloped Left",
+      "ldraw": "parts/42862.dat"
+    },
+    {
+      "idx": 477,
+      "id": "4287a",
+      "name": "Slope Brick 33  3 x  1 Inverted with Notch and Thick Front",
+      "ldraw": "parts/4287a.dat"
+    },
+    {
+      "idx": 478,
+      "id": "42918",
+      "name": "Slope Brick Curved  8 x  2",
+      "ldraw": "parts/42918.dat"
+    },
+    {
+      "idx": 479,
+      "id": "4304",
+      "name": "Plate  2 x  2 x  0.667 with Two Studs On Side and Two Raised with Partial Closed Understud",
+      "ldraw": "parts/4304.dat"
+    },
+    {
+      "idx": 480,
+      "id": "43045",
+      "name": "Hinge Plate  2 x  4.5 Top with Technic Pin Hole and  2 Holes",
+      "ldraw": "parts/43045.dat"
+    },
+    {
+      "idx": 481,
+      "id": "4315",
+      "name": "Hinge Plate  1 x  4 with Car Roof Holder",
+      "ldraw": "parts/4315.dat"
+    },
+    {
+      "idx": 482,
+      "id": "43708",
+      "name": "Slope Brick 18  4 x  4 Corner",
+      "ldraw": "parts/43708.dat"
+    },
+    {
+      "idx": 483,
+      "id": "43712",
+      "name": "Wedge  6 x  4 Triple Curved",
+      "ldraw": "parts/43712.dat"
+    },
+    {
+      "idx": 484,
+      "id": "43713",
+      "name": "Wedge  6 x  4 Triple Curved Inverted",
+      "ldraw": "parts/43713.dat"
+    },
+    {
+      "idx": 485,
+      "id": "43888",
+      "name": "Brick  1 x  1 x  6 Round with Square Base",
+      "ldraw": "parts/43888.dat"
+    },
+    {
+      "idx": 486,
+      "id": "4412",
+      "name": "Technic Dome  5 x  5 x  2.5",
+      "ldraw": "parts/4412.dat"
+    },
+    {
+      "idx": 487,
+      "id": "44126",
+      "name": "Slope Brick Curved  6 x  2",
+      "ldraw": "parts/44126.dat"
+    },
+    {
+      "idx": 488,
+      "id": "44136",
+      "name": "Constraction Block  2 x  7 x  3 Curved with Forked Axle Hole",
+      "ldraw": "parts/44136.dat"
+    },
+    {
+      "idx": 489,
+      "id": "44148",
+      "name": "Technic Bionicle Rahkshi Upper Leg Section",
+      "ldraw": "parts/44148.dat"
+    },
+    {
+      "idx": 490,
+      "id": "44300",
+      "name": "Hinge Tile  1 x  3 Locking with Single Finger on Top",
+      "ldraw": "parts/44300.dat"
+    },
+    {
+      "idx": 491,
+      "id": "44359",
+      "name": "Hemisphere  3 x  3 Ball Turret",
+      "ldraw": "parts/44359.dat"
+    },
+    {
+      "idx": 492,
+      "id": "4442",
+      "name": "Technic Plate  1 x  8 with Holes",
+      "ldraw": "parts/4442.dat"
+    },
+    {
+      "idx": 493,
+      "id": "4445",
+      "name": "Slope Brick 45  2 x  8",
+      "ldraw": "parts/4445.dat"
+    },
+    {
+      "idx": 494,
+      "id": "4447",
+      "name": "Window  4 x  4 x  3 Roof",
+      "ldraw": "parts/4447.dat"
+    },
+    {
+      "idx": 495,
+      "id": "4450",
+      "name": "Technic Angle Connector 7 (168.75 degree)",
+      "ldraw": "parts/4450.dat"
+    },
+    {
+      "idx": 496,
+      "id": "44570",
+      "name": "Hinge Plate  3 x  4 Locking Dual  2 Finger,  9 Teeth",
+      "ldraw": "parts/44570.dat"
+    },
+    {
+      "idx": 497,
+      "id": "4460a",
+      "name": "Slope Brick 75  2 x  1 x  3 with Open Stud",
+      "ldraw": "parts/4460a.dat"
+    },
+    {
+      "idx": 498,
+      "id": "4460b",
+      "name": "Slope Brick 75  2 x  1 x  3 with Hollow Stud",
+      "ldraw": "parts/4460b.dat"
+    },
+    {
+      "idx": 499,
+      "id": "4463",
+      "name": "Window  1 x  4 x  5 Curved Top",
+      "ldraw": "parts/4463.dat"
+    },
+    {
+      "idx": 500,
+      "id": "4474",
+      "name": "Windscreen  6 x  4 x  2 Canopy",
+      "ldraw": "parts/4474.dat"
+    },
+    {
+      "idx": 501,
+      "id": "44810",
+      "name": "Constraction Block  3 x  5 with Partial Gear 28 Tooth Double Bevel",
+      "ldraw": "parts/44810.dat"
+    },
+    {
+      "idx": 502,
+      "id": "4490",
+      "name": "Arch  1 x  3",
+      "ldraw": "parts/4490.dat"
+    },
+    {
+      "idx": 503,
+      "id": "4500",
+      "name": "Technic Panel Smooth Inverted  7 x  3 x  2",
+      "ldraw": "parts/4500.dat"
+    },
+    {
+      "idx": 504,
+      "id": "4504",
+      "name": "Hinge Plate  1 x  6 with 2 and 3 Fingers On Ends",
+      "ldraw": "parts/4504.dat"
+    },
+    {
+      "idx": 505,
+      "id": "4509",
+      "name": "Slope Brick 33  6 x  6 Double",
+      "ldraw": "parts/4509.dat"
+    },
+    {
+      "idx": 506,
+      "id": "4515",
+      "name": "Slope Brick 10  6 x  8",
+      "ldraw": "parts/4515.dat"
+    },
+    {
+      "idx": 507,
+      "id": "45407",
+      "name": "Wedge  4 x  4 with  1 x  4 Side Plates",
+      "ldraw": "parts/45407.dat"
+    },
+    {
+      "idx": 508,
+      "id": "45410",
+      "name": "Slope Brick Curved  6 x  8 x  2 Inverted Double",
+      "ldraw": "parts/45410.dat"
+    },
+    {
+      "idx": 509,
+      "id": "45411",
+      "name": "Slope Brick Curved  6 x  8 x  2 Double",
+      "ldraw": "parts/45411.dat"
+    },
+    {
+      "idx": 510,
+      "id": "45677",
+      "name": "Wedge  4 x  4 x  0.667 Curved",
+      "ldraw": "parts/45677.dat"
+    },
+    {
+      "idx": 511,
+      "id": "4569",
+      "name": "Slope Brick 10  6 x  1",
+      "ldraw": "parts/4569.dat"
+    },
+    {
+      "idx": 512,
+      "id": "45803",
+      "name": "Technic Beam  3 x  7 x  3 Bent 90 Double Chamfered",
+      "ldraw": "parts/45803.dat"
+    },
+    {
+      "idx": 513,
+      "id": "4588",
+      "name": "Brick  1 x  1 Round with Fins",
+      "ldraw": "parts/4588.dat"
+    },
+    {
+      "idx": 514,
+      "id": "4589",
+      "name": "Cone  1 x  1",
+      "ldraw": "parts/4589.dat"
+    },
+    {
+      "idx": 515,
+      "id": "4590",
+      "name": "Plate  1 x  2 with  2 Offset Hollow Studs",
+      "ldraw": "parts/4590.dat"
+    },
+    {
+      "idx": 516,
+      "id": "4591",
+      "name": "Brick  2 x  2 x  2 Round with Fins",
+      "ldraw": "parts/4591.dat"
+    },
+    {
+      "idx": 517,
+      "id": "4595",
+      "name": "Brick  1 x  2 x  0.667 with Studs on Sides",
+      "ldraw": "parts/4595.dat"
+    },
+    {
+      "idx": 518,
+      "id": "4600",
+      "name": "Plate  2 x  2 with 2 Wheel Pins",
+      "ldraw": "parts/4600.dat"
+    },
+    {
+      "idx": 519,
+      "id": "46103",
+      "name": "Glass for Windscreen  4 x  6 x  4 Cab with Hinge",
+      "ldraw": "parts/46103.dat"
+    },
+    {
+      "idx": 520,
+      "id": "4612",
+      "name": "Brick  2 x  4 x  2 with Tail",
+      "ldraw": "parts/4612.dat"
+    },
+    {
+      "idx": 521,
+      "id": "4616a",
+      "name": "Brick  2 x  4 x  2 with Engine Cowling and Freestyle Pinhole",
+      "ldraw": "parts/4616a.dat"
+    },
+    {
+      "idx": 522,
+      "id": "4616b",
+      "name": "Brick  2 x  4 x  2 with Engine Cowling and Hole for Technic Pin",
+      "ldraw": "parts/4616b.dat"
+    },
+    {
+      "idx": 523,
+      "id": "46481",
+      "name": "Technic Brick  2 x  2 with Hole and Two Rotation Joint Sockets",
+      "ldraw": "parts/46481.dat"
+    },
+    {
+      "idx": 524,
+      "id": "46667",
+      "name": "Plane Jet Engine Fan with 10 Blades and Technic Pin",
+      "ldraw": "parts/46667.dat"
+    },
+    {
+      "idx": 525,
+      "id": "47296",
+      "name": "Constraction Connector  5 x  2 with Double Round Ball Sockets",
+      "ldraw": "parts/47296.dat"
+    },
+    {
+      "idx": 526,
+      "id": "47298",
+      "name": "Constraction Foot  3 x  7 x  2 with  3 Pegholes and Axle",
+      "ldraw": "parts/47298.dat"
+    },
+    {
+      "idx": 527,
+      "id": "47300",
+      "name": "Technic Bionicle Leg  3 x  3 with  2 Ball Joints",
+      "ldraw": "parts/47300.dat"
+    },
+    {
+      "idx": 528,
+      "id": "47306",
+      "name": "Constraction Block  1 x  7 with Partial Gear 20 Double Bevel",
+      "ldraw": "parts/47306.dat"
+    },
+    {
+      "idx": 529,
+      "id": "4735",
+      "name": "Brick  1 x  1 x  0.667 Round with Bar and Clip Vertical",
+      "ldraw": "parts/4735.dat"
+    },
+    {
+      "idx": 530,
+      "id": "4740",
+      "name": "Dish  2 x  2 Inverted",
+      "ldraw": "parts/4740.dat"
+    },
+    {
+      "idx": 531,
+      "id": "4742",
+      "name": "Cone 4 x  4 x  2 Hollow Without Studs",
+      "ldraw": "parts/4742.dat"
+    },
+    {
+      "idx": 532,
+      "id": "4743",
+      "name": "Arch  2 x  8 x  3",
+      "ldraw": "parts/4743.dat"
+    },
+    {
+      "idx": 533,
+      "id": "47431",
+      "name": "Technic Brick  2 x  2 with Axlehole, Click Rotation Hinge (V) and Fist",
+      "ldraw": "parts/47431.dat"
+    },
+    {
+      "idx": 534,
+      "id": "47432",
+      "name": "Technic Brick  2 x  3 w/ Holes, Click Rot. Hinge (V) and Socket",
+      "ldraw": "parts/47432.dat"
+    },
+    {
+      "idx": 535,
+      "id": "4744",
+      "name": "Brick  2 x  4 x  2 with Curved Top",
+      "ldraw": "parts/4744.dat"
+    },
+    {
+      "idx": 536,
+      "id": "47456",
+      "name": "Slope Brick Curved  2 x  3 x 0.667 with Fin and 2 Top Studs",
+      "ldraw": "parts/47456.dat"
+    },
+    {
+      "idx": 537,
+      "id": "47457",
+      "name": "Slope Brick Curved  2 x  2 x   2/3 Triple with Two Top Studs",
+      "ldraw": "parts/47457.dat"
+    },
+    {
+      "idx": 538,
+      "id": "47458",
+      "name": "Slope Brick Curved  1 x  2 x   2/3 with Fin without Studs",
+      "ldraw": "parts/47458.dat"
+    },
+    {
+      "idx": 539,
+      "id": "47506",
+      "name": "Windscreen  6 x  4 x  3",
+      "ldraw": "parts/47506.dat"
+    },
+    {
+      "idx": 540,
+      "id": "47507",
+      "name": "Plate  6 x  6 x  2 with Recessed Base 4 x 4 and 6 Pegholes",
+      "ldraw": "parts/47507.dat"
+    },
+    {
+      "idx": 541,
+      "id": "47720",
+      "name": "Plate  2 x  2 with Wishbone Suspension Arms and Pins",
+      "ldraw": "parts/47720.dat"
+    },
+    {
+      "idx": 542,
+      "id": "47753",
+      "name": "Wedge  4 x  4 Triple Curved without Studs",
+      "ldraw": "parts/47753.dat"
+    },
+    {
+      "idx": 543,
+      "id": "47755",
+      "name": "Wedge  4 x  3 Curved with  2 x  2 Cutout",
+      "ldraw": "parts/47755.dat"
+    },
+    {
+      "idx": 544,
+      "id": "47759",
+      "name": "Wedge  2 x  4 Triple",
+      "ldraw": "parts/47759.dat"
+    },
+    {
+      "idx": 545,
+      "id": "47972",
+      "name": "Technic Connector  3 x  1 x  3 with Two Pins and Towball",
+      "ldraw": "parts/47972.dat"
+    },
+    {
+      "idx": 546,
+      "id": "47973",
+      "name": "Technic Connector  3 x  1 x  3 with Two Pins and Click Hinge",
+      "ldraw": "parts/47973.dat"
+    },
+    {
+      "idx": 547,
+      "id": "47974",
+      "name": "Brick  4 x  8 Round Half Circle",
+      "ldraw": "parts/47974.dat"
+    },
+    {
+      "idx": 548,
+      "id": "47990",
+      "name": "Brick  4 x  3 x  1 with Skull Relief and Two Pins",
+      "ldraw": "parts/47990.dat"
+    },
+    {
+      "idx": 549,
+      "id": "47993",
+      "name": "Brick  3 x  8 x  4 Sloped Railing",
+      "ldraw": "parts/47993.dat"
+    },
+    {
+      "idx": 550,
+      "id": "48492",
+      "name": "Animal Horse Head Armour with Plates",
+      "ldraw": "parts/48492.dat"
+    },
+    {
+      "idx": 551,
+      "id": "4854",
+      "name": "Slope Brick 45  4 x  4 Double Inverted with Open Centre",
+      "ldraw": "parts/4854.dat"
+    },
+    {
+      "idx": 552,
+      "id": "4855",
+      "name": "Wedge  4 x  4 Triple Inverted without Ribs between Studs",
+      "ldraw": "parts/4855.dat"
+    },
+    {
+      "idx": 553,
+      "id": "4857",
+      "name": "Slope Brick 45  4 x  4 Double with Hinge",
+      "ldraw": "parts/4857.dat"
+    },
+    {
+      "idx": 554,
+      "id": "4858",
+      "name": "Wedge  4 x  4",
+      "ldraw": "parts/4858.dat"
+    },
+    {
+      "idx": 555,
+      "id": "4861",
+      "name": "Slope Brick 45  3 x  4 Double / 33",
+      "ldraw": "parts/4861.dat"
+    },
+    {
+      "idx": 556,
+      "id": "4866",
+      "name": "Windscreen  3 x  4 x  1.333 with 6 Studs on Top",
+      "ldraw": "parts/4866.dat"
+    },
+    {
+      "idx": 557,
+      "id": "4871",
+      "name": "Slope Brick 45  4 x  2 Double Inverted with Open Centre",
+      "ldraw": "parts/4871.dat"
+    },
+    {
+      "idx": 558,
+      "id": "4872",
+      "name": "Windscreen  3 x  4 x  4 Inverted",
+      "ldraw": "parts/4872.dat"
+    },
+    {
+      "idx": 559,
+      "id": "48723",
+      "name": "Bar  1L Quadruple with Axlehole Hub",
+      "ldraw": "parts/48723.dat"
+    },
+    {
+      "idx": 560,
+      "id": "48933",
+      "name": "Wedge  4 x  4 Triple with Stud Notches",
+      "ldraw": "parts/48933.dat"
+    },
+    {
+      "idx": 561,
+      "id": "48995",
+      "name": "Tile  2 x  3 Rounded with Hole",
+      "ldraw": "parts/48995.dat"
+    },
+    {
+      "idx": 562,
+      "id": "49097",
+      "name": "Car Mudguard  3 x  2.5 x  1",
+      "ldraw": "parts/49097.dat"
+    },
+    {
+      "idx": 563,
+      "id": "49283",
+      "name": "Technic Cable Clip",
+      "ldraw": "parts/49283.dat"
+    },
+    {
+      "idx": 564,
+      "id": "49307",
+      "name": "Brick  1 x  1 x  0.667 with Curved Top",
+      "ldraw": "parts/49307.dat"
+    },
+    {
+      "idx": 565,
+      "id": "49309",
+      "name": "Cone  2 x  2 x  2 Inverted",
+      "ldraw": "parts/49309.dat"
+    },
+    {
+      "idx": 566,
+      "id": "49311",
+      "name": "Brick  1 x  4 x  3",
+      "ldraw": "parts/49311.dat"
+    },
+    {
+      "idx": 567,
+      "id": "49612",
+      "name": "Brick  4 x  4 x  2.667 Corner Round with Dome Top",
+      "ldraw": "parts/49612.dat"
+    },
+    {
+      "idx": 568,
+      "id": "49618",
+      "name": "Slope Brick 33  8 x  1 x  3",
+      "ldraw": "parts/49618.dat"
+    },
+    {
+      "idx": 569,
+      "id": "49699",
+      "name": "Panel  1 x  6 x  4.333 with  4 x  3 Opening and 4 Pin Holes",
+      "ldraw": "parts/49699.dat"
+    },
+    {
+      "idx": 570,
+      "id": "49737",
+      "name": "Cylinder Tube Slide Curved 45 Degrees",
+      "ldraw": "parts/49737.dat"
+    },
+    {
+      "idx": 571,
+      "id": "50254",
+      "name": "Train Wheel Small with Notched Hole",
+      "ldraw": "parts/50254.dat"
+    },
+    {
+      "idx": 572,
+      "id": "50373",
+      "name": "Wedge  3 x  4 with Stud Notches",
+      "ldraw": "parts/50373.dat"
+    },
+    {
+      "idx": 573,
+      "id": "5065",
+      "name": "Panel  6 x  5 x  3.333 with Curved Top",
+      "ldraw": "parts/5065.dat"
+    },
+    {
+      "idx": 574,
+      "id": "50859a",
+      "name": "Bike  2 Wheel Motorcycle Frame  2 x  6 x  3 with Short Pins",
+      "ldraw": "parts/50859a.dat"
+    },
+    {
+      "idx": 575,
+      "id": "50898",
+      "name": "Constraction Connector  7 x  2 with Double Round Ball Sockets",
+      "ldraw": "parts/50898.dat"
+    },
+    {
+      "idx": 576,
+      "id": "50903",
+      "name": "Technic Bionicle Rhotuka Spinner Rod 2.5L with Gear  8 Tooth",
+      "ldraw": "parts/50903.dat"
+    },
+    {
+      "idx": 577,
+      "id": "50904",
+      "name": "Technic Beam  2 x  8 x  2 Double Liftarm with 2  1 x  3 Beams",
+      "ldraw": "parts/50904.dat"
+    },
+    {
+      "idx": 578,
+      "id": "5091",
+      "name": "Tile  1 x  2 Cut Left 45 Degree",
+      "ldraw": "parts/5091.dat"
+    },
+    {
+      "idx": 579,
+      "id": "50923",
+      "name": "Technic Beam  2 Liftarm with Angled Ball Joint",
+      "ldraw": "parts/50923.dat"
+    },
+    {
+      "idx": 580,
+      "id": "5093",
+      "name": "Slope Brick Curved  2 x  2 x  0.667 with Stud Notch Right",
+      "ldraw": "parts/5093.dat"
+    },
+    {
+      "idx": 581,
+      "id": "50947",
+      "name": "Car Mudguard  4.5 x  1 x  1",
+      "ldraw": "parts/50947.dat"
+    },
+    {
+      "idx": 582,
+      "id": "50948",
+      "name": "Slope Brick  3 x  4 x 0.667 Curved with  2 x  2 Cutout",
+      "ldraw": "parts/50948.dat"
+    },
+    {
+      "idx": 583,
+      "id": "50949",
+      "name": "Plate  1 x  2 with Racer Grille 4 x 1 x 2/3",
+      "ldraw": "parts/50949.dat"
+    },
+    {
+      "idx": 584,
+      "id": "50950",
+      "name": "Slope Brick Curved  3 x  1",
+      "ldraw": "parts/50950.dat"
+    },
+    {
+      "idx": 585,
+      "id": "50967",
+      "name": "Slope Brick Curved  8 x  1 x  1 & 2/3 with Arch",
+      "ldraw": "parts/50967.dat"
+    },
+    {
+      "idx": 586,
+      "id": "5117",
+      "name": "Slope Brick 45  6 x  8 Double Inverted with Open Centre and  4 Holes",
+      "ldraw": "parts/5117.dat"
+    },
+    {
+      "idx": 587,
+      "id": "5118",
+      "name": "Slope Brick 45  6 x  8 Double Inverted with  1 x  6 Extension and 4 Holes",
+      "ldraw": "parts/5118.dat"
+    },
+    {
+      "idx": 588,
+      "id": "5119",
+      "name": "Slope Brick 45  6 x  8 Double Inverted with  4 x  6 Cutout",
+      "ldraw": "parts/5119.dat"
+    },
+    {
+      "idx": 589,
+      "id": "5120",
+      "name": "Slope Brick 45  6 x  8 Double",
+      "ldraw": "parts/5120.dat"
+    },
+    {
+      "idx": 590,
+      "id": "5152",
+      "name": "Brick  3 x  3 Corner Round",
+      "ldraw": "parts/5152.dat"
+    },
+    {
+      "idx": 591,
+      "id": "52031",
+      "name": "Slope Brick 45  4 x  6 x  0.667 Double Curved",
+      "ldraw": "parts/52031.dat"
+    },
+    {
+      "idx": 592,
+      "id": "52035",
+      "name": "Bike  2 Wheel Motorcycle Body  4 x  8 x  4 with Fairing",
+      "ldraw": "parts/52035.dat"
+    },
+    {
+      "idx": 593,
+      "id": "52494",
+      "name": "Plate  1 x  1 x  0.667 with Binoculars",
+      "ldraw": "parts/52494.dat"
+    },
+    {
+      "idx": 594,
+      "id": "52501",
+      "name": "Slope Brick 45  6 x  1 Double Inverted with Open Centre",
+      "ldraw": "parts/52501.dat"
+    },
+    {
+      "idx": 595,
+      "id": "5260",
+      "name": "Window  1 x  4 x  3 Curved Top with  4 Panes and Sill",
+      "ldraw": "parts/5260.dat"
+    },
+    {
+      "idx": 596,
+      "id": "5264",
+      "name": "Plate  1 x  1 Round with Hollow Stud and Underside Clip",
+      "ldraw": "parts/5264.dat"
+    },
+    {
+      "idx": 597,
+      "id": "5331",
+      "name": "Cylinder  2 x  2 x  2 with Crystallized Dome Top",
+      "ldraw": "parts/5331.dat"
+    },
+    {
+      "idx": 598,
+      "id": "53551",
+      "name": "Technic Chain Link  1 x  3 x  0.5",
+      "ldraw": "parts/53551.dat"
+    },
+    {
+      "idx": 599,
+      "id": "53914",
+      "name": "Hinge Brick 1 x 6 Locking Double, Two Finger End with 7 Teeth",
+      "ldraw": "parts/53914.dat"
+    },
+    {
+      "idx": 600,
+      "id": "5404",
+      "name": "Slope Brick 18  2 x  1 x  0.667",
+      "ldraw": "parts/5404.dat"
+    },
+    {
+      "idx": 601,
+      "id": "5405",
+      "name": "Technic Gear  4 Knob 45\u00c2\u00b0",
+      "ldraw": "parts/5405.dat"
+    },
+    {
+      "idx": 602,
+      "id": "54091",
+      "name": "Slope Brick Curved  8 x  8 x  2 Inverted Double",
+      "ldraw": "parts/54091.dat"
+    },
+    {
+      "idx": 603,
+      "id": "54095",
+      "name": "Slope Brick Curved  8 x  8 x  2 Double",
+      "ldraw": "parts/54095.dat"
+    },
+    {
+      "idx": 604,
+      "id": "54096",
+      "name": "Slope Brick Curved  8 x  8 x  2 Double with Cutout",
+      "ldraw": "parts/54096.dat"
+    },
+    {
+      "idx": 605,
+      "id": "54097",
+      "name": "Door  2 x  4 x  6 Curved Aircraft",
+      "ldraw": "parts/54097.dat"
+    },
+    {
+      "idx": 606,
+      "id": "54200",
+      "name": "Slope Brick 31  1 x  1 x  0.667",
+      "ldraw": "parts/54200.dat"
+    },
+    {
+      "idx": 607,
+      "id": "54657",
+      "name": "Hinge Plate  1 x  2 Locking with Dual Finger on End Vertical, 7 Teeth",
+      "ldraw": "parts/54657.dat"
+    },
+    {
+      "idx": 608,
+      "id": "5518",
+      "name": "Plate  2.5 x  2 with 2 Studs on One Edge and Rounded Edges",
+      "ldraw": "parts/5518.dat"
+    },
+    {
+      "idx": 609,
+      "id": "5520",
+      "name": "Tile  2 x  2 with Rounded End",
+      "ldraw": "parts/5520.dat"
+    },
+    {
+      "idx": 610,
+      "id": "5540",
+      "name": "Slope Brick 45  2 x  4 with Cutout without Studs",
+      "ldraw": "parts/5540.dat"
+    },
+    {
+      "idx": 611,
+      "id": "5565",
+      "name": "Technic Brick  1 x  3 with Holes",
+      "ldraw": "parts/5565.dat"
+    },
+    {
+      "idx": 612,
+      "id": "5651",
+      "name": "Brick  4 x  4 x  1 Corner Round with Curved Top",
+      "ldraw": "parts/5651.dat"
+    },
+    {
+      "idx": 613,
+      "id": "5654",
+      "name": "Slope Brick 13  4 x  1",
+      "ldraw": "parts/5654.dat"
+    },
+    {
+      "idx": 614,
+      "id": "5686",
+      "name": "Rock  1 x  1 Crystal  6 Point with Axle Hole and Hollow Stud",
+      "ldraw": "parts/5686.dat"
+    },
+    {
+      "idx": 615,
+      "id": "57046d",
+      "name": "Sheet Plastic Technic Panel  8 x  8 Circular with  4 Holes",
+      "ldraw": "parts/57046d.dat"
+    },
+    {
+      "idx": 616,
+      "id": "57528",
+      "name": "Technic Bionicle Weapon Pincer  8 x  7",
+      "ldraw": "parts/57528.dat"
+    },
+    {
+      "idx": 617,
+      "id": "57536",
+      "name": "Constraction Head Connector Block Eye/Brain Stalk",
+      "ldraw": "parts/57536.dat"
+    },
+    {
+      "idx": 618,
+      "id": "57587",
+      "name": "Technic Dome  7 x  7 x  5",
+      "ldraw": "parts/57587.dat"
+    },
+    {
+      "idx": 619,
+      "id": "57908",
+      "name": "Brick  2 x  2 with Two Ball Joints",
+      "ldraw": "parts/57908.dat"
+    },
+    {
+      "idx": 620,
+      "id": "57910",
+      "name": "Brick  2 x  2 with Ball Socket Type 1 and Axlehole",
+      "ldraw": "parts/57910.dat"
+    },
+    {
+      "idx": 621,
+      "id": "58176",
+      "name": "Cylinder Domed  1 x  1 x  1.667 with Bar",
+      "ldraw": "parts/58176.dat"
+    },
+    {
+      "idx": 622,
+      "id": "5841",
+      "name": "Brick  2 x  1 x  1 with Curved Top",
+      "ldraw": "parts/5841.dat"
+    },
+    {
+      "idx": 623,
+      "id": "5842",
+      "name": "Brick  2 x  4 x  1 with Curved Top",
+      "ldraw": "parts/5842.dat"
+    },
+    {
+      "idx": 624,
+      "id": "5843",
+      "name": "Arch  1 x  3 x  1.667 with Curved Top",
+      "ldraw": "parts/5843.dat"
+    },
+    {
+      "idx": 625,
+      "id": "5845",
+      "name": "Arch 1 x 5 x 3.333 with Curved Top and Two Studs",
+      "ldraw": "parts/5845.dat"
+    },
+    {
+      "idx": 626,
+      "id": "5846",
+      "name": "Brick  2 x  2 x  1 with Curved Corner Top",
+      "ldraw": "parts/5846.dat"
+    },
+    {
+      "idx": 627,
+      "id": "5847",
+      "name": "Brick  1 x  2 x  1 with Curved Bottom",
+      "ldraw": "parts/5847.dat"
+    },
+    {
+      "idx": 628,
+      "id": "5848",
+      "name": "Brick  1 x  1 x  1 Round Quarter Dome with Curved Top",
+      "ldraw": "parts/5848.dat"
+    },
+    {
+      "idx": 629,
+      "id": "5849",
+      "name": "Brick  1 x  4 with Curved Top without Understuds",
+      "ldraw": "parts/5849.dat"
+    },
+    {
+      "idx": 630,
+      "id": "5850",
+      "name": "Arch  1 x  3 x  2",
+      "ldraw": "parts/5850.dat"
+    },
+    {
+      "idx": 631,
+      "id": "5852",
+      "name": "Brick  2 x  2 x  0.667 Quarter Circle with Curved Top",
+      "ldraw": "parts/5852.dat"
+    },
+    {
+      "idx": 632,
+      "id": "5906",
+      "name": "Brick 2 x 2 x 1.667 Corner Round with Curved Top",
+      "ldraw": "parts/5906.dat"
+    },
+    {
+      "idx": 633,
+      "id": "5907",
+      "name": "Brick  2 x  1 x 1.667 with Curved Top",
+      "ldraw": "parts/5907.dat"
+    },
+    {
+      "idx": 634,
+      "id": "5925",
+      "name": "Panel  5 x  5 x  3.333 Corner with Curved Top",
+      "ldraw": "parts/5925.dat"
+    },
+    {
+      "idx": 635,
+      "id": "6003",
+      "name": "Plate  6 x  6 with  4 x  4 Round Corner",
+      "ldraw": "parts/6003.dat"
+    },
+    {
+      "idx": 636,
+      "id": "6019",
+      "name": "Plate  1 x  1 with Clip Horizontal (Thick U-Clip)",
+      "ldraw": "parts/6019.dat"
+    },
+    {
+      "idx": 637,
+      "id": "60290",
+      "name": "Brick Braille 2 x 4 with 6 Studs (DOTS-123456)",
+      "ldraw": "parts/60290.dat"
+    },
+    {
+      "idx": 638,
+      "id": "6032",
+      "name": "Brick  2 x  3 x  1.667 Octagonal Offset",
+      "ldraw": "parts/6032.dat"
+    },
+    {
+      "idx": 639,
+      "id": "6037",
+      "name": "Brick  2 x  2 x  3.333 Octagonal",
+      "ldraw": "parts/6037.dat"
+    },
+    {
+      "idx": 640,
+      "id": "60373",
+      "name": "Cylinder Quarter  3 x  3 x  5 with 2 Half-Arches at 90 Degrees",
+      "ldraw": "parts/60373.dat"
+    },
+    {
+      "idx": 641,
+      "id": "6040",
+      "name": "Plate  2 x  2 x  0.667 with Axleholes and Octagonal Ring with Wings",
+      "ldraw": "parts/6040.dat"
+    },
+    {
+      "idx": 642,
+      "id": "6043",
+      "name": "Brick  2 x  2 x  3.333 Octagonal Corner",
+      "ldraw": "parts/6043.dat"
+    },
+    {
+      "idx": 643,
+      "id": "6044",
+      "name": "Slope Brick 53  3 x  1 x  3 & 1/3 with Studs on Slope",
+      "ldraw": "parts/6044.dat"
+    },
+    {
+      "idx": 644,
+      "id": "60474",
+      "name": "Plate  4 x  4 Round with Hole and Snapstud",
+      "ldraw": "parts/60474.dat"
+    },
+    {
+      "idx": 645,
+      "id": "60475b",
+      "name": "Brick  1 x  1 with Clip Vertical (Thick C-Clip) and Hollow Stud",
+      "ldraw": "parts/60475b.dat"
+    },
+    {
+      "idx": 646,
+      "id": "60476",
+      "name": "Brick  1 x  1 with Clip Horizontal (Thick C-Clip)",
+      "ldraw": "parts/60476.dat"
+    },
+    {
+      "idx": 647,
+      "id": "6056",
+      "name": "Brick  2 x  2  x  6 with Groove",
+      "ldraw": "parts/6056.dat"
+    },
+    {
+      "idx": 648,
+      "id": "60583b",
+      "name": "Brick  1 x  1 x  3 with Two Clips Vertical and Hollow Stud",
+      "ldraw": "parts/60583b.dat"
+    },
+    {
+      "idx": 649,
+      "id": "6059",
+      "name": "Panel  3 x  3 x  6 Corner Round",
+      "ldraw": "parts/6059.dat"
+    },
+    {
+      "idx": 650,
+      "id": "6060",
+      "name": "Arch  1 x  6 x  3.333 with Curved Top and Two Studs",
+      "ldraw": "parts/6060.dat"
+    },
+    {
+      "idx": 651,
+      "id": "6066",
+      "name": "Brick  4 x  8 x  2.333 Turret Top",
+      "ldraw": "parts/6066.dat"
+    },
+    {
+      "idx": 652,
+      "id": "6070",
+      "name": "Windscreen  5 x  2 x  1.667",
+      "ldraw": "parts/6070.dat"
+    },
+    {
+      "idx": 653,
+      "id": "6072",
+      "name": "Brick  7 x  7 x  2.333 Turret Quarter",
+      "ldraw": "parts/6072.dat"
+    },
+    {
+      "idx": 654,
+      "id": "60806",
+      "name": "Window  4 x  4 x  3 Roof with Bottom Panel",
+      "ldraw": "parts/60806.dat"
+    },
+    {
+      "idx": 655,
+      "id": "6081",
+      "name": "Brick  2 x  4 x  1.333 with Curved Top",
+      "ldraw": "parts/6081.dat"
+    },
+    {
+      "idx": 656,
+      "id": "6084",
+      "name": "Windscreen  8 x  3.6 x  4.5 Octagonal Canopy Half",
+      "ldraw": "parts/6084.dat"
+    },
+    {
+      "idx": 657,
+      "id": "6091",
+      "name": "Brick  2 x  1 x  1.333 with Curved Top",
+      "ldraw": "parts/6091.dat"
+    },
+    {
+      "idx": 658,
+      "id": "6106",
+      "name": "Plate  6 x  6 without Corner",
+      "ldraw": "parts/6106.dat"
+    },
+    {
+      "idx": 659,
+      "id": "61068",
+      "name": "Slope Brick Curved  2 x  4 without Underside Studs",
+      "ldraw": "parts/61068.dat"
+    },
+    {
+      "idx": 660,
+      "id": "61069",
+      "name": "Technic Panel Side Flaring Intake  4 x  6.5",
+      "ldraw": "parts/61069.dat"
+    },
+    {
+      "idx": 661,
+      "id": "6107",
+      "name": "Brick  5 x  5 Facet",
+      "ldraw": "parts/6107.dat"
+    },
+    {
+      "idx": 662,
+      "id": "61072",
+      "name": "Plate  1 x  2 with Exhaust Ports",
+      "ldraw": "parts/61072.dat"
+    },
+    {
+      "idx": 663,
+      "id": "61191",
+      "name": "Windscreen  4 x  8 x  3 Curved",
+      "ldraw": "parts/61191.dat"
+    },
+    {
+      "idx": 664,
+      "id": "6121",
+      "name": "Roof Piece  4 x  8 x  6 Half Pyramid",
+      "ldraw": "parts/6121.dat"
+    },
+    {
+      "idx": 665,
+      "id": "61287",
+      "name": "Cylinder Hemisphere  2 x  2 with Cutout",
+      "ldraw": "parts/61287.dat"
+    },
+    {
+      "idx": 666,
+      "id": "6141",
+      "name": "Plate  1 x  1 Round",
+      "ldraw": "parts/6141.dat"
+    },
+    {
+      "idx": 667,
+      "id": "61484",
+      "name": "Slope Brick 45  5 x  6 x  2 Double Curved",
+      "ldraw": "parts/61484.dat"
+    },
+    {
+      "idx": 668,
+      "id": "61487",
+      "name": "Slope Brick Curved  4 x  4 x  2",
+      "ldraw": "parts/61487.dat"
+    },
+    {
+      "idx": 669,
+      "id": "61510",
+      "name": "Technic Reel  2 x  1",
+      "ldraw": "parts/61510.dat"
+    },
+    {
+      "idx": 670,
+      "id": "6152a",
+      "name": "Windscreen  6 x  4 x  1.333 Airplane with Hollow Studs and Bottom Tabs",
+      "ldraw": "parts/6152a.dat"
+    },
+    {
+      "idx": 671,
+      "id": "6153a",
+      "name": "Wedge  6 x  4 without Stud Notches",
+      "ldraw": "parts/6153a.dat"
+    },
+    {
+      "idx": 672,
+      "id": "6179",
+      "name": "Plate  4 x  4 with 4 Studs on One Edge",
+      "ldraw": "parts/6179.dat"
+    },
+    {
+      "idx": 673,
+      "id": "6180",
+      "name": "Plate  4 x  6 with 12 Studs on Three Edges",
+      "ldraw": "parts/6180.dat"
+    },
+    {
+      "idx": 674,
+      "id": "6182",
+      "name": "Arch  1 x  4 x  2",
+      "ldraw": "parts/6182.dat"
+    },
+    {
+      "idx": 675,
+      "id": "6191",
+      "name": "Brick  1 x  4 x  1.333 with Curved Top",
+      "ldraw": "parts/6191.dat"
+    },
+    {
+      "idx": 676,
+      "id": "6214",
+      "name": "Brick  2 x  8 x  4 with Curved Ends",
+      "ldraw": "parts/6214.dat"
+    },
+    {
+      "idx": 677,
+      "id": "6215",
+      "name": "Brick  2 x  3 with Curved Top",
+      "ldraw": "parts/6215.dat"
+    },
+    {
+      "idx": 678,
+      "id": "6222",
+      "name": "Brick  4 x  4 Round with Holes",
+      "ldraw": "parts/6222.dat"
+    },
+    {
+      "idx": 679,
+      "id": "6233",
+      "name": "Cone  3 x  3 x  2",
+      "ldraw": "parts/6233.dat"
+    },
+    {
+      "idx": 680,
+      "id": "62361",
+      "name": "Car Mudguard  6 x  1.5 x  1 with Arch",
+      "ldraw": "parts/62361.dat"
+    },
+    {
+      "idx": 681,
+      "id": "6249",
+      "name": "Brick  2 x  4 with Pins",
+      "ldraw": "parts/6249.dat"
+    },
+    {
+      "idx": 682,
+      "id": "6255",
+      "name": "Plant  1 x  1 x  0.667 Round with 3 Large Leaves",
+      "ldraw": "parts/6255.dat"
+    },
+    {
+      "idx": 683,
+      "id": "62576",
+      "name": "Windscreen  5 x  8 x  2 with Rounded Bottom Corners",
+      "ldraw": "parts/62576.dat"
+    },
+    {
+      "idx": 684,
+      "id": "63082",
+      "name": "Plate  2 x  2 with Socket Joint-8 Square and Axlehole",
+      "ldraw": "parts/63082.dat"
+    },
+    {
+      "idx": 685,
+      "id": "6320",
+      "name": "Tile  6 x  8",
+      "ldraw": "parts/6320.dat"
+    },
+    {
+      "idx": 686,
+      "id": "64179",
+      "name": "Technic Beam  7 x  5 with Open Center  5 x  3",
+      "ldraw": "parts/64179.dat"
+    },
+    {
+      "idx": 687,
+      "id": "64225",
+      "name": "Wedge  4 x  3 Triple Curved without Studs",
+      "ldraw": "parts/64225.dat"
+    },
+    {
+      "idx": 688,
+      "id": "64275",
+      "name": "Technic Bionicle Thornax Launcher Half  1 x  8",
+      "ldraw": "parts/64275.dat"
+    },
+    {
+      "idx": 689,
+      "id": "64450",
+      "name": "Windscreen  6 x  4 x  3.333 Roll Cage",
+      "ldraw": "parts/64450.dat"
+    },
+    {
+      "idx": 690,
+      "id": "64453",
+      "name": "Windscreen  1 x  6 x  3",
+      "ldraw": "parts/64453.dat"
+    },
+    {
+      "idx": 691,
+      "id": "64566",
+      "name": "Plate  6 x  6 Hexagonal with Six Spokes and Clips (Hollow Studs)",
+      "ldraw": "parts/64566.dat"
+    },
+    {
+      "idx": 692,
+      "id": "64713",
+      "name": "Cone  4 x  4 x  6 Jagged with Inner Gear 24 Teeth",
+      "ldraw": "parts/64713.dat"
+    },
+    {
+      "idx": 693,
+      "id": "64951",
+      "name": "Barrel  4.5 x  4.5 with Axle Hole",
+      "ldraw": "parts/64951.dat"
+    },
+    {
+      "idx": 694,
+      "id": "650",
+      "name": "Hinge Plate  2 x  7 with 3L Bendable Coupling Nylon",
+      "ldraw": "parts/650.dat"
+    },
+    {
+      "idx": 695,
+      "id": "65066",
+      "name": "Glass for Door  1 x  6 x  7 with Arch",
+      "ldraw": "parts/65066.dat"
+    },
+    {
+      "idx": 696,
+      "id": "65092",
+      "name": "Tile  1 x  1 x  0.5 Octagonal Facetted",
+      "ldraw": "parts/65092.dat"
+    },
+    {
+      "idx": 697,
+      "id": "65129",
+      "name": "Container  8 x  8 x  2 with Rounded Corners and Slots for 16 Tiles",
+      "ldraw": "parts/65129.dat"
+    },
+    {
+      "idx": 698,
+      "id": "65133",
+      "name": "Hinge Plate 4 x 6 with 12 Studs on Two Edges Locking with Two Single Fingers on Side",
+      "ldraw": "parts/65133.dat"
+    },
+    {
+      "idx": 699,
+      "id": "6536",
+      "name": "Technic Cross Block 1 x 2 (Axle/Pin)",
+      "ldraw": "parts/6536.dat"
+    },
+    {
+      "idx": 700,
+      "id": "6541",
+      "name": "Technic Brick  1 x  1 with Hole",
+      "ldraw": "parts/6541.dat"
+    },
+    {
+      "idx": 701,
+      "id": "65416",
+      "name": "Technic Brake Disc  6 x  6",
+      "ldraw": "parts/65416.dat"
+    },
+    {
+      "idx": 702,
+      "id": "6543",
+      "name": "Technic Plate  4 x  6 with 4 Position Gear Shift Gate",
+      "ldraw": "parts/6543.dat"
+    },
+    {
+      "idx": 703,
+      "id": "65473",
+      "name": "Brick Round  2 x  2 Curved 45 Degrees",
+      "ldraw": "parts/65473.dat"
+    },
+    {
+      "idx": 704,
+      "id": "65474",
+      "name": "Tile  6 x  8 with Rounded Corners and Groove",
+      "ldraw": "parts/65474.dat"
+    },
+    {
+      "idx": 705,
+      "id": "65617",
+      "name": "Brick  3 x  3 x  1 Corner Round with Curved Top",
+      "ldraw": "parts/65617.dat"
+    },
+    {
+      "idx": 706,
+      "id": "65632",
+      "name": "Windscreen  6 x  6 x  1.667 Curved",
+      "ldraw": "parts/65632.dat"
+    },
+    {
+      "idx": 707,
+      "id": "6564",
+      "name": "Wedge  3 x  2 Right",
+      "ldraw": "parts/6564.dat"
+    },
+    {
+      "idx": 708,
+      "id": "65700",
+      "name": "Plate Round  2.5 x  2.5 with Melting Drops on Sides",
+      "ldraw": "parts/65700.dat"
+    },
+    {
+      "idx": 709,
+      "id": "65734",
+      "name": "Brick  1 x  4 x  2.667 Curved Top",
+      "ldraw": "parts/65734.dat"
+    },
+    {
+      "idx": 710,
+      "id": "6574",
+      "name": "Technic Gear Rack  1 x  2.4 with Towballs",
+      "ldraw": "parts/6574.dat"
+    },
+    {
+      "idx": 711,
+      "id": "65886",
+      "name": "Tile  2 x  3 with Clips Horizontal (Thick C-Clips) without Tab between Clips",
+      "ldraw": "parts/65886.dat"
+    },
+    {
+      "idx": 712,
+      "id": "6608",
+      "name": "Technic Engine Cylinder Head without Studs",
+      "ldraw": "parts/6608.dat"
+    },
+    {
+      "idx": 713,
+      "id": "6613",
+      "name": "Technic Panel  3 x  3 Triangular",
+      "ldraw": "parts/6613.dat"
+    },
+    {
+      "idx": 714,
+      "id": "6614",
+      "name": "Technic Frame  5 x  3 Engine Holder",
+      "ldraw": "parts/6614.dat"
+    },
+    {
+      "idx": 715,
+      "id": "66252",
+      "name": "Plate  4 x  4 with 2 Clips Horizontal (Open C-Clips) and Studs on Three Edges",
+      "ldraw": "parts/66252.dat"
+    },
+    {
+      "idx": 716,
+      "id": "6628",
+      "name": "Technic Pin Towball with Friction",
+      "ldraw": "parts/6628.dat"
+    },
+    {
+      "idx": 717,
+      "id": "6629",
+      "name": "Technic Beam  4 x  6 Liftarm Bent 53.13",
+      "ldraw": "parts/6629.dat"
+    },
+    {
+      "idx": 718,
+      "id": "6630",
+      "name": "Technic Gear Rack  1 x  8 with Holes",
+      "ldraw": "parts/6630.dat"
+    },
+    {
+      "idx": 719,
+      "id": "6632",
+      "name": "Technic Beam  3 x  0.5 Liftarm",
+      "ldraw": "parts/6632.dat"
+    },
+    {
+      "idx": 720,
+      "id": "6636",
+      "name": "Tile  1 x  6",
+      "ldraw": "parts/6636.dat"
+    },
+    {
+      "idx": 721,
+      "id": "66787",
+      "name": "Cylinder Warp Pipe  6 x  6 x  3.333",
+      "ldraw": "parts/66787.dat"
+    },
+    {
+      "idx": 722,
+      "id": "66789",
+      "name": "Plate  6 x  6 x  0.667 with Rounded Corners with Studs on Edges without 4 Centre Studs",
+      "ldraw": "parts/66789.dat"
+    },
+    {
+      "idx": 723,
+      "id": "66790",
+      "name": "Plate  8 x  8 x  0.667 with Rounded Corners with 5 Vacant Stud Areas",
+      "ldraw": "parts/66790.dat"
+    },
+    {
+      "idx": 724,
+      "id": "66792",
+      "name": "Plate  4 x  4 x  0.667 with Rounded Corners with Studs on Edges",
+      "ldraw": "parts/66792.dat"
+    },
+    {
+      "idx": 725,
+      "id": "6682",
+      "name": "Plate  1 x  1 with  1.5 x  4 Front Spoiler",
+      "ldraw": "parts/6682.dat"
+    },
+    {
+      "idx": 726,
+      "id": "66855",
+      "name": "Plate  2 x  2 with Truncated Cube Extension",
+      "ldraw": "parts/66855.dat"
+    },
+    {
+      "idx": 727,
+      "id": "6686",
+      "name": "Plate  6 x 6 with 4 Bars",
+      "ldraw": "parts/6686.dat"
+    },
+    {
+      "idx": 728,
+      "id": "66955",
+      "name": "Slope Brick Curved  4 x  3.5 x  1 with 3 Steps",
+      "ldraw": "parts/66955.dat"
+    },
+    {
+      "idx": 729,
+      "id": "66961",
+      "name": "Brick  2 x  2 x  0.667 with Handle on  4 Sides and  2 Studs on Top",
+      "ldraw": "parts/66961.dat"
+    },
+    {
+      "idx": 730,
+      "id": "67095",
+      "name": "Tile  3 x  3 Round",
+      "ldraw": "parts/67095.dat"
+    },
+    {
+      "idx": 731,
+      "id": "67139",
+      "name": "Technic Connector Block  3 x  5 x  1 with Cutout",
+      "ldraw": "parts/67139.dat"
+    },
+    {
+      "idx": 732,
+      "id": "67361",
+      "name": "Brick  2 x  2 Round with Tail/Neck Curved Extension with Tip Pin Hole",
+      "ldraw": "parts/67361.dat"
+    },
+    {
+      "idx": 733,
+      "id": "67440",
+      "name": "Slope Brick 60  4 x  1 x  3 Inverted",
+      "ldraw": "parts/67440.dat"
+    },
+    {
+      "idx": 734,
+      "id": "67446",
+      "name": "Plate 2 x 4 with Side Bricks 1 x 2 x 1.333 with Axle Hole",
+      "ldraw": "parts/67446.dat"
+    },
+    {
+      "idx": 735,
+      "id": "67810",
+      "name": "Brick  2 x  2 x  1.333 with Curved Corner Top",
+      "ldraw": "parts/67810.dat"
+    },
+    {
+      "idx": 736,
+      "id": "67811",
+      "name": "Car Steering Wheel  5 x  5 with Two Spokes and  2 x  2 Stud Centre with Axlehole",
+      "ldraw": "parts/67811.dat"
+    },
+    {
+      "idx": 737,
+      "id": "67950",
+      "name": "Cylinder Half  3 x  6 x  6 Dome Top with  2 Hollow Studs",
+      "ldraw": "parts/67950.dat"
+    },
+    {
+      "idx": 738,
+      "id": "6797",
+      "name": "Technic Engine Air Scoop  4 x  4 x  1.333",
+      "ldraw": "parts/6797.dat"
+    },
+    {
+      "idx": 739,
+      "id": "68013",
+      "name": "Cylinder Half  1 x  2 with Cutout",
+      "ldraw": "parts/68013.dat"
+    },
+    {
+      "idx": 740,
+      "id": "6806",
+      "name": "Arch  2 x  6 x  0.833 Inverted",
+      "ldraw": "parts/6806.dat"
+    },
+    {
+      "idx": 741,
+      "id": "68297",
+      "name": "Plate  4 x  8 without Corners",
+      "ldraw": "parts/68297.dat"
+    },
+    {
+      "idx": 742,
+      "id": "68382",
+      "name": "Plate  1 x  4 with  2 Pins",
+      "ldraw": "parts/68382.dat"
+    },
+    {
+      "idx": 743,
+      "id": "68568",
+      "name": "Plate  3 x  3 with  2 x  2 Corner Round and  2 x  2 with  1 x  1 Corner Round Cutout",
+      "ldraw": "parts/68568.dat"
+    },
+    {
+      "idx": 744,
+      "id": "68869",
+      "name": "Tile  4 x  4 x  0.667 with Rounded Corners",
+      "ldraw": "parts/68869.dat"
+    },
+    {
+      "idx": 745,
+      "id": "69182",
+      "name": "Die  6 Sides  3 x  3 x  3 with Loop on One Edge",
+      "ldraw": "parts/69182.dat"
+    },
+    {
+      "idx": 746,
+      "id": "6920",
+      "name": "Car Base  2 x  6 with Protruding Axle Holes",
+      "ldraw": "parts/6920.dat"
+    },
+    {
+      "idx": 747,
+      "id": "6942",
+      "name": "Dish  5 x  5",
+      "ldraw": "parts/6942.dat"
+    },
+    {
+      "idx": 748,
+      "id": "6957",
+      "name": "Brick  3 x  6 x  1 Semi Circle with Curved Top",
+      "ldraw": "parts/6957.dat"
+    },
+    {
+      "idx": 749,
+      "id": "69729",
+      "name": "Tile  2 x  6",
+      "ldraw": "parts/69729.dat"
+    },
+    {
+      "idx": 750,
+      "id": "69963",
+      "name": "Car Wheel Holder Plate  2 x  4 for Tilt Steering",
+      "ldraw": "parts/69963.dat"
+    },
+    {
+      "idx": 751,
+      "id": "69984",
+      "name": "Plate  6 x  6 Hexagonal with Six Spokes and Clips (Solid Studs)",
+      "ldraw": "parts/69984.dat"
+    },
+    {
+      "idx": 752,
+      "id": "702",
+      "name": "Brick  4 x  4 Corner",
+      "ldraw": "parts/702.dat"
+    },
+    {
+      "idx": 753,
+      "id": "7037",
+      "name": "Slope Brick Curved  2 x  2 x  0.667 Half Round with 2 Studs",
+      "ldraw": "parts/7037.dat"
+    },
+    {
+      "idx": 754,
+      "id": "7062",
+      "name": "Slope Brick 45  6 x  8 Double with Cutout on One Side",
+      "ldraw": "parts/7062.dat"
+    },
+    {
+      "idx": 755,
+      "id": "7068",
+      "name": "Plate  2 x  2 with Rod Frame Round",
+      "ldraw": "parts/7068.dat"
+    },
+    {
+      "idx": 756,
+      "id": "70681",
+      "name": "Slope Brick Curved  1 x  3 with  1 x  2 Inverted Cutout",
+      "ldraw": "parts/70681.dat"
+    },
+    {
+      "idx": 757,
+      "id": "709",
+      "name": "Plate  4 x  6 with Hole",
+      "ldraw": "parts/709.dat"
+    },
+    {
+      "idx": 758,
+      "id": "711",
+      "name": "Plate  5 x  6 with Hole",
+      "ldraw": "parts/711.dat"
+    },
+    {
+      "idx": 759,
+      "id": "7126",
+      "name": "Brick  1 x  1 with Curved Top",
+      "ldraw": "parts/7126.dat"
+    },
+    {
+      "idx": 760,
+      "id": "712a",
+      "name": "Plate  4 x  8 Curved Left without Stud Cutouts",
+      "ldraw": "parts/712a.dat"
+    },
+    {
+      "idx": 761,
+      "id": "7133",
+      "name": "Brick  1 x  2 with Centred Stud on Long Side without Bottom Stud Holder",
+      "ldraw": "parts/7133.dat"
+    },
+    {
+      "idx": 762,
+      "id": "71708",
+      "name": "Technic Beam  2 x  3 Liftarm Bent 90 Quarter Ellipse",
+      "ldraw": "parts/71708.dat"
+    },
+    {
+      "idx": 763,
+      "id": "71709",
+      "name": "Technic Panel  3 x  7",
+      "ldraw": "parts/71709.dat"
+    },
+    {
+      "idx": 764,
+      "id": "71752",
+      "name": "Brick  2 x  2 x  0.667 Ribbed Horizontally",
+      "ldraw": "parts/71752.dat"
+    },
+    {
+      "idx": 765,
+      "id": "72008",
+      "name": "Technic Connector Block  2 x  2 with  1 x  1 Cutout",
+      "ldraw": "parts/72008.dat"
+    },
+    {
+      "idx": 766,
+      "id": "7212",
+      "name": "Tile  6 x  6 Round",
+      "ldraw": "parts/7212.dat"
+    },
+    {
+      "idx": 767,
+      "id": "72132",
+      "name": "Plate  2 x  6 x  0.667 with Four Studs On Side and Four Raised Reinforced",
+      "ldraw": "parts/72132.dat"
+    },
+    {
+      "idx": 768,
+      "id": "72475",
+      "name": "Windscreen  3 x  4 x  4 Inverted with Rounded Top Corners, Cutout Bottom Corners",
+      "ldraw": "parts/72475.dat"
+    },
+    {
+      "idx": 769,
+      "id": "7276",
+      "name": "Panel  1 x  2 x  2 Hollow Stud with Round Window Opening",
+      "ldraw": "parts/7276.dat"
+    },
+    {
+      "idx": 770,
+      "id": "73090a",
+      "name": "Brick  2 x  6 x  2 Weight with Split Bottom",
+      "ldraw": "parts/73090a.dat"
+    },
+    {
+      "idx": 771,
+      "id": "73110",
+      "name": "Plate  6 x  6 with Five Pin Holes",
+      "ldraw": "parts/73110.dat"
+    },
+    {
+      "idx": 772,
+      "id": "73111",
+      "name": "Brick  3 x  3 x  2 Round with Recessed Centre",
+      "ldraw": "parts/73111.dat"
+    },
+    {
+      "idx": 773,
+      "id": "73230",
+      "name": "Technic Brick  1 x  1 with Axlehole",
+      "ldraw": "parts/73230.dat"
+    },
+    {
+      "idx": 774,
+      "id": "7324",
+      "name": "Brick Round  1 x  1 Curved 45 Degrees - 80 LDU Radius",
+      "ldraw": "parts/7324.dat"
+    },
+    {
+      "idx": 775,
+      "id": "7344",
+      "name": "Panel  8 x  8 x  6 Corner Round",
+      "ldraw": "parts/7344.dat"
+    },
+    {
+      "idx": 776,
+      "id": "73682",
+      "name": "Slope Brick Curved 3 x 3 Corner with Inverted Cutout",
+      "ldraw": "parts/73682.dat"
+    },
+    {
+      "idx": 777,
+      "id": "73764",
+      "name": "Brick  2 x  2 x  1.667 with Hole for Worm Screw  6L",
+      "ldraw": "parts/73764.dat"
+    },
+    {
+      "idx": 778,
+      "id": "73831",
+      "name": "Plate  2 x  3 with  1 x  1 Cutout",
+      "ldraw": "parts/73831.dat"
+    },
+    {
+      "idx": 779,
+      "id": "73832",
+      "name": "Plate  8 x  4 x  0.667 with Rounded Corners with 2 Vacant Stud Areas with Cutout",
+      "ldraw": "parts/73832.dat"
+    },
+    {
+      "idx": 780,
+      "id": "73878",
+      "name": "Window Round Corner  3 x  3 x  2",
+      "ldraw": "parts/73878.dat"
+    },
+    {
+      "idx": 781,
+      "id": "74169",
+      "name": "Tile  2 x  2 x  0.667 with Two Offset Round Extensions",
+      "ldraw": "parts/74169.dat"
+    },
+    {
+      "idx": 782,
+      "id": "74611",
+      "name": "Plate  8 x  8 Round with Hole and Snapstud",
+      "ldraw": "parts/74611.dat"
+    },
+    {
+      "idx": 783,
+      "id": "74967",
+      "name": "Wheel Rim  8 x  8 Notched Hole, Reinforced Back",
+      "ldraw": "parts/74967.dat"
+    },
+    {
+      "idx": 784,
+      "id": "7508",
+      "name": "Plate  1 x  2 Round with Horizontal Handle on Side",
+      "ldraw": "parts/7508.dat"
+    },
+    {
+      "idx": 785,
+      "id": "7527",
+      "name": "Brick Curved  2 x  2 x  1.667",
+      "ldraw": "parts/7527.dat"
+    },
+    {
+      "idx": 786,
+      "id": "7531",
+      "name": "Plate  2 x  4 with  1 x  2 Cutout and Rounded Corners",
+      "ldraw": "parts/7531.dat"
+    },
+    {
+      "idx": 787,
+      "id": "7534",
+      "name": "Brick  1 x  2 Round Curved with Side Stud and Bar",
+      "ldraw": "parts/7534.dat"
+    },
+    {
+      "idx": 788,
+      "id": "75538",
+      "name": "Slope Concave  8 x  8 x  4 with  1 x  6 Plate",
+      "ldraw": "parts/75538.dat"
+    },
+    {
+      "idx": 789,
+      "id": "75539",
+      "name": "Slope  5 x  8 x  0.667 with  2 x  6 Plate",
+      "ldraw": "parts/75539.dat"
+    },
+    {
+      "idx": 790,
+      "id": "7652",
+      "name": "Slope Brick Curved  4 x  6 x  1.667",
+      "ldraw": "parts/7652.dat"
+    },
+    {
+      "idx": 791,
+      "id": "7660",
+      "name": "Technic Cross Block  2 x  5 (Axle/Pin) with Perpendicular Hole for Worm Gear 6L",
+      "ldraw": "parts/7660.dat"
+    },
+    {
+      "idx": 792,
+      "id": "7664",
+      "name": "Windscreen  6 x  8 x  2 Curved",
+      "ldraw": "parts/7664.dat"
+    },
+    {
+      "idx": 793,
+      "id": "76776",
+      "name": "Brick  5 x  5 x  3.333 Corner Round with Dome Top and  2 x  2 Cutout",
+      "ldraw": "parts/76776.dat"
+    },
+    {
+      "idx": 794,
+      "id": "76795",
+      "name": "Brick  5 x  5 Corner Round with Slope 45 Chamfer",
+      "ldraw": "parts/76795.dat"
+    },
+    {
+      "idx": 795,
+      "id": "76796",
+      "name": "Windscreen  4 x  6 x  1.333 Curved Open",
+      "ldraw": "parts/76796.dat"
+    },
+    {
+      "idx": 796,
+      "id": "76797",
+      "name": "Brick 3 x 3 x 1 Quarter Circle with Curved Top",
+      "ldraw": "parts/76797.dat"
+    },
+    {
+      "idx": 797,
+      "id": "76798",
+      "name": "Panel  5 x  8 x  3.667 Curved with Two Axleholes",
+      "ldraw": "parts/76798.dat"
+    },
+    {
+      "idx": 798,
+      "id": "768",
+      "name": "Technic Gear Block  2 x  4 x  3",
+      "ldraw": "parts/768.dat"
+    },
+    {
+      "idx": 799,
+      "id": "7688",
+      "name": "Dish  4 x  3 Elliptic",
+      "ldraw": "parts/7688.dat"
+    },
+    {
+      "idx": 800,
+      "id": "772",
+      "name": "Brick  1 x  2 x  2 without Centre Studs",
+      "ldraw": "parts/772.dat"
+    },
+    {
+      "idx": 801,
+      "id": "7729",
+      "name": "Brick  1 x  1 x  1.667 with Studs on 3 Sides",
+      "ldraw": "parts/7729.dat"
+    },
+    {
+      "idx": 802,
+      "id": "77598",
+      "name": "Plate  2 x  2 x  0.667 with Wheel Fork",
+      "ldraw": "parts/77598.dat"
+    },
+    {
+      "idx": 803,
+      "id": "7769",
+      "name": "Plate  1 x  4 x  0.667 with  1 x  2 Bottom Cutout",
+      "ldraw": "parts/7769.dat"
+    },
+    {
+      "idx": 804,
+      "id": "77808",
+      "name": "Brick  1 x  2 with Rounded Ends and Central Bars",
+      "ldraw": "parts/77808.dat"
+    },
+    {
+      "idx": 805,
+      "id": "77813",
+      "name": "Tile  1 x  1 Round with Groove and Handle",
+      "ldraw": "parts/77813.dat"
+    },
+    {
+      "idx": 806,
+      "id": "77842",
+      "name": "Plate  3 x  6 with  2 x  4 Cutout",
+      "ldraw": "parts/77842.dat"
+    },
+    {
+      "idx": 807,
+      "id": "77845",
+      "name": "Plate  1 x  4 Round Ends with  2 Open Studs on Ends",
+      "ldraw": "parts/77845.dat"
+    },
+    {
+      "idx": 808,
+      "id": "77850",
+      "name": "Plate  1 x  3 with Round Ends and  3 Open Studs",
+      "ldraw": "parts/77850.dat"
+    },
+    {
+      "idx": 809,
+      "id": "7797",
+      "name": "Plate  2 x  6 with Rounded Corners with Raised Plate  3 x  2",
+      "ldraw": "parts/7797.dat"
+    },
+    {
+      "idx": 810,
+      "id": "7818",
+      "name": "Brick  1 x  1 x  0.667 with Curved Top Corner",
+      "ldraw": "parts/7818.dat"
+    },
+    {
+      "idx": 811,
+      "id": "7821",
+      "name": "Slope Brick Curved  2 x  2 with Two Cutouts",
+      "ldraw": "parts/7821.dat"
+    },
+    {
+      "idx": 812,
+      "id": "7825",
+      "name": "Slope Brick 31  1 x  3 x  0.667",
+      "ldraw": "parts/7825.dat"
+    },
+    {
+      "idx": 813,
+      "id": "78257",
+      "name": "Plate  1 x  1 with Handles on Opposite Ends",
+      "ldraw": "parts/78257.dat"
+    },
+    {
+      "idx": 814,
+      "id": "78329",
+      "name": "Plate  1 x  5",
+      "ldraw": "parts/78329.dat"
+    },
+    {
+      "idx": 815,
+      "id": "7835",
+      "name": "Slope Brick 31  1 x  4 x  0.667",
+      "ldraw": "parts/7835.dat"
+    },
+    {
+      "idx": 816,
+      "id": "7836",
+      "name": "Tile  2 x  2 Corner Round with Understud",
+      "ldraw": "parts/7836.dat"
+    },
+    {
+      "idx": 817,
+      "id": "78442",
+      "name": "Technic Gear Ring Quarter  6 x  6 with 15 Teeth",
+      "ldraw": "parts/78442.dat"
+    },
+    {
+      "idx": 818,
+      "id": "78522",
+      "name": "Slope Brick Curved  6 x  4 Double",
+      "ldraw": "parts/78522.dat"
+    },
+    {
+      "idx": 819,
+      "id": "7863",
+      "name": "Plate  1 x  6 with  2 x  3  Top Extension",
+      "ldraw": "parts/7863.dat"
+    },
+    {
+      "idx": 820,
+      "id": "78666",
+      "name": "Arch  1 x  2 x  1 Inverted",
+      "ldraw": "parts/78666.dat"
+    },
+    {
+      "idx": 821,
+      "id": "78886",
+      "name": "Slope Brick 65  2 x  2 x  2 Double Convex with 45 Corner",
+      "ldraw": "parts/78886.dat"
+    },
+    {
+      "idx": 822,
+      "id": "7896",
+      "name": "Car Mudguard  2 x  4 with Rounded Wheel Arches",
+      "ldraw": "parts/7896.dat"
+    },
+    {
+      "idx": 823,
+      "id": "79194",
+      "name": "Plate  1 x  1 Round with Bar Handle on Long Stem",
+      "ldraw": "parts/79194.dat"
+    },
+    {
+      "idx": 824,
+      "id": "79387",
+      "name": "Plate  4 x  4 x  0.667 with Rounded Corners and  2 x  2 Centre Cutout",
+      "ldraw": "parts/79387.dat"
+    },
+    {
+      "idx": 825,
+      "id": "79393",
+      "name": "Tile  3 x  3 Corner Round",
+      "ldraw": "parts/79393.dat"
+    },
+    {
+      "idx": 826,
+      "id": "79491",
+      "name": "Plate  2 x  2 with Corner Round",
+      "ldraw": "parts/79491.dat"
+    },
+    {
+      "idx": 827,
+      "id": "79756",
+      "name": "Brick  1 x  4 x  0.667 with Curved Top",
+      "ldraw": "parts/79756.dat"
+    },
+    {
+      "idx": 828,
+      "id": "79757",
+      "name": "Brick  2 x  2 x  0.667 Corner with Curved Top",
+      "ldraw": "parts/79757.dat"
+    },
+    {
+      "idx": 829,
+      "id": "79850",
+      "name": "Brick  4 x  4 x  1  Round with Rounded Top and Round  2 x  2 x  0.667 Cutout",
+      "ldraw": "parts/79850.dat"
+    },
+    {
+      "idx": 830,
+      "id": "79897",
+      "name": "Slope Brick Curved  2 x  4 x  0.667 with Fin and 4 Studs and 2 Hollow Studs on Sides",
+      "ldraw": "parts/79897.dat"
+    },
+    {
+      "idx": 831,
+      "id": "79987",
+      "name": "Plate  1 x  3 with  2 Clips on Top (Thick C-Clip)",
+      "ldraw": "parts/79987.dat"
+    },
+    {
+      "idx": 832,
+      "id": "8",
+      "name": "Plate  2 x  2 with 2 Wheel Clips Perpendicular",
+      "ldraw": "parts/8.dat"
+    },
+    {
+      "idx": 833,
+      "id": "80015",
+      "name": "Plate  5 x  5 with  4 x  4 Corner Round and  4 x  4 with  3 x  3 Corner Round Cutout",
+      "ldraw": "parts/80015.dat"
+    },
+    {
+      "idx": 834,
+      "id": "80177",
+      "name": "Slope Brick Curved  3 x  2 with Cutout Left",
+      "ldraw": "parts/80177.dat"
+    },
+    {
+      "idx": 835,
+      "id": "80222",
+      "name": "Windscreen  7 x  6 x  1.333",
+      "ldraw": "parts/80222.dat"
+    },
+    {
+      "idx": 836,
+      "id": "80271",
+      "name": "Technic Panel Bent  4 x  5 x  5 Tapered Left #70",
+      "ldraw": "parts/80271.dat"
+    },
+    {
+      "idx": 837,
+      "id": "80285",
+      "name": "Technic Panel  3 x 2 x 5",
+      "ldraw": "parts/80285.dat"
+    },
+    {
+      "idx": 838,
+      "id": "80286",
+      "name": "Technic Beam  2 x  5 Liftarm Bent 90 Quarter Ellipse",
+      "ldraw": "parts/80286.dat"
+    },
+    {
+      "idx": 839,
+      "id": "80295",
+      "name": "Technic Reel  4 x  3",
+      "ldraw": "parts/80295.dat"
+    },
+    {
+      "idx": 840,
+      "id": "80431",
+      "name": "Technic Brick  1 x  2 x  1.333 with Hole and Rotation Joint Socket",
+      "ldraw": "parts/80431.dat"
+    },
+    {
+      "idx": 841,
+      "id": "80477",
+      "name": "Technic Pin with Friction and Towball on  1L Bar",
+      "ldraw": "parts/80477.dat"
+    },
+    {
+      "idx": 842,
+      "id": "80543",
+      "name": "Arch  1 x  4 x  3",
+      "ldraw": "parts/80543.dat"
+    },
+    {
+      "idx": 843,
+      "id": "80545",
+      "name": "Slope Brick 45  2 x  4 x  1.333 Double, Wedge",
+      "ldraw": "parts/80545.dat"
+    },
+    {
+      "idx": 844,
+      "id": "8165",
+      "name": "Tile  4 x  8",
+      "ldraw": "parts/8165.dat"
+    },
+    {
+      "idx": 845,
+      "id": "822ac01",
+      "name": "Garage Door with Rear Cross with Counterweights with Hinge Pin",
+      "ldraw": "parts/822ac01.dat"
+    },
+    {
+      "idx": 846,
+      "id": "8235",
+      "name": "Slope Brick Curved  3 x  4 x  0.667",
+      "ldraw": "parts/8235.dat"
+    },
+    {
+      "idx": 847,
+      "id": "83496",
+      "name": "Tile  4 x  8 Inverted",
+      "ldraw": "parts/83496.dat"
+    },
+    {
+      "idx": 848,
+      "id": "83497",
+      "name": "Hook Round  2 x  2 with Axle Hole and Bottom Stud Holder",
+      "ldraw": "parts/83497.dat"
+    },
+    {
+      "idx": 849,
+      "id": "8442",
+      "name": "Plate  2 x  2 with Cutouts",
+      "ldraw": "parts/8442.dat"
+    },
+    {
+      "idx": 850,
+      "id": "84954",
+      "name": "Windscreen  3 x  4 x  3",
+      "ldraw": "parts/84954.dat"
+    },
+    {
+      "idx": 851,
+      "id": "85834",
+      "name": "Brick  4 x  5 x  1.667 with Domed Top and Tapered Sides",
+      "ldraw": "parts/85834.dat"
+    },
+    {
+      "idx": 852,
+      "id": "85941",
+      "name": "Cylinder Half  2 x  4 x  5 with  1 x  2 cutout",
+      "ldraw": "parts/85941.dat"
+    },
+    {
+      "idx": 853,
+      "id": "85943",
+      "name": "Technic Brick  1 x  2 with Two Liftarms",
+      "ldraw": "parts/85943.dat"
+    },
+    {
+      "idx": 854,
+      "id": "85984",
+      "name": "Slope Brick 31  1 x  2 x  0.667",
+      "ldraw": "parts/85984.dat"
+    },
+    {
+      "idx": 855,
+      "id": "87081",
+      "name": "Brick  4 x  4 Round with Pinhole and Snapstud",
+      "ldraw": "parts/87081.dat"
+    },
+    {
+      "idx": 856,
+      "id": "87559",
+      "name": "Brick  6 x  6 x  2 Corner Round with Curved Top",
+      "ldraw": "parts/87559.dat"
+    },
+    {
+      "idx": 857,
+      "id": "87617",
+      "name": "Cylinder  1 x  1 x 4.333 with Handle",
+      "ldraw": "parts/87617.dat"
+    },
+    {
+      "idx": 858,
+      "id": "87619",
+      "name": "Wedge  4 x  6 x 1.667 Inverted with Studs on Front Side",
+      "ldraw": "parts/87619.dat"
+    },
+    {
+      "idx": 859,
+      "id": "87752",
+      "name": "Windscreen  6 x  4 x  2 Bubble Canopy with Handle (Needs Work)",
+      "ldraw": "parts/87752.dat"
+    },
+    {
+      "idx": 860,
+      "id": "87761",
+      "name": "Technic Gear Rack  1 x  7 with Pegholes and Axleholes",
+      "ldraw": "parts/87761.dat"
+    },
+    {
+      "idx": 861,
+      "id": "87926",
+      "name": "Cylinder Half  3 x  6 x  6 with  1 x  2 Cutout",
+      "ldraw": "parts/87926.dat"
+    },
+    {
+      "idx": 862,
+      "id": "88067",
+      "name": "Windscreen  8 x  4.667 x  3.667 Quarter Sphere (Outer) with Pin Holes",
+      "ldraw": "parts/88067.dat"
+    },
+    {
+      "idx": 863,
+      "id": "88068",
+      "name": "Windscreen  8 x  4.667 x  3.667 Quarter Sphere (Inner) with Pins",
+      "ldraw": "parts/88068.dat"
+    },
+    {
+      "idx": 864,
+      "id": "88293",
+      "name": "Brick  3 x  3 x  2 Round Corner with Dome Top",
+      "ldraw": "parts/88293.dat"
+    },
+    {
+      "idx": 865,
+      "id": "88646",
+      "name": "Plate  3 x  4 with 4 Studs in Centre",
+      "ldraw": "parts/88646.dat"
+    },
+    {
+      "idx": 866,
+      "id": "88964",
+      "name": "Bar 0.5L with Curved Leaf 2L",
+      "ldraw": "parts/88964.dat"
+    },
+    {
+      "idx": 867,
+      "id": "89679",
+      "name": "Technic Panel Curved  1 x  2 x  1",
+      "ldraw": "parts/89679.dat"
+    },
+    {
+      "idx": 868,
+      "id": "89681",
+      "name": "Plate  6 x  4 x  0.667 with Rounded Corners",
+      "ldraw": "parts/89681.dat"
+    },
+    {
+      "idx": 869,
+      "id": "89762",
+      "name": "Windscreen  4 x  7 x  2 Round with Plate",
+      "ldraw": "parts/89762.dat"
+    },
+    {
+      "idx": 870,
+      "id": "90195",
+      "name": "Panel  1 x  2 x  2 Hollow Stud with Arched Window Opening",
+      "ldraw": "parts/90195.dat"
+    },
+    {
+      "idx": 871,
+      "id": "90201",
+      "name": "Plate  2 x  6 with Sloped Bars",
+      "ldraw": "parts/90201.dat"
+    },
+    {
+      "idx": 872,
+      "id": "90622",
+      "name": "Constraction Connector  2 x  5 with Double Ball Sockets and Middle Ball Joint",
+      "ldraw": "parts/90622.dat"
+    },
+    {
+      "idx": 873,
+      "id": "90630",
+      "name": "Technic Cross Block  1 x  3 (Pin/Dimple/Pin) with 2 Pins and 2 Ball Joints",
+      "ldraw": "parts/90630.dat"
+    },
+    {
+      "idx": 874,
+      "id": "90634",
+      "name": "Technic Connector  3 x  1 with Two Pins and Three Ball Joints on Axle  5L",
+      "ldraw": "parts/90634.dat"
+    },
+    {
+      "idx": 875,
+      "id": "90840",
+      "name": "Train Wheel 50 mm with Axlehole and Pinhole",
+      "ldraw": "parts/90840.dat"
+    },
+    {
+      "idx": 876,
+      "id": "91347",
+      "name": "Crane Jaw Curved  2 x  7 x  2.5",
+      "ldraw": "parts/91347.dat"
+    },
+    {
+      "idx": 877,
+      "id": "92279",
+      "name": "Windscreen  4 x  6 x  2 Round with Handle",
+      "ldraw": "parts/92279.dat"
+    },
+    {
+      "idx": 878,
+      "id": "92474",
+      "name": "Windscreen  6 x  2 x  2 with Handle",
+      "ldraw": "parts/92474.dat"
+    },
+    {
+      "idx": 879,
+      "id": "92580",
+      "name": "Windscreen  5 x  6 x  2 Curved Top Canopy with 4 Studs and Handle",
+      "ldraw": "parts/92580.dat"
+    },
+    {
+      "idx": 880,
+      "id": "92583",
+      "name": "Windscreen  3 x  6 x  2",
+      "ldraw": "parts/92583.dat"
+    },
+    {
+      "idx": 881,
+      "id": "92832",
+      "name": "Windscreen  6 x  7 x  2.667",
+      "ldraw": "parts/92832.dat"
+    },
+    {
+      "idx": 882,
+      "id": "92907",
+      "name": "Technic Cross Block  2 x  2 x  2 Bent 90 Split (Pin/Twin Axle)",
+      "ldraw": "parts/92907.dat"
+    },
+    {
+      "idx": 883,
+      "id": "92910",
+      "name": "Technic Ball Joint  2.25 Diameter with C-Shape Frame",
+      "ldraw": "parts/92910.dat"
+    },
+    {
+      "idx": 884,
+      "id": "92947",
+      "name": "Brick  2 x  2 Round with Grille",
+      "ldraw": "parts/92947.dat"
+    },
+    {
+      "idx": 885,
+      "id": "93168",
+      "name": "Cylinder  3 x  6 x  2.667 Horizontal with Solid Studs",
+      "ldraw": "parts/93168.dat"
+    },
+    {
+      "idx": 886,
+      "id": "93587",
+      "name": "Car Mudguard  3 x  4 x  1.667 Curved",
+      "ldraw": "parts/93587.dat"
+    },
+    {
+      "idx": 887,
+      "id": "93589",
+      "name": "Slope Brick Curved Tapered  4 x  2 on Plate  1 x  4",
+      "ldraw": "parts/93589.dat"
+    },
+    {
+      "idx": 888,
+      "id": "93590",
+      "name": "Car Mudguard  2 x  4 with Headlights and Curved Fenders",
+      "ldraw": "parts/93590.dat"
+    },
+    {
+      "idx": 889,
+      "id": "93591",
+      "name": "Wedge  6 x  4 x  1.333 with  4 x  4 Base",
+      "ldraw": "parts/93591.dat"
+    },
+    {
+      "idx": 890,
+      "id": "93606",
+      "name": "Slope Brick Curved  4 x  2",
+      "ldraw": "parts/93606.dat"
+    },
+    {
+      "idx": 891,
+      "id": "93794",
+      "name": "Tile  1 x  1 with Clip with Centre Notch",
+      "ldraw": "parts/93794.dat"
+    },
+    {
+      "idx": 892,
+      "id": "95188",
+      "name": "Brick  6 x  6 Corner Round with Slope 33 Chamfer (Needs Work)",
+      "ldraw": "parts/95188.dat"
+    },
+    {
+      "idx": 893,
+      "id": "95229",
+      "name": "Bar  1 x  8 x  4 Gate with Curved Top",
+      "ldraw": "parts/95229.dat"
+    },
+    {
+      "idx": 894,
+      "id": "967",
+      "name": "Plate  4 x  8 with Trailer Kingpin",
+      "ldraw": "parts/967.dat"
+    },
+    {
+      "idx": 895,
+      "id": "98138",
+      "name": "Tile  1 x  1 Round with Groove",
+      "ldraw": "parts/98138.dat"
+    },
+    {
+      "idx": 896,
+      "id": "98263",
+      "name": "Plate  1 x  4 with Socket Joint-8 Square",
+      "ldraw": "parts/98263.dat"
+    },
+    {
+      "idx": 897,
+      "id": "98281",
+      "name": "Wedge  6 x  4 x  0.667 Quadruple Curved",
+      "ldraw": "parts/98281.dat"
+    },
+    {
+      "idx": 898,
+      "id": "98282",
+      "name": "Car Mudguard  4 x  2.5 x  1",
+      "ldraw": "parts/98282.dat"
+    },
+    {
+      "idx": 899,
+      "id": "98347",
+      "name": "Technic Blade Curved  0.5 x  4 with Pin Hole",
+      "ldraw": "parts/98347.dat"
+    },
+    {
+      "idx": 900,
+      "id": "99012",
+      "name": "Technic Rotor  1 Blade  8L with Peghole and Axlehole",
+      "ldraw": "parts/99012.dat"
+    },
+    {
+      "idx": 901,
+      "id": "3040",
+      "name": "LEGO Part 3040",
+      "ldraw": "parts/3040.dat"
+    },
+    {
+      "idx": 902,
+      "id": "3023",
+      "name": "LEGO Part 3023",
+      "ldraw": "parts/3023.dat"
+    },
+    {
+      "idx": 903,
+      "id": "3068",
+      "name": "LEGO Part 3068",
+      "ldraw": "parts/3068.dat"
+    },
+    {
+      "idx": 904,
+      "id": "3062",
+      "name": "LEGO Part 3062",
+      "ldraw": "parts/3062.dat"
+    },
+    {
+      "idx": 905,
+      "id": "66956",
+      "name": "LEGO Part 66956",
+      "ldraw": "parts/66956.dat"
+    },
+    {
+      "idx": 906,
+      "id": "99780",
+      "name": "LEGO Part 99780",
+      "ldraw": "parts/99780.dat"
+    },
+    {
+      "idx": 907,
+      "id": "60592",
+      "name": "LEGO Part 60592",
+      "ldraw": "parts/60592.dat"
+    },
+    {
+      "idx": 908,
+      "id": "51739",
+      "name": "LEGO Part 51739",
+      "ldraw": "parts/51739.dat"
+    },
+    {
+      "idx": 909,
+      "id": "60478",
+      "name": "LEGO Part 60478",
+      "ldraw": "parts/60478.dat"
+    },
+    {
+      "idx": 910,
+      "id": "99207",
+      "name": "LEGO Part 99207",
+      "ldraw": "parts/99207.dat"
+    },
+    {
+      "idx": 911,
+      "id": "37352",
+      "name": "LEGO Part 37352",
+      "ldraw": "parts/37352.dat"
+    },
+    {
+      "idx": 912,
+      "id": "3957b",
+      "name": "LEGO Part 3957b",
+      "ldraw": "parts/3957b.dat"
+    },
+    {
+      "idx": 913,
+      "id": "63965",
+      "name": "LEGO Part 63965",
+      "ldraw": "parts/63965.dat"
+    },
+    {
+      "idx": 914,
+      "id": "88930",
+      "name": "LEGO Part 88930",
+      "ldraw": "parts/88930.dat"
+    },
+    {
+      "idx": 915,
+      "id": "60032",
+      "name": "LEGO Part 60032",
+      "ldraw": "parts/60032.dat"
+    },
+    {
+      "idx": 916,
+      "id": "60483",
+      "name": "LEGO Part 60483",
+      "ldraw": "parts/60483.dat"
+    },
+    {
+      "idx": 917,
+      "id": "87620",
+      "name": "LEGO Part 87620",
+      "ldraw": "parts/87620.dat"
+    },
+    {
+      "idx": 918,
+      "id": "60593",
+      "name": "LEGO Part 60593",
+      "ldraw": "parts/60593.dat"
+    },
+    {
+      "idx": 919,
+      "id": "2412b",
+      "name": "LEGO Part 2412b",
+      "ldraw": "parts/2412b.dat"
+    },
+    {
+      "idx": 920,
+      "id": "30136",
+      "name": "LEGO Part 30136",
+      "ldraw": "parts/30136.dat"
+    },
+    {
+      "idx": 921,
+      "id": "61254",
+      "name": "LEGO Part 61254",
+      "ldraw": "parts/61254.dat"
+    },
+    {
+      "idx": 922,
+      "id": "38320",
+      "name": "LEGO Part 38320",
+      "ldraw": "parts/38320.dat"
+    },
+    {
+      "idx": 923,
+      "id": "60481",
+      "name": "LEGO Part 60481",
+      "ldraw": "parts/60481.dat"
+    },
+    {
+      "idx": 924,
+      "id": "87079",
+      "name": "LEGO Part 87079",
+      "ldraw": "parts/87079.dat"
+    },
+    {
+      "idx": 925,
+      "id": "15573",
+      "name": "LEGO Part 15573",
+      "ldraw": "parts/15573.dat"
+    },
+    {
+      "idx": 926,
+      "id": "94161",
+      "name": "LEGO Part 94161",
+      "ldraw": "parts/94161.dat"
+    },
+    {
+      "idx": 927,
+      "id": "3245c",
+      "name": "LEGO Part 3245c",
+      "ldraw": "parts/3245c.dat"
+    },
+    {
+      "idx": 928,
+      "id": "15712",
+      "name": "LEGO Part 15712",
+      "ldraw": "parts/15712.dat"
+    },
+    {
+      "idx": 929,
+      "id": "3660",
+      "name": "LEGO Part 3660",
+      "ldraw": "parts/3660.dat"
+    },
+    {
+      "idx": 930,
+      "id": "32316",
+      "name": "LEGO Part 32316",
+      "ldraw": "parts/32316.dat"
+    },
+    {
+      "idx": 931,
+      "id": "3069",
+      "name": "LEGO Part 3069",
+      "ldraw": "parts/3069.dat"
+    },
+    {
+      "idx": 932,
+      "id": "4081b",
+      "name": "LEGO Part 4081b",
+      "ldraw": "parts/4081b.dat"
+    },
+    {
+      "idx": 933,
+      "id": "10288",
+      "name": "LEGO Part 10288",
+      "ldraw": "parts/10288.dat"
+    },
+    {
+      "idx": 934,
+      "id": "3045",
+      "name": "LEGO Part 3045",
+      "ldraw": "parts/3045.dat"
+    },
+    {
+      "idx": 935,
+      "id": "4489b",
+      "name": "LEGO Part 4489b",
+      "ldraw": "parts/4489b.dat"
+    }
+  ]
+}

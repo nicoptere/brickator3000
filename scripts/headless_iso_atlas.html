@@ -1,0 +1,212 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <style>body, html { margin:0; padding:0; overflow:hidden; width:64px; height:64px; background:transparent; }</style>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "/viewer/libs/three.module.js",
+      "three/addons/loaders/LDrawLoader.js": "/viewer/libs/LDrawLoader.js",
+      "three/addons/utils/LDrawUtils.js": "/viewer/libs/LDrawUtils.js",
+      "three/addons/materials/LDrawConditionalLineMaterial.js": "/viewer/libs/LDrawConditionalLineMaterial.js"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="viewport" style="width:64px;height:64px;"></div>
+  <script type="module">
+    import * as THREE from 'three';
+    import { LDrawLoader } from 'three/addons/loaders/LDrawLoader.js';
+    import { LDrawUtils } from 'three/addons/utils/LDrawUtils.js';
+    import { LDrawConditionalLineMaterial } from 'three/addons/materials/LDrawConditionalLineMaterial.js';
+
+    let scene, camera, renderer, ldrawLoader, loadingManager;
+    let isManagerIdle = true;
+    let managerResolve = null;
+
+    window.isReady = false;
+
+    async function init() {
+      const container = document.getElementById('viewport');
+      scene = new THREE.Scene();
+      const size = 100;
+      camera = new THREE.OrthographicCamera(-size, size, size, -size, -5000, 5000);
+      const isoDir = new THREE.Vector3(1, 0.8165, 1).normalize();
+      camera.position.copy(isoDir.clone().multiplyScalar(1000));
+      camera.up.set(0, 1, 0);
+      camera.lookAt(0, 0, 0);
+      scene.add(camera);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+      renderer.setSize(64, 64);
+      renderer.setPixelRatio(1);
+      renderer.setClearColor(0x000000, 0);
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.15;
+      container.appendChild(renderer.domElement);
+
+      const hemiLight = new THREE.HemisphereLight(0xffffff, 0x555555, 1.2);
+      scene.add(hemiLight);
+      const keyLight = new THREE.DirectionalLight(0xffffff, 1.4);
+      keyLight.position.set(500, 800, 400);
+      scene.add(keyLight);
+      const fillLight = new THREE.DirectionalLight(0xffffff, 0.7);
+      fillLight.position.set(-400, 300, -300);
+      scene.add(fillLight);
+
+      loadingManager = new THREE.LoadingManager();
+      loadingManager.onStart = () => { isManagerIdle = false; };
+      loadingManager.onLoad = () => {
+        isManagerIdle = true;
+        if (managerResolve) { managerResolve(); managerResolve = null; }
+      };
+
+      ldrawLoader = new LDrawLoader(loadingManager);
+      ldrawLoader.setPath('/ldraw/');
+      ldrawLoader.setPartsLibraryPath('/ldraw/');
+      ldrawLoader.setConditionalLineMaterial(LDrawConditionalLineMaterial);
+      ldrawLoader.smoothNormals = true;
+      try {
+        await ldrawLoader.preloadMaterials('LDConfig.ldr');
+        console.log('✓ Preloaded materials from LDConfig.ldr');
+      } catch (e) {
+        console.error('Failed to preload LDConfig.ldr:', e);
+      }
+
+      window.isReady = true;
+    }
+
+    let currentGroup = null;
+    window.renderPartIso = async function(filePath) {
+      if (!window.isReady) return { success: false, reason: 'NOT_READY' };
+      if (currentGroup) {
+        scene.remove(currentGroup);
+        currentGroup.traverse(c => {
+          if (c.geometry) c.geometry.dispose();
+          if (c.material) {
+            if (Array.isArray(c.material)) c.material.forEach(m => m && m.dispose && m.dispose());
+            else if (c.material.dispose) c.material.dispose();
+          }
+        });
+        currentGroup = null;
+      }
+
+      let rawGroup;
+      try {
+        rawGroup = await ldrawLoader.loadAsync('/ldraw/' + filePath);
+      } catch (err) {
+        return { success: false, reason: 'LOAD_FAILED: ' + err.message };
+      }
+
+      if (!isManagerIdle) {
+        await new Promise(resolve => {
+          managerResolve = resolve;
+          setTimeout(() => { if (managerResolve) { managerResolve(); managerResolve = null; } }, 4000);
+        });
+      }
+
+      let group;
+      try {
+        group = LDrawUtils.mergeObject(rawGroup);
+      } catch (err) {
+        group = rawGroup;
+      }
+
+      group.rotation.x = Math.PI;
+      group.updateMatrixWorld(true);
+
+      const stdMat = new THREE.MeshStandardMaterial({
+        color: 0xa0a0a0,
+        roughness: 0.40,
+        metalness: 0.05,
+        polygonOffset: true,
+        polygonOffsetFactor: 1,
+        polygonOffsetUnits: 1
+      });
+      const lineMat = new THREE.LineBasicMaterial({ color: 0x1a1a1a, depthWrite: true });
+
+      group.traverse(child => {
+        if (child.isMesh) {
+          child.material = stdMat;
+        } else if (child.isConditionalLine) {
+          if (child.material && child.material.color) {
+            child.material.color.setHex(0x1a1a1a);
+          } else {
+            child.material = lineMat;
+          }
+        } else if (child.isLineSegments || child.isLine) {
+          child.material = lineMat;
+        }
+
+        // Final safety guarantee: no renderable geometry can ever have null material
+        if (child.geometry) {
+          if (!child.material) {
+            child.material = (child.isLine || child.isLineSegments || child.isConditionalLine) ? lineMat : stdMat;
+          } else if (Array.isArray(child.material)) {
+            child.material = child.material.map(m => m || stdMat);
+          }
+        }
+      });
+
+      const box = new THREE.Box3().setFromObject(group);
+      const center = box.getCenter(new THREE.Vector3());
+      group.position.sub(center);
+      group.updateMatrixWorld(true);
+      scene.add(group);
+      currentGroup = group;
+
+      camera.updateMatrixWorld(true);
+      const invCamMat = camera.matrixWorldInverse;
+      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      const centeredBox = new THREE.Box3().setFromObject(group);
+      const corners = [
+        new THREE.Vector3(centeredBox.min.x, centeredBox.min.y, centeredBox.min.z),
+        new THREE.Vector3(centeredBox.min.x, centeredBox.min.y, centeredBox.max.z),
+        new THREE.Vector3(centeredBox.min.x, centeredBox.max.y, centeredBox.min.z),
+        new THREE.Vector3(centeredBox.min.x, centeredBox.max.y, centeredBox.max.z),
+        new THREE.Vector3(centeredBox.max.x, centeredBox.min.y, centeredBox.min.z),
+        new THREE.Vector3(centeredBox.max.x, centeredBox.min.y, centeredBox.max.z),
+        new THREE.Vector3(centeredBox.max.x, centeredBox.max.y, centeredBox.min.z),
+        new THREE.Vector3(centeredBox.max.x, centeredBox.max.y, centeredBox.max.z)
+      ];
+
+      for (const pt of corners) {
+        const pCam = pt.clone().applyMatrix4(invCamMat);
+        if (pCam.x < minX) minX = pCam.x;
+        if (pCam.x > maxX) maxX = pCam.x;
+        if (pCam.y < minY) minY = pCam.y;
+        if (pCam.y > maxY) maxY = pCam.y;
+      }
+
+      const projWidth = maxX - minX;
+      const projHeight = maxY - minY;
+      const cx = (minX + maxX) / 2;
+      const cy = (minY + maxY) / 2;
+      const maxDim = Math.max(projWidth, projHeight, 1.0);
+      const halfSize = (maxDim / 2) * 1.08;
+
+      camera.left = cx - halfSize;
+      camera.right = cx + halfSize;
+      camera.bottom = cy - halfSize;
+      camera.top = cy + halfSize;
+      camera.updateProjectionMatrix();
+
+      await new Promise(r => setTimeout(r, 40));
+      renderer.render(scene, camera);
+      renderer.render(scene, camera);
+
+      const dataUrl = renderer.domElement.toDataURL('image/png');
+      let meshCount = 0, lineCount = 0;
+      group.traverse(c => {
+        if (c.isMesh) meshCount++;
+        if (c.isLine || c.isLineSegments || c.isConditionalLine) lineCount++;
+      });
+      return { success: true, dataUrl, projWidth, projHeight, meshCount, lineCount };
+    };
+
+    init();
+  </script>
+</body>
+</html>

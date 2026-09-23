@@ -1,0 +1,6 @@
+# YOLO11-seg Dataset Configuration for LEGO Bricks
+path: ./dataset
+train: images/train
+val: images/val
+names:
+  0: lego_brick

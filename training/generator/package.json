@@ -1,0 +1,16 @@
+{
+  "name": "brickator-generator",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "generate": "node generate_dataset.js"
+  },
+  "dependencies": {
+    "@onirenaud/node-webgl": "^0.2.0",
+    "cannon-es": "^0.20.0",
+    "three": "^0.170.0",
+    "three-gpu-pathtracer": "^0.0.24",
+    "three-mesh-bvh": "^0.8.2"
+  }
+}
