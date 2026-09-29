@@ -287,7 +287,8 @@ export class MeshIslandSegmenter {
       const mat = new THREE.MeshStandardMaterial({
         color: threeColor,
         roughness: 0.35,
-        metalness: 0.05
+        metalness: 0.05,
+        side: THREE.DoubleSide
       });
       const mesh = new THREE.Mesh(geom, mat);
 

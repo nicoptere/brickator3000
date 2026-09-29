@@ -922,92 +922,95 @@ export class MeshVoxelizer {
       }
     }
 
-    // Phase 2: Full volume raycast fallback to ensure 100% solid watertight envelope
-    for (let x = 0; x < numStudsX; x++) {
-      for (let z = 0; z < numStudsZ; z++) {
-        const sampleX = centerX + (x + 0.5 - numStudsX * 0.5) * (studPitchLDU * invScale);
-        const sampleZ = centerZ + (z + 0.5 - numStudsZ * 0.5) * (studPitchLDU * invScale);
+    // Phase 2: Full volume raycast fallback for single-island models or if island segmentation had no hits
+    if (islands.length <= 1 || occupiedCount === 0) {
+      for (let x = 0; x < numStudsX; x++) {
+        for (let z = 0; z < numStudsZ; z++) {
+          const sampleX = centerX + (x + 0.5 - numStudsX * 0.5) * (studPitchLDU * invScale);
+          const sampleZ = centerZ + (z + 0.5 - numStudsZ * 0.5) * (studPitchLDU * invScale);
 
-        const rayOrigin = new THREE.Vector3(sampleX, bbox.max.y + 10.0, sampleZ);
-        const rayDir = new THREE.Vector3(0, -1, 0);
-        raycaster.set(rayOrigin, rayDir);
+          const rayOrigin = new THREE.Vector3(sampleX, bbox.max.y + 10.0, sampleZ);
+          const rayDir = new THREE.Vector3(0, -1, 0);
+          raycaster.set(rayOrigin, rayDir);
 
-        const rawHits = raycaster.intersectObject(object, true);
-        const hits: THREE.Intersection[] = [];
-        for (const h of rawHits) {
-          if (hits.length === 0 || Math.abs(hits[hits.length - 1].point.y - h.point.y) > 0.001) {
-            hits.push(h);
+          const rawHits = raycaster.intersectObject(object, true);
+          const hits: THREE.Intersection[] = [];
+          for (const h of rawHits) {
+            if (hits.length === 0 || Math.abs(hits[hits.length - 1].point.y - h.point.y) > 0.001) {
+              hits.push(h);
+            }
           }
-        }
 
-        if (hits.length % 2 === 1) {
-          hits.push({
-            point: new THREE.Vector3(sampleX, minGeom.y, sampleZ),
-            distance: rayOrigin.y - minGeom.y,
-            object: hits[0].object,
-            face: hits[0].face,
-            uv: hits[0].uv
-          } as THREE.Intersection);
-        }
+          if (hits.length % 2 === 1) {
+            hits.push({
+              point: new THREE.Vector3(sampleX, minGeom.y, sampleZ),
+              distance: rayOrigin.y - minGeom.y,
+              object: hits[0].object,
+              face: hits[0].face,
+              uv: hits[0].uv
+            } as THREE.Intersection);
+          }
 
-        if (hits.length >= 2) {
-          for (let i = 0; i < hits.length - 1; i += 2) {
-            const topEnter = Math.max(hits[i].point.y, hits[i + 1].point.y);
-            const bottomExit = Math.min(hits[i].point.y, hits[i + 1].point.y);
+          if (hits.length >= 2) {
+            for (let i = 0; i < hits.length - 1; i += 2) {
+              const topEnter = Math.max(hits[i].point.y, hits[i + 1].point.y);
+              const bottomExit = Math.min(hits[i].point.y, hits[i + 1].point.y);
 
-            const topBrick = Math.min(
-              numPlatesY - 1,
-              Math.floor(((topEnter - minGeom.y) * scaleFactor) / brickHeightLDU)
-            );
-            const bottomBrick = Math.max(
-              0,
-              Math.floor(((bottomExit - minGeom.y) * scaleFactor) / brickHeightLDU)
-            );
+              const topBrick = Math.min(
+                numPlatesY - 1,
+                Math.floor(((topEnter - minGeom.y) * scaleFactor) / brickHeightLDU)
+              );
+              const bottomBrick = Math.max(
+                0,
+                Math.floor(((bottomExit - minGeom.y) * scaleFactor) / brickHeightLDU)
+              );
 
-            for (let y = bottomBrick; y <= topBrick; y++) {
-              const cell = grid[x][z][y];
-              if (!cell.occupied) {
-                cell.occupied = true;
-                occupiedCount++;
+              for (let y = bottomBrick; y <= topBrick; y++) {
+                const cell = grid[x][z][y];
+                if (!cell.occupied) {
+                  cell.occupied = true;
+                  occupiedCount++;
 
-                const brickWorldY = minGeom.y + (y + 0.5) * (brickHeightLDU * invScale);
-                let nearestHit = hits[0];
-                let minDist = Math.abs(nearestHit.point.y - brickWorldY);
-                for (let k = 1; k < hits.length; k++) {
-                  const d = Math.abs(hits[k].point.y - brickWorldY);
-                  if (d < minDist) {
-                    minDist = d;
-                    nearestHit = hits[k];
-                  }
-                }
-
-                if (nearestHit.face) {
-                  const normalMatrix = new THREE.Matrix3().getNormalMatrix(nearestHit.object.matrixWorld);
-                  const norm = nearestHit.face.normal.clone().applyMatrix3(normalMatrix).normalize();
-                  cell.normal = [norm.x, norm.y, norm.z];
-                }
-
-                const sampled = this.sampleColorFromHit(nearestHit);
-                // If not assigned to an island yet, assign to closest island by center
-                if (cell.islandId === undefined && islands.length > 0) {
-                  let closestIsl = islands[0];
-                  let minIslDist = Infinity;
-                  const vPos = new THREE.Vector3(sampleX, brickWorldY, sampleZ);
-                  for (const isl of islands) {
-                    const d = vPos.distanceTo(isl.center);
-                    if (d < minIslDist) {
-                      minIslDist = d;
-                      closestIsl = isl;
+                  const brickWorldY = minGeom.y + (y + 0.5) * (brickHeightLDU * invScale);
+                  let nearestHit = hits[0];
+                  let minDist = Math.abs(nearestHit.point.y - brickWorldY);
+                  for (let k = 1; k < hits.length; k++) {
+                    const d = Math.abs(hits[k].point.y - brickWorldY);
+                    if (d < minDist) {
+                      minDist = d;
+                      nearestHit = hits[k];
                     }
                   }
-                  cell.islandId = closestIsl.id;
-                  cell.islandColorHex = closestIsl.colorHex;
-                  cell.colorHex = closestIsl.colorHex;
-                  cell.colorName = closestIsl.name;
-                } else if (cell.islandId === undefined) {
-                  cell.colorHex = sampled.colorHex;
-                  cell.colorCode = sampled.colorCode;
-                  cell.colorName = sampled.colorName;
+
+                  if (nearestHit.face) {
+                    const normalMatrix = new THREE.Matrix3().getNormalMatrix(nearestHit.object.matrixWorld);
+                    const norm = nearestHit.face.normal.clone().applyMatrix3(normalMatrix).normalize();
+                    cell.normal = [norm.x, norm.y, norm.z];
+                  }
+
+                  const sampled = this.sampleColorFromHit(nearestHit);
+                  // Assign to island ONLY if point is inside that island's bounding box
+                  if (cell.islandId === undefined && islands.length > 0) {
+                    const vPos = new THREE.Vector3(sampleX, brickWorldY, sampleZ);
+                    const margin = studPitchLDU * invScale * 0.6;
+                    let containingIsl: MeshIsland | null = null;
+                    for (const isl of islands) {
+                      const expanded = isl.bbox.clone().expandByScalar(margin);
+                      if (expanded.containsPoint(vPos)) {
+                        containingIsl = isl;
+                        break;
+                      }
+                    }
+                    const targetIsl = containingIsl || islands[0];
+                    cell.islandId = targetIsl.id;
+                    cell.islandColorHex = targetIsl.colorHex;
+                    cell.colorHex = targetIsl.colorHex;
+                    cell.colorName = targetIsl.name;
+                  } else if (cell.islandId === undefined) {
+                    cell.colorHex = sampled.colorHex;
+                    cell.colorCode = sampled.colorCode;
+                    cell.colorName = sampled.colorName;
+                  }
                 }
               }
             }
