@@ -38,11 +38,19 @@ export class MultiResolutionLattice {
             continue;
           }
 
-          // Check 6-neighbors for empty air or boundary edge
+          // Check 6-neighbors for empty air, grid boundary, or neighboring island boundary
+          const isAirOrOtherIsland = (nx: number, nz: number, ny: number): boolean => {
+            if (nx < 0 || nx >= numStudsX || nz < 0 || nz >= numStudsZ || ny < 0 || ny >= numPlatesY) return true;
+            const n = grid.grid[nx][nz][ny];
+            if (!n || !n.occupied) return true;
+            if (cell.islandId !== undefined && n.islandId !== undefined && n.islandId !== cell.islandId) return true;
+            return false;
+          };
+
           const isBoundary =
-            x === 0 || x === numStudsX - 1 || !grid.grid[x - 1][z][y].occupied || !grid.grid[x + 1][z][y].occupied ||
-            z === 0 || z === numStudsZ - 1 || !grid.grid[x][z - 1][y].occupied || !grid.grid[x][z + 1][y].occupied ||
-            y === 0 || y === numPlatesY - 1 || !grid.grid[x][z][y - 1].occupied || !grid.grid[x][z][y + 1].occupied;
+            isAirOrOtherIsland(x - 1, z, y) || isAirOrOtherIsland(x + 1, z, y) ||
+            isAirOrOtherIsland(x, z - 1, y) || isAirOrOtherIsland(x, z + 1, y) ||
+            isAirOrOtherIsland(x, z, y - 1) || isAirOrOtherIsland(x, z, y + 1);
 
           cell.isBoundary = isBoundary;
           if (isBoundary) {
@@ -79,7 +87,11 @@ export class MultiResolutionLattice {
 
         if (nx >= 0 && nx < numStudsX && nz >= 0 && nz < numStudsZ && ny >= 0 && ny < numPlatesY) {
           const neighbor = grid.grid[nx][nz][ny];
-          if (neighbor.occupied && neighbor.depth === -1) {
+          if (
+            neighbor.occupied &&
+            neighbor.depth === -1 &&
+            (currentCell.islandId === undefined || neighbor.islandId === undefined || neighbor.islandId === currentCell.islandId)
+          ) {
             neighbor.depth = nextDepth;
             queue.push([nx, nz, ny]);
 

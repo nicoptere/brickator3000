@@ -24,7 +24,30 @@ export interface MeshIsland {
   center: THREE.Vector3;
 }
 
-// 24 High-contrast, vibrant LEGO-style colors for distinct island visualization
+/**
+ * Generates an authentic, high-contrast random LEGO color for any island index.
+ * Uses golden-ratio hue distribution (137.508°) to guarantee adjacent indices never clash.
+ */
+export function getIslandColorHex(index: number, seed: number = 0): string {
+  const hue = Math.round((index * 137.50776405 + seed * 53) % 360);
+  const s = 0.88;
+  const l = 0.52;
+  const c = (1 - Math.abs(2 * l - 1)) * s;
+  const x = c * (1 - Math.abs(((hue / 60) % 2) - 1));
+  const m = l - c / 2;
+  let r = 0, g = 0, b = 0;
+  if (hue < 60) { r = c; g = x; b = 0; }
+  else if (hue < 120) { r = x; g = c; b = 0; }
+  else if (hue < 180) { r = 0; g = c; b = x; }
+  else if (hue < 240) { r = 0; g = x; b = c; }
+  else if (hue < 300) { r = x; g = 0; b = c; }
+  else { r = c; g = 0; b = x; }
+
+  const toHex = (val: number) => Math.round((val + m) * 255).toString(16).padStart(2, '0');
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}
+
+// 24 High-contrast, vibrant LEGO-style colors for fallback
 export const VIBRANT_ISLAND_PALETTE: string[] = [
   '#ef4444', // Crimson Red
   '#3b82f6', // Royal Blue
@@ -218,7 +241,7 @@ export class MeshIslandSegmenter {
       const subNorm = new Float32Array(vertCount * 3);
       const subCol = new Float32Array(vertCount * 3);
 
-      const colorHex = VIBRANT_ISLAND_PALETTE[idx % VIBRANT_ISLAND_PALETTE.length];
+      const colorHex = getIslandColorHex(idx);
       const threeColor = new THREE.Color(colorHex);
 
       let writeIdx = 0;
@@ -283,5 +306,17 @@ export class MeshIslandSegmenter {
     });
 
     return islands;
+  }
+
+  /**
+   * Re-randomizes the color materials of all islands using a new random seed.
+   */
+  public static recolorIslands(islands: MeshIsland[], seed: number = 1): void {
+    islands.forEach((isl, idx) => {
+      isl.colorHex = getIslandColorHex(idx, seed);
+      if (isl.mesh && isl.mesh.material) {
+        (isl.mesh.material as THREE.MeshStandardMaterial).color.set(isl.colorHex);
+      }
+    });
   }
 }

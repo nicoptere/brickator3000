@@ -1,37 +1,46 @@
 /**
- * Markov Growing Core Control Panel.
+ * ControlPanel - Refactored, Decoupled Master Sidebar.
  *
- * Provides full control over:
- * - Authentic 3D Model selection (Duck, Dolphin, Mini, Beetle, Concorde, Delacroix, Castle)
- * - Custom 3D file upload (GLB, GLTF, OBJ, PLY)
- * - Source 3D mesh overlay controls (Ghost Translucent Solid / Wireframe / Off)
- * - Arbitrary scale adjustment (target height in plates)
- * - Discretization pipeline parameters (running bond, modern parts, studless tiles, direct RGB)
- * - Play / Pause / Step / Instant solver controls
- * - LDraw Export and inspector modal triggers
+ * Coordinates:
+ * - ModelSelector (Presets + GLB/OBJ/PLY Upload + Source Mesh Overlay)
+ * - ColorModeSelector (Island Random Colors | WFC Scale | Direct RGB)
+ * - ScaleControl (1*1*1 Brick Height & quick presets)
+ * - IslandInspector (Component List + Solo Isolation + Per-Island Discretization & WFC)
+ * - PlaybackControls (Play/Step/Solve/Reset/Export)
+ *
+ * Follows DRY & KISS principles with rigid flex bounds (flexShrink: 0, minWidth: 360).
  */
 
 import React from 'react';
 import { MarkovEngineOptions } from '../engine/types';
 import { ViewportMode, SourceMeshMode } from './Viewport3D';
+import { ModelSelector } from './controls/ModelSelector';
+import { ColorModeSelector, ColorMode } from './controls/ColorModeSelector';
+import { ScaleControl } from './controls/ScaleControl';
+import { IslandInspector, IslandMeta } from './controls/IslandInspector';
+import { PlaybackControls } from './controls/PlaybackControls';
 
-export type ColorMode = 'island_components' | 'wfc_hierarchy' | 'actual';
-
-interface ControlPanelProps {
+export interface ControlPanelProps {
   modelType: string;
   onSelectModel: (type: string) => void;
   onFileUpload: (file: File) => void;
+  sourceMeshMode: SourceMeshMode;
+  onChangeSourceMeshMode: (m: SourceMeshMode) => void;
   targetHeightBricks: number;
   onChangeHeight: (h: number) => void;
   colorMode: ColorMode;
   onChangeColorMode: (m: ColorMode) => void;
-  islands?: Array<{ id: number; triangleCount: number; colorHex: string; name?: string }>;
+  islands?: IslandMeta[];
+  selectedIslandId: number | null;
+  onSelectIsland: (id: number | null) => void;
+  onDiscretizeIsland: (id: number) => void;
+  onDiscretizeAllIndependently: () => void;
+  onSolveWfcOnIsland: (id: number | null) => void;
+  onRerollColors: () => void;
   options: MarkovEngineOptions;
   onChangeOptions: (opts: Partial<MarkovEngineOptions>) => void;
   viewportMode: ViewportMode;
   onChangeViewportMode: (m: ViewportMode) => void;
-  sourceMeshMode: SourceMeshMode;
-  onChangeSourceMeshMode: (m: SourceMeshMode) => void;
   isPlaying: boolean;
   onTogglePlay: () => void;
   onStep: () => void;
@@ -54,17 +63,23 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   modelType,
   onSelectModel,
   onFileUpload,
+  sourceMeshMode,
+  onChangeSourceMeshMode,
   targetHeightBricks,
   onChangeHeight,
   colorMode,
   onChangeColorMode,
-  islands,
+  islands = [],
+  selectedIslandId,
+  onSelectIsland,
+  onDiscretizeIsland,
+  onDiscretizeAllIndependently,
+  onSolveWfcOnIsland,
+  onRerollColors,
   options,
   onChangeOptions,
   viewportMode,
   onChangeViewportMode,
-  sourceMeshMode,
-  onChangeSourceMeshMode,
   isPlaying,
   onTogglePlay,
   onStep,
@@ -80,53 +95,45 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   speed,
   onChangeSpeed,
   isLoading = false,
-  loadingMessage = 'Loading 3D model...'
+  loadingMessage = 'Loading model...'
 }) => {
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
-
-  const modelPresets = [
-    { id: 'beetle', label: '🚙 VW Beetle', badge: 'GLB' },
-    { id: 'mini', label: '🚗 Mini Cooper', badge: 'GLB' },
-    { id: 'concorde', label: '✈️ Concorde', badge: 'GLB' },
-    { id: 'duck', label: '🦆 Duck', badge: 'GLB' },
-    { id: 'dolphin', label: '🐬 Dolphin', badge: 'GLB' },
-    { id: 'delacroix', label: '🗿 Delacroix', badge: 'PLY' },
-    { id: 'prison', label: '🏰 Castle', badge: 'OBJ' }
-  ];
-
   return (
     <div
       style={{
-        width: 340,
+        width: 360,
+        minWidth: 360,
+        maxWidth: 360,
+        flexShrink: 0,
         height: '100%',
-        backgroundColor: 'rgba(15, 23, 42, 0.88)',
-        backdropFilter: 'blur(16px)',
-        borderLeft: '1px solid rgba(148, 163, 184, 0.15)',
+        backgroundColor: 'rgba(15, 23, 42, 0.95)',
+        backdropFilter: 'blur(20px)',
+        borderLeft: '1px solid rgba(148, 163, 184, 0.2)',
         display: 'flex',
         flexDirection: 'column',
-        zIndex: 10,
+        zIndex: 20,
         color: '#f8fafc',
-        boxShadow: '-8px 0 32px rgba(0, 0, 0, 0.4)'
+        boxShadow: '-8px 0 32px rgba(0, 0, 0, 0.5)'
       }}
     >
-      {/* Panel Header */}
+      {/* Header */}
       <div
         style={{
-          padding: '16px 20px',
+          padding: '14px 18px',
           borderBottom: '1px solid rgba(148, 163, 184, 0.15)',
-          background: 'linear-gradient(to right, rgba(30, 41, 59, 0.6), rgba(15, 23, 42, 0.9))'
+          background: 'linear-gradient(to right, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.95))'
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <h1 style={{ fontSize: 16, fontWeight: 800, margin: 0, letterSpacing: '-0.02em', color: '#f8fafc' }}>
+            <h1 style={{ fontSize: 15, fontWeight: 800, margin: 0, letterSpacing: '-0.02em', color: '#f8fafc' }}>
               BRICKATOR<span style={{ color: '#e11d48' }}>3000</span>
             </h1>
-            <div style={{ fontSize: 11, fontWeight: 600, color: '#38bdf8', letterSpacing: '0.05em' }}>
-              MARKOV DISCRETIZATION STUDIO
+            <div style={{ fontSize: 10, fontWeight: 600, color: '#38bdf8', letterSpacing: '0.05em' }}>
+              MARKOV & WFC DISCRETIZATION
             </div>
           </div>
-          <div style={{ display: 'flex', gap: 6 }}>
+
+          <div style={{ display: 'flex', gap: 5 }}>
             <button
               onClick={onToggleMute}
               title={isMuted ? 'Unmute Audio' : 'Mute Audio'}
@@ -134,10 +141,10 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                 background: isMuted ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.2)',
                 border: '1px solid rgba(148, 163, 184, 0.2)',
                 borderRadius: 6,
-                padding: '6px 8px',
+                padding: '5px 8px',
                 cursor: 'pointer',
                 color: isMuted ? '#f87171' : '#34d399',
-                fontSize: 12
+                fontSize: 11
               }}
             >
               {isMuted ? '🔇' : '🔊'}
@@ -149,10 +156,10 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                 background: autoRotate ? 'rgba(56, 189, 248, 0.2)' : 'rgba(51, 65, 85, 0.3)',
                 border: '1px solid rgba(148, 163, 184, 0.2)',
                 borderRadius: 6,
-                padding: '6px 8px',
+                padding: '5px 8px',
                 cursor: 'pointer',
                 color: autoRotate ? '#38bdf8' : '#94a3b8',
-                fontSize: 12
+                fontSize: 11
               }}
             >
               🔄
@@ -165,13 +172,13 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
       {isLoading && (
         <div
           style={{
-            padding: '10px 16px',
+            padding: '8px 14px',
             backgroundColor: 'rgba(56, 189, 248, 0.15)',
             borderBottom: '1px solid rgba(56, 189, 248, 0.3)',
             display: 'flex',
             alignItems: 'center',
-            gap: 10,
-            fontSize: 12,
+            gap: 8,
+            fontSize: 11,
             color: '#38bdf8'
           }}
         >
@@ -181,321 +188,61 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
       )}
 
       {/* Scrollable Body */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: 20, display: 'flex', flexDirection: 'column', gap: 18 }}>
-        {/* Section 1: Authentic 3D Models Presets */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {/* 1. Model Selection & Overlay */}
+        <ModelSelector
+          modelType={modelType}
+          onSelectModel={onSelectModel}
+          onFileUpload={onFileUpload}
+          sourceMeshMode={sourceMeshMode}
+          onChangeSourceMeshMode={onChangeSourceMeshMode}
+          isLoading={isLoading}
+        />
+
+        {/* 2. Color Mode Selector */}
+        <ColorModeSelector
+          colorMode={colorMode}
+          onChangeColorMode={onChangeColorMode}
+        />
+
+        {/* 3. Scale (1*1*1 Bricks) */}
+        <ScaleControl
+          targetHeightBricks={targetHeightBricks}
+          onChangeHeight={onChangeHeight}
+        />
+
+        {/* 4. Island Components & Solo Isolation */}
+        <IslandInspector
+          islands={islands}
+          selectedIslandId={selectedIslandId}
+          onSelectIsland={onSelectIsland}
+          onDiscretizeIsland={onDiscretizeIsland}
+          onDiscretizeAllIndependently={onDiscretizeAllIndependently}
+          onSolveWfcOnIsland={onSolveWfcOnIsland}
+          onRerollColors={onRerollColors}
+          isLoading={isLoading}
+        />
+
+        {/* 5. Viewport Mode Selector */}
         <div>
-          <label
-            style={{
-              fontSize: 12,
-              fontWeight: 700,
-              color: '#94a3b8',
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em',
-              display: 'block',
-              marginBottom: 8
-            }}
-          >
-            Source 3D Model Volume
-          </label>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 6, marginBottom: 8 }}>
-            {modelPresets.map((m) => (
-              <button
-                key={m.id}
-                onClick={() => onSelectModel(m.id)}
-                disabled={isLoading}
-                style={{
-                  padding: '8px 10px',
-                  borderRadius: 6,
-                  border: 'none',
-                  fontSize: 11,
-                  fontWeight: 600,
-                  cursor: isLoading ? 'wait' : 'pointer',
-                  backgroundColor: modelType === m.id ? '#38bdf8' : '#1e293b',
-                  color: modelType === m.id ? '#0f172a' : '#cbd5e1',
-                  transition: 'all 0.15s ease',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between'
-                }}
-              >
-                <span>{m.label}</span>
-                <span
-                  style={{
-                    fontSize: 9,
-                    padding: '2px 4px',
-                    borderRadius: 4,
-                    backgroundColor: modelType === m.id ? 'rgba(15, 23, 42, 0.25)' : 'rgba(148, 163, 184, 0.15)',
-                    fontWeight: 700
-                  }}
-                >
-                  {m.badge}
-                </span>
-              </button>
-            ))}
-          </div>
-
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isLoading}
-            style={{
-              width: '100%',
-              padding: '8px 12px',
-              borderRadius: 6,
-              border: '1px dashed rgba(148, 163, 184, 0.3)',
-              backgroundColor: 'rgba(30, 41, 59, 0.4)',
-              color: '#94a3b8',
-              fontSize: 11,
-              fontWeight: 500,
-              cursor: 'pointer'
-            }}
-          >
-            📁 Upload Custom 3D Model (GLB / OBJ / PLY)
-          </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".glb,.gltf,.obj,.ply"
-            style={{ display: 'none' }}
-            onChange={(e) => {
-              if (e.target.files?.[0]) onFileUpload(e.target.files[0]);
-            }}
-          />
-        </div>
-
-        {/* Section 2: Source 3D Mesh Overlay Mode */}
-        <div>
-          <label
-            style={{
-              fontSize: 12,
-              fontWeight: 700,
-              color: '#94a3b8',
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em',
-              display: 'block',
-              marginBottom: 8
-            }}
-          >
-            3D Source Mesh Overlay
-          </label>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
-            {[
-              { id: 'ghost', label: '👻 Ghost Solid' },
-              { id: 'wireframe', label: '🕸️ Wireframe' },
-              { id: 'none', label: '❌ Hidden' }
-            ].map((sm) => (
-              <button
-                key={sm.id}
-                onClick={() => onChangeSourceMeshMode(sm.id as SourceMeshMode)}
-                style={{
-                  padding: '7px 4px',
-                  borderRadius: 6,
-                  border: 'none',
-                  fontSize: 10,
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  backgroundColor: sourceMeshMode === sm.id ? '#0284c7' : '#1e293b',
-                  color: sourceMeshMode === sm.id ? '#ffffff' : '#94a3b8'
-                }}
-              >
-                {sm.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Section 2.5: Color Scheme & Component Isolation */}
-        <div>
-          <label
-            style={{
-              fontSize: 12,
-              fontWeight: 700,
-              color: '#94a3b8',
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em',
-              display: 'block',
-              marginBottom: 8
-            }}
-          >
-            Color Mode & Island Isolation
-          </label>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
-            {[
-              { id: 'island_components', label: '🏝️ Mesh Islands', desc: 'Random part colors' },
-              { id: 'wfc_hierarchy', label: '🎨 WFC Scale N=', desc: 'Macro to detail' },
-              { id: 'actual', label: '🌈 Source RGB', desc: 'Direct sampling' }
-            ].map((cm) => (
-              <button
-                key={cm.id}
-                onClick={() => onChangeColorMode(cm.id as ColorMode)}
-                style={{
-                  padding: '7px 4px',
-                  borderRadius: 6,
-                  border: 'none',
-                  fontSize: 10,
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  backgroundColor: colorMode === cm.id ? '#8b5cf6' : '#1e293b',
-                  color: colorMode === cm.id ? '#ffffff' : '#94a3b8',
-                  transition: 'all 0.15s ease'
-                }}
-                title={cm.desc}
-              >
-                {cm.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Section 3: Arbitrary Scale (Height in 1*1*1 Bricks) */}
-        <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-            <label
-              style={{
-                fontSize: 12,
-                fontWeight: 700,
-                color: '#94a3b8',
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em'
-              }}
-            >
-              Scale (1*1*1 Bricks)
-            </label>
-            <span style={{ fontSize: 12, fontFamily: 'monospace', color: '#38bdf8', fontWeight: 700 }}>
-              {targetHeightBricks} BRICKS ({targetHeightBricks * 24} LDU)
-            </span>
-          </div>
-          <input
-            type="range"
-            min={8}
-            max={64}
-            step={1}
-            value={targetHeightBricks}
-            onChange={(e) => onChangeHeight(parseInt(e.target.value))}
-            style={{ width: '100%', accentColor: '#38bdf8', cursor: 'pointer' }}
-          />
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 4, marginTop: 6 }}>
-            {[
-              { bricks: 12, label: '12b' },
-              { bricks: 16, label: '16b' },
-              { bricks: 24, label: '24b' },
-              { bricks: 32, label: '32b' },
-              { bricks: 48, label: '48b' }
-            ].map((preset) => (
-              <button
-                key={preset.bricks}
-                onClick={() => onChangeHeight(preset.bricks)}
-                style={{
-                  padding: '4px 2px',
-                  borderRadius: 4,
-                  border: 'none',
-                  fontSize: 10,
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  backgroundColor: targetHeightBricks === preset.bricks ? '#38bdf8' : '#1e293b',
-                  color: targetHeightBricks === preset.bricks ? '#0f172a' : '#94a3b8',
-                  transition: 'all 0.15s ease'
-                }}
-              >
-                {preset.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Section 3.5: Isolated Mesh Components Inspector */}
-        {islands && islands.length > 0 && (
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-              <label
-                style={{
-                  fontSize: 12,
-                  fontWeight: 700,
-                  color: '#94a3b8',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em'
-                }}
-              >
-                Half-Edge Islands ({islands.length})
-              </label>
-              <span style={{ fontSize: 10, color: '#34d399', fontWeight: 600 }}>
-                Isolated No-Cross
-              </span>
-            </div>
-            <div
-              style={{
-                maxHeight: 120,
-                overflowY: 'auto',
-                backgroundColor: 'rgba(15, 23, 42, 0.6)',
-                borderRadius: 6,
-                padding: '6px 8px',
-                border: '1px solid rgba(148, 163, 184, 0.1)',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 4
-              }}
-            >
-              {islands.map((isl) => (
-                <div
-                  key={isl.id}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    fontSize: 11,
-                    color: '#e2e8f0'
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <div
-                      style={{
-                        width: 10,
-                        height: 10,
-                        borderRadius: 3,
-                        backgroundColor: isl.colorHex,
-                        border: '1px solid rgba(255,255,255,0.2)'
-                      }}
-                    />
-                    <span style={{ fontWeight: 600 }}>Island #{isl.id}</span>
-                  </div>
-                  <span style={{ color: '#94a3b8', fontFamily: 'monospace', fontSize: 10 }}>
-                    {isl.triangleCount} tris
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Section 4: Viewport Mode */}
-        <div>
-          <label
-            style={{
-              fontSize: 12,
-              fontWeight: 700,
-              color: '#94a3b8',
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em',
-              display: 'block',
-              marginBottom: 8
-            }}
-          >
-            Visualization Mode
+          <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 6 }}>
+            Viewport Mode
           </label>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
             {[
-              { id: 'GROWING_CORE', label: '🌱 Growing Animation' },
+              { id: 'GROWING_CORE', label: '🌱 Growing Core' },
               { id: 'FINAL_MODEL', label: '🧱 Final Model' },
               { id: 'CORE_HEATMAP', label: '🔥 Core Depth' },
-              { id: 'SLOPE_CURVATURE', label: '📐 Slopes/Normals' }
+              { id: 'SLOPE_CURVATURE', label: '📐 Normals' }
             ].map((vm) => (
               <button
                 key={vm.id}
                 onClick={() => onChangeViewportMode(vm.id as ViewportMode)}
                 style={{
-                  padding: '8px 10px',
+                  padding: '7px 8px',
                   borderRadius: 6,
                   border: 'none',
-                  fontSize: 11,
+                  fontSize: 10,
                   fontWeight: 600,
                   cursor: 'pointer',
                   backgroundColor: viewportMode === vm.id ? '#6366f1' : '#1e293b',
@@ -508,22 +255,12 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           </div>
         </div>
 
-        {/* Section 5: LEGO Discretization Pipeline Guidelines */}
+        {/* 6. Discretization Rules */}
         <div>
-          <label
-            style={{
-              fontSize: 12,
-              fontWeight: 700,
-              color: '#94a3b8',
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em',
-              display: 'block',
-              marginBottom: 8
-            }}
-          >
+          <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 6 }}>
             Discretization Rules
           </label>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 12 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 11 }}>
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
               <input
                 type="checkbox"
@@ -531,7 +268,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                 onChange={(e) => onChangeOptions({ staggerRunningBond: e.target.checked })}
                 style={{ accentColor: '#38bdf8' }}
               />
-              Interlocking Running Bond (Staggered Seams)
+              Interlocking Running Bond
             </label>
 
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
@@ -541,7 +278,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                 onChange={(e) => onChangeOptions({ enableModernWeirdParts: e.target.checked })}
                 style={{ accentColor: '#38bdf8' }}
               />
-              Modern Database Parts (Curved Slopes, Macaroni, Horns)
+              Curved Slopes, Macaroni & Dishes
             </label>
 
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
@@ -551,191 +288,27 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                 onChange={(e) => onChangeOptions({ enableStudlessTopFinish: e.target.checked })}
                 style={{ accentColor: '#38bdf8' }}
               />
-              Studless Top Finish (Smooth Flat Tiles)
-            </label>
-
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-              <input
-                type="checkbox"
-                checked={options.directRGBSampling}
-                onChange={(e) => onChangeOptions({ directRGBSampling: e.target.checked })}
-                style={{ accentColor: '#38bdf8' }}
-              />
-              Direct 24-bit RGB Sampling ("Cheat Mode")
+              Studless Top Finish (Smooth Tiles)
             </label>
           </div>
-        </div>
-
-        {/* Section 6: Playback & Speed */}
-        <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-            <label
-              style={{
-                fontSize: 12,
-                fontWeight: 700,
-                color: '#94a3b8',
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em'
-              }}
-            >
-              Growth Speed
-            </label>
-            <span style={{ fontSize: 11, fontFamily: 'monospace', color: '#cbd5e1' }}>{speed}x</span>
-          </div>
-          <input
-            type="range"
-            min={1}
-            max={20}
-            value={speed}
-            onChange={(e) => onChangeSpeed(parseInt(e.target.value))}
-            style={{ width: '100%', accentColor: '#38bdf8' }}
-          />
         </div>
       </div>
 
       {/* Action Footer Buttons */}
-      <div
-        style={{
-          padding: 16,
-          borderTop: '1px solid rgba(148, 163, 184, 0.15)',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 8,
-          backgroundColor: '#090a0f'
-        }}
-      >
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-          <button
-            onClick={onTogglePlay}
-            disabled={isLoading}
-            style={{
-              padding: '10px 14px',
-              borderRadius: 8,
-              border: 'none',
-              fontSize: 13,
-              fontWeight: 700,
-              cursor: isLoading ? 'wait' : 'pointer',
-              backgroundColor: isPlaying ? '#f59e0b' : '#10b981',
-              color: '#0f172a',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 6
-            }}
-          >
-            {isPlaying ? '⏸ Pause' : '▶ Grow Model'}
-          </button>
-
-          <button
-            onClick={onStep}
-            disabled={isLoading}
-            style={{
-              padding: '10px 14px',
-              borderRadius: 8,
-              border: '1px solid rgba(148, 163, 184, 0.2)',
-              backgroundColor: '#1e293b',
-              color: '#f8fafc',
-              fontSize: 13,
-              fontWeight: 600,
-              cursor: isLoading ? 'wait' : 'pointer'
-            }}
-          >
-            ⏭ Step 1x
-          </button>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-          <button
-            onClick={onSolveAll}
-            disabled={isLoading}
-            style={{
-              padding: '8px 12px',
-              borderRadius: 6,
-              border: 'none',
-              backgroundColor: '#3b82f6',
-              color: '#ffffff',
-              fontSize: 12,
-              fontWeight: 600,
-              cursor: isLoading ? 'wait' : 'pointer'
-            }}
-          >
-            ⚡ Solve All Passes
-          </button>
-
-          <button
-            onClick={onReset}
-            disabled={isLoading}
-            style={{
-              padding: '8px 12px',
-              borderRadius: 6,
-              border: '1px solid rgba(148, 163, 184, 0.2)',
-              backgroundColor: '#1e293b',
-              color: '#cbd5e1',
-              fontSize: 12,
-              fontWeight: 600,
-              cursor: isLoading ? 'wait' : 'pointer'
-            }}
-          >
-            ↺ Reset
-          </button>
-        </div>
-
-        {/* Modal Triggers */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 4 }}>
-          <button
-            onClick={onOpenDatabase}
-            style={{
-              padding: '8px 10px',
-              borderRadius: 6,
-              border: '1px solid rgba(56, 189, 248, 0.3)',
-              backgroundColor: 'rgba(56, 189, 248, 0.1)',
-              color: '#38bdf8',
-              fontSize: 11,
-              fontWeight: 600,
-              cursor: 'pointer'
-            }}
-          >
-            📚 207 Connectors
-          </button>
-
-          <button
-            onClick={onOpenGallery}
-            style={{
-              padding: '8px 10px',
-              borderRadius: 6,
-              border: '1px solid rgba(16, 185, 129, 0.3)',
-              backgroundColor: 'rgba(16, 185, 129, 0.1)',
-              color: '#34d399',
-              fontSize: 11,
-              fontWeight: 600,
-              cursor: 'pointer'
-            }}
-          >
-            🏛️ OMR Gallery
-          </button>
-        </div>
-
-        <button
-          onClick={onExportLDR}
-          disabled={isLoading}
-          style={{
-            marginTop: 4,
-            padding: '10px 14px',
-            borderRadius: 8,
-            border: 'none',
-            backgroundColor: '#e11d48',
-            color: '#ffffff',
-            fontSize: 13,
-            fontWeight: 700,
-            cursor: isLoading ? 'wait' : 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 6
-          }}
-        >
-          💾 Export .LDR (0x2RRGGBB Cheat Mode)
-        </button>
+      <div style={{ padding: 14, borderTop: '1px solid rgba(148, 163, 184, 0.15)', backgroundColor: '#090a0f' }}>
+        <PlaybackControls
+          isPlaying={isPlaying}
+          onTogglePlay={onTogglePlay}
+          onStep={onStep}
+          onSolveAll={onSolveAll}
+          onReset={onReset}
+          onExportLDR={onExportLDR}
+          onOpenDatabase={onOpenDatabase}
+          onOpenGallery={onOpenGallery}
+          speed={speed}
+          onChangeSpeed={onChangeSpeed}
+          isLoading={isLoading}
+        />
       </div>
     </div>
   );

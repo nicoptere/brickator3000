@@ -107,6 +107,7 @@ export class MarkovCoreGrowingEngine {
   public currentPhase: DiscretizationPhase = 'VOLUME_FILL';
 
   // Layer cursors for smooth animation
+  public targetIslandId: number | null = null;
   private baseTilingLayerCursor: number = 0;
   private surfaceCandidateCursor: number = 0;
   private surfaceCandidates: Array<{ x: number; z: number; y: number }> = [];
@@ -238,8 +239,8 @@ export class MarkovCoreGrowingEngine {
       }
     }
 
-    // Only set colorHex to island color if forced or if options explicitly asks for it
-    if (dominantIslandId !== undefined && !forcedColorHex && islandColorHex && this.options.colorMode === 'island_components' && !this.options.directRGBSampling) {
+    // Island components mode: every brick in the island receives the island's distinct color material
+    if (dominantIslandId !== undefined && !forcedColorHex && islandColorHex && this.options.colorMode === 'island_components') {
       colorHex = islandColorHex;
     }
 
@@ -408,6 +409,7 @@ export class MarkovCoreGrowingEngine {
 
         const cell = this.grid.grid[x]?.[z]?.[y];
         if (!cell || !cell.occupied || this.isCellCovered(x, z, y)) continue;
+        if (this.targetIslandId != null && cell.islandId !== this.targetIslandId) continue;
 
         const islandId = cell.islandId;
         let placed = false;
@@ -504,7 +506,7 @@ export class MarkovCoreGrowingEngine {
       for (let z = 0; z < numStudsZ; z++) {
         for (let y = 0; y < numPlatesY; y++) {
           const cell = this.grid.grid[x][z][y];
-          if (cell && cell.occupied && cell.isBoundary) {
+          if (cell && cell.occupied && cell.isBoundary && (this.targetIslandId == null || cell.islandId === this.targetIslandId)) {
             this.surfaceCandidates.push({ x, z, y });
           }
         }
@@ -724,6 +726,7 @@ export class MarkovCoreGrowingEngine {
 
           const placed = this.placedBricks.get(brickId);
           if (!placed) break;
+          if (this.targetIslandId != null && placed.islandId !== this.targetIslandId) break;
 
           if (
             placed.profile === 'tile_flat' ||
@@ -845,5 +848,37 @@ export class MarkovCoreGrowingEngine {
       steps++;
     }
     return res;
+  }
+
+  /**
+   * Solves a single isolated island through all 3 discretization phases.
+   */
+  public solveSingleIsland(islandId: number, maxSteps: number = 1000): GrowthStepResult {
+    this.targetIslandId = islandId;
+    this.currentPhase = 'VOLUME_FILL';
+    this.baseTilingLayerCursor = 0;
+    let steps = 0;
+    let res = this.step();
+    while (res.phase !== 'DONE' && steps < maxSteps) {
+      res = this.step();
+      steps++;
+    }
+    this.targetIslandId = null;
+    return res;
+  }
+
+  /**
+   * Discretizes all islands independently one by one with dedicated seed cores.
+   */
+  public solveAllIslandsIndependently(maxStepsPerIsland: number = 1000): GrowthStepResult {
+    const islands = this.grid.islands || [];
+    if (islands.length === 0) {
+      return this.solveAll(maxStepsPerIsland);
+    }
+    let lastRes = this.step();
+    for (const isl of islands) {
+      lastRes = this.solveSingleIsland(isl.id, maxStepsPerIsland);
+    }
+    return lastRes;
   }
 }

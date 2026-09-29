@@ -27,16 +27,18 @@ import { MeshVoxelizer } from '../engine/meshVoxelizer';
 import { MarkovCoreGrowingEngine } from '../engine/markovCoreGrowingEngine';
 import { LDrawExporter } from '../engine/ldrawExporter';
 import { brickAudio } from '../engine/brickAudio';
+import { MeshIslandSegmenter } from '../engine/meshIslandSegmenter';
+import { WFC_REFINER } from '../engine/wfcRefinerEngine';
 
 const MODEL_PRESETS: Record<
   string,
   { label: string; url: string; fallbackType: 'duck' | 'car' | 'dolphin' | 'airplane' | 'dome_creature' }
 > = {
+  beetle: { label: 'VW Beetle', url: '/models/clean/cars/vwbeetle.glb', fallbackType: 'car' },
+  mini: { label: 'Mini Cooper', url: '/models/clean/cars/mini.glb', fallbackType: 'car' },
+  concorde: { label: 'Concorde', url: '/models/clean/airplanes/concord.glb', fallbackType: 'airplane' },
   duck: { label: 'Duck', url: '/sample_models/duck.glb', fallbackType: 'duck' },
   dolphin: { label: 'Dolphin', url: '/sample_models/dolphin.glb', fallbackType: 'dolphin' },
-  mini: { label: 'Mini Cooper', url: '/models/clean/cars/mini.glb', fallbackType: 'car' },
-  beetle: { label: 'VW Beetle', url: '/models/clean/cars/vwbeetle.glb', fallbackType: 'car' },
-  concorde: { label: 'Concorde', url: '/models/clean/airplanes/concord.glb', fallbackType: 'airplane' },
   delacroix: { label: 'Delacroix', url: '/sample_models/delacroix_low_poly.ply', fallbackType: 'dome_creature' },
   prison: { label: 'Castle', url: '/sample_models/prison_0.obj', fallbackType: 'dome_creature' }
 };
@@ -54,6 +56,9 @@ export const MarkovStudio: React.FC = () => {
   const [viewportMode, setViewportMode] = useState<ViewportMode>('GROWING_CORE');
   const [sourceMeshMode, setSourceMeshMode] = useState<SourceMeshMode>('none'); // Default: zero ghost mesh overlay
   const [colorMode, setColorMode] = useState<'island_components' | 'wfc_hierarchy' | 'actual'>('island_components'); // Color code each part with distinct color
+  const [selectedIslandId, setSelectedIslandId] = useState<number | null>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true);
+  const [colorSeed, setColorSeed] = useState<number>(1);
   const [autoRotate, setAutoRotate] = useState<boolean>(false);
   const [isMuted, setIsMuted] = useState<boolean>(false);
   const [speed, setSpeed] = useState<number>(6);
@@ -247,6 +252,79 @@ export const MarkovStudio: React.FC = () => {
     confetti({ particleCount: 80, spread: 80, origin: { y: 0.6 } });
   };
 
+  // Discretize single island alone
+  const handleDiscretizeIsland = (islandId: number) => {
+    if (!engine) return;
+    setIsPlaying(false);
+    setSelectedIslandId(islandId);
+    const res = engine.solveSingleIsland(islandId, 1500);
+    setBricks(Array.from(engine.placedBricks.values()));
+    setCurrentStepIndex(engine.stepIndex);
+    setPhase(engine.currentPhase);
+    setStats({
+      totalPlaced: res.totalPlacedBricks,
+      leafCount: res.bomStats.leafCount,
+      edgeCount: res.bomStats.edgeCount,
+      fillCount: res.bomStats.fillCount,
+      uniqueParts: res.bomStats.uniquePartCount,
+      coverage: Math.round(res.coverageRatio * 100)
+    });
+  };
+
+  // Discretize all islands independently one by one with dedicated seed cores
+  const handleDiscretizeAllIndependently = () => {
+    if (!engine) return;
+    setIsPlaying(false);
+    setSelectedIslandId(null);
+    const res = engine.solveAllIslandsIndependently(1500);
+    setBricks(Array.from(engine.placedBricks.values()));
+    setCurrentStepIndex(engine.stepIndex);
+    setPhase(engine.currentPhase);
+    setStats({
+      totalPlaced: res.totalPlacedBricks,
+      leafCount: res.bomStats.leafCount,
+      edgeCount: res.bomStats.edgeCount,
+      fillCount: res.bomStats.fillCount,
+      uniqueParts: res.bomStats.uniquePartCount,
+      coverage: Math.round(res.coverageRatio * 100)
+    });
+    confetti({ particleCount: 70, spread: 80, origin: { y: 0.6 } });
+  };
+
+  // Solve WFC on single island or full assembly
+  const handleSolveWfcOnIsland = (islandId: number | null) => {
+    if (!grid || bricks.length === 0) return;
+    setIsPlaying(false);
+    if (islandId != null) {
+      WFC_REFINER.refineIsland(islandId, bricks, grid);
+    } else {
+      WFC_REFINER.refineModel(bricks, grid);
+    }
+    setBricks([...bricks]);
+  };
+
+  // Re-roll random colors for all islands
+  const handleRerollColors = () => {
+    if (!grid || !grid.islands) return;
+    const newSeed = colorSeed + 1;
+    setColorSeed(newSeed);
+    MeshIslandSegmenter.recolorIslands(grid.islands, newSeed);
+
+    if (engine) {
+      const islandColorMap = new Map(grid.islands.map((i) => [i.id, i.colorHex]));
+      for (const b of engine.placedBricks.values()) {
+        if (b.islandId !== undefined && islandColorMap.has(b.islandId)) {
+          const newColor = islandColorMap.get(b.islandId)!;
+          b.islandColorHex = newColor;
+          if (colorMode === 'island_components') {
+            b.colorHex = newColor;
+          }
+        }
+      }
+      setBricks(Array.from(engine.placedBricks.values()));
+    }
+  };
+
   const handleReset = () => {
     initializeModel(modelType, targetHeightBricks, options);
   };
@@ -275,8 +353,8 @@ export const MarkovStudio: React.FC = () => {
         position: 'relative'
       }}
     >
-      {/* 3D Viewport Area */}
-      <div style={{ flex: 1, height: '100%', position: 'relative' }}>
+      {/* 3D Viewport Area - minWidth: 0 prevents flex overflow */}
+      <div style={{ flex: '1 1 0%', minWidth: 0, height: '100%', position: 'relative', overflow: 'hidden' }}>
         <Viewport3D
           bricks={bricks}
           grid={grid}
@@ -286,7 +364,33 @@ export const MarkovStudio: React.FC = () => {
           sourceModel={sourceModel}
           sourceMeshMode={sourceMeshMode}
           colorMode={colorMode}
+          selectedIslandId={selectedIslandId}
         />
+
+        {/* Floating Sidebar Toggle Button */}
+        <button
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          style={{
+            position: 'absolute',
+            top: 16,
+            right: 16,
+            zIndex: 30,
+            padding: '7px 12px',
+            borderRadius: 8,
+            border: '1px solid rgba(56, 189, 248, 0.3)',
+            backgroundColor: isSidebarOpen ? 'rgba(15, 23, 42, 0.85)' : '#0284c7',
+            color: '#f8fafc',
+            fontWeight: 700,
+            fontSize: 11,
+            cursor: 'pointer',
+            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.4)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6
+          }}
+        >
+          {isSidebarOpen ? '✕ Hide Controls' : '⚙️ Show Controls & Islands'}
+        </button>
 
         {/* Top Floating HUD: Real-time BOM & Pipeline Analytics */}
         <div
@@ -426,38 +530,46 @@ export const MarkovStudio: React.FC = () => {
       </div>
 
       {/* Side Control Panel */}
-      <ControlPanel
-        modelType={modelType}
-        onSelectModel={handleSelectModel}
-        onFileUpload={handleFileUpload}
-        targetHeightBricks={targetHeightBricks}
-        onChangeHeight={handleChangeHeight}
-        colorMode={colorMode}
-        onChangeColorMode={setColorMode}
-        islands={grid?.islands}
-        options={options}
-        onChangeOptions={handleChangeOptions}
-        viewportMode={viewportMode}
-        onChangeViewportMode={setViewportMode}
-        sourceMeshMode={sourceMeshMode}
-        onChangeSourceMeshMode={setSourceMeshMode}
-        isPlaying={isPlaying}
-        onTogglePlay={() => setIsPlaying(!isPlaying)}
-        onStep={executeStep}
-        onSolveAll={handleSolveAll}
-        onReset={handleReset}
-        onExportLDR={handleExportLDR}
-        onOpenDatabase={() => setIsDatabaseOpen(true)}
-        onOpenGallery={() => setIsGalleryOpen(true)}
-        isMuted={isMuted}
-        onToggleMute={() => setIsMuted(brickAudio.toggleMute())}
-        autoRotate={autoRotate}
-        onToggleAutoRotate={() => setAutoRotate(!autoRotate)}
-        speed={speed}
-        onChangeSpeed={setSpeed}
-        isLoading={isLoading}
-        loadingMessage={loadingMessage}
-      />
+      {isSidebarOpen && (
+        <ControlPanel
+          modelType={modelType}
+          onSelectModel={handleSelectModel}
+          onFileUpload={handleFileUpload}
+          targetHeightBricks={targetHeightBricks}
+          onChangeHeight={handleChangeHeight}
+          colorMode={colorMode}
+          onChangeColorMode={setColorMode}
+          islands={grid?.islands}
+          selectedIslandId={selectedIslandId}
+          onSelectIsland={setSelectedIslandId}
+          onDiscretizeIsland={handleDiscretizeIsland}
+          onDiscretizeAllIndependently={handleDiscretizeAllIndependently}
+          onSolveWfcOnIsland={handleSolveWfcOnIsland}
+          onRerollColors={handleRerollColors}
+          options={options}
+          onChangeOptions={handleChangeOptions}
+          viewportMode={viewportMode}
+          onChangeViewportMode={setViewportMode}
+          sourceMeshMode={sourceMeshMode}
+          onChangeSourceMeshMode={setSourceMeshMode}
+          isPlaying={isPlaying}
+          onTogglePlay={() => setIsPlaying(!isPlaying)}
+          onStep={executeStep}
+          onSolveAll={handleSolveAll}
+          onReset={handleReset}
+          onExportLDR={handleExportLDR}
+          onOpenDatabase={() => setIsDatabaseOpen(true)}
+          onOpenGallery={() => setIsGalleryOpen(true)}
+          isMuted={isMuted}
+          onToggleMute={() => setIsMuted(brickAudio.toggleMute())}
+          autoRotate={autoRotate}
+          onToggleAutoRotate={() => setAutoRotate(!autoRotate)}
+          speed={speed}
+          onChangeSpeed={setSpeed}
+          isLoading={isLoading}
+          loadingMessage={loadingMessage}
+        />
+      )}
 
       {/* Inspectors */}
       <ConnectorDatabaseInspector isOpen={isDatabaseOpen} onClose={() => setIsDatabaseOpen(false)} />

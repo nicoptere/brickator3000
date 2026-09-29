@@ -117,6 +117,15 @@ export class WFCRefinerEngine {
       transitionsApplied
     };
   }
+
+  /**
+   * Refines a specific isolated island component using WFC constraint propagation.
+   */
+  public refineIsland(islandId: number, bricks: PlacedBrick[], grid: VoxelGrid): WFCSolutionMetrics {
+    const islandBricks = bricks.filter((b) => b.islandId === islandId);
+    return this.refineModel(islandBricks, grid);
+  }
 }
 
 export const WFC_REFINER = new WFCRefinerEngine();
+
