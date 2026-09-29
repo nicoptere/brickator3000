@@ -19,6 +19,9 @@ import { ColorModeSelector, ColorMode } from './controls/ColorModeSelector';
 import { ScaleControl } from './controls/ScaleControl';
 import { IslandInspector, IslandMeta } from './controls/IslandInspector';
 import { PlaybackControls } from './controls/PlaybackControls';
+import { OMRCategory } from '../engine/wfcRefinerEngine';
+import { MeshDistanceResult } from '../engine/meshDistanceMetric';
+import { BuildabilityReport, HarmonizationResult } from '../engine/polishHarmonizer';
 
 export interface ControlPanelProps {
   modelType: string;
@@ -57,6 +60,14 @@ export interface ControlPanelProps {
   onChangeSpeed: (s: number) => void;
   isLoading?: boolean;
   loadingMessage?: string;
+  omrCategory?: OMRCategory;
+  onChangeOmrCategory?: (c: OMRCategory) => void;
+  onHarmonizeNeighborhoods?: () => void;
+  onVerifyBuildability?: () => void;
+  onEvaluateDistance?: () => void;
+  distanceMetric?: MeshDistanceResult | null;
+  buildabilityReport?: BuildabilityReport | null;
+  harmonizationResult?: HarmonizationResult | null;
 }
 
 export const ControlPanel: React.FC<ControlPanelProps> = ({
@@ -95,7 +106,15 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   speed,
   onChangeSpeed,
   isLoading = false,
-  loadingMessage = 'Loading model...'
+  loadingMessage = 'Loading model...',
+  omrCategory = 'vehicles',
+  onChangeOmrCategory,
+  onHarmonizeNeighborhoods,
+  onVerifyBuildability,
+  onEvaluateDistance,
+  distanceMetric = null,
+  buildabilityReport = null,
+  harmonizationResult = null
 }) => {
   return (
     <div
@@ -293,6 +312,175 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               Studless Top Finish (Smooth Tiles)
             </label>
           </div>
+        </div>
+
+        {/* 7. OMR Category Profile Selector */}
+        <div>
+          <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 6 }}>
+            OMR Knowledge Profile
+          </label>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+            {[
+              { id: 'vehicles', label: '🏎️ Vehicles & Cars' },
+              { id: 'architecture', label: '🏛️ Architecture' },
+              { id: 'space', label: '🚀 Space & Sci-Fi' },
+              { id: 'universal', label: '🌐 Universal (1.4k)' }
+            ].map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => onChangeOmrCategory && onChangeOmrCategory(cat.id as OMRCategory)}
+                style={{
+                  padding: '7px 8px',
+                  borderRadius: 6,
+                  border: 'none',
+                  fontSize: 10,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  backgroundColor: omrCategory === cat.id ? '#0284c7' : '#1e293b',
+                  color: omrCategory === cat.id ? '#ffffff' : '#94a3b8',
+                  boxShadow: omrCategory === cat.id ? '0 0 12px rgba(2, 132, 199, 0.4)' : 'none'
+                }}
+              >
+                {cat.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 8. Polish & Buildability Post-Processing */}
+        <div>
+          <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 6 }}>
+            Polish & Structural Buildability
+          </label>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+              <button
+                onClick={onHarmonizeNeighborhoods}
+                style={{
+                  padding: '7px 8px',
+                  borderRadius: 6,
+                  border: '1px solid rgba(168, 85, 247, 0.4)',
+                  backgroundColor: 'rgba(168, 85, 247, 0.15)',
+                  color: '#c084fc',
+                  fontSize: 10,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  textAlign: 'center'
+                }}
+                title="Detect isolated slope mismatches and merge adjacent continuous curves"
+              >
+                ✨ Harmonize Slopes
+              </button>
+              <button
+                onClick={onVerifyBuildability}
+                style={{
+                  padding: '7px 8px',
+                  borderRadius: 6,
+                  border: '1px solid rgba(245, 158, 11, 0.4)',
+                  backgroundColor: 'rgba(245, 158, 11, 0.15)',
+                  color: '#fbbf24',
+                  fontSize: 10,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  textAlign: 'center'
+                }}
+                title="BFS Grounding Check from y=0 build plate & running bond interlocking verification"
+              >
+                🏗️ Verify Grounding
+              </button>
+            </div>
+
+            {/* Harmonization & Buildability Status Badge */}
+            {(harmonizationResult || buildabilityReport) && (
+              <div
+                style={{
+                  padding: '8px 10px',
+                  borderRadius: 6,
+                  backgroundColor: 'rgba(30, 41, 59, 0.7)',
+                  border: '1px solid rgba(148, 163, 184, 0.2)',
+                  fontSize: 10,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 3
+                }}
+              >
+                {harmonizationResult && (
+                  <div style={{ color: '#c084fc' }}>
+                    Merged Curves: {harmonizationResult.mergedContinuousCurvesCount} | Slopes Aligned: {harmonizationResult.harmonizedSlopesCount}
+                  </div>
+                )}
+                {buildabilityReport && (
+                  <div style={{ color: buildabilityReport.is100PercentGrounded ? '#34d399' : '#f87171' }}>
+                    {buildabilityReport.is100PercentGrounded ? '✅ 100% Grounded & Buildable' : `⚠️ ${buildabilityReport.floatingBricksCount} Floating Bricks`}
+                    {' '}| Interlock: {buildabilityReport.interlockRatio}%
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* 9. Analytical Mesh Distance Fidelity Metric */}
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+            <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Surface Mesh Fidelity
+            </label>
+            {onEvaluateDistance && (
+              <button
+                onClick={onEvaluateDistance}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#38bdf8',
+                  fontSize: 10,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  padding: 0
+                }}
+              >
+                📐 Calculate Distance
+              </button>
+            )}
+          </div>
+
+          {distanceMetric ? (
+            <div
+              style={{
+                padding: '8px 10px',
+                borderRadius: 6,
+                backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                border: '1px solid rgba(56, 189, 248, 0.3)',
+                fontSize: 10,
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: 6
+              }}
+            >
+              <div>
+                <div style={{ color: '#94a3b8' }}>Mean Chamfer:</div>
+                <div style={{ color: '#38bdf8', fontWeight: 700 }}>
+                  {distanceMetric.meanDistanceMm} mm <span style={{ color: '#64748b', fontSize: 9 }}>({distanceMetric.meanDistanceLDU} LDU)</span>
+                </div>
+              </div>
+              <div>
+                <div style={{ color: '#94a3b8' }}>RMS Error:</div>
+                <div style={{ color: '#38bdf8', fontWeight: 700 }}>{distanceMetric.rmsDistanceMm} mm</div>
+              </div>
+              <div>
+                <div style={{ color: '#94a3b8' }}>Max Hausdorff:</div>
+                <div style={{ color: '#f59e0b', fontWeight: 700 }}>{distanceMetric.maxDistanceMm} mm</div>
+              </div>
+              <div>
+                <div style={{ color: '#94a3b8' }}>Fidelity Score:</div>
+                <div style={{ color: '#34d399', fontWeight: 700 }}>{distanceMetric.surfaceFidelityScore}%</div>
+              </div>
+            </div>
+          ) : (
+            <div style={{ fontSize: 10, color: '#64748b', fontStyle: 'italic' }}>
+              Solve model to calculate Chamfer & Hausdorff surface error.
+            </div>
+          )}
         </div>
       </div>
 

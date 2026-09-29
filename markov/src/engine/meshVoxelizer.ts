@@ -18,9 +18,10 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader.js';
-import { VoxelGrid, VoxelCell } from './types';
+import { VoxelGrid, VoxelCell, PlacedBrick } from './types';
 import { MultiResolutionLattice } from './multiResolutionLattice';
 import { MeshIslandSegmenter, MeshIsland } from './meshIslandSegmenter';
+import { MeshDistanceEvaluator, MeshDistanceResult, MeshDistanceOptions } from './meshDistanceMetric';
 
 export interface VoxelizerOptions {
   targetHeightBricks?: number; // Target model height in 1*1*1 bricks (e.g. 16, 24, 32, 64)
@@ -54,6 +55,10 @@ const OFFICIAL_LEGO_COLORS: Array<{ code: number; name: string; hex: string; r: 
   { code: 378, name: 'Sand Green', hex: '#708e7c', r: 112, g: 142, b: 124 },
   { code: 484, name: 'Dark Orange', hex: '#91501c', r: 145, g: 80, b: 28 }
 ];
+
+const HEX_BYTE_TABLE: string[] = Array.from({ length: 256 }, (_, i) => i.toString(16).padStart(2, '0'));
+const fastByteToHex = (byteVal: number): string => HEX_BYTE_TABLE[Math.max(0, Math.min(255, byteVal | 0))];
+const fastFloatToHex = (floatVal: number): string => HEX_BYTE_TABLE[Math.max(0, Math.min(255, (floatVal * 255 + 0.5) | 0))];
 
 export function findNearestLegoColor(hexColor: string): { code: number; name: string } {
   const clean = hexColor.replace('#', '');
@@ -936,8 +941,7 @@ export class MeshVoxelizer {
                     const r = fw * col.getX(i) + fu * col.getX(i + 1) + fv * col.getX(i + 2);
                     const g = fw * col.getY(i) + fu * col.getY(i + 1) + fv * col.getY(i + 2);
                     const b = fw * col.getZ(i) + fu * col.getZ(i + 1) + fv * col.getZ(i + 2);
-                    const toHex = (c: number) => Math.round(Math.min(1, Math.max(0, c)) * 255).toString(16).padStart(2, '0');
-                    cell.colorHex = `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+                    cell.colorHex = `#${fastFloatToHex(r)}${fastFloatToHex(g)}${fastFloatToHex(b)}`;
                   } else if (decodedTex && uv) {
                     const fw = 1.0 - fu - fv;
                     const curU = fw * uvA.x + fu * uvB.x + fv * uvC.x;
@@ -946,8 +950,7 @@ export class MeshVoxelizer {
                     const py = Math.min(decodedTex.height - 1, Math.max(0, Math.floor((1 - ((curV % 1 + 1) % 1)) * decodedTex.height)));
                     const idx = (py * decodedTex.width + px) * 4;
                     if (decodedTex.pixels[idx + 3] > 20) {
-                      const toHex = (c: number) => c.toString(16).padStart(2, '0');
-                      cell.colorHex = `#${toHex(decodedTex.pixels[idx])}${toHex(decodedTex.pixels[idx + 1])}${toHex(decodedTex.pixels[idx + 2])}`;
+                      cell.colorHex = `#${fastByteToHex(decodedTex.pixels[idx])}${fastByteToHex(decodedTex.pixels[idx + 1])}${fastByteToHex(decodedTex.pixels[idx + 2])}`;
                     }
                   }
                 }
@@ -1192,7 +1195,19 @@ export class MeshVoxelizer {
       color: hasVertexColors ? 0xffffff : 0xf2cd37
     });
     const mesh = new THREE.Mesh(geometry, dummyMaterial);
-    mesh.updateMatrixWorld(true);
     return this.voxelizeObject(mesh, options);
+  }
+
+  /**
+   * Evaluates surface distance metrics (mean, RMS, max Hausdorff distance) between placed LEGO
+   * bricks and the ground truth source 3D model.
+   */
+  public static evaluateMeshDistance(
+    bricks: PlacedBrick[],
+    sourceModel: THREE.Object3D,
+    grid: VoxelGrid,
+    options: MeshDistanceOptions = {}
+  ): MeshDistanceResult {
+    return MeshDistanceEvaluator.evaluate(bricks, sourceModel, grid, options);
   }
 }

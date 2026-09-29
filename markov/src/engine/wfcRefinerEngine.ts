@@ -1,8 +1,12 @@
 /**
- * Wave Function Collapse (WFC) Multi-Scale Refinement Engine.
+ * Wave Function Collapse (WFC) Multi-Scale Refinement Engine with Category Profiles.
  *
- * Implements Step 2 WFC Refinement using the mined 234,487 directional transitions
- * from 1,420 official LDraw OMR models (omrAdjacencyTensor.json):
+ * Implements Step 2 WFC Refinement using statistical 3D transition tensors mined from
+ * 1,420 official LDraw OMR models across specialized categories:
+ * - 'universal': Full combined dataset (1,420 sets)
+ * - 'vehicles': Creator Expert cars, Speed Champions, Technic (Mini Cooper, Beetle, Mustang, Porsche)
+ * - 'architecture': Modular buildings, landmarks (Tower Bridge, Big Ben, Colosseum, Cafe Corner)
+ * - 'space': Star Wars UCS, Space Shuttle (Discovery, Millennium Falcon, Blockade Runner)
  *
  * Multi-Scale Resolution Hierarchy:
  * - Macro Base (N = 8): Large core blocks (2x8, 2x6, 2x4)
@@ -13,21 +17,70 @@
  */
 
 import { VoxelGrid, PlacedBrick, WFC_SCALE_COLORS } from './types';
-import { CONNECTOR_DATABASE } from './connectorDatabase';
 import omrTensor from './omrAdjacencyTensor.json';
+
+export type OMRCategory = 'universal' | 'vehicles' | 'architecture' | 'space';
 
 export interface WFCSolutionMetrics {
   totalRefined: number;
   compatibilityScore: number;
   entropyLevels: number[];
   transitionsApplied: number;
+  category: OMRCategory;
 }
 
 export class WFCRefinerEngine {
+  private currentCategory: OMRCategory = 'universal';
+  private tensorCache: Map<string, any> = new Map();
   private tensor: Record<string, Record<string, Array<{ partId: string; count: number; prob: number }>>>;
 
   constructor() {
     this.tensor = omrTensor as any;
+    this.tensorCache.set('universal', this.tensor);
+  }
+
+  public getCategory(): OMRCategory {
+    return this.currentCategory;
+  }
+
+  public setCategoryTensor(category: OMRCategory, tensorData: any): void {
+    this.tensorCache.set(category, tensorData);
+    this.currentCategory = category;
+    this.tensor = tensorData;
+  }
+
+  /**
+   * Switches the active OMR knowledge tensor at runtime with automatic on-demand code splitting.
+   */
+  public async switchCategory(category: OMRCategory): Promise<void> {
+    if (this.currentCategory === category && this.tensor) return;
+
+    if (this.tensorCache.has(category)) {
+      this.currentCategory = category;
+      this.tensor = this.tensorCache.get(category);
+      return;
+    }
+
+    try {
+      let loaded: any = null;
+      if (category === 'vehicles') {
+        loaded = (await import('./tensors/vehicles.json')).default;
+      } else if (category === 'architecture') {
+        loaded = (await import('./tensors/architecture.json')).default;
+      } else if (category === 'space') {
+        loaded = (await import('./tensors/space.json')).default;
+      } else {
+        loaded = omrTensor;
+      }
+
+      this.tensorCache.set(category, loaded);
+      this.currentCategory = category;
+      this.tensor = loaded;
+    } catch (err) {
+      console.warn(`Could not dynamically load OMR category tensor for ${category}, falling back to universal:`, err);
+      this.currentCategory = 'universal';
+      this.tensor = this.tensorCache.get('universal') || (omrTensor as any);
+    }
   }
 
   /**
@@ -46,7 +99,7 @@ export class WFCRefinerEngine {
   }
 
   /**
-   * Refines a set of placed bricks using WFC constraint propagation.
+   * Refines a set of placed bricks using WFC constraint propagation and active category knowledge.
    */
   public refineModel(bricks: PlacedBrick[], grid: VoxelGrid): WFCSolutionMetrics {
     let transitionsApplied = 0;
@@ -114,7 +167,8 @@ export class WFCRefinerEngine {
       totalRefined: bricks.length,
       compatibilityScore: parseFloat((avgCompatibility * 100).toFixed(1)),
       entropyLevels: [8, 4, 2, 1],
-      transitionsApplied
+      transitionsApplied,
+      category: this.currentCategory
     };
   }
 
@@ -128,4 +182,3 @@ export class WFCRefinerEngine {
 }
 
 export const WFC_REFINER = new WFCRefinerEngine();
-

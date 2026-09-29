@@ -17,7 +17,6 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { PlacedBrick, VoxelGrid } from '../engine/types';
 import { LDU_STUD_PITCH, LDU_BRICK_HEIGHT } from '../engine/connectivityDictionary';
 import { LegoGeometryFactory } from './viewport/legoGeometryFactory';
-import { LegoMaterialFactory } from './viewport/legoMaterialFactory';
 
 export type ViewportMode = 'FINAL_MODEL' | 'GROWING_CORE' | 'CORE_HEATMAP' | 'SLOPE_CURVATURE';
 export type SourceMeshMode = 'ghost' | 'wireframe' | 'none';
@@ -220,7 +219,11 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
   // Update Bricks Model Group
   useEffect(() => {
     const group = modelGroupRef.current;
-    group.clear();
+    while (group.children.length > 0) {
+      const child = group.children[group.children.length - 1];
+      group.remove(child);
+      if ((child as any).dispose) (child as any).dispose();
+    }
 
     if (mode === 'CORE_HEATMAP') {
       group.visible = false;
@@ -239,7 +242,19 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
         ? visibleBricks.filter((b) => b.islandId === selectedIslandId)
         : visibleBricks;
 
-    const studGeom = LegoGeometryFactory.getStudGeometry();
+    interface BrickInstanceData {
+      matrix: THREE.Matrix4;
+      color: THREE.Color;
+    }
+
+    const geomGroups = new Map<string, { geom: THREE.BufferGeometry; instances: BrickInstanceData[] }>();
+    const studInstances: BrickInstanceData[] = [];
+    let newestBrickOverlay: { geom: THREE.BufferGeometry; matrix: THREE.Matrix4 } | null = null;
+
+    const yAxis = new THREE.Vector3(0, 1, 0);
+    const scaleOne = new THREE.Vector3(1, 1, 1);
+    const quat = new THREE.Quaternion();
+    const identityQuat = new THREE.Quaternion();
 
     for (const brick of filteredBricks) {
       const isNewest = mode === 'GROWING_CORE' && brick.stepIndex === currentStepIndex;
@@ -254,15 +269,34 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
         displayColor = brick.colorHex;
       }
 
-      const mat = LegoMaterialFactory.getMaterial(displayColor, isNewest);
+      const color = new THREE.Color(displayColor);
       const pieceGeom = LegoGeometryFactory.getPieceGeometry(brick);
 
-      const brickGroup = new THREE.Group();
+      const isQuarterTurn = brick.rotation === 90 || brick.rotation === 270;
+      const baseWX = brick.baseSize ? brick.baseSize[0] : (isQuarterTurn ? brick.size[1] : brick.size[0]);
+      const baseDZ = brick.baseSize ? brick.baseSize[1] : (isQuarterTurn ? brick.size[0] : brick.size[1]);
+      const baseHY = brick.baseSize ? brick.baseSize[2] : brick.size[2];
 
-      const bodyMesh = new THREE.Mesh(pieceGeom, mat);
-      bodyMesh.castShadow = true;
-      bodyMesh.receiveShadow = true;
-      brickGroup.add(bodyMesh);
+      const cacheKey = `${brick.partId}_${brick.profile}_${baseWX}x${baseDZ}x${baseHY}`;
+
+      const [lx, ly, lz] = brick.ldrawPos;
+      const brickPosY = -ly - (brick.size[2] * LDU_BRICK_HEIGHT) / 2.0;
+      const brickRotY = -(brick.rotation * Math.PI) / 180.0;
+      const brickPos = new THREE.Vector3(lx, brickPosY, -lz);
+      quat.setFromAxisAngle(yAxis, brickRotY);
+
+      const brickMatrix = new THREE.Matrix4().compose(brickPos, quat, scaleOne);
+
+      if (isNewest) {
+        newestBrickOverlay = { geom: pieceGeom, matrix: brickMatrix };
+      }
+
+      let gGroup = geomGroups.get(cacheKey);
+      if (!gGroup) {
+        gGroup = { geom: pieceGeom, instances: [] };
+        geomGroups.set(cacheKey, gGroup);
+      }
+      gGroup.instances.push({ matrix: brickMatrix, color });
 
       // Top studs (if not studless tile, slope, dish, etc.)
       const hasStuds =
@@ -274,41 +308,89 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
         brick.profile !== 'dish';
 
       if (hasStuds) {
-        const isQuarterTurn = brick.rotation === 90 || brick.rotation === 270;
-        const baseWX = brick.baseSize ? brick.baseSize[0] : (isQuarterTurn ? brick.size[1] : brick.size[0]);
-        const baseDZ = brick.baseSize ? brick.baseSize[1] : (isQuarterTurn ? brick.size[0] : brick.size[1]);
-        const baseHY = brick.baseSize ? brick.baseSize[2] : brick.size[2];
-
         const halfW = (baseWX * LDU_STUD_PITCH) / 2.0;
         const halfD = (baseDZ * LDU_STUD_PITCH) / 2.0;
         const topY = (baseHY * LDU_BRICK_HEIGHT) / 2.0;
 
         for (let sx = 0; sx < baseWX; sx++) {
           for (let sz = 0; sz < baseDZ; sz++) {
-            const studMesh = new THREE.Mesh(studGeom, mat);
-            studMesh.position.set(
-              (sx + 0.5) * LDU_STUD_PITCH - halfW,
-              topY + 2.0,
-              (sz + 0.5) * LDU_STUD_PITCH - halfD
-            );
-            studMesh.castShadow = true;
-            brickGroup.add(studMesh);
+            const localX = (sx + 0.5) * LDU_STUD_PITCH - halfW;
+            const localY = topY + 2.0;
+            const localZ = (sz + 0.5) * LDU_STUD_PITCH - halfD;
+
+            const studPos = new THREE.Vector3(localX, localY, localZ).applyAxisAngle(yAxis, brickRotY).add(brickPos);
+            const studMatrix = new THREE.Matrix4().compose(studPos, identityQuat, scaleOne);
+            studInstances.push({ matrix: studMatrix, color });
           }
         }
       }
+    }
 
-      const [lx, ly, lz] = brick.ldrawPos;
-      brickGroup.position.set(lx, -ly - (brick.size[2] * LDU_BRICK_HEIGHT) / 2.0, -lz);
-      brickGroup.rotation.y = -(brick.rotation * Math.PI) / 180.0;
+    // Shared high-performance ABS plastic material with instance color support
+    const plasticMaterial = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      roughness: 0.28,
+      metalness: 0.04
+    });
 
-      group.add(brickGroup);
+    for (const [, groupData] of geomGroups) {
+      const count = groupData.instances.length;
+      if (count === 0) continue;
+      const instMesh = new THREE.InstancedMesh(groupData.geom, plasticMaterial, count);
+      instMesh.castShadow = true;
+      instMesh.receiveShadow = true;
+
+      for (let i = 0; i < count; i++) {
+        const inst = groupData.instances[i];
+        instMesh.setMatrixAt(i, inst.matrix);
+        instMesh.setColorAt(i, inst.color);
+      }
+      instMesh.instanceMatrix.needsUpdate = true;
+      if (instMesh.instanceColor) instMesh.instanceColor.needsUpdate = true;
+      instMesh.computeBoundingSphere();
+      group.add(instMesh);
+    }
+
+    if (studInstances.length > 0) {
+      const studGeom = LegoGeometryFactory.getStudGeometry();
+      const studInstMesh = new THREE.InstancedMesh(studGeom, plasticMaterial, studInstances.length);
+      studInstMesh.castShadow = true;
+      studInstMesh.receiveShadow = true;
+
+      for (let i = 0; i < studInstances.length; i++) {
+        const s = studInstances[i];
+        studInstMesh.setMatrixAt(i, s.matrix);
+        studInstMesh.setColorAt(i, s.color);
+      }
+      studInstMesh.instanceMatrix.needsUpdate = true;
+      if (studInstMesh.instanceColor) studInstMesh.instanceColor.needsUpdate = true;
+      studInstMesh.computeBoundingSphere();
+      group.add(studInstMesh);
+    }
+
+    // Dedicated highlight mesh overlay for newly placed brick
+    if (newestBrickOverlay) {
+      const highlightMat = new THREE.MeshStandardMaterial({
+        color: 0x38bdf8,
+        emissive: 0x38bdf8,
+        emissiveIntensity: 0.6,
+        roughness: 0.2,
+        metalness: 0.1
+      });
+      const highlightMesh = new THREE.Mesh(newestBrickOverlay.geom, highlightMat);
+      highlightMesh.applyMatrix4(newestBrickOverlay.matrix);
+      group.add(highlightMesh);
     }
   }, [bricks, currentStepIndex, mode, colorMode, selectedIslandId]);
 
   // Update Core Heatmap Group
   useEffect(() => {
     const group = heatmapGroupRef.current;
-    group.clear();
+    while (group.children.length > 0) {
+      const child = group.children[group.children.length - 1];
+      group.remove(child);
+      if ((child as any).dispose) (child as any).dispose();
+    }
 
     if (mode !== 'CORE_HEATMAP' || !grid) {
       group.visible = false;
@@ -318,6 +400,14 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
 
     const { numStudsX, numStudsZ, numPlatesY, maxCoreDepth } = grid;
     const boxGeo = new THREE.BoxGeometry(LDU_STUD_PITCH * 0.9, LDU_BRICK_HEIGHT * 0.9, LDU_STUD_PITCH * 0.9);
+
+    interface HeatmapCellData {
+      matrix: THREE.Matrix4;
+      color: THREE.Color;
+    }
+    const heatmapCells: HeatmapCellData[] = [];
+    const scaleOne = new THREE.Vector3(1, 1, 1);
+    const identityQuat = new THREE.Quaternion();
 
     for (let x = 0; x < numStudsX; x++) {
       for (let z = 0; z < numStudsZ; z++) {
@@ -336,17 +426,31 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
             color.setHSL(0.55 - t * 0.55, 0.9, 0.5);
           }
 
-          const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.3, metalness: 0.1 });
-          const m = new THREE.Mesh(boxGeo, mat);
-
           const posX = (x + 0.5 - numStudsX / 2.0) * LDU_STUD_PITCH;
           const posZ = (z + 0.5 - numStudsZ / 2.0) * LDU_STUD_PITCH;
           const posY = (y + 0.5) * LDU_BRICK_HEIGHT;
 
-          m.position.set(posX, posY, posZ);
-          group.add(m);
+          const matrix = new THREE.Matrix4().compose(new THREE.Vector3(posX, posY, posZ), identityQuat, scaleOne);
+          heatmapCells.push({ matrix, color });
         }
       }
+    }
+
+    if (heatmapCells.length > 0) {
+      const heatmapMat = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        roughness: 0.3,
+        metalness: 0.1
+      });
+      const instMesh = new THREE.InstancedMesh(boxGeo, heatmapMat, heatmapCells.length);
+      for (let i = 0; i < heatmapCells.length; i++) {
+        instMesh.setMatrixAt(i, heatmapCells[i].matrix);
+        instMesh.setColorAt(i, heatmapCells[i].color);
+      }
+      instMesh.instanceMatrix.needsUpdate = true;
+      if (instMesh.instanceColor) instMesh.instanceColor.needsUpdate = true;
+      instMesh.computeBoundingSphere();
+      group.add(instMesh);
     }
   }, [grid, mode, selectedIslandId]);
 

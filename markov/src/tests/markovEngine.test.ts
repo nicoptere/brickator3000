@@ -12,6 +12,8 @@ import { MarkovCoreGrowingEngine } from '../engine/markovCoreGrowingEngine';
 import { CONNECTOR_DATABASE } from '../engine/connectorDatabase';
 import { LDrawExporter } from '../engine/ldrawExporter';
 import { MultiResolutionLattice } from '../engine/multiResolutionLattice';
+import { MeshDistanceEvaluator } from '../engine/meshDistanceMetric';
+import { WFC_REFINER } from '../engine/wfcRefinerEngine';
 
 export async function runTests(): Promise<void> {
   console.log('=== RUNNING MARKOV GROWING CORE ENGINE TESTS ===\n');
@@ -204,6 +206,78 @@ export async function runTests(): Promise<void> {
     }
     console.log('  VW Beetle Island Component isolation verified -> PASS\n');
   }
+
+  // Test 9: Analytical Surface Distance Metric (Chamfer & Hausdorff)
+  console.log('Test 9: Testing Analytical Surface Distance Metric Evaluator...');
+  const testSampleModel = MeshVoxelizer.createSampleModel('duck');
+  const testSampleGrid = MeshVoxelizer.voxelizeObject(testSampleModel, { targetHeightBricks: 10 });
+  const testSampleEngine = new MarkovCoreGrowingEngine(testSampleGrid);
+  testSampleEngine.solveAll(1000);
+  const testSampleBricks = Array.from(testSampleEngine.placedBricks.values());
+
+  const distanceMetrics = MeshDistanceEvaluator.evaluate(testSampleBricks, testSampleModel, testSampleGrid);
+  console.log(`  Surface Distance Metrics:`);
+  console.log(`    Mean Chamfer: ${distanceMetrics.meanDistanceMm} mm (${distanceMetrics.meanDistanceLDU} LDU)`);
+  console.log(`    RMS Distance: ${distanceMetrics.rmsDistanceMm} mm (${distanceMetrics.rmsDistanceLDU} LDU)`);
+  console.log(`    Max Hausdorff: ${distanceMetrics.maxDistanceMm} mm (${distanceMetrics.maxDistanceLDU} LDU)`);
+  console.log(`    P95 Distance: ${distanceMetrics.p95DistanceMm} mm`);
+  console.log(`    Surface Fidelity Score: ${distanceMetrics.surfaceFidelityScore}%`);
+  console.log(`    Evaluated Sample Count: ${distanceMetrics.sampleCount}`);
+
+  if (distanceMetrics.sampleCount === 0) {
+    throw new Error('Distance metric should have evaluated > 0 sample points');
+  }
+  if (distanceMetrics.meanDistanceLDU <= 0 || distanceMetrics.maxDistanceLDU < distanceMetrics.meanDistanceLDU) {
+    throw new Error('Distance metric invariant violated: max distance must be >= mean distance > 0');
+  }
+  console.log('  Surface distance metric verified -> PASS\n');
+
+  // Test 10: Neighborhood Harmonization & Buildability BFS Verification
+  console.log('Test 10: Testing Polish Phase & Buildability Verification...');
+  const harmResult = testSampleEngine.harmonizeNeighborhoods();
+  console.log(`  Harmonization modifications: ${harmResult.totalModifications}`);
+  console.log(`    Merged curves: ${harmResult.mergedContinuousCurvesCount}, Slopes aligned: ${harmResult.harmonizedSlopesCount}`);
+
+  const buildRep = testSampleEngine.verifyBuildability();
+  console.log(`  Buildability BFS Report:`);
+  console.log(`    100% Grounded: ${buildRep.is100PercentGrounded}`);
+  console.log(`    Grounded bricks: ${buildRep.groundedBricksCount} / ${buildRep.totalBricks}`);
+  console.log(`    Floating bricks: ${buildRep.floatingBricksCount}`);
+  console.log(`    Interlock Ratio: ${buildRep.interlockRatio}%`);
+
+  if (!buildRep.is100PercentGrounded || buildRep.floatingBricksCount > 0) {
+    throw new Error(`Buildability check failed: model should be 100% grounded, got ${buildRep.floatingBricksCount} floating bricks`);
+  }
+  if (buildRep.interlockRatio <= 0) {
+    throw new Error('Model should have positive running bond interlocking ratio');
+  }
+  console.log('  Polish phase & buildability verification verified -> PASS\n');
+
+  // Test 11: Set-Specific / Category OMR Tensors Runtime Switching
+  console.log('Test 11: Testing Category OMR Tensor Switching...');
+  console.log(`  Initial Category: ${WFC_REFINER.getCategory()}`);
+
+  await WFC_REFINER.switchCategory('vehicles');
+  console.log(`  Switched Category: ${WFC_REFINER.getCategory()}`);
+  if (WFC_REFINER.getCategory() !== 'vehicles') {
+    throw new Error('Failed to switch to vehicles category');
+  }
+
+  const pTopVeh = WFC_REFINER.getTransitionProbability('3001', '+Y', '3004');
+  console.log(`  Vehicles transition prob for 3001 +Y -> 3004: ${pTopVeh}`);
+
+  await WFC_REFINER.switchCategory('architecture');
+  console.log(`  Switched Category: ${WFC_REFINER.getCategory()}`);
+  if (WFC_REFINER.getCategory() !== 'architecture') {
+    throw new Error('Failed to switch to architecture category');
+  }
+
+  await WFC_REFINER.switchCategory('universal');
+  console.log(`  Switched Category: ${WFC_REFINER.getCategory()}`);
+  if (WFC_REFINER.getCategory() !== 'universal') {
+    throw new Error('Failed to switch to universal category');
+  }
+  console.log('  Category OMR tensor switching verified -> PASS\n');
 
   console.log('=== ALL TESTS PASSED SUCCESSFULLY! ===');
 }

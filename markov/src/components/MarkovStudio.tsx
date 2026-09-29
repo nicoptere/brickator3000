@@ -28,7 +28,9 @@ import { MarkovCoreGrowingEngine } from '../engine/markovCoreGrowingEngine';
 import { LDrawExporter } from '../engine/ldrawExporter';
 import { brickAudio } from '../engine/brickAudio';
 import { MeshIslandSegmenter } from '../engine/meshIslandSegmenter';
-import { WFC_REFINER } from '../engine/wfcRefinerEngine';
+import { WFC_REFINER, OMRCategory } from '../engine/wfcRefinerEngine';
+import { MeshDistanceEvaluator, MeshDistanceResult } from '../engine/meshDistanceMetric';
+import { PolishHarmonizer, BuildabilityReport, HarmonizationResult } from '../engine/polishHarmonizer';
 
 const MODEL_PRESETS: Record<
   string,
@@ -48,7 +50,9 @@ const PHASE_LABELS: Record<string, { title: string; color: string }> = {
   SURFACE_SHELL: { title: '1. WFC EXTERIOR SKIN (N = 2)', color: '#ec4899' },
   CORE_INFILL: { title: '2. MACRO STRUCTURAL CORE (N = 8, 4)', color: '#38bdf8' },
   TILE_FINISH: { title: '3. STUDLESS TOP FINISH (N = 0)', color: '#06b6d4' },
-  DONE: { title: '4. BUILD COMPLETE', color: '#34d399' }
+  POLISH_HARMONIZATION: { title: '4. POLISH & HARMONIZATION', color: '#c084fc' },
+  BUILDABILITY_VERIFY: { title: '5. BUILDABILITY BFS CHECK', color: '#f59e0b' },
+  DONE: { title: '6. BUILD COMPLETE', color: '#34d399' }
 };
 
 export const MarkovStudio: React.FC = () => {
@@ -100,6 +104,11 @@ export const MarkovStudio: React.FC = () => {
     uniqueParts: 0,
     coverage: 0
   });
+
+  const [omrCategory, setOmrCategory] = useState<OMRCategory>('vehicles');
+  const [distanceMetric, setDistanceMetric] = useState<MeshDistanceResult | null>(null);
+  const [buildabilityReport, setBuildabilityReport] = useState<BuildabilityReport | null>(null);
+  const [harmonizationResult, setHarmonizationResult] = useState<HarmonizationResult | null>(null);
 
   // Re-build Voxel Grid from authentic 3D model or custom upload
   const initializeModel = useCallback(
@@ -239,12 +248,44 @@ export const MarkovStudio: React.FC = () => {
     return () => clearTimeout(timeoutId);
   }, [isPlaying, speed, executeStep]);
 
+  // Harmonize slopes, curves, and OMR transitions
+  const handleHarmonizeNeighborhoods = () => {
+    if (!engine || bricks.length === 0 || !grid) return;
+    const res = engine.harmonizeNeighborhoods();
+    setHarmonizationResult(res);
+    setBricks(Array.from(engine.placedBricks.values()));
+    if (sourceModel) {
+      setDistanceMetric(MeshDistanceEvaluator.evaluate(Array.from(engine.placedBricks.values()), sourceModel, grid));
+    }
+  };
+
+  // Verify BFS physical grounding and running bond interlock
+  const handleVerifyBuildability = () => {
+    if (!engine || bricks.length === 0 || !grid) return;
+    const rep = engine.verifyBuildability();
+    setBuildabilityReport(rep);
+  };
+
+  // Switch category OMR profile
+  const handleChangeOmrCategory = async (cat: OMRCategory) => {
+    setOmrCategory(cat);
+    await WFC_REFINER.switchCategory(cat);
+  };
+
+  // Calculate analytical surface distance to ground truth mesh
+  const handleEvaluateDistance = () => {
+    if (!sourceModel || bricks.length === 0 || !grid) return;
+    const res = MeshDistanceEvaluator.evaluate(bricks, sourceModel, grid);
+    setDistanceMetric(res);
+  };
+
   // Solve entire model to completion
   const handleSolveAll = () => {
     if (!engine) return;
     setIsPlaying(false);
     const res = engine.solveAll(3000);
-    setBricks(Array.from(engine.placedBricks.values()));
+    const solvedBricks = Array.from(engine.placedBricks.values());
+    setBricks(solvedBricks);
     setCurrentStepIndex(engine.stepIndex);
     setPhase(engine.currentPhase);
     setStats({
@@ -255,6 +296,11 @@ export const MarkovStudio: React.FC = () => {
       uniqueParts: res.bomStats.uniquePartCount,
       coverage: Math.round(res.coverageRatio * 100)
     });
+    setHarmonizationResult(engine.harmonizationResult);
+    setBuildabilityReport(engine.buildabilityReport);
+    if (sourceModel && grid) {
+      setDistanceMetric(MeshDistanceEvaluator.evaluate(solvedBricks, sourceModel, grid));
+    }
     confetti({ particleCount: 80, spread: 80, origin: { y: 0.6 } });
   };
 
@@ -574,6 +620,14 @@ export const MarkovStudio: React.FC = () => {
           onChangeSpeed={setSpeed}
           isLoading={isLoading}
           loadingMessage={loadingMessage}
+          omrCategory={omrCategory}
+          onChangeOmrCategory={handleChangeOmrCategory}
+          onHarmonizeNeighborhoods={handleHarmonizeNeighborhoods}
+          onVerifyBuildability={handleVerifyBuildability}
+          onEvaluateDistance={handleEvaluateDistance}
+          distanceMetric={distanceMetric}
+          buildabilityReport={buildabilityReport}
+          harmonizationResult={harmonizationResult}
         />
       )}
 

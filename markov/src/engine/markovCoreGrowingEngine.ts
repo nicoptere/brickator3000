@@ -43,6 +43,7 @@ import { CONNECTOR_DATABASE, LDrawConnectorMeta } from './connectorDatabase';
 import { RotatedPieceVariant } from './pieceFingerprint';
 import { LDU_STUD_PITCH, LDU_BRICK_HEIGHT } from './connectivityDictionary';
 import { WFC_REFINER } from './wfcRefinerEngine';
+import { PolishHarmonizer, HarmonizationResult, BuildabilityReport } from './polishHarmonizer';
 
 export interface GrowthHead {
   headId: number;
@@ -57,6 +58,8 @@ export type DiscretizationPhase =
   | 'SURFACE_SHELL'
   | 'CORE_INFILL'
   | 'TILE_FINISH'
+  | 'POLISH_HARMONIZATION'
+  | 'BUILDABILITY_VERIFY'
   | 'DONE'
   | 'VOLUME_FILL'
   | 'SURFACE_REPLACE';
@@ -122,6 +125,9 @@ export class MarkovCoreGrowingEngine {
     fillCount: 0,
     uniqueParts: new Set<string>()
   };
+
+  public harmonizationResult: HarmonizationResult | null = null;
+  public buildabilityReport: BuildabilityReport | null = null;
 
   private rng: () => number;
 
@@ -832,10 +838,54 @@ export class MarkovCoreGrowingEngine {
     }
 
     if (tilesPlaced === 0) {
-      this.currentPhase = 'DONE';
+      this.currentPhase = 'POLISH_HARMONIZATION';
     }
 
     return newBricks;
+  }
+
+  /**
+   * Harmonization step: smoothens slopes and unifies fragmented pieces.
+   */
+  public stepPolishHarmonization(): PlacedBrick[] {
+    this.harmonizationResult = PolishHarmonizer.harmonizeNeighborhoods(
+      this.placedBricks,
+      this.occupiedCellToBrickId,
+      this.grid
+    );
+    this.currentPhase = 'BUILDABILITY_VERIFY';
+    return [];
+  }
+
+  /**
+   * Buildability step: runs BFS grounding and interlocking verification.
+   */
+  public stepBuildabilityVerify(): PlacedBrick[] {
+    this.buildabilityReport = PolishHarmonizer.verifyBuildability(
+      this.placedBricks,
+      this.occupiedCellToBrickId,
+      this.grid
+    );
+    this.currentPhase = 'DONE';
+    return [];
+  }
+
+  public harmonizeNeighborhoods(): HarmonizationResult {
+    this.harmonizationResult = PolishHarmonizer.harmonizeNeighborhoods(
+      this.placedBricks,
+      this.occupiedCellToBrickId,
+      this.grid
+    );
+    return this.harmonizationResult;
+  }
+
+  public verifyBuildability(): BuildabilityReport {
+    this.buildabilityReport = PolishHarmonizer.verifyBuildability(
+      this.placedBricks,
+      this.occupiedCellToBrickId,
+      this.grid
+    );
+    return this.buildabilityReport;
   }
 
   /**
@@ -855,6 +905,12 @@ export class MarkovCoreGrowingEngine {
         break;
       case 'TILE_FINISH':
         newBricks = this.stepTileFinish();
+        break;
+      case 'POLISH_HARMONIZATION':
+        newBricks = this.stepPolishHarmonization();
+        break;
+      case 'BUILDABILITY_VERIFY':
+        newBricks = this.stepBuildabilityVerify();
         break;
       case 'DONE':
         break;
