@@ -157,13 +157,19 @@ export class MultiResolutionLattice {
         heading = nx >= 0 ? 270 : 90;
       }
 
+      // Vertical wall (e.g. wheel sides, doors, vertical body panels):
+      // If normal is nearly horizontal in Y (|ny| < 0.25), this is a VERTICAL WALL, NOT A SLOPE!
+      if (Math.abs(ny) < 0.25) {
+        return { slopeClass: 'flat', heading, angle: 0 };
+      }
+
       if (ny < -0.3) {
         return { slopeClass: 'slope_inverted', heading, angle: -30 };
       }
       if (ny > 0.8) {
         return { slopeClass: 'flat', heading, angle: 0 };
       }
-      if (ny >= 0.15 && ny <= 0.8) {
+      if (ny >= 0.25 && ny <= 0.8) {
         if (ny > 0.45) {
           return { slopeClass: 'slope_curved', heading, angle: 45 };
         } else {

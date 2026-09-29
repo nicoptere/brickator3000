@@ -450,9 +450,9 @@ export class MarkovCoreGrowingEngine {
       // Candidate parts for this surface feature - LARGEST & LONGEST FIRST!
       const candidatePartIds: string[] = [];
 
-      // 1. Curved Slopes (Convex outer surfaces)
+      // 1. Curved Slopes (Convex outer surfaces) - ONLY curved profiles, never flat 45° slopes
       if (cell.slopeClass === 'slope_curved' || cell.curvatureClass === 'cylindrical_convex') {
-        candidatePartIds.push('88930', '61678', '15068', '11477', '85984', '3039', '3040');
+        candidatePartIds.push('88930', '61678', '15068', '11477', '85984');
       }
 
       // 2. Inverted Slopes (Underhangs)
@@ -482,8 +482,12 @@ export class MarkovCoreGrowingEngine {
 
       // 7. General Boundary Fallback
       if (candidatePartIds.length === 0) {
-        if (cell.slopeClass !== 'flat') {
-          candidatePartIds.push('88930', '61678', '15068', '11477', '3039', '3040');
+        if (cell.slopeClass === 'slope_curved') {
+          candidatePartIds.push('88930', '61678', '15068', '11477', '85984');
+        } else if (cell.slopeClass === 'slope_45') {
+          candidatePartIds.push('3038', '3039', '3040');
+        } else if (cell.slopeClass === 'slope_33') {
+          candidatePartIds.push('3298', '85984');
         } else {
           candidatePartIds.push('3068b', '3069b', '2431', '3010', '3004', '3005');
         }
@@ -526,9 +530,16 @@ export class MarkovCoreGrowingEngine {
         const connector = CONNECTOR_DATABASE.getConnector(candidatePartId);
         if (!connector) continue;
 
-        // Try primary rotation; if dome or flat, allow all 4 rotations
+        // Directional slopes must strictly follow outward normal heading (baseRot) - NEVER flipped 180° or sideways!
+        const isDirectionalSlope =
+          connector.profile === 'slope_curved' ||
+          connector.profile === 'slope_inverted' ||
+          connector.profile === 'slope_33' ||
+          connector.profile === 'slope_45' ||
+          connector.profile === 'cheese';
+
         const rotationsToTry: Array<0 | 90 | 180 | 270> = [baseRot];
-        if (cell.curvatureClass === 'spherical_dome' || cell.slopeClass === 'flat') {
+        if (!isDirectionalSlope && (cell.curvatureClass === 'spherical_dome' || cell.slopeClass === 'flat')) {
           rotationsToTry.push(
             ((baseRot + 90) % 360) as any,
             ((baseRot + 180) % 360) as any,

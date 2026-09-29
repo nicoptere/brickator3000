@@ -29,6 +29,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const modelPresets = [
+    { id: 'spearman', label: '⚔️ Spearman', badge: 'GLB' },
     { id: 'beetle', label: '🚙 VW Beetle', badge: 'GLB' },
     { id: 'mini', label: '🚗 Mini Cooper', badge: 'GLB' },
     { id: 'concorde', label: '✈️ Concorde', badge: 'GLB' },

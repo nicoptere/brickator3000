@@ -34,6 +34,7 @@ const MODEL_PRESETS: Record<
   string,
   { label: string; url: string; fallbackType: 'duck' | 'car' | 'dolphin' | 'airplane' | 'dome_creature' }
 > = {
+  spearman: { label: '⚔️ Spearman', url: '/models/spearman.glb', fallbackType: 'dome_creature' },
   beetle: { label: 'VW Beetle', url: '/models/clean/cars/vwbeetle.glb', fallbackType: 'car' },
   mini: { label: 'Mini Cooper', url: '/models/clean/cars/mini.glb', fallbackType: 'car' },
   concorde: { label: 'Concorde', url: '/models/clean/airplanes/concord.glb', fallbackType: 'airplane' },
