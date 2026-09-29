@@ -120,12 +120,12 @@ export const MarkovStudio: React.FC = () => {
     const res: GrowthStepResult = engine.step();
     setPhase(res.phase);
 
-    if (res.newBrick) {
+    if (res.newBricks && res.newBricks.length > 0) {
       setBricks(Array.from(engine.placedBricks.values()));
       setCurrentStepIndex(engine.stepIndex);
 
       // Audio feedback on brick placement
-      brickAudio.triggerBrickPlacement(res.newBrick.gridPos[2]);
+      brickAudio.triggerBrickPlacement(res.newBricks[0].gridPos[2]);
     }
 
     setStats({
@@ -253,6 +253,11 @@ export const MarkovStudio: React.FC = () => {
             <div>
               <span style={{ color: '#94a3b8' }}>Phase:</span>{' '}
               <span style={{ fontWeight: 700, color: '#38bdf8' }}>{phase}</span>
+            </div>
+
+            <div>
+              <span style={{ color: '#94a3b8' }}>Heads:</span>{' '}
+              <span style={{ fontWeight: 700, color: '#10b981' }}>{options.numHeads ?? 4} Active</span>
             </div>
 
             <div style={{ width: 1, height: 16, backgroundColor: 'rgba(148, 163, 184, 0.2)' }} />

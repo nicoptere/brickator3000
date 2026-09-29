@@ -248,7 +248,39 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           </div>
         </div>
 
-        {/* Section 4: Markov Growing Core Options */}
+        {/* Section 4: Parallel Growth Heads */}
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+            <label style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Parallel Growth Heads
+            </label>
+            <span style={{ fontSize: 12, fontFamily: 'monospace', color: '#10b981', fontWeight: 700 }}>
+              {options.numHeads ?? 4} Heads
+            </span>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6, marginBottom: 8 }}>
+            {[1, 2, 4, 8].map(nh => (
+              <button
+                key={nh}
+                onClick={() => onChangeOptions({ numHeads: nh })}
+                style={{
+                  padding: '6px 4px',
+                  borderRadius: 6,
+                  border: 'none',
+                  fontSize: 11,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  backgroundColor: (options.numHeads ?? 4) === nh ? '#10b981' : '#1e293b',
+                  color: (options.numHeads ?? 4) === nh ? '#0f172a' : '#cbd5e1'
+                }}
+              >
+                {nh} {nh === 1 ? 'Head' : 'Heads'}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Section 5: Markov Growing Core Options */}
         <div>
           <label style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>
             Markov Constraints & Rules

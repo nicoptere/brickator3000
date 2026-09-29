@@ -1,0 +1,3728 @@
+[
+  {
+    "partId": "4204",
+    "name": "Brick  8 x 16",
+    "category": "FILL",
+    "profile": "brick",
+    "widthX": 8,
+    "depthZ": 16,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 9,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "733",
+    "name": "Brick 10 x 10",
+    "category": "FILL",
+    "profile": "brick",
+    "widthX": 10,
+    "depthZ": 10,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 9,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "4201",
+    "name": "Brick  8 x  8",
+    "category": "FILL",
+    "profile": "brick",
+    "widthX": 8,
+    "depthZ": 8,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 9,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "4202",
+    "name": "Brick  4 x 12",
+    "category": "FILL",
+    "profile": "brick",
+    "widthX": 4,
+    "depthZ": 12,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 9,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "92438",
+    "name": "Plate  8 x 16",
+    "category": "FILL",
+    "profile": "plate",
+    "widthX": 8,
+    "depthZ": 16,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "6212",
+    "name": "Brick  4 x 10",
+    "category": "FILL",
+    "profile": "brick",
+    "widthX": 4,
+    "depthZ": 10,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 9,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "18897",
+    "name": "Brick  6 x  6 Round with Holes",
+    "category": "FILL",
+    "profile": "brick",
+    "widthX": 6,
+    "depthZ": 6,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "cylindrical_convex",
+    "isModern": false,
+    "bondingCapacity": 8,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "3027",
+    "name": "Plate  6 x 16",
+    "category": "FILL",
+    "profile": "plate",
+    "widthX": 6,
+    "depthZ": 16,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "47974",
+    "name": "Brick  4 x  8 Round Half Circle",
+    "category": "FILL",
+    "profile": "brick",
+    "widthX": 4,
+    "depthZ": 8,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "cylindrical_convex",
+    "isModern": false,
+    "bondingCapacity": 8,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "728",
+    "name": "Plate  8 x 11",
+    "category": "FILL",
+    "profile": "plate",
+    "widthX": 8,
+    "depthZ": 11,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "3456",
+    "name": "Plate  6 x 14",
+    "category": "FILL",
+    "profile": "plate",
+    "widthX": 6,
+    "depthZ": 14,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "2356",
+    "name": "Brick  4 x  6",
+    "category": "FILL",
+    "profile": "brick",
+    "widthX": 4,
+    "depthZ": 6,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 9,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "3028",
+    "name": "Plate  6 x 12",
+    "category": "FILL",
+    "profile": "plate",
+    "widthX": 6,
+    "depthZ": 12,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "41539",
+    "name": "Plate  8 x  8",
+    "category": "FILL",
+    "profile": "plate",
+    "widthX": 8,
+    "depthZ": 8,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "6177",
+    "name": "Plate  8 x  8 Round with  2 x  2 Centre Studs",
+    "category": "FILL",
+    "profile": "plate",
+    "widthX": 8,
+    "depthZ": 8,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "cylindrical_convex",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "3006",
+    "name": "Brick  2 x 10",
+    "category": "FILL",
+    "profile": "brick",
+    "widthX": 2,
+    "depthZ": 10,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 9,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "3033",
+    "name": "Plate  6 x 10",
+    "category": "FILL",
+    "profile": "plate",
+    "widthX": 6,
+    "depthZ": 10,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "3007",
+    "name": "Brick 2 x 8",
+    "category": "FILL",
+    "profile": "brick",
+    "widthX": 2,
+    "depthZ": 8,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 9,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "2465",
+    "name": "Brick  1 x 16",
+    "category": "FILL",
+    "profile": "brick",
+    "widthX": 1,
+    "depthZ": 16,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 9,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "3029",
+    "name": "Plate  4 x 12",
+    "category": "FILL",
+    "profile": "plate",
+    "widthX": 4,
+    "depthZ": 12,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "3036",
+    "name": "Plate  6 x  8",
+    "category": "FILL",
+    "profile": "plate",
+    "widthX": 6,
+    "depthZ": 8,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "6222",
+    "name": "Brick  4 x  4 Round with Holes",
+    "category": "FILL",
+    "profile": "brick",
+    "widthX": 4,
+    "depthZ": 4,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "cylindrical_convex",
+    "isModern": false,
+    "bondingCapacity": 8,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "702",
+    "name": "Brick  4 x  4 Corner",
+    "category": "FILL",
+    "profile": "brick",
+    "widthX": 4,
+    "depthZ": 4,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 9,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "3030",
+    "name": "Plate  4 x 10",
+    "category": "FILL",
+    "profile": "plate",
+    "widthX": 4,
+    "depthZ": 10,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "2456",
+    "name": "Brick 2 x 6",
+    "category": "FILL",
+    "profile": "brick",
+    "widthX": 2,
+    "depthZ": 6,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 9,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "11213",
+    "name": "Plate  6 x  6 Round with Hole and Snapstud",
+    "category": "FILL",
+    "profile": "plate",
+    "widthX": 6,
+    "depthZ": 6,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "cylindrical_convex",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "3958",
+    "name": "Plate  6 x  6",
+    "category": "FILL",
+    "profile": "plate",
+    "widthX": 6,
+    "depthZ": 6,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "6112",
+    "name": "Brick  1 x 12",
+    "category": "FILL",
+    "profile": "brick",
+    "widthX": 1,
+    "depthZ": 12,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 9,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "22888",
+    "name": "Plate  4 x  8 Round Semicircle",
+    "category": "FILL",
+    "profile": "plate",
+    "widthX": 4,
+    "depthZ": 8,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "cylindrical_convex",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "3035",
+    "name": "Plate  4 x  8",
+    "category": "FILL",
+    "profile": "plate",
+    "widthX": 4,
+    "depthZ": 8,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "4282",
+    "name": "Plate  2 x 16",
+    "category": "FILL",
+    "profile": "plate",
+    "widthX": 2,
+    "depthZ": 16,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "6111",
+    "name": "Brick  1 x 10",
+    "category": "FILL",
+    "profile": "brick",
+    "widthX": 1,
+    "depthZ": 10,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 9,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "91988",
+    "name": "Plate  2 x 14",
+    "category": "FILL",
+    "profile": "plate",
+    "widthX": 2,
+    "depthZ": 14,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "3001",
+    "name": "Brick 2 x 4",
+    "category": "FILL",
+    "profile": "brick",
+    "widthX": 2,
+    "depthZ": 4,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 9,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "3008",
+    "name": "Brick 1 x 8",
+    "category": "FILL",
+    "profile": "brick",
+    "widthX": 1,
+    "depthZ": 8,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 9,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "2445",
+    "name": "Plate  2 x 12",
+    "category": "FILL",
+    "profile": "plate",
+    "widthX": 2,
+    "depthZ": 12,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "3032",
+    "name": "Plate  4 x  6",
+    "category": "FILL",
+    "profile": "plate",
+    "widthX": 4,
+    "depthZ": 6,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "3832",
+    "name": "Plate  2 x 10",
+    "category": "FILL",
+    "profile": "plate",
+    "widthX": 2,
+    "depthZ": 10,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "3002",
+    "name": "Brick 2 x 3",
+    "category": "FILL",
+    "profile": "brick",
+    "widthX": 2,
+    "depthZ": 3,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 9,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "3009",
+    "name": "Brick 1 x 6",
+    "category": "FILL",
+    "profile": "brick",
+    "widthX": 1,
+    "depthZ": 6,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 9,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "18646",
+    "name": "Plate  3 x  6 Round Half with  1 x  2 Cutout",
+    "category": "FILL",
+    "profile": "plate",
+    "widthX": 3,
+    "depthZ": 6,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "cylindrical_convex",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "11833",
+    "name": "Plate  4 x  4 Round with  2 x  2 Round Hole",
+    "category": "FILL",
+    "profile": "plate",
+    "widthX": 4,
+    "depthZ": 4,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "cylindrical_convex",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "2639",
+    "name": "Plate  4 x  4 Corner",
+    "category": "FILL",
+    "profile": "plate",
+    "widthX": 4,
+    "depthZ": 4,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "3034",
+    "name": "Plate  2 x  8",
+    "category": "FILL",
+    "profile": "plate",
+    "widthX": 2,
+    "depthZ": 8,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "3003",
+    "name": "Brick 2 x 2",
+    "category": "FILL",
+    "profile": "brick",
+    "widthX": 2,
+    "depthZ": 2,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 9,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "3010",
+    "name": "Brick 1 x 4",
+    "category": "FILL",
+    "profile": "brick",
+    "widthX": 1,
+    "depthZ": 4,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 9,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "2357",
+    "name": "Brick 2 x 2 Corner",
+    "category": "FILL",
+    "profile": "brick",
+    "widthX": 2,
+    "depthZ": 2,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "corner_macaroni",
+    "isModern": false,
+    "bondingCapacity": 9,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "15469",
+    "name": "Brick  2 x  2 Round with 4 Petals Base and Axle Hole",
+    "category": "FILL",
+    "profile": "brick",
+    "widthX": 2,
+    "depthZ": 2,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "cylindrical_convex",
+    "isModern": false,
+    "bondingCapacity": 8,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "3795",
+    "name": "Plate  2 x  6",
+    "category": "FILL",
+    "profile": "plate",
+    "widthX": 2,
+    "depthZ": 6,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "60479",
+    "name": "Plate  1 x 12",
+    "category": "FILL",
+    "profile": "plate",
+    "widthX": 1,
+    "depthZ": 12,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "4477",
+    "name": "Plate  1 x 10",
+    "category": "FILL",
+    "profile": "plate",
+    "widthX": 1,
+    "depthZ": 10,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "3622",
+    "name": "Brick 1 x 3",
+    "category": "FILL",
+    "profile": "brick",
+    "widthX": 1,
+    "depthZ": 3,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 9,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "11212",
+    "name": "Plate  3 x  3",
+    "category": "FILL",
+    "profile": "plate",
+    "widthX": 3,
+    "depthZ": 3,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "3020",
+    "name": "Plate  2 x  4",
+    "category": "FILL",
+    "profile": "plate",
+    "widthX": 2,
+    "depthZ": 4,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "3460",
+    "name": "Plate  1 x  8",
+    "category": "FILL",
+    "profile": "plate",
+    "widthX": 1,
+    "depthZ": 8,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "3004",
+    "name": "Brick 1 x 2",
+    "category": "FILL",
+    "profile": "brick",
+    "widthX": 1,
+    "depthZ": 2,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 9,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "3021",
+    "name": "Plate  2 x  3",
+    "category": "FILL",
+    "profile": "plate",
+    "widthX": 2,
+    "depthZ": 3,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "3666",
+    "name": "Plate  1 x  6",
+    "category": "FILL",
+    "profile": "plate",
+    "widthX": 1,
+    "depthZ": 6,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "7534",
+    "name": "Brick  1 x  2 Round Curved with Side Stud and Bar",
+    "category": "FILL",
+    "profile": "brick",
+    "widthX": 1,
+    "depthZ": 2,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "cylindrical_convex",
+    "isModern": true,
+    "bondingCapacity": 8,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "78329",
+    "name": "Plate  1 x  5",
+    "category": "FILL",
+    "profile": "plate",
+    "widthX": 1,
+    "depthZ": 5,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "18674",
+    "name": "Plate  2 x  2 Round with  1 Centre Stud",
+    "category": "FILL",
+    "profile": "plate",
+    "widthX": 2,
+    "depthZ": 2,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "cylindrical_convex",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "2420",
+    "name": "Plate  2 x  2 Corner",
+    "category": "FILL",
+    "profile": "plate",
+    "widthX": 2,
+    "depthZ": 2,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "3710",
+    "name": "Plate  1 x  4",
+    "category": "FILL",
+    "profile": "plate",
+    "widthX": 1,
+    "depthZ": 4,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "77845",
+    "name": "Plate  1 x  4 Round Ends with  2 Open Studs on Ends",
+    "category": "FILL",
+    "profile": "plate",
+    "widthX": 1,
+    "depthZ": 4,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "cylindrical_convex",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "3005",
+    "name": "Brick 1 x 1",
+    "category": "FILL",
+    "profile": "brick",
+    "widthX": 1,
+    "depthZ": 1,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 9,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "3062a",
+    "name": "Brick  1 x  1 Round with Solid Stud",
+    "category": "FILL",
+    "profile": "brick",
+    "widthX": 1,
+    "depthZ": 1,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "cylindrical_convex",
+    "isModern": false,
+    "bondingCapacity": 8,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "3623",
+    "name": "Plate  1 x  3",
+    "category": "FILL",
+    "profile": "plate",
+    "widthX": 1,
+    "depthZ": 3,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "3794b",
+    "name": "Plate 1 x 2 with Center Stud",
+    "category": "FILL",
+    "profile": "plate",
+    "widthX": 1,
+    "depthZ": 2,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": true,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "7508",
+    "name": "Plate  1 x  2 Round with Horizontal Handle on Side",
+    "category": "FILL",
+    "profile": "plate",
+    "widthX": 1,
+    "depthZ": 2,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "cylindrical_convex",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "11609",
+    "name": "Plate  1 x  1 Round with Five-Pointed Star Top and Pin Hole",
+    "category": "FILL",
+    "profile": "plate",
+    "widthX": 1,
+    "depthZ": 1,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "cylindrical_convex",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "3024",
+    "name": "Plate  1 x  1",
+    "category": "FILL",
+    "profile": "plate",
+    "widthX": 1,
+    "depthZ": 1,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      999
+    ]
+  },
+  {
+    "partId": "54091",
+    "name": "Slope Brick Curved  8 x  8 x  2 Inverted Double",
+    "category": "EDGE",
+    "profile": "slope_curved",
+    "widthX": 8,
+    "depthZ": 8,
+    "heightY": 3,
+    "slopeClass": "slope_curved",
+    "slopeAngle": 30,
+    "curvatureClass": "cylindrical_convex",
+    "isModern": true,
+    "bondingCapacity": 8,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "45410",
+    "name": "Slope Brick Curved  6 x  8 x  2 Inverted Double",
+    "category": "EDGE",
+    "profile": "slope_curved",
+    "widthX": 6,
+    "depthZ": 8,
+    "heightY": 3,
+    "slopeClass": "slope_curved",
+    "slopeAngle": 30,
+    "curvatureClass": "cylindrical_convex",
+    "isModern": true,
+    "bondingCapacity": 8,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "5117",
+    "name": "Slope Brick 45  6 x  8 Double Inverted with Open Centre and  4 Holes",
+    "category": "EDGE",
+    "profile": "slope_45",
+    "widthX": 6,
+    "depthZ": 8,
+    "heightY": 3,
+    "slopeClass": "slope_45",
+    "slopeAngle": 45,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 8,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "48288",
+    "name": "Tile  8 x 16",
+    "category": "EDGE",
+    "profile": "tile_flat",
+    "widthX": 8,
+    "depthZ": 16,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "15625",
+    "name": "Slope Brick Curved  5 x  8 x  0.667",
+    "category": "EDGE",
+    "profile": "slope_curved",
+    "widthX": 5,
+    "depthZ": 8,
+    "heightY": 3,
+    "slopeClass": "slope_curved",
+    "slopeAngle": 30,
+    "curvatureClass": "cylindrical_convex",
+    "isModern": true,
+    "bondingCapacity": 8,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "4509",
+    "name": "Slope Brick 33  6 x  6 Double",
+    "category": "EDGE",
+    "profile": "slope_33",
+    "widthX": 6,
+    "depthZ": 6,
+    "heightY": 3,
+    "slopeClass": "slope_33",
+    "slopeAngle": 33,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "8236",
+    "name": "Slope Brick Curved  8 x  4 x  1.667",
+    "category": "EDGE",
+    "profile": "slope_curved",
+    "widthX": 4,
+    "depthZ": 8,
+    "heightY": 3,
+    "slopeClass": "slope_curved",
+    "slopeAngle": 30,
+    "curvatureClass": "cylindrical_convex",
+    "isModern": true,
+    "bondingCapacity": 8,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "4228",
+    "name": "Slope Brick 33  5 x  6 x  2 Inverted",
+    "category": "EDGE",
+    "profile": "slope_33",
+    "widthX": 5,
+    "depthZ": 6,
+    "heightY": 3,
+    "slopeClass": "slope_33",
+    "slopeAngle": 33,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "61484",
+    "name": "Slope Brick 45  5 x  6 x  2 Double Curved",
+    "category": "EDGE",
+    "profile": "slope_45",
+    "widthX": 5,
+    "depthZ": 6,
+    "heightY": 3,
+    "slopeClass": "slope_45",
+    "slopeAngle": 45,
+    "curvatureClass": "flat",
+    "isModern": true,
+    "bondingCapacity": 8,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "30183",
+    "name": "Slope Brick 45  6 x  4 Double Inverted",
+    "category": "EDGE",
+    "profile": "slope_45",
+    "widthX": 4,
+    "depthZ": 6,
+    "heightY": 3,
+    "slopeClass": "slope_45",
+    "slopeAngle": 45,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 8,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "7652",
+    "name": "Slope Brick Curved  4 x  6 x  1.667",
+    "category": "EDGE",
+    "profile": "slope_curved",
+    "widthX": 4,
+    "depthZ": 6,
+    "heightY": 3,
+    "slopeClass": "slope_curved",
+    "slopeAngle": 30,
+    "curvatureClass": "cylindrical_convex",
+    "isModern": true,
+    "bondingCapacity": 8,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "30180",
+    "name": "Slope Brick 45 10 x  2 x  2 Double",
+    "category": "EDGE",
+    "profile": "slope_45",
+    "widthX": 2,
+    "depthZ": 10,
+    "heightY": 3,
+    "slopeClass": "slope_45",
+    "slopeAngle": 45,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 8,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "3939",
+    "name": "Slope Brick 33  3 x  6",
+    "category": "EDGE",
+    "profile": "slope_33",
+    "widthX": 3,
+    "depthZ": 6,
+    "heightY": 3,
+    "slopeClass": "slope_33",
+    "slopeAngle": 33,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "11290",
+    "name": "Slope Brick Curved  2 x  8 x  2 Double",
+    "category": "EDGE",
+    "profile": "slope_curved",
+    "widthX": 2,
+    "depthZ": 8,
+    "heightY": 3,
+    "slopeClass": "slope_curved",
+    "slopeAngle": 30,
+    "curvatureClass": "cylindrical_convex",
+    "isModern": true,
+    "bondingCapacity": 8,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "30182",
+    "name": "Slope Brick 45  4 x  4",
+    "category": "EDGE",
+    "profile": "slope_45",
+    "widthX": 4,
+    "depthZ": 4,
+    "heightY": 3,
+    "slopeClass": "slope_45",
+    "slopeAngle": 45,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 8,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "4445",
+    "name": "Slope Brick 45  2 x  8",
+    "category": "EDGE",
+    "profile": "slope_45",
+    "widthX": 2,
+    "depthZ": 8,
+    "heightY": 3,
+    "slopeClass": "slope_45",
+    "slopeAngle": 45,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 8,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "61487",
+    "name": "Slope Brick Curved  4 x  4 x  2",
+    "category": "EDGE",
+    "profile": "slope_curved",
+    "widthX": 4,
+    "depthZ": 4,
+    "heightY": 3,
+    "slopeClass": "slope_curved",
+    "slopeAngle": 30,
+    "curvatureClass": "cylindrical_convex",
+    "isModern": true,
+    "bondingCapacity": 8,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "6320",
+    "name": "Tile  6 x  8",
+    "category": "EDGE",
+    "profile": "tile_flat",
+    "widthX": 6,
+    "depthZ": 8,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "10202",
+    "name": "Tile  6 x  6 with Groove and Underside Studs",
+    "category": "EDGE",
+    "profile": "tile_flat",
+    "widthX": 6,
+    "depthZ": 6,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "22889",
+    "name": "Slope Brick 45  6 x  2 Double Inverted with Open Centre",
+    "category": "EDGE",
+    "profile": "slope_45",
+    "widthX": 2,
+    "depthZ": 6,
+    "heightY": 3,
+    "slopeClass": "slope_45",
+    "slopeAngle": 45,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 8,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "3297",
+    "name": "Slope Brick 33  3 x  4",
+    "category": "EDGE",
+    "profile": "slope_33",
+    "widthX": 3,
+    "depthZ": 4,
+    "heightY": 3,
+    "slopeClass": "slope_33",
+    "slopeAngle": 33,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "44126",
+    "name": "Slope Brick Curved  6 x  2",
+    "category": "EDGE",
+    "profile": "slope_curved",
+    "widthX": 2,
+    "depthZ": 6,
+    "heightY": 3,
+    "slopeClass": "slope_curved",
+    "slopeAngle": 30,
+    "curvatureClass": "cylindrical_convex",
+    "isModern": true,
+    "bondingCapacity": 8,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "4861",
+    "name": "Slope Brick 45  3 x  4 Double / 33",
+    "category": "EDGE",
+    "profile": "slope_45",
+    "widthX": 3,
+    "depthZ": 4,
+    "heightY": 3,
+    "slopeClass": "slope_45",
+    "slopeAngle": 45,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 8,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "66955",
+    "name": "Slope Brick Curved  4 x  3.5 x  1 with 3 Steps",
+    "category": "EDGE",
+    "profile": "slope_curved",
+    "widthX": 3,
+    "depthZ": 4,
+    "heightY": 3,
+    "slopeClass": "slope_curved",
+    "slopeAngle": 30,
+    "curvatureClass": "cylindrical_convex",
+    "isModern": true,
+    "bondingCapacity": 8,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "62743",
+    "name": "Wedge Plate  2 x 16 x  0.333 Triple with Axlehole",
+    "category": "EDGE",
+    "profile": "wedge",
+    "widthX": 2,
+    "depthZ": 16,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "8165",
+    "name": "Tile  4 x  8",
+    "category": "EDGE",
+    "profile": "tile_flat",
+    "widthX": 4,
+    "depthZ": 8,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "3675",
+    "name": "Slope Brick 33  3 x  3 Double Convex",
+    "category": "EDGE",
+    "profile": "slope_33",
+    "widthX": 3,
+    "depthZ": 3,
+    "heightY": 3,
+    "slopeClass": "slope_33",
+    "slopeAngle": 33,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "73682",
+    "name": "Slope Brick Curved 3 x 3 Corner with Inverted Cutout",
+    "category": "EDGE",
+    "profile": "slope_curved",
+    "widthX": 3,
+    "depthZ": 3,
+    "heightY": 3,
+    "slopeClass": "slope_curved",
+    "slopeAngle": 30,
+    "curvatureClass": "cylindrical_convex",
+    "isModern": true,
+    "bondingCapacity": 8,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "88930",
+    "name": "Slope Curved 4 x 2",
+    "category": "EDGE",
+    "profile": "slope_curved",
+    "widthX": 2,
+    "depthZ": 4,
+    "heightY": 3,
+    "slopeClass": "slope_curved",
+    "slopeAngle": 25,
+    "curvatureClass": "cylindrical_convex",
+    "isModern": true,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "3037",
+    "name": "Slope Brick 45  2 x  4",
+    "category": "EDGE",
+    "profile": "slope_45",
+    "widthX": 2,
+    "depthZ": 4,
+    "heightY": 3,
+    "slopeClass": "slope_45",
+    "slopeAngle": 45,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 8,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "3299",
+    "name": "Slope Brick 33  2 x  4 Double",
+    "category": "EDGE",
+    "profile": "slope_33",
+    "widthX": 2,
+    "depthZ": 4,
+    "heightY": 3,
+    "slopeClass": "slope_33",
+    "slopeAngle": 33,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "3684a",
+    "name": "Slope Brick 75  2 x  2 x  3 with Hollow Studs",
+    "category": "EDGE",
+    "profile": "slope_75",
+    "widthX": 2,
+    "depthZ": 2,
+    "heightY": 6,
+    "slopeClass": "slope_75",
+    "slopeAngle": 75,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "49618",
+    "name": "Slope Brick 33  8 x  1 x  3",
+    "category": "EDGE",
+    "profile": "slope_33",
+    "widthX": 1,
+    "depthZ": 8,
+    "heightY": 3,
+    "slopeClass": "slope_33",
+    "slopeAngle": 33,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "50967",
+    "name": "Slope Brick Curved  8 x  1 x  1 & 2/3 with Arch",
+    "category": "EDGE",
+    "profile": "slope_curved",
+    "widthX": 1,
+    "depthZ": 8,
+    "heightY": 3,
+    "slopeClass": "slope_curved",
+    "slopeAngle": 30,
+    "curvatureClass": "cylindrical_convex",
+    "isModern": true,
+    "bondingCapacity": 8,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "61068",
+    "name": "Slope Brick Curved  2 x  4 without Underside Studs",
+    "category": "EDGE",
+    "profile": "slope_curved",
+    "widthX": 2,
+    "depthZ": 4,
+    "heightY": 3,
+    "slopeClass": "slope_curved",
+    "slopeAngle": 30,
+    "curvatureClass": "cylindrical_convex",
+    "isModern": true,
+    "bondingCapacity": 8,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "3298",
+    "name": "Slope 33 3 x 2",
+    "category": "EDGE",
+    "profile": "slope_33",
+    "widthX": 2,
+    "depthZ": 3,
+    "heightY": 3,
+    "slopeClass": "slope_33",
+    "slopeAngle": 33,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "24309",
+    "name": "Slope Brick Curved  3 x  2",
+    "category": "EDGE",
+    "profile": "slope_curved",
+    "widthX": 2,
+    "depthZ": 3,
+    "heightY": 3,
+    "slopeClass": "slope_curved",
+    "slopeAngle": 30,
+    "curvatureClass": "cylindrical_convex",
+    "isModern": true,
+    "bondingCapacity": 8,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "3038",
+    "name": "Slope Brick 45  2 x  3",
+    "category": "EDGE",
+    "profile": "slope_45",
+    "widthX": 2,
+    "depthZ": 3,
+    "heightY": 3,
+    "slopeClass": "slope_45",
+    "slopeAngle": 45,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 8,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "3747a",
+    "name": "Slope Brick 33  3 x  2 Inverted without Ribs between Studs",
+    "category": "EDGE",
+    "profile": "slope_inverted",
+    "widthX": 2,
+    "depthZ": 3,
+    "heightY": 3,
+    "slopeClass": "slope_inverted",
+    "slopeAngle": -45,
+    "curvatureClass": "cylindrical_concave",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "42022",
+    "name": "Slope Brick Curved  6 x  1",
+    "category": "EDGE",
+    "profile": "slope_curved",
+    "widthX": 1,
+    "depthZ": 6,
+    "heightY": 3,
+    "slopeClass": "slope_curved",
+    "slopeAngle": 30,
+    "curvatureClass": "cylindrical_convex",
+    "isModern": true,
+    "bondingCapacity": 8,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "42023",
+    "name": "Slope Brick Curved  6 x  1 Inverted",
+    "category": "EDGE",
+    "profile": "slope_curved",
+    "widthX": 1,
+    "depthZ": 6,
+    "heightY": 3,
+    "slopeClass": "slope_inverted",
+    "slopeAngle": -30,
+    "curvatureClass": "cylindrical_concave",
+    "isModern": true,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "52501",
+    "name": "Slope Brick 45  6 x  1 Double Inverted with Open Centre",
+    "category": "EDGE",
+    "profile": "slope_45",
+    "widthX": 1,
+    "depthZ": 6,
+    "heightY": 3,
+    "slopeClass": "slope_45",
+    "slopeAngle": 45,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 8,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "6934",
+    "name": "Tile  3 x  6",
+    "category": "EDGE",
+    "profile": "tile_flat",
+    "widthX": 3,
+    "depthZ": 6,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "1751",
+    "name": "Tile  4 x  4",
+    "category": "EDGE",
+    "profile": "tile_flat",
+    "widthX": 4,
+    "depthZ": 4,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "2832",
+    "name": "Tile  2 x  8 x  0.833 with Channel on Ends and Holes on Side (Needs Work)",
+    "category": "EDGE",
+    "profile": "tile_flat",
+    "widthX": 2,
+    "depthZ": 8,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "15068",
+    "name": "Slope Curved 2 x 2",
+    "category": "EDGE",
+    "profile": "slope_curved",
+    "widthX": 2,
+    "depthZ": 2,
+    "heightY": 3,
+    "slopeClass": "slope_curved",
+    "slopeAngle": 30,
+    "curvatureClass": "cylindrical_convex",
+    "isModern": true,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "61678",
+    "name": "Slope Curved 4 x 1",
+    "category": "EDGE",
+    "profile": "slope_curved",
+    "widthX": 1,
+    "depthZ": 4,
+    "heightY": 3,
+    "slopeClass": "slope_curved",
+    "slopeAngle": 25,
+    "curvatureClass": "cylindrical_convex",
+    "isModern": true,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "93273",
+    "name": "Slope Curved 4 x 1 Inverted",
+    "category": "EDGE",
+    "profile": "slope_inverted",
+    "widthX": 1,
+    "depthZ": 4,
+    "heightY": 3,
+    "slopeClass": "slope_inverted",
+    "slopeAngle": -25,
+    "curvatureClass": "cylindrical_concave",
+    "isModern": true,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "3039",
+    "name": "Slope 45 2 x 2",
+    "category": "EDGE",
+    "profile": "slope_45",
+    "widthX": 2,
+    "depthZ": 2,
+    "heightY": 3,
+    "slopeClass": "slope_45",
+    "slopeAngle": 45,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "13547",
+    "name": "Slope Brick Curved  4 x  1 Inverted",
+    "category": "EDGE",
+    "profile": "slope_curved",
+    "widthX": 1,
+    "depthZ": 4,
+    "heightY": 3,
+    "slopeClass": "slope_inverted",
+    "slopeAngle": -30,
+    "curvatureClass": "cylindrical_concave",
+    "isModern": true,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "2449",
+    "name": "Slope Brick 75  2 x  1 x  3 Inverted",
+    "category": "EDGE",
+    "profile": "slope_75",
+    "widthX": 1,
+    "depthZ": 2,
+    "heightY": 6,
+    "slopeClass": "slope_75",
+    "slopeAngle": 75,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "32802",
+    "name": "Slope Brick 45  4 x  1 Double Inverted with Open Centre",
+    "category": "EDGE",
+    "profile": "slope_45",
+    "widthX": 1,
+    "depthZ": 4,
+    "heightY": 3,
+    "slopeClass": "slope_45",
+    "slopeAngle": 45,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 8,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "32803",
+    "name": "Slope Brick Curved  2 x  2 Inverted",
+    "category": "EDGE",
+    "profile": "slope_curved",
+    "widthX": 2,
+    "depthZ": 2,
+    "heightY": 3,
+    "slopeClass": "slope_inverted",
+    "slopeAngle": -30,
+    "curvatureClass": "cylindrical_concave",
+    "isModern": true,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "3300",
+    "name": "Slope Brick 33  2 x  2 Double",
+    "category": "EDGE",
+    "profile": "slope_33",
+    "widthX": 2,
+    "depthZ": 2,
+    "heightY": 3,
+    "slopeClass": "slope_33",
+    "slopeAngle": 33,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "3573",
+    "name": "Slope Brick Curved  4 x  1 x  1.667",
+    "category": "EDGE",
+    "profile": "slope_curved",
+    "widthX": 1,
+    "depthZ": 4,
+    "heightY": 3,
+    "slopeClass": "slope_curved",
+    "slopeAngle": 30,
+    "curvatureClass": "cylindrical_convex",
+    "isModern": true,
+    "bondingCapacity": 8,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "3660b",
+    "name": "Slope Brick 45  2 x  2 Inverted with Flat Bottom Pin with Inner Stopper Ring",
+    "category": "EDGE",
+    "profile": "slope_inverted",
+    "widthX": 2,
+    "depthZ": 2,
+    "heightY": 3,
+    "slopeClass": "slope_inverted",
+    "slopeAngle": -45,
+    "curvatureClass": "cylindrical_concave",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "69729",
+    "name": "Tile  2 x  6",
+    "category": "EDGE",
+    "profile": "tile_flat",
+    "widthX": 2,
+    "depthZ": 6,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "18759",
+    "name": "Slope Brick 45  3 x  1 Inverted Double with Inner Stopper Rings",
+    "category": "EDGE",
+    "profile": "slope_inverted",
+    "widthX": 1,
+    "depthZ": 3,
+    "heightY": 3,
+    "slopeClass": "slope_inverted",
+    "slopeAngle": -45,
+    "curvatureClass": "cylindrical_concave",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "2341",
+    "name": "Slope Brick 45  3 x  1 Inverted Double without Inner Stopper Rings",
+    "category": "EDGE",
+    "profile": "slope_45",
+    "widthX": 1,
+    "depthZ": 3,
+    "heightY": 3,
+    "slopeClass": "slope_45",
+    "slopeAngle": 45,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 8,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "4286",
+    "name": "Slope Brick 33  3 x  1",
+    "category": "EDGE",
+    "profile": "slope_33",
+    "widthX": 1,
+    "depthZ": 3,
+    "heightY": 3,
+    "slopeClass": "slope_33",
+    "slopeAngle": 33,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "50950",
+    "name": "Slope Brick Curved  3 x  1",
+    "category": "EDGE",
+    "profile": "slope_curved",
+    "widthX": 1,
+    "depthZ": 3,
+    "heightY": 3,
+    "slopeClass": "slope_curved",
+    "slopeAngle": 30,
+    "curvatureClass": "cylindrical_convex",
+    "isModern": true,
+    "bondingCapacity": 8,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "67095",
+    "name": "Tile  3 x  3 Round",
+    "category": "EDGE",
+    "profile": "tile_flat",
+    "widthX": 3,
+    "depthZ": 3,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "1762",
+    "name": "Slope Brick 31  2 x  2 Double, Curved",
+    "category": "EDGE",
+    "profile": "cheese",
+    "widthX": 2,
+    "depthZ": 2,
+    "heightY": 2,
+    "slopeClass": "slope_33",
+    "slopeAngle": 31,
+    "curvatureClass": "flat",
+    "isModern": true,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "2833",
+    "name": "Tile  1 x  8 x  0.833 with Channel on Ends",
+    "category": "EDGE",
+    "profile": "tile_flat",
+    "widthX": 1,
+    "depthZ": 8,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "3395",
+    "name": "Tile  2 x  4 Inverted with Groove",
+    "category": "EDGE",
+    "profile": "tile_flat",
+    "widthX": 2,
+    "depthZ": 4,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "7835",
+    "name": "Slope Brick 31  1 x  4 x  0.667",
+    "category": "EDGE",
+    "profile": "cheese",
+    "widthX": 1,
+    "depthZ": 4,
+    "heightY": 2,
+    "slopeClass": "slope_33",
+    "slopeAngle": 31,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "11477",
+    "name": "Slope Curved 2 x 1",
+    "category": "EDGE",
+    "profile": "slope_curved",
+    "widthX": 1,
+    "depthZ": 2,
+    "heightY": 3,
+    "slopeClass": "slope_curved",
+    "slopeAngle": 30,
+    "curvatureClass": "cylindrical_convex",
+    "isModern": true,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "24201",
+    "name": "Slope Curved 2 x 1 Inverted",
+    "category": "EDGE",
+    "profile": "slope_inverted",
+    "widthX": 1,
+    "depthZ": 2,
+    "heightY": 3,
+    "slopeClass": "slope_inverted",
+    "slopeAngle": -30,
+    "curvatureClass": "cylindrical_concave",
+    "isModern": true,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "6636",
+    "name": "Tile 1 x 6 Flat",
+    "category": "EDGE",
+    "profile": "tile_flat",
+    "widthX": 1,
+    "depthZ": 6,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": true,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "3040",
+    "name": "Slope 45 2 x 1",
+    "category": "EDGE",
+    "profile": "slope_45",
+    "widthX": 1,
+    "depthZ": 2,
+    "heightY": 3,
+    "slopeClass": "slope_45",
+    "slopeAngle": 45,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "22385",
+    "name": "Tile  3 x  2 with Angled End",
+    "category": "EDGE",
+    "profile": "tile_flat",
+    "widthX": 2,
+    "depthZ": 3,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "2310",
+    "name": "Slope Brick 45  2 x  1 Inverted with 0.667 Cutout",
+    "category": "EDGE",
+    "profile": "slope_inverted",
+    "widthX": 1,
+    "depthZ": 2,
+    "heightY": 3,
+    "slopeClass": "slope_inverted",
+    "slopeAngle": -45,
+    "curvatureClass": "cylindrical_concave",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "24201d00",
+    "name": "Slope Brick Curved  2 x  1 Inverted with Metallic Silver Left Stripe on Red Background Sticker",
+    "category": "EDGE",
+    "profile": "slope_curved",
+    "widthX": 1,
+    "depthZ": 2,
+    "heightY": 3,
+    "slopeClass": "slope_inverted",
+    "slopeAngle": -30,
+    "curvatureClass": "cylindrical_concave",
+    "isModern": true,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "7825",
+    "name": "Slope Brick 31  1 x  3 x  0.667",
+    "category": "EDGE",
+    "profile": "cheese",
+    "widthX": 1,
+    "depthZ": 3,
+    "heightY": 2,
+    "slopeClass": "slope_33",
+    "slopeAngle": 31,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "27925",
+    "name": "Tile 2 x 2 Macaroni Curved Round",
+    "category": "EDGE",
+    "profile": "macaroni",
+    "widthX": 2,
+    "depthZ": 2,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "corner_macaroni",
+    "isModern": true,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "3068b",
+    "name": "Tile 2 x 2 Flat",
+    "category": "EDGE",
+    "profile": "tile_flat",
+    "widthX": 2,
+    "depthZ": 2,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": true,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "2431",
+    "name": "Tile 1 x 4 Flat",
+    "category": "EDGE",
+    "profile": "tile_flat",
+    "widthX": 1,
+    "depthZ": 4,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": true,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "85984d01",
+    "name": "Slope Brick 31  1 x  2 x  0.667 with Left Black Deflectors on Red Face Sticker",
+    "category": "EDGE",
+    "profile": "cheese",
+    "widthX": 1,
+    "depthZ": 2,
+    "heightY": 2,
+    "slopeClass": "slope_33",
+    "slopeAngle": 31,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "35459",
+    "name": "Tile  1 x  3 Inverted with Bar Hole",
+    "category": "EDGE",
+    "profile": "tile_flat",
+    "widthX": 1,
+    "depthZ": 3,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "35464",
+    "name": "Slope Brick 45  1 x  1 Double",
+    "category": "EDGE",
+    "profile": "slope_45",
+    "widthX": 1,
+    "depthZ": 1,
+    "heightY": 3,
+    "slopeClass": "slope_45",
+    "slopeAngle": 45,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 8,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "3069b",
+    "name": "Tile 1 x 2 Flat",
+    "category": "EDGE",
+    "profile": "tile_flat",
+    "widthX": 1,
+    "depthZ": 2,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": true,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "54200d01",
+    "name": "Slope Brick 31  1 x  1 x  0.667 with Twin Exhaust Pipes Right Sticker",
+    "category": "EDGE",
+    "profile": "cheese",
+    "widthX": 1,
+    "depthZ": 1,
+    "heightY": 2,
+    "slopeClass": "slope_33",
+    "slopeAngle": 31,
+    "curvatureClass": "flat",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "25269",
+    "name": "Tile 1 x 1 Quarter Round",
+    "category": "EDGE",
+    "profile": "macaroni",
+    "widthX": 1,
+    "depthZ": 1,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "corner_macaroni",
+    "isModern": true,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "98138",
+    "name": "Tile 1 x 1 Round Flat",
+    "category": "EDGE",
+    "profile": "tile_flat",
+    "widthX": 1,
+    "depthZ": 1,
+    "heightY": 1,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "flat",
+    "isModern": true,
+    "bondingCapacity": 7,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "50990a",
+    "name": "Dish 10 x 10 Inverted with Hollow Studs",
+    "category": "LEAF",
+    "profile": "dish",
+    "widthX": 10,
+    "depthZ": 10,
+    "heightY": 2,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "spherical_dome",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "98606",
+    "name": "Dish  9 x  9 Inverted with Pinhole",
+    "category": "LEAF",
+    "profile": "dish",
+    "widthX": 9,
+    "depthZ": 9,
+    "heightY": 2,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "spherical_dome",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "18859",
+    "name": "Dish  8 x  8 Inverted with Hollow Studs",
+    "category": "LEAF",
+    "profile": "dish",
+    "widthX": 8,
+    "depthZ": 8,
+    "heightY": 2,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "spherical_dome",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "1746",
+    "name": "Cone  4 x  8 x  6 Half with Roof Tiles",
+    "category": "LEAF",
+    "profile": "cone",
+    "widthX": 4,
+    "depthZ": 8,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "sharp_cusp",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "18675",
+    "name": "Dish  6 x  6 Inverted - No Studs with Handle",
+    "category": "LEAF",
+    "profile": "dish",
+    "widthX": 6,
+    "depthZ": 6,
+    "heightY": 2,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "spherical_dome",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "6942",
+    "name": "Dish  5 x  5",
+    "category": "LEAF",
+    "profile": "dish",
+    "widthX": 5,
+    "depthZ": 5,
+    "heightY": 2,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "spherical_dome",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "3960",
+    "name": "Dish 4 x 4 Inverted Radar",
+    "category": "LEAF",
+    "profile": "dish",
+    "widthX": 4,
+    "depthZ": 4,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "spherical_dome",
+    "isModern": true,
+    "bondingCapacity": 5,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "272",
+    "name": "Cone  4 x  4 x  3",
+    "category": "LEAF",
+    "profile": "cone",
+    "widthX": 4,
+    "depthZ": 4,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "sharp_cusp",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "4-4con16",
+    "name": "Cone 16 x 1.0",
+    "category": "LEAF",
+    "profile": "cone",
+    "widthX": 1,
+    "depthZ": 16,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "sharp_cusp",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "4-4con15",
+    "name": "Cone 15 x 1.0",
+    "category": "LEAF",
+    "profile": "cone",
+    "widthX": 1,
+    "depthZ": 15,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "sharp_cusp",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "4-4con11",
+    "name": "Cone 11 x 1.0",
+    "category": "LEAF",
+    "profile": "cone",
+    "widthX": 1,
+    "depthZ": 11,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "sharp_cusp",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "35394",
+    "name": "Dish  4 x  4 Inverted with Hollow Stud",
+    "category": "LEAF",
+    "profile": "dish",
+    "widthX": 4,
+    "depthZ": 4,
+    "heightY": 2,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "spherical_dome",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "4-4con10",
+    "name": "Cone 10 x 1.0",
+    "category": "LEAF",
+    "profile": "cone",
+    "widthX": 1,
+    "depthZ": 10,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "sharp_cusp",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "43898",
+    "name": "Dish 3 x 3 Inverted Radar",
+    "category": "LEAF",
+    "profile": "dish",
+    "widthX": 3,
+    "depthZ": 3,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "spherical_dome",
+    "isModern": true,
+    "bondingCapacity": 5,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "4-4con9",
+    "name": "Cone  9 x 1.0",
+    "category": "LEAF",
+    "profile": "cone",
+    "widthX": 1,
+    "depthZ": 9,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "sharp_cusp",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "6233",
+    "name": "Cone  3 x  3 x  2",
+    "category": "LEAF",
+    "profile": "cone",
+    "widthX": 3,
+    "depthZ": 3,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "sharp_cusp",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "35563",
+    "name": "Cone  4 x  2 x  4 Half with Roof Tiles",
+    "category": "LEAF",
+    "profile": "cone",
+    "widthX": 2,
+    "depthZ": 4,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "sharp_cusp",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "4-4con8",
+    "name": "Cone  8 x 1.0",
+    "category": "LEAF",
+    "profile": "cone",
+    "widthX": 1,
+    "depthZ": 8,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "sharp_cusp",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "7688",
+    "name": "Dish  4 x  3 Elliptic",
+    "category": "LEAF",
+    "profile": "dish",
+    "widthX": 3,
+    "depthZ": 4,
+    "heightY": 2,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "spherical_dome",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "4-4con7",
+    "name": "Cone  7 x 1.0",
+    "category": "LEAF",
+    "profile": "cone",
+    "widthX": 1,
+    "depthZ": 7,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "sharp_cusp",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "41669",
+    "name": "Bionicle Tooth / Spine 1 x 3 x 2",
+    "category": "LEAF",
+    "profile": "tooth_creature",
+    "widthX": 1,
+    "depthZ": 3,
+    "heightY": 6,
+    "slopeClass": "slope_75",
+    "slopeAngle": 75,
+    "curvatureClass": "sharp_cusp",
+    "isModern": true,
+    "bondingCapacity": 5,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "4-4con6",
+    "name": "Cone  6 x 1.0",
+    "category": "LEAF",
+    "profile": "cone",
+    "widthX": 1,
+    "depthZ": 6,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "sharp_cusp",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "4-4con5",
+    "name": "Cone  5 x 1.0",
+    "category": "LEAF",
+    "profile": "cone",
+    "widthX": 1,
+    "depthZ": 5,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "sharp_cusp",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "87747",
+    "name": "Curved Blade / Horn 4L",
+    "category": "LEAF",
+    "profile": "tooth_creature",
+    "widthX": 1,
+    "depthZ": 2,
+    "heightY": 6,
+    "slopeClass": "slope_75",
+    "slopeAngle": 75,
+    "curvatureClass": "sharp_cusp",
+    "isModern": true,
+    "bondingCapacity": 5,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "28598",
+    "name": "Cone  2 x  2 x  3 Jagged",
+    "category": "LEAF",
+    "profile": "cone",
+    "widthX": 2,
+    "depthZ": 2,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "sharp_cusp",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "4-4con4",
+    "name": "Cone  4 x 1.0",
+    "category": "LEAF",
+    "profile": "cone",
+    "widthX": 1,
+    "depthZ": 4,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "sharp_cusp",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "4-4con3",
+    "name": "Cone  3 x 1.0",
+    "category": "LEAF",
+    "profile": "cone",
+    "widthX": 1,
+    "depthZ": 3,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "sharp_cusp",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "4740",
+    "name": "Dish 2 x 2 Inverted Radar",
+    "category": "LEAF",
+    "profile": "dish",
+    "widthX": 2,
+    "depthZ": 2,
+    "heightY": 2,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "spherical_dome",
+    "isModern": true,
+    "bondingCapacity": 5,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "32578",
+    "name": "Bionicle Claw / Hook",
+    "category": "LEAF",
+    "profile": "tooth_creature",
+    "widthX": 1,
+    "depthZ": 2,
+    "heightY": 3,
+    "slopeClass": "slope_45",
+    "slopeAngle": 45,
+    "curvatureClass": "sharp_cusp",
+    "isModern": true,
+    "bondingCapacity": 5,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "4-4con2",
+    "name": "Cone  2 x 1.0",
+    "category": "LEAF",
+    "profile": "cone",
+    "widthX": 1,
+    "depthZ": 2,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "sharp_cusp",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "85984",
+    "name": "Slope 31 1 x 2 x 2/3 (Double Cheese)",
+    "category": "LEAF",
+    "profile": "cheese",
+    "widthX": 1,
+    "depthZ": 2,
+    "heightY": 2,
+    "slopeClass": "slope_33",
+    "slopeAngle": 31,
+    "curvatureClass": "flat",
+    "isModern": true,
+    "bondingCapacity": 5,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "10187",
+    "name": "Minifig Bladed Claw Spread",
+    "category": "LEAF",
+    "profile": "tooth_creature",
+    "widthX": 1,
+    "depthZ": 1,
+    "heightY": 3,
+    "slopeClass": "slope_75",
+    "slopeAngle": 75,
+    "curvatureClass": "sharp_cusp",
+    "isModern": true,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "11610",
+    "name": "Cone  1 x  1 Inverted with Shaft",
+    "category": "LEAF",
+    "profile": "cone",
+    "widthX": 1,
+    "depthZ": 1,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "sharp_cusp",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "53451",
+    "name": "Barb / Tooth / Horn 1 x 1 x 0.67",
+    "category": "LEAF",
+    "profile": "tooth_creature",
+    "widthX": 1,
+    "depthZ": 1,
+    "heightY": 2,
+    "slopeClass": "slope_75",
+    "slopeAngle": 75,
+    "curvatureClass": "sharp_cusp",
+    "isModern": true,
+    "bondingCapacity": 5,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "54200",
+    "name": "Slope 31 1 x 1 x 2/3 (Cheese)",
+    "category": "LEAF",
+    "profile": "cheese",
+    "widthX": 1,
+    "depthZ": 1,
+    "heightY": 2,
+    "slopeClass": "slope_33",
+    "slopeAngle": 31,
+    "curvatureClass": "flat",
+    "isModern": true,
+    "bondingCapacity": 5,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "1-4con0",
+    "name": "Cone  0 x 0.25",
+    "category": "LEAF",
+    "profile": "cone",
+    "widthX": 0,
+    "depthZ": 0,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "sharp_cusp",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "1-4con1",
+    "name": "Cone  1 x 0.25",
+    "category": "LEAF",
+    "profile": "cone",
+    "widthX": 0,
+    "depthZ": 1,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "sharp_cusp",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "1-4con10",
+    "name": "Cone 10 x 0.25",
+    "category": "LEAF",
+    "profile": "cone",
+    "widthX": 0,
+    "depthZ": 10,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "sharp_cusp",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "1-4con11",
+    "name": "Cone 11 x 0.25",
+    "category": "LEAF",
+    "profile": "cone",
+    "widthX": 0,
+    "depthZ": 11,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "sharp_cusp",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "1-4con12",
+    "name": "Cone 12 x 0.25",
+    "category": "LEAF",
+    "profile": "cone",
+    "widthX": 0,
+    "depthZ": 12,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "sharp_cusp",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "1-4con13",
+    "name": "Cone 13 x 0.25",
+    "category": "LEAF",
+    "profile": "cone",
+    "widthX": 0,
+    "depthZ": 13,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "sharp_cusp",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "1-4con14",
+    "name": "Cone 14 x 0.25",
+    "category": "LEAF",
+    "profile": "cone",
+    "widthX": 0,
+    "depthZ": 14,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "sharp_cusp",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "1-4con15",
+    "name": "Cone 15 x 0.25",
+    "category": "LEAF",
+    "profile": "cone",
+    "widthX": 0,
+    "depthZ": 15,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "sharp_cusp",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "1-4con16",
+    "name": "Cone 16 x 0.25",
+    "category": "LEAF",
+    "profile": "cone",
+    "widthX": 0,
+    "depthZ": 16,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "sharp_cusp",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "1-4con2",
+    "name": "Cone  2 x 0.25",
+    "category": "LEAF",
+    "profile": "cone",
+    "widthX": 0,
+    "depthZ": 2,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "sharp_cusp",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "1-4con3",
+    "name": "Cone  3 x 0.25",
+    "category": "LEAF",
+    "profile": "cone",
+    "widthX": 0,
+    "depthZ": 3,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "sharp_cusp",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "1-4con4",
+    "name": "Cone  4 x 0.25",
+    "category": "LEAF",
+    "profile": "cone",
+    "widthX": 0,
+    "depthZ": 4,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "sharp_cusp",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "1-4con5",
+    "name": "Cone  5 x 0.25",
+    "category": "LEAF",
+    "profile": "cone",
+    "widthX": 0,
+    "depthZ": 5,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "sharp_cusp",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "1-4con6",
+    "name": "Cone  6 x 0.25",
+    "category": "LEAF",
+    "profile": "cone",
+    "widthX": 0,
+    "depthZ": 6,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "sharp_cusp",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "1-4con7",
+    "name": "Cone  7 x 0.25",
+    "category": "LEAF",
+    "profile": "cone",
+    "widthX": 0,
+    "depthZ": 7,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "sharp_cusp",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "1-4con8",
+    "name": "Cone  8 x 0.25",
+    "category": "LEAF",
+    "profile": "cone",
+    "widthX": 0,
+    "depthZ": 8,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "sharp_cusp",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  },
+  {
+    "partId": "1-4con9",
+    "name": "Cone  9 x 0.25",
+    "category": "LEAF",
+    "profile": "cone",
+    "widthX": 0,
+    "depthZ": 9,
+    "heightY": 3,
+    "slopeClass": "flat",
+    "slopeAngle": 0,
+    "curvatureClass": "sharp_cusp",
+    "isModern": false,
+    "bondingCapacity": 6,
+    "preferredDepth": [
+      1,
+      1
+    ]
+  }
+]

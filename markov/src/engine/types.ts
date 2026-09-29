@@ -129,6 +129,7 @@ export interface PlacedBrick {
   growthPhase: 'SEED' | 'CORE_EXPANSION' | 'MANTLE' | 'SURFACE_EDGE' | 'LEAF_APEX' | 'TILE_FINISH';
   clutchScore: number;
   parentBrickIds: string[];
+  headId?: number; // Index of the Growth Head that placed this piece
 }
 
 export interface FrontierPoint {
@@ -140,12 +141,15 @@ export interface FrontierPoint {
   expectedCategory: PieceCategory;
   expectedNormal: [number, number, number];
   supportingStudsCount: number;
+  assignedHeadId?: number;
 }
 
 export interface GrowthStepResult {
   stepIndex: number;
   phase: string;
   newBrick?: PlacedBrick;
+  newBricks: PlacedBrick[];
+  activeHeadsCount: number;
   activeFrontierCount: number;
   totalPlacedBricks: number;
   totalPlacedVoxels: number;
@@ -168,4 +172,6 @@ export interface MarkovEngineOptions {
   randomSeed?: number;
   maxSteps?: number;
   targetHeightPlates?: number;
+  numHeads?: number; // Number of parallel Growth Heads (1 to 16, default: 4)
+  batchStepSize?: number; // Number of placements per tick
 }
