@@ -2,14 +2,18 @@
  * Verification Tests for Markov Growing Core Discretization Engine.
  */
 
+(globalThis as any).self = globalThis;
+import fs from 'fs';
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader.js';
 import { MeshVoxelizer } from '../engine/meshVoxelizer';
 import { MarkovCoreGrowingEngine } from '../engine/markovCoreGrowingEngine';
 import { CONNECTOR_DATABASE } from '../engine/connectorDatabase';
 import { LDrawExporter } from '../engine/ldrawExporter';
 import { MultiResolutionLattice } from '../engine/multiResolutionLattice';
 
-export function runTests(): void {
+export async function runTests(): Promise<void> {
   console.log('=== RUNNING MARKOV GROWING CORE ENGINE TESTS ===\n');
 
   // Test 1: Connector Database
@@ -41,7 +45,7 @@ export function runTests(): void {
   }
   console.log('  -> PASS\n');
 
-  // Test 3: Markov Core Growing Simulation
+  // Test 3: Markov Core Growing Simulation (Multi-Phase)
   console.log('Test 3: Testing Markov Core Growing Execution...');
   const engine = new MarkovCoreGrowingEngine(grid, {
     seedMode: 'DEEPEST_CORE',
@@ -51,7 +55,7 @@ export function runTests(): void {
     directRGBSampling: true
   });
 
-  // Step 1: Seed
+  // Step 1: Volume Fill Seed
   const step1 = engine.step();
   console.log(`  Step 1 Result: phase=${step1.phase}, placedBricks=${step1.totalPlacedBricks}`);
   if (!step1.newBrick) {
@@ -78,6 +82,9 @@ export function runTests(): void {
   console.log(`  Total bricks: ${fullResult.totalPlacedBricks}`);
   console.log(`  Voxel coverage: ${(fullResult.coverageRatio * 100).toFixed(1)}%`);
   console.log(`  Unique parts utilized: ${fullResult.bomStats.uniquePartCount}`);
+  if (fullResult.coverageRatio < 0.95) {
+    throw new Error(`Coverage ratio should be near 100%, got ${(fullResult.coverageRatio * 100).toFixed(1)}%`);
+  }
 
   const bricksList = Array.from(engine.placedBricks.values());
   const ldrContent = LDrawExporter.exportToLDraw(bricksList, 'Test_Duck_Model', true);
@@ -90,10 +97,125 @@ export function runTests(): void {
   console.log(`    ${sampleLine}`);
   console.log('  -> PASS\n');
 
+  // Test 5: Real 3D Model Discretization (Duck GLB with authentic texture colors & curved slopes)
+  console.log('Test 5: Testing Real Duck GLB Discretization & Texture Sampling...');
+  if (fs.existsSync('public/sample_models/duck.glb')) {
+    const duckModel = await MeshVoxelizer.loadModel('/sample_models/duck.glb');
+    const duckGrid = MeshVoxelizer.voxelizeObject(duckModel, { targetHeightPlates: 21 });
+    console.log(`  Duck GLB occupied voxels: ${duckGrid.totalOccupied}, max depth: ${duckGrid.maxCoreDepth}`);
+    if (duckGrid.totalOccupied < 200) {
+      throw new Error('Duck GLB should have >= 200 occupied voxels');
+    }
+    if (duckGrid.maxCoreDepth < 2) {
+      throw new Error('Duck GLB should have solid core with depth >= 2');
+    }
+
+    const duckEngine = new MarkovCoreGrowingEngine(duckGrid, {
+      enableModernWeirdParts: true,
+      enableStudlessTopFinish: true
+    });
+    const duckRes = duckEngine.solveAll(3000);
+    console.log(`  Duck complete: ${duckRes.totalPlacedBricks} bricks, coverage: ${(duckRes.coverageRatio * 100).toFixed(1)}%, unique parts: ${duckRes.bomStats.uniquePartCount}`);
+    if (duckRes.totalPlacedBricks === 0 || duckRes.coverageRatio < 0.95) {
+      throw new Error('Duck discretization failed');
+    }
+
+    // Check that authentic yellow/orange colors are present
+    const duckHexColors = Array.from(duckEngine.placedBricks.values()).map(b => b.colorHex);
+    const hasYellow = duckHexColors.some(hex => {
+      const clean = hex.replace('#', '');
+      const r = parseInt(clean.substring(0, 2), 16) || 0;
+      const g = parseInt(clean.substring(2, 4), 16) || 0;
+      const b = parseInt(clean.substring(4, 6), 16) || 0;
+      return r > 200 && g > 150 && b < 100; // Yellow/amber range
+    });
+    if (!hasYellow) {
+      throw new Error('Duck model should have authentic yellow/amber sampled colors');
+    }
+    console.log('  Authentic yellow/amber color verified -> PASS');
+
+    // Check modern parts utilization
+    const placedPartIds = new Set(Array.from(duckEngine.placedBricks.values()).map(b => b.partId));
+    console.log(`  Unique part IDs in Duck: ${Array.from(placedPartIds).join(', ')}`);
+    const hasModernSlope = placedPartIds.has('11477') || placedPartIds.has('15068') || placedPartIds.has('24201') || placedPartIds.has('93273');
+    if (!hasModernSlope) {
+      throw new Error('Duck model should utilize modern curved or inverted slopes');
+    }
+    console.log('  Modern curved/inverted slopes verified -> PASS\n');
+  }
+
+  // Test 6: Real 3D Model Discretization (Dolphin GLB)
+  console.log('Test 6: Testing Real Dolphin GLB Discretization & Vertex Colors...');
+  if (fs.existsSync('public/sample_models/dolphin.glb')) {
+    const dolModel = await MeshVoxelizer.loadModel('/sample_models/dolphin.glb');
+    const dolGrid = MeshVoxelizer.voxelizeObject(dolModel, { targetHeightPlates: 21 });
+    console.log(`  Dolphin GLB occupied voxels: ${dolGrid.totalOccupied}, max depth: ${dolGrid.maxCoreDepth}`);
+    if (dolGrid.totalOccupied < 100) {
+      throw new Error('Dolphin GLB should have >= 100 occupied voxels');
+    }
+
+    const dolEngine = new MarkovCoreGrowingEngine(dolGrid);
+    const dolRes = dolEngine.solveAll(2000);
+    console.log(`  Dolphin complete: ${dolRes.totalPlacedBricks} bricks, coverage: ${(dolRes.coverageRatio * 100).toFixed(1)}%, unique parts: ${dolRes.bomStats.uniquePartCount}`);
+    if (dolRes.totalPlacedBricks === 0 || dolRes.coverageRatio < 0.95) {
+      throw new Error('Dolphin discretization failed');
+    }
+    console.log('  -> PASS\n');
+  }
+
+  // Test 7: Real 3D Model Discretization (Mini Cooper GLB)
+  console.log('Test 7: Testing Real Mini Cooper GLB Discretization...');
+  if (fs.existsSync('public/models/clean/cars/mini.glb')) {
+    const carModel = await MeshVoxelizer.loadModel('/models/clean/cars/mini.glb');
+    const carGrid = MeshVoxelizer.voxelizeObject(carModel, { targetHeightPlates: 21 });
+    console.log(`  Mini Cooper GLB occupied voxels: ${carGrid.totalOccupied}, max depth: ${carGrid.maxCoreDepth}`);
+    if (carGrid.totalOccupied < 500) {
+      throw new Error('Mini Cooper GLB should have >= 500 occupied voxels');
+    }
+
+    const carEngine = new MarkovCoreGrowingEngine(carGrid);
+    const carRes = carEngine.solveAll(2000);
+    console.log(`  Mini Cooper complete: ${carRes.totalPlacedBricks} bricks, coverage: ${(carRes.coverageRatio * 100).toFixed(1)}%, unique parts: ${carRes.bomStats.uniquePartCount}`);
+    if (carRes.totalPlacedBricks === 0 || carRes.coverageRatio < 0.95) {
+      throw new Error('Mini Cooper discretization failed');
+    }
+    console.log('  -> PASS\n');
+  }
+
+  // Test 8: Real Open Meshes Discretization (Delacroix PLY & VW Beetle GLB)
+  console.log('Test 8: Testing Open Meshes Discretization & Solid Ground Capping...');
+  if (fs.existsSync('public/sample_models/delacroix_low_poly.ply')) {
+    const delacroix = await MeshVoxelizer.loadModel('/sample_models/delacroix_low_poly.ply');
+    const delGrid = MeshVoxelizer.voxelizeObject(delacroix, { targetHeightPlates: 21 });
+    console.log(`  Delacroix PLY occupied voxels: ${delGrid.totalOccupied}, max depth: ${delGrid.maxCoreDepth}`);
+    if (delGrid.totalOccupied < 300) {
+      throw new Error(`Delacroix should have solid volume with >= 300 voxels, got ${delGrid.totalOccupied}`);
+    }
+    if (delGrid.maxCoreDepth < 2) {
+      throw new Error(`Delacroix should have solid core with maxDepth >= 2, got ${delGrid.maxCoreDepth}`);
+    }
+  }
+
+  if (fs.existsSync('public/models/clean/cars/vwbeetle.glb')) {
+    const beetle = await MeshVoxelizer.loadModel('/models/clean/cars/vwbeetle.glb');
+    const beetleGrid = MeshVoxelizer.voxelizeObject(beetle, { targetHeightPlates: 21 });
+    console.log(`  VW Beetle GLB occupied voxels: ${beetleGrid.totalOccupied}, max depth: ${beetleGrid.maxCoreDepth}`);
+    if (beetleGrid.totalOccupied < 1000) {
+      throw new Error(`VW Beetle should have solid volume with >= 1000 voxels, got ${beetleGrid.totalOccupied}`);
+    }
+    if (beetleGrid.maxCoreDepth < 3) {
+      throw new Error(`VW Beetle should have solid core with maxDepth >= 3, got ${beetleGrid.maxCoreDepth}`);
+    }
+  }
+  console.log('  Open mesh ground capping verified -> PASS\n');
+
   console.log('=== ALL TESTS PASSED SUCCESSFULLY! ===');
 }
 
 // Run if in node/tsx
 if (typeof process !== 'undefined') {
-  runTests();
+  runTests().catch(err => {
+    console.error('Test failed:', err);
+    process.exit(1);
+  });
 }

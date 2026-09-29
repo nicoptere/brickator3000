@@ -55,6 +55,10 @@ export class MultiResolutionLattice {
       }
     }
 
+    if (queue.length > 0) {
+      maxDepth = 1;
+    }
+
     // 2. Multi-source BFS inward to compute topological depth
     const neighborOffsets = [
       [1, 0, 0], [-1, 0, 0],
@@ -120,7 +124,7 @@ export class MultiResolutionLattice {
   }
 
   /**
-   * Infers surface slope angle and cardinal heading via 3D Lattice height gradients.
+   * Infers surface slope angle and cardinal heading via authentic surface normal and 3D Lattice height gradients.
    */
   public static inferLatticeSlope(grid: VoxelGrid, x: number, z: number, y: number): {
     slopeClass: SlopeClass;
@@ -128,6 +132,33 @@ export class MultiResolutionLattice {
     angle: number;
   } {
     const { numStudsX, numStudsZ, numPlatesY } = grid;
+    const cell = grid.grid[x]?.[z]?.[y];
+
+    // 1. Primary: Use authentic surface normal from mesh raycast
+    if (cell && cell.normal && (cell.normal[0] !== 0 || cell.normal[1] !== 0 || cell.normal[2] !== 0)) {
+      const [nx, ny, nz] = cell.normal;
+
+      let heading = 0;
+      if (Math.abs(nz) >= Math.abs(nx)) {
+        heading = nz >= 0 ? 0 : 180;
+      } else {
+        heading = nx >= 0 ? 270 : 90;
+      }
+
+      if (ny < -0.3) {
+        return { slopeClass: 'slope_inverted', heading, angle: -30 };
+      }
+      if (ny > 0.8) {
+        return { slopeClass: 'flat', heading, angle: 0 };
+      }
+      if (ny >= 0.15 && ny <= 0.8) {
+        if (ny > 0.45) {
+          return { slopeClass: 'slope_curved', heading, angle: 45 };
+        } else {
+          return { slopeClass: 'slope_33', heading, angle: 33 };
+        }
+      }
+    }
 
     const isSolid = (cx: number, cz: number, cy: number): boolean => {
       if (cx < 0 || cx >= numStudsX || cz < 0 || cz >= numStudsZ || cy < 0 || cy >= numPlatesY) return false;
@@ -166,7 +197,7 @@ export class MultiResolutionLattice {
     }
 
     if (maxDiff >= 3) {
-      return { slopeClass: 'slope_45', heading, angle: 45 };
+      return { slopeClass: 'slope_curved', heading, angle: 45 };
     } else if (maxDiff >= 1) {
       return { slopeClass: 'slope_33', heading, angle: 33 };
     }

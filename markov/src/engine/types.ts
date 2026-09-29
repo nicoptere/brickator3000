@@ -124,7 +124,8 @@ export interface PlacedBrick {
   ldrawPos: [number, number, number]; // [x, y, z] in Three.js / LDraw coordinates
   rotation: number; // 0, 90, 180, 270
   matrix: [number, number, number, number, number, number, number, number, number];
-  size: [number, number, number]; // [widthX studs, depthZ studs, heightY plates]
+  size: [number, number, number]; // [widthX studs, depthZ studs, heightY plates] (rotated bounding footprint)
+  baseSize?: [number, number, number]; // [baseWidthX studs, baseDepthZ studs, baseHeightY plates] (unrotated canonical dimensions)
   stepIndex: number;
   growthPhase: 'SEED' | 'CORE_EXPANSION' | 'MANTLE' | 'SURFACE_EDGE' | 'LEAF_APEX' | 'TILE_FINISH';
   clutchScore: number;

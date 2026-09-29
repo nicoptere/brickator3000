@@ -1,16 +1,18 @@
 /**
- * Multi-Head Markov Core Growing Engine.
+ * Multi-Head Markov Discretization & Backwards Optimization Engine.
  *
- * Implements high-throughput parallel frontier growth across multiple heads:
- * 1. Allocates N independent Growth Heads across distinct spatial sectors
- *    (Core spine, Ground foundation +X/+Z, Ground foundation -X/-Z, Top apex, Lateral flanks).
- * 2. In each tick, all N heads simultaneously fire Markov rewrite rules, placing
- *    multiple interlocking pieces in parallel without collisions.
- * 3. Uses O(1) candidate spatial pruning (querying pre-indexed catalog dimensions)
- *    to eliminate combinatorial bottleneck across 200+ authentic LDraw connectors.
- * 4. Seamlessly transitions from deep core structural FILL (with interlocking running bond)
- *    to surface EDGE (curved slopes, 45° slopes, macaroni) and LEAF (creature teeth, horns, dishes).
- * 5. Applies studless smooth flat tiles to exposed top horizontal surfaces.
+ * Implements the 4-phase LEGO discretization pipeline:
+ * 1. FORWARD PASS (Watertight 1x1 Plate Voxel Volume):
+ *    Fills the 3D model volume with unit 1x1 plates (3024) having true RGB colors sampled directly from the mesh.
+ * 2. BACKWARDS OPTIMIZATION (Agglomerative Merging with Running Bond):
+ *    Merges contiguous 1x1 plates of compatible color into larger structural bricks (2x4, 2x2, 1x4, 1x2...)
+ *    and plates (2x8, 2x4, 1x4, 1x2...) while enforcing interlocking staggered seams.
+ * 3. EXTERIOR SURFACE REPLACEMENT PASS:
+ *    Evaluates boundary cells (normals, slope angle/heading, curvature) and replaces exterior blocks with
+ *    authentic LDraw slopes (curved slopes 11477/15068/61678, inverted slopes 24201/93273, 45°/33° slopes),
+ *    macaroni corner tiles (27925, 25269), radar dishes (4740), and Bionicle teeth/horns (53451, 41669).
+ * 4. STUDLESS TOP FINISH PASS:
+ *    Caps exposed horizontal top surfaces with smooth studless tiles (3068b, 3069b, 2431, 98138).
  */
 
 import {
@@ -21,21 +23,29 @@ import {
   GrowthStepResult,
   MarkovEngineOptions,
   PieceCategory,
+  PieceProfile,
   CurvatureClass,
   SlopeClass
 } from './types';
 import { CONNECTOR_DATABASE, LDrawConnectorMeta } from './connectorDatabase';
 import { RotatedPieceVariant } from './pieceFingerprint';
-import { LDU_STUD_PITCH, LDU_PLATE_HEIGHT, evaluateClutchAndBond } from './connectivityDictionary';
+import { LDU_STUD_PITCH, LDU_PLATE_HEIGHT } from './connectivityDictionary';
 
 export interface GrowthHead {
   headId: number;
   name: string;
   colorHex: string;
   active: boolean;
-  priorityY: number; // Preferred layer or sector
+  priorityY: number;
   placedCount: number;
 }
+
+export type DiscretizationPhase =
+  | 'VOLUME_FILL'
+  | 'OPTIMIZE_MERGE'
+  | 'SURFACE_REPLACE'
+  | 'TILE_FINISH'
+  | 'DONE';
 
 export class MarkovCoreGrowingEngine {
   public grid: VoxelGrid;
@@ -48,10 +58,16 @@ export class MarkovCoreGrowingEngine {
   // Multi-Head Management
   public heads: GrowthHead[] = [];
   public activeFrontiersByHead: Map<number, FrontierPoint[]> = new Map();
-  public globalFrontier: FrontierPoint[] = [];
+  public fillFrontierQueue: Array<{ x: number; z: number; y: number; dist: number }> = [];
 
   public stepIndex: number = 0;
-  public currentPhase: 'SEED' | 'CORE_EXPANSION' | 'MANTLE' | 'SURFACE_EDGE' | 'LEAF_APEX' | 'TILE_FINISH' | 'DONE' = 'SEED';
+  public currentPhase: DiscretizationPhase = 'VOLUME_FILL';
+
+  // Merge & replacement scan cursors for smooth step-by-step playback
+  private mergeLayerCursor: number = 0;
+  private surfaceCandidateCursor: number = 0;
+  private surfaceCandidates: Array<{ x: number; z: number; y: number }> = [];
+  private tileFinishCursor: number = 0;
 
   public bomStats = {
     leafCount: 0,
@@ -75,7 +91,7 @@ export class MarkovCoreGrowingEngine {
       randomSeed: options.randomSeed ?? 42,
       maxSteps: options.maxSteps ?? 5000,
       numHeads,
-      batchStepSize: options.batchStepSize ?? numHeads
+      batchStepSize: options.batchStepSize ?? 16
     };
 
     let s = this.options.randomSeed!;
@@ -84,21 +100,21 @@ export class MarkovCoreGrowingEngine {
       return s / 233280;
     };
 
-    this.initMultiHeads();
+    this.initHeadsAndFrontier();
   }
 
   private cellKey(x: number, z: number, y: number): string {
     return `${x},${z},${y}`;
   }
 
-  private isCellCovered(x: number, z: number, y: number): boolean {
+  public isCellCovered(x: number, z: number, y: number): boolean {
     return this.occupiedCellToBrickId.has(this.cellKey(x, z, y));
   }
 
   /**
-   * Initializes N spatially distributed Growth Heads.
+   * Initializes multi-head queues and orders volume fill queue by distance from core.
    */
-  private initMultiHeads(): void {
+  private initHeadsAndFrontier(): void {
     const numHeads = this.options.numHeads!;
     const headColors = [
       '#38bdf8', '#f59e0b', '#10b981', '#ec4899',
@@ -114,210 +130,96 @@ export class MarkovCoreGrowingEngine {
         name: `Head ${i + 1}`,
         colorHex: headColors[i % headColors.length],
         active: true,
-        priorityY: i === 0 ? cy : (i === 1 ? 0 : (i === 2 ? Math.min(numPlatesY - 1, cy + 6) : 0)),
+        priorityY: i === 0 ? cy : (i === 1 ? 0 : Math.min(numPlatesY - 1, cy + i * 2)),
         placedCount: 0
       });
       this.activeFrontiersByHead.set(i, []);
     }
 
-    // Seed 0: Deepest Core
-    this.activeFrontiersByHead.get(0)!.push({
-      x: cx,
-      z: cz,
-      y: Math.max(0, Math.floor(cy / 3) * 3),
-      depth: this.grid.grid[cx]?.[cz]?.[cy]?.depth ?? 3,
-      priority: 100,
-      expectedCategory: 'FILL',
-      expectedNormal: [0, 1, 0],
-      supportingStudsCount: cy === 0 ? 8 : 4,
-      assignedHeadId: 0
-    });
-
-    // Seed 1: Grounded Base (+X, +Z)
-    if (numHeads > 1) {
-      const bx = Math.min(numStudsX - 1, cx + 1);
-      const bz = Math.min(numStudsZ - 1, cz + 1);
-      this.activeFrontiersByHead.get(1)!.push({
-        x: bx,
-        z: bz,
-        y: 0,
-        depth: this.grid.grid[bx]?.[bz]?.[0]?.depth ?? 1,
-        priority: 95,
-        expectedCategory: 'FILL',
-        expectedNormal: [0, 1, 0],
-        supportingStudsCount: 8,
-        assignedHeadId: 1
-      });
-    }
-
-    // Seed 2: Grounded Base (-X, -Z)
-    if (numHeads > 2) {
-      const bx2 = Math.max(0, cx - 1);
-      const bz2 = Math.max(0, cz - 1);
-      this.activeFrontiersByHead.get(2)!.push({
-        x: bx2,
-        z: bz2,
-        y: 0,
-        depth: this.grid.grid[bx2]?.[bz2]?.[0]?.depth ?? 1,
-        priority: 95,
-        expectedCategory: 'FILL',
-        expectedNormal: [0, 1, 0],
-        supportingStudsCount: 8,
-        assignedHeadId: 2
-      });
-    }
-
-    // Seed 3: Upper Spine
-    if (numHeads > 3) {
-      const topY = Math.min(numPlatesY - 3, Math.max(0, cy + 3));
-      this.activeFrontiersByHead.get(3)!.push({
-        x: cx,
-        z: cz,
-        y: topY,
-        depth: this.grid.grid[cx]?.[cz]?.[topY]?.depth ?? 2,
-        priority: 90,
-        expectedCategory: 'FILL',
-        expectedNormal: [0, 1, 0],
-        supportingStudsCount: 4,
-        assignedHeadId: 3
-      });
-    }
-  }
-
-  /**
-   * Fast O(1) probe of maximum unoccupied solid bounding box starting at (x, z, y).
-   */
-  private probeFreeSolidBox(startX: number, startZ: number, startY: number): [number, number, number] {
-    const { numStudsX, numStudsZ, numPlatesY } = this.grid;
-
-    // Check height in plates (1 to 3)
-    let maxH = 0;
-    for (let dy = 0; dy < 3; dy++) {
-      const gy = startY + dy;
-      if (gy >= numPlatesY) break;
-      const cell = this.grid.grid[startX]?.[startZ]?.[gy];
-      if (!cell || !cell.occupied || this.isCellCovered(startX, startZ, gy)) break;
-      maxH++;
-    }
-    if (maxH === 0) return [0, 0, 0];
-
-    // Check width in X studs (up to 8)
-    let maxW = 0;
-    for (let dx = 0; dx < 8; dx++) {
-      const gx = startX + dx;
-      if (gx >= numStudsX) break;
-      let colFree = true;
-      for (let dy = 0; dy < maxH; dy++) {
-        const cell = this.grid.grid[gx]?.[startZ]?.[startY + dy];
-        if (!cell || !cell.occupied || this.isCellCovered(gx, startZ, startY + dy)) {
-          colFree = false;
-          break;
-        }
-      }
-      if (!colFree) break;
-      maxW++;
-    }
-
-    // Check depth in Z studs (up to 8)
-    let maxD = 0;
-    for (let dz = 0; dz < 8; dz++) {
-      const gz = startZ + dz;
-      if (gz >= numStudsZ) break;
-      let rowFree = true;
-      for (let dx = 0; dx < maxW; dx++) {
-        for (let dy = 0; dy < maxH; dy++) {
-          const cell = this.grid.grid[startX + dx]?.[gz]?.[startY + dy];
-          if (!cell || !cell.occupied || this.isCellCovered(startX + dx, gz, startY + dy)) {
-            rowFree = false;
-            break;
+    // Build ordered queue of all occupied cells sorted outward from core centroid
+    const allOccupied: Array<{ x: number; z: number; y: number; dist: number }> = [];
+    for (let x = 0; x < numStudsX; x++) {
+      for (let z = 0; z < numStudsZ; z++) {
+        for (let y = 0; y < numPlatesY; y++) {
+          const cell = this.grid.grid[x][z][y];
+          if (cell && cell.occupied) {
+            const dx = x - cx;
+            const dz = z - cz;
+            const dy = (y - cy) * 0.5; // Bias horizontal expansion slightly
+            const dist = Math.sqrt(dx * dx + dz * dz + dy * dy);
+            allOccupied.push({ x, z, y, dist });
           }
         }
-        if (!rowFree) break;
       }
-      if (!rowFree) break;
-      maxD++;
     }
 
-    return [maxW, maxD, maxH];
+    // Sort outward: closest to core centroid first
+    allOccupied.sort((a, b) => a.dist - b.dist);
+    this.fillFrontierQueue = allOccupied;
   }
 
   /**
-   * Fast bitwise validation: Can a piece variant fit at (startX, startZ, startY)?
+   * Checks if two hex colors are visually compatible for merging.
    */
-  private canFitPiece(
-    startX: number,
-    startZ: number,
-    startY: number,
-    variant: RotatedPieceVariant
-  ): boolean {
-    const { numStudsX, numStudsZ, numPlatesY } = this.grid;
+  private areColorsCompatible(hex1: string, hex2: string, threshold: number = 28): boolean {
+    if (hex1 === hex2) return true;
+    const clean1 = hex1.replace('#', '');
+    const clean2 = hex2.replace('#', '');
+    const r1 = parseInt(clean1.substring(0, 2), 16) || 0;
+    const g1 = parseInt(clean1.substring(2, 4), 16) || 0;
+    const b1 = parseInt(clean1.substring(4, 6), 16) || 0;
 
-    if (
-      startX < 0 ||
-      startZ < 0 ||
-      startY < 0 ||
-      startX + variant.widthX > numStudsX ||
-      startZ + variant.depthZ > numStudsZ ||
-      startY + variant.heightY > numPlatesY
-    ) {
-      return false;
-    }
+    const r2 = parseInt(clean2.substring(0, 2), 16) || 0;
+    const g2 = parseInt(clean2.substring(2, 4), 16) || 0;
+    const b2 = parseInt(clean2.substring(4, 6), 16) || 0;
 
-    for (const c of variant.occupiedCells) {
-      const gx = startX + c.dx;
-      const gz = startZ + c.dz;
-      const gy = startY + c.dy;
-
-      if (this.isCellCovered(gx, gz, gy)) return false;
-      const cell = this.grid.grid[gx]?.[gz]?.[gy];
-      if (!cell || !cell.occupied) return false;
-    }
-
-    return true;
+    const dr = r1 - r2;
+    const dg = g1 - g2;
+    const db = b1 - b2;
+    return Math.sqrt(dr * dr * 0.3 + dg * dg * 0.59 + db * db * 0.11) <= threshold;
   }
 
   /**
-   * Commits a placed piece to the model, updating occupied grids and expanding frontiers.
+   * Commits a placed brick into the model and updates spatial indexes and BOM.
    */
-  private commitPiece(
+  private commitBrick(
     startX: number,
     startZ: number,
     startY: number,
     connector: LDrawConnectorMeta,
     variant: RotatedPieceVariant,
     phase: PlacedBrick['growthPhase'],
-    clutchScore: number,
-    headId: number,
-    parentIds: string[] = []
+    headId: number = 0,
+    forcedColorHex?: string
   ): PlacedBrick {
-    const { numStudsX, numStudsZ, numPlatesY } = this.grid;
-    const brickId = `b_${this.stepIndex}_h${headId}_${connector.partId}_${startX}_${startY}_${startZ}`;
+    const { numStudsX, numStudsZ } = this.grid;
+    const brickId = `b_${this.stepIndex}_${connector.partId}_${startX}_${startY}_${startZ}`;
 
-    // Sample dominant diffuse/vertex color (Cheat Mode direct RGB)
+    // Sample dominant diffuse/vertex color
     let sumR = 0, sumG = 0, sumB = 0;
     let colorCode = 15;
-    let colorHex = '#e2e8f0';
+    let colorHex = forcedColorHex || '#f4f4f4';
     let colorName = 'White';
 
-    for (const c of variant.occupiedCells) {
-      const cell = this.grid.grid[startX + c.dx][startZ + c.dz][startY + c.dy];
-      if (cell) {
-        colorCode = cell.colorCode;
-        colorHex = cell.colorHex;
-        colorName = cell.colorName;
-
-        const cleanHex = colorHex.replace('#', '');
-        sumR += parseInt(cleanHex.substring(0, 2), 16) || 200;
-        sumG += parseInt(cleanHex.substring(2, 4), 16) || 200;
-        sumB += parseInt(cleanHex.substring(4, 6), 16) || 200;
+    if (!forcedColorHex) {
+      for (const c of variant.occupiedCells) {
+        const cell = this.grid.grid[startX + c.dx]?.[startZ + c.dz]?.[startY + c.dy];
+        if (cell) {
+          colorCode = cell.colorCode;
+          colorName = cell.colorName;
+          const cleanHex = cell.colorHex.replace('#', '');
+          sumR += parseInt(cleanHex.substring(0, 2), 16) || 200;
+          sumG += parseInt(cleanHex.substring(2, 4), 16) || 200;
+          sumB += parseInt(cleanHex.substring(4, 6), 16) || 200;
+        }
       }
-    }
 
-    if (this.options.directRGBSampling && variant.occupiedCells.length > 0) {
-      const avgR = Math.round(sumR / variant.occupiedCells.length);
-      const avgG = Math.round(sumG / variant.occupiedCells.length);
-      const avgB = Math.round(sumB / variant.occupiedCells.length);
-      colorHex = `#${avgR.toString(16).padStart(2, '0')}${avgG.toString(16).padStart(2, '0')}${avgB.toString(16).padStart(2, '0')}`;
+      if (variant.occupiedCells.length > 0) {
+        const avgR = Math.round(sumR / variant.occupiedCells.length);
+        const avgG = Math.round(sumG / variant.occupiedCells.length);
+        const avgB = Math.round(sumB / variant.occupiedCells.length);
+        colorHex = `#${avgR.toString(16).padStart(2, '0')}${avgG.toString(16).padStart(2, '0')}${avgB.toString(16).padStart(2, '0')}`;
+      }
     }
 
     const ldrawX = (startX + variant.widthX / 2.0 - numStudsX / 2.0) * LDU_STUD_PITCH + connector.ldrawOffset[0];
@@ -338,10 +240,11 @@ export class MarkovCoreGrowingEngine {
       rotation: variant.rotation,
       matrix: variant.matrix,
       size: [variant.widthX, variant.depthZ, variant.heightY],
+      baseSize: [connector.footprint[0], connector.footprint[1], connector.footprint[2]],
       stepIndex: this.stepIndex,
       growthPhase: phase,
-      clutchScore,
-      parentBrickIds: parentIds,
+      clutchScore: 1.0,
+      parentBrickIds: [],
       headId
     };
 
@@ -363,349 +266,662 @@ export class MarkovCoreGrowingEngine {
       }
     }
 
-    // BOM stats
+    // Update BOM
     if (connector.category === 'LEAF') this.bomStats.leafCount++;
     else if (connector.category === 'EDGE') this.bomStats.edgeCount++;
     else if (connector.category === 'FILL') this.bomStats.fillCount++;
     this.bomStats.uniqueParts.add(connector.partId);
 
-    this.heads[headId].placedCount++;
-
-    // Expand Frontier for this head
-    this.expandFrontierAround(startX, startZ, startY, variant, headId);
+    if (this.heads[headId]) {
+      this.heads[headId].placedCount++;
+    }
 
     return placed;
   }
 
   /**
-   * Expands frontier for the specific growth head.
+   * Removes a brick from the model and frees its voxels.
    */
-  private expandFrontierAround(
-    startX: number,
-    startZ: number,
-    startY: number,
-    variant: RotatedPieceVariant,
-    headId: number
-  ): void {
-    const { numStudsX, numStudsZ, numPlatesY } = this.grid;
-    const frontierQueue = this.activeFrontiersByHead.get(headId) || this.globalFrontier;
+  private removeBrick(brickId: string): PlacedBrick | null {
+    const placed = this.placedBricks.get(brickId);
+    if (!placed) return null;
 
-    // 1. Top connection points (growth upward)
-    const topY = startY + variant.heightY;
-    if (topY >= 0 && topY < numPlatesY) {
-      for (const stud of variant.topStuds) {
-        const gx = Math.floor(startX + stud.dx);
-        const gz = Math.floor(startZ + stud.dz);
-        if (gx >= 0 && gx < numStudsX && gz >= 0 && gz < numStudsZ) {
-          const cell = this.grid.grid[gx]?.[gz]?.[topY];
-          if (cell && cell.occupied && !this.isCellCovered(gx, gz, topY)) {
-            frontierQueue.push({
-              x: gx,
-              z: gz,
-              y: topY,
-              depth: cell.depth,
-              priority: cell.depth >= 2 ? 80 : 60,
-              expectedCategory: cell.depth >= 2 ? 'FILL' : 'EDGE',
-              expectedNormal: cell.normal,
-              supportingStudsCount: 1,
-              assignedHeadId: headId
-            });
-          }
-        }
-      }
-    }
+    this.placedBricks.delete(brickId);
+    this.brickIdToPartId.delete(brickId);
 
-    // 2. Lateral perimeter points (growth outward)
-    const perimeter = [
-      { dx: -1, dz: 0 }, { dx: variant.widthX, dz: 0 },
-      { dx: 0, dz: -1 }, { dx: 0, dz: variant.depthZ }
-    ];
+    // Free cell mappings
+    const [startX, startZ, startY] = placed.gridPos;
+    const [wX, wZ, hY] = placed.size;
 
-    for (const p of perimeter) {
-      const gx = Math.floor(startX + p.dx);
-      const gz = Math.floor(startZ + p.dz);
-      const gy = startY;
-
-      if (gx >= 0 && gx < numStudsX && gz >= 0 && gz < numStudsZ && gy >= 0 && gy < numPlatesY) {
-        const cell = this.grid.grid[gx]?.[gz]?.[gy];
-        if (cell && cell.occupied && !this.isCellCovered(gx, gz, gy)) {
-          frontierQueue.push({
-            x: gx,
-            z: gz,
-            y: gy,
-            depth: cell.depth,
-            priority: cell.depth >= 2 ? 75 : 50,
-            expectedCategory: cell.depth >= 2 ? 'FILL' : 'EDGE',
-            expectedNormal: cell.normal,
-            supportingStudsCount: gy === 0 ? 1 : 0,
-            assignedHeadId: headId
-          });
-        }
-      }
-    }
-  }
-
-  /**
-   * Executes a single multi-head growth step. All active heads fire concurrently!
-   */
-  public step(): GrowthStepResult {
-    this.stepIndex++;
-    const newBricks: PlacedBrick[] = [];
-
-    // All heads attempt to place a piece in this tick
-    for (const head of this.heads) {
-      if (!head.active) continue;
-
-      const placed = this.stepHead(head.headId);
-      if (placed) {
-        newBricks.push(placed);
-      }
-    }
-
-    // Check if finished
-    if (newBricks.length === 0) {
-      // Check if all voxels covered
-      if (this.occupiedCellToBrickId.size < this.grid.totalOccupied) {
-        // Fallback pass: scan and cover any remaining isolated cells
-        const uncovered = this.findNextUncoveredCell();
-        if (uncovered) {
-          const fallback = this.stepHeadAt(uncovered.x, uncovered.z, uncovered.y, 0);
-          if (fallback) newBricks.push(fallback);
-        }
-      } else {
-        if (this.options.enableStudlessTopFinish && this.currentPhase !== 'TILE_FINISH') {
-          this.currentPhase = 'TILE_FINISH';
-          const tile = this.applyStudlessTopTile();
-          if (tile) newBricks.push(tile);
-        } else {
-          this.currentPhase = 'DONE';
-        }
-      }
-    } else {
-      if (this.currentPhase === 'SEED') {
-        this.currentPhase = 'CORE_EXPANSION';
-      }
-    }
-
-    return this.formatStepResult(newBricks);
-  }
-
-  /**
-   * Executes one placement attempt for a specific growth head.
-   */
-  private stepHead(headId: number): PlacedBrick | null {
-    const queue = this.activeFrontiersByHead.get(headId);
-    if (!queue || queue.length === 0) {
-      // Steal or scan a point in this head's spatial region
-      const altPt = this.findUncoveredCellForHead(headId);
-      if (!altPt) return null;
-      return this.stepHeadAt(altPt.x, altPt.z, altPt.y, headId);
-    }
-
-    while (queue.length > 0) {
-      const pt = queue.pop()!;
-      if (!this.isCellCovered(pt.x, pt.z, pt.y)) {
-        return this.stepHeadAt(pt.x, pt.z, pt.y, headId);
-      }
-    }
-
-    return null;
-  }
-
-  /**
-   * Fast O(1) piece matching & placement at target coordinate (tx, tz, ty).
-   */
-  private stepHeadAt(tx: number, tz: number, ty: number, headId: number): PlacedBrick | null {
-    const cell = this.grid.grid[tx]?.[tz]?.[ty];
-    if (!cell || !cell.occupied || this.isCellCovered(tx, tz, ty)) return null;
-
-    // Fast probe of available solid space
-    const [maxW, maxD, maxH] = this.probeFreeSolidBox(tx, tz, ty);
-
-    let candidates: LDrawConnectorMeta[] = [];
-    let phase: PlacedBrick['growthPhase'] = 'CORE_EXPANSION';
-
-    if (cell.isBoundary || cell.depth <= 1) {
-      phase = 'SURFACE_EDGE';
-
-      // 1. Check dome / apex
-      if (cell.curvatureClass === 'spherical_dome') {
-        candidates.push(...(CONNECTOR_DATABASE.leafByProfile.get('dish') || []));
-      }
-
-      // 2. Check sharp cusp / Bionicle teeth
-      if (cell.curvatureClass === 'sharp_cusp' && this.options.enableModernWeirdParts) {
-        candidates.push(...(CONNECTOR_DATABASE.leafByProfile.get('tooth_creature') || []));
-      }
-
-      // 3. Check macaroni corners
-      if (cell.curvatureClass === 'corner_macaroni' && this.options.enableModernWeirdParts) {
-        candidates.push(...(CONNECTOR_DATABASE.edgeByCurvature.get('corner_macaroni') || []));
-      }
-
-      // 4. Check slopes and curved slopes
-      if (cell.slopeClass === 'slope_curved' && this.options.enableModernWeirdParts) {
-        candidates.push(...(CONNECTOR_DATABASE.edgeBySlope.get('slope_curved') || []));
-      } else if (cell.slopeClass === 'slope_45') {
-        candidates.push(...(CONNECTOR_DATABASE.edgeBySlope.get('slope_45') || []));
-      } else if (cell.slopeClass === 'slope_33') {
-        candidates.push(...(CONNECTOR_DATABASE.edgeBySlope.get('slope_33') || []));
-      } else if (cell.slopeClass === 'slope_inverted') {
-        candidates.push(...(CONNECTOR_DATABASE.edgeBySlope.get('slope_inverted') || []));
-      }
-
-      // 5. Add boundary structural bricks/plates
-      candidates.push(...CONNECTOR_DATABASE.queryBestFillPieces(Math.min(4, maxW), Math.min(4, maxD), maxH >= 3 ? 3 : 1));
-    } else {
-      phase = cell.depth === 2 ? 'MANTLE' : 'CORE_EXPANSION';
-      // Fast O(1) query for largest fitting structural FILL pieces
-      candidates = CONNECTOR_DATABASE.queryBestFillPieces(maxW, maxD, maxH >= 3 ? 3 : 1);
-    }
-
-    // Evaluate candidates
-    let bestConnector: LDrawConnectorMeta | null = null;
-    let bestVariant: RotatedPieceVariant | null = null;
-    let bestScore = -Infinity;
-    let bestClutchScore = 1.0;
-    let bestSupporters: string[] = [];
-
-    for (const connector of candidates) {
-      for (const rot of [0, 90, 180, 270] as const) {
-        const variant = connector.fingerprint.variants.get(rot)!;
-        if (this.canFitPiece(tx, tz, ty, variant)) {
-          const clutchTubes = variant.bottomTubes.map(t => ({
-            x: tx + t.dx,
-            z: tz + t.dz
-          }));
-
-          const clutchInfo = evaluateClutchAndBond(
-            clutchTubes,
-            ty,
-            this.occupiedCellToBrickId,
-            this.brickIdToPartId
-          );
-
-          if (ty > 0 && clutchInfo.clutchScore <= 0.05) continue;
-
-          const volume = variant.widthX * variant.depthZ * variant.heightY;
-          const score =
-            volume * 6.0 +
-            clutchInfo.clutchScore * 40.0 +
-            (clutchInfo.isRunningBond ? 35.0 : 0.0) +
-            connector.bondingCapacity * 4.0;
-
-          if (score > bestScore) {
-            bestScore = score;
-            bestConnector = connector;
-            bestVariant = variant;
-            bestClutchScore = clutchInfo.clutchScore;
-            bestSupporters = clutchInfo.supportingBrickIds;
-          }
-        }
-      }
-    }
-
-    if (bestConnector && bestVariant) {
-      return this.commitPiece(
-        tx,
-        tz,
-        ty,
-        bestConnector,
-        bestVariant,
-        phase,
-        bestClutchScore,
-        headId,
-        bestSupporters
-      );
-    }
-
-    // Fallback: place single 1x1 plate (3024)
-    const plate1x1 = CONNECTOR_DATABASE.getConnector('3024');
-    if (plate1x1) {
-      const v = plate1x1.fingerprint.variants.get(0)!;
-      if (this.canFitPiece(tx, tz, ty, v)) {
-        return this.commitPiece(tx, tz, ty, plate1x1, v, 'MANTLE', 0.5, headId);
-      }
-    }
-
-    return null;
-  }
-
-  /**
-   * Scans for an uncovered cell biased toward a head's spatial priority.
-   */
-  private findUncoveredCellForHead(headId: number): FrontierPoint | null {
-    const { numStudsX, numStudsZ, numPlatesY } = this.grid;
-    const head = this.heads[headId];
-    const targetY = head.priorityY;
-
-    // Scan near targetY first
-    for (let dy = 0; dy < numPlatesY; dy++) {
-      const y = (targetY + dy) % numPlatesY;
-      for (let x = 0; x < numStudsX; x++) {
-        for (let z = 0; z < numStudsZ; z++) {
-          if (!this.isCellCovered(x, z, y)) {
-            const cell = this.grid.grid[x][z][y];
-            if (cell && cell.occupied) {
-              return {
-                x,
-                z,
-                y,
-                depth: cell.depth,
-                priority: 50,
-                expectedCategory: cell.depth >= 2 ? 'FILL' : 'EDGE',
-                expectedNormal: cell.normal,
-                supportingStudsCount: y === 0 ? 1 : 0,
-                assignedHeadId: headId
-              };
+    for (let dx = 0; dx < wX; dx++) {
+      for (let dz = 0; dz < wZ; dz++) {
+        for (let dy = 0; dy < hY; dy++) {
+          const key = this.cellKey(startX + dx, startZ + dz, startY + dy);
+          if (this.occupiedCellToBrickId.get(key) === brickId) {
+            this.occupiedCellToBrickId.delete(key);
+            const cell = this.grid.grid[startX + dx]?.[startZ + dz]?.[startY + dy];
+            if (cell) {
+              cell.assignedBrickId = undefined;
             }
           }
         }
       }
     }
 
-    return null;
-  }
+    // Adjust BOM count
+    if (placed.category === 'LEAF') this.bomStats.leafCount = Math.max(0, this.bomStats.leafCount - 1);
+    else if (placed.category === 'EDGE') this.bomStats.edgeCount = Math.max(0, this.bomStats.edgeCount - 1);
+    else if (placed.category === 'FILL') this.bomStats.fillCount = Math.max(0, this.bomStats.fillCount - 1);
 
-  private findNextUncoveredCell(): FrontierPoint | null {
-    return this.findUncoveredCellForHead(0);
+    return placed;
   }
 
   /**
-   * Applies studless flat tiles to exposed top horizontal surfaces.
+   * Phase 1: Forward Pass (Watertight 1x1 Plate Voxel Volume).
+   * Places unit 1x1 plates (3024) across the solid volume.
    */
-  private applyStudlessTopTile(): PlacedBrick | null {
-    const tileParts = ['3068b', '3069b', '2431', '98138'];
+  private stepForwardVolumeFill(): PlacedBrick[] {
+    const newBricks: PlacedBrick[] = [];
+    const plate1x1 = CONNECTOR_DATABASE.getConnector('3024');
+    if (!plate1x1) return newBricks;
+    const variant = plate1x1.fingerprint.variants.get(0)!;
 
-    for (const [brickId, placed] of this.placedBricks) {
-      if (placed.category === 'LEAF' || placed.profile === 'tile_flat' || placed.profile === 'slope_curved') {
+    const batchSize = Math.max(1, this.options.batchStepSize ?? 16);
+    let placedInBatch = 0;
+
+    while (this.fillFrontierQueue.length > 0 && placedInBatch < batchSize) {
+      const pt = this.fillFrontierQueue.shift()!;
+      if (!this.isCellCovered(pt.x, pt.z, pt.y)) {
+        const cell = this.grid.grid[pt.x]?.[pt.z]?.[pt.y];
+        if (cell && cell.occupied) {
+          const headId = placedInBatch % this.heads.length;
+          const placed = this.commitBrick(
+            pt.x,
+            pt.z,
+            pt.y,
+            plate1x1,
+            variant,
+            'CORE_EXPANSION',
+            headId,
+            cell.colorHex
+          );
+          newBricks.push(placed);
+          placedInBatch++;
+        }
+      }
+    }
+
+    // Check if volume fill complete
+    if (this.occupiedCellToBrickId.size >= this.grid.totalOccupied || this.fillFrontierQueue.length === 0) {
+      if (this.options.enableModernWeirdParts) {
+        this.currentPhase = 'SURFACE_REPLACE';
+        this.initSurfaceCandidates();
+      } else {
+        this.currentPhase = 'OPTIMIZE_MERGE';
+        this.mergeLayerCursor = 0;
+      }
+    }
+
+    return newBricks;
+  }
+
+  /**
+   * Phase 2: Backwards Optimization / Agglomerative Merging.
+   * Merges contiguous 1x1 plates of compatible color into larger bricks and plates with running bond seams.
+   */
+  private stepBackwardOptimizeMerge(): PlacedBrick[] {
+    const newBricks: PlacedBrick[] = [];
+    const { numStudsX, numStudsZ, numPlatesY } = this.grid;
+
+    // Ordered list of structural brick candidates (height 3 plates = 24 LDU)
+    const brickParts = [
+      { partId: '3001', w: 2, d: 4, h: 3 }, // Brick 2 x 4
+      { partId: '2456', w: 2, d: 6, h: 3 }, // Brick 2 x 6
+      { partId: '3002', w: 2, d: 3, h: 3 }, // Brick 2 x 3
+      { partId: '3003', w: 2, d: 2, h: 3 }, // Brick 2 x 2
+      { partId: '3010', w: 1, d: 4, h: 3 }, // Brick 1 x 4
+      { partId: '3622', w: 1, d: 3, h: 3 }, // Brick 1 x 3
+      { partId: '3004', w: 1, d: 2, h: 3 }, // Brick 1 x 2
+      { partId: '3062a', w: 1, d: 1, h: 3 } // Brick 1 x 1 Round Cylinder
+    ];
+
+    // Ordered list of plate candidates (height 1 plate = 8 LDU)
+    const plateParts = [
+      { partId: '3034', w: 2, d: 8, h: 1 }, // Plate 2 x 8
+      { partId: '3795', w: 2, d: 6, h: 1 }, // Plate 2 x 6
+      { partId: '3020', w: 2, d: 4, h: 1 }, // Plate 2 x 4
+      { partId: '3021', w: 2, d: 3, h: 1 }, // Plate 2 x 3
+      { partId: '3022', w: 2, d: 2, h: 1 }, // Plate 2 x 2
+      { partId: '3460', w: 1, d: 8, h: 1 }, // Plate 1 x 8
+      { partId: '3666', w: 1, d: 6, h: 1 }, // Plate 1 x 6
+      { partId: '3710', w: 1, d: 4, h: 1 }, // Plate 1 x 4
+      { partId: '3623', w: 1, d: 3, h: 1 }, // Plate 1 x 3
+      { partId: '3023', w: 1, d: 2, h: 1 }  // Plate 1 x 2
+    ];
+
+    let mergesDone = 0;
+    const maxMergesPerTick = 16;
+
+    // Scan layers starting from mergeLayerCursor
+    while (this.mergeLayerCursor < numPlatesY && mergesDone < maxMergesPerTick) {
+      const y = this.mergeLayerCursor;
+      const canTryBricks = y + 2 < numPlatesY;
+      const layerStagger = (Math.floor(y / 3) % 2) * 2; // Running bond offset
+      let layerHadMerge = false;
+
+      for (let xOffset = 0; xOffset < numStudsX && mergesDone < maxMergesPerTick; xOffset++) {
+        const x = (xOffset + layerStagger) % numStudsX;
+        for (let z = 0; z < numStudsZ && mergesDone < maxMergesPerTick; z++) {
+          const key = this.cellKey(x, z, y);
+          const currentBrickId = this.occupiedCellToBrickId.get(key);
+          if (!currentBrickId) continue;
+
+          // Only merge if currently covered by unit 1x1 plates
+          const currentPart = this.brickIdToPartId.get(currentBrickId);
+          if (currentPart !== '3024') continue;
+
+          const baseCell = this.grid.grid[x]?.[z]?.[y];
+          if (!baseCell) continue;
+
+          // 1. Try Height-3 Bricks first if valid
+          let merged = false;
+          if (canTryBricks) {
+            for (const bp of brickParts) {
+              for (const isRot of [false, true]) {
+                const bw = isRot ? bp.d : bp.w;
+                const bd = isRot ? bp.w : bp.d;
+                const rot = isRot ? 90 : 0;
+
+                if (x + bw <= numStudsX && z + bd <= numStudsZ) {
+                  let allMatch = true;
+                  const bricksToRemove = new Set<string>();
+
+                  for (let dx = 0; dx < bw && allMatch; dx++) {
+                    for (let dz = 0; dz < bd && allMatch; dz++) {
+                      for (let dy = 0; dy < 3 && allMatch; dy++) {
+                        const cell = this.grid.grid[x + dx]?.[z + dz]?.[y + dy];
+                        if (!cell || !cell.occupied) {
+                          allMatch = false;
+                          break;
+                        }
+
+                        const bId = this.occupiedCellToBrickId.get(this.cellKey(x + dx, z + dz, y + dy));
+                        if (!bId || this.brickIdToPartId.get(bId) !== '3024') {
+                          allMatch = false;
+                          break;
+                        }
+
+                        if (!this.areColorsCompatible(baseCell.colorHex, cell.colorHex)) {
+                          allMatch = false;
+                          break;
+                        }
+
+                        bricksToRemove.add(bId);
+                      }
+                    }
+                  }
+
+                  if (allMatch && bricksToRemove.size === bw * bd * 3) {
+                    // Execute Brick Merge
+                    const connector = CONNECTOR_DATABASE.getConnector(bp.partId);
+                    if (connector) {
+                      const variant = connector.fingerprint.variants.get(rot as any)!;
+                      for (const bId of bricksToRemove) {
+                        this.removeBrick(bId);
+                      }
+
+                      const newBrick = this.commitBrick(x, z, y, connector, variant, 'CORE_EXPANSION', 0, baseCell.colorHex);
+                      newBricks.push(newBrick);
+                      mergesDone++;
+                      merged = true;
+                      layerHadMerge = true;
+                      break;
+                    }
+                  }
+                }
+              }
+              if (merged) break;
+            }
+          }
+
+          // 2. Try Height-1 Plates if brick didn't fit
+          if (!merged) {
+            for (const pp of plateParts) {
+              for (const isRot of [false, true]) {
+                const pw = isRot ? pp.d : pp.w;
+                const pd = isRot ? pp.w : pp.d;
+                const rot = isRot ? 90 : 0;
+
+                if (x + pw <= numStudsX && z + pd <= numStudsZ) {
+                  let allMatch = true;
+                  const platesToRemove = new Set<string>();
+
+                  for (let dx = 0; dx < pw && allMatch; dx++) {
+                    for (let dz = 0; dz < pd && allMatch; dz++) {
+                      const cell = this.grid.grid[x + dx]?.[z + dz]?.[y];
+                      if (!cell || !cell.occupied) {
+                        allMatch = false;
+                        break;
+                      }
+
+                      const bId = this.occupiedCellToBrickId.get(this.cellKey(x + dx, z + dz, y));
+                      if (!bId || this.brickIdToPartId.get(bId) !== '3024') {
+                        allMatch = false;
+                        break;
+                      }
+
+                      if (!this.areColorsCompatible(baseCell.colorHex, cell.colorHex)) {
+                        allMatch = false;
+                        break;
+                      }
+
+                      platesToRemove.add(bId);
+                    }
+                  }
+
+                  if (allMatch && platesToRemove.size === pw * pd) {
+                    const connector = CONNECTOR_DATABASE.getConnector(pp.partId);
+                    if (connector) {
+                      const variant = connector.fingerprint.variants.get(rot as any)!;
+                      for (const bId of platesToRemove) {
+                        this.removeBrick(bId);
+                      }
+
+                      const newPlate = this.commitBrick(x, z, y, connector, variant, 'CORE_EXPANSION', 0, baseCell.colorHex);
+                      newBricks.push(newPlate);
+                      mergesDone++;
+                      merged = true;
+                      layerHadMerge = true;
+                      break;
+                    }
+                  }
+                }
+              }
+              if (merged) break;
+            }
+          }
+        }
+      }
+
+      if (!layerHadMerge || mergesDone < maxMergesPerTick) {
+        this.mergeLayerCursor++;
+      }
+    }
+
+    if (this.mergeLayerCursor >= numPlatesY) {
+      this.currentPhase = this.options.enableStudlessTopFinish ? 'TILE_FINISH' : 'DONE';
+      this.tileFinishCursor = 0;
+    }
+
+    return newBricks;
+  }
+
+  /**
+   * Initializes list of boundary cells for the exterior surface replacement pass.
+   */
+  private initSurfaceCandidates(): void {
+    const { numStudsX, numStudsZ, numPlatesY } = this.grid;
+    this.surfaceCandidates = [];
+    for (let x = 0; x < numStudsX; x++) {
+      for (let z = 0; z < numStudsZ; z++) {
+        for (let y = 0; y < numPlatesY; y++) {
+          const cell = this.grid.grid[x][z][y];
+          if (cell && cell.occupied && cell.isBoundary) {
+            this.surfaceCandidates.push({ x, z, y });
+          }
+        }
+      }
+    }
+    this.surfaceCandidateCursor = 0;
+  }
+
+  /**
+   * Phase 3: Exterior Surface Replacement Pass.
+   * Evaluates boundary features (slopes, curves, macaroni, crests) and replaces exterior pieces with database parts.
+   */
+  private stepSurfaceReplace(): PlacedBrick[] {
+    const newBricks: PlacedBrick[] = [];
+    const { numStudsX, numStudsZ, numPlatesY } = this.grid;
+    let replacedInTick = 0;
+    const maxReplacementsPerTick = 12;
+
+    while (this.surfaceCandidateCursor < this.surfaceCandidates.length && replacedInTick < maxReplacementsPerTick) {
+      const { x, z, y } = this.surfaceCandidates[this.surfaceCandidateCursor++];
+      const cell = this.grid.grid[x]?.[z]?.[y];
+      if (!cell || !cell.occupied) continue;
+
+      const currentBId = this.occupiedCellToBrickId.get(this.cellKey(x, z, y));
+      if (!currentBId) continue;
+      const currentBrick = this.placedBricks.get(currentBId);
+      if (currentBrick && (currentBrick.category === 'LEAF' || currentBrick.growthPhase === 'SURFACE_EDGE')) {
         continue;
       }
 
-      const topY = placed.gridPos[2] + placed.size[2];
-      if (topY >= this.grid.numPlatesY) continue;
+      let baseRot: 0 | 90 | 180 | 270 = 0;
+      if (cell.slopeHeading === 90) baseRot = 90;
+      else if (cell.slopeHeading === 180) baseRot = 180;
+      else if (cell.slopeHeading === 270) baseRot = 270;
 
-      for (let dx = 0; dx < placed.size[0]; dx++) {
-        for (let dz = 0; dz < placed.size[1]; dz++) {
-          const gx = placed.gridPos[0] + dx;
-          const gz = placed.gridPos[1] + dz;
+      const candidatePartIds: string[] = [];
 
-          if (!this.isCellCovered(gx, gz, topY)) {
-            for (const pid of tileParts) {
-              const tile = CONNECTOR_DATABASE.getConnector(pid);
-              if (!tile) continue;
+      // 1. Modern Curved Slopes (Convex curves & slopes)
+      if ((cell.slopeClass === 'slope_curved' || cell.curvatureClass === 'cylindrical_convex') && this.options.enableModernWeirdParts) {
+        candidatePartIds.push('15068', '11477', '88930', '61678', '85984', '54200', '3039', '3040');
+      } else if (cell.slopeClass === 'slope_curved') {
+        candidatePartIds.push('3039', '3040', '85984', '54200');
+      }
 
-              const variant = tile.fingerprint.variants.get(0)!;
-              if (this.canFitPiece(gx, gz, topY, variant)) {
-                return this.commitPiece(gx, gz, topY, tile, variant, 'TILE_FINISH', 1.0, 0);
+      // 2. Inverted Slopes (Underhangs)
+      if (cell.slopeClass === 'slope_inverted') {
+        if (this.options.enableModernWeirdParts) {
+          candidatePartIds.push('93273', '24201');
+        }
+      }
+
+      // 3. Cheese & 33° Slopes
+      if (cell.slopeClass === 'slope_33') {
+        candidatePartIds.push('85984', '54200');
+      }
+
+      // 4. 45° Slopes
+      if (cell.slopeClass === 'slope_45') {
+        candidatePartIds.push('3040', '3039');
+      }
+
+      // 5. Macaroni Corners
+      if (cell.curvatureClass === 'corner_macaroni' && this.options.enableModernWeirdParts) {
+        candidatePartIds.push('27925', '25269');
+      }
+
+      // 6. Spherical Dome Apex
+      if (cell.curvatureClass === 'spherical_dome') {
+        candidatePartIds.push('4740');
+      }
+
+      // 7. Sharp Cusp / Creature Horns
+      if (cell.curvatureClass === 'sharp_cusp' && this.options.enableModernWeirdParts) {
+        candidatePartIds.push('53451', '41669');
+      }
+
+      let placedCandidate = false;
+
+      for (const candidatePartId of candidatePartIds) {
+        const connector = CONNECTOR_DATABASE.getConnector(candidatePartId);
+        if (!connector) continue;
+
+        const rotationsToTry: Array<0 | 90 | 180 | 270> = [
+          baseRot,
+          ((baseRot + 90) % 360) as (0 | 90 | 180 | 270),
+          ((baseRot + 180) % 360) as (0 | 90 | 180 | 270),
+          ((baseRot + 270) % 360) as (0 | 90 | 180 | 270)
+        ];
+
+        for (const rot of rotationsToTry) {
+          const variant: RotatedPieceVariant | undefined = connector.fingerprint.variants.get(rot);
+          if (!variant) continue;
+
+          // Try placing with base at y, or base stepping down into volume: baseY = y - variant.heightY + 1
+          const baseYsToTry = [
+            Math.max(0, y - variant.heightY + 1),
+            y
+          ];
+
+          for (const tryY of baseYsToTry) {
+            if (
+              x + variant.widthX <= numStudsX &&
+              z + variant.depthZ <= numStudsZ &&
+              tryY + variant.heightY <= numPlatesY
+            ) {
+              let footprintValid = true;
+              const bricksToReplace = new Set<string>();
+
+              for (let ci = 0; ci < variant.occupiedCells.length; ci++) {
+                const c: { dx: number; dz: number; dy: number } = variant.occupiedCells[ci];
+                const gx = x + c.dx;
+                const gz = z + c.dz;
+                const gy = tryY + c.dy;
+                const cCell = this.grid.grid[gx]?.[gz]?.[gy];
+                if (!cCell || !cCell.occupied) {
+                  footprintValid = false;
+                  break;
+                }
+                const bId = this.occupiedCellToBrickId.get(this.cellKey(gx, gz, gy));
+                if (bId) {
+                  const existingBrick = this.placedBricks.get(bId);
+                  if (existingBrick && (existingBrick.category === 'LEAF' || existingBrick.growthPhase === 'SURFACE_EDGE')) {
+                    footprintValid = false;
+                    break;
+                  }
+                  bricksToReplace.add(bId);
+                }
+              }
+
+              if (footprintValid && bricksToReplace.size > 0) {
+                const freedCells: Array<{ x: number; z: number; y: number }> = [];
+                for (const bId of bricksToReplace) {
+                  const oldB = this.placedBricks.get(bId);
+                  if (oldB) {
+                    for (let dx = 0; dx < oldB.size[0]; dx++) {
+                      for (let dz = 0; dz < oldB.size[1]; dz++) {
+                        for (let dy = 0; dy < oldB.size[2]; dy++) {
+                          freedCells.push({
+                            x: oldB.gridPos[0] + dx,
+                            z: oldB.gridPos[1] + dz,
+                            y: oldB.gridPos[2] + dy
+                          });
+                        }
+                      }
+                    }
+                  }
+                  this.removeBrick(bId);
+                }
+
+                const newPiece = this.commitBrick(x, z, tryY, connector, variant, 'SURFACE_EDGE', 0, cell.colorHex);
+                newBricks.push(newPiece);
+                replacedInTick++;
+                placedCandidate = true;
+
+                // Refill any leftover freed cells not covered by newPiece with 1x1 plates
+                const plate1x1 = CONNECTOR_DATABASE.getConnector('3024');
+                if (plate1x1) {
+                  const pVariant = plate1x1.fingerprint.variants.get(0)!;
+                  for (const fc of freedCells) {
+                    if (!this.isCellCovered(fc.x, fc.z, fc.y)) {
+                      const fCell = this.grid.grid[fc.x]?.[fc.z]?.[fc.y];
+                      if (fCell && fCell.occupied) {
+                        this.commitBrick(fc.x, fc.z, fc.y, plate1x1, pVariant, 'CORE_EXPANSION', 0, fCell.colorHex);
+                      }
+                    }
+                  }
+                }
+
+                break;
               }
             }
           }
+          if (placedCandidate) break;
+        }
+        if (placedCandidate) break;
+      }
+    }
+
+    if (this.surfaceCandidateCursor >= this.surfaceCandidates.length) {
+      this.currentPhase = 'OPTIMIZE_MERGE';
+      this.mergeLayerCursor = 0;
+    }
+
+    return newBricks;
+  }
+
+  /**
+   * Phase 4: Studless Top Finish Pass.
+   * Caps exposed top horizontal surfaces with smooth flat tiles.
+   */
+  private stepTileFinish(): PlacedBrick[] {
+    const newBricks: PlacedBrick[] = [];
+    const tileParts = [
+      { partId: '3068b', w: 2, d: 2 }, // Tile 2 x 2
+      { partId: '3069b', w: 1, d: 2 }, // Tile 1 x 2
+      { partId: '2431', w: 1, d: 4 },  // Tile 1 x 4
+      { partId: '98138', w: 1, d: 1 }  // Tile 1 x 1 Round Flat
+    ];
+    const { numStudsX, numStudsZ, numPlatesY } = this.grid;
+    let tilesPlaced = 0;
+    const maxTilesPerTick = 16;
+
+    for (let x = 0; x < numStudsX && tilesPlaced < maxTilesPerTick; x++) {
+      for (let z = 0; z < numStudsZ && tilesPlaced < maxTilesPerTick; z++) {
+        for (let y = numPlatesY - 1; y >= 0; y--) {
+          const key = this.cellKey(x, z, y);
+          const brickId = this.occupiedCellToBrickId.get(key);
+          if (!brickId) continue;
+
+          const placed = this.placedBricks.get(brickId);
+          if (!placed) break;
+
+          // If already a tile or slope, top is finished
+          if (
+            placed.profile === 'tile_flat' ||
+            placed.profile === 'slope_curved' ||
+            placed.profile === 'cheese' ||
+            placed.profile === 'macaroni' ||
+            placed.growthPhase === 'TILE_FINISH'
+          ) {
+            break;
+          }
+
+          // Check if top face of this brick is exposed to air
+          const topFaceY = placed.gridPos[2] + placed.size[2];
+          const isTopExposed = topFaceY >= numPlatesY || !this.occupiedCellToBrickId.has(this.cellKey(x, z, topFaceY));
+          if (!isTopExposed) break;
+
+          // If placed brick is height 1 (plate), try replacing with a flat tile
+          if (placed.size[2] === 1 && placed.gridPos[2] === y) {
+            let tileReplaced = false;
+
+            for (const tp of tileParts) {
+              for (const isRot of [false, true]) {
+                const tw = isRot ? tp.d : tp.w;
+                const td = isRot ? tp.w : tp.d;
+                const rot = isRot ? 90 : 0;
+
+                if (x + tw <= numStudsX && z + td <= numStudsZ) {
+                  let canReplace = true;
+                  const platesToReplace = new Set<string>();
+
+                  for (let dx = 0; dx < tw && canReplace; dx++) {
+                    for (let dz = 0; dz < td && canReplace; dz++) {
+                      const cKey = this.cellKey(x + dx, z + dz, y);
+                      const bId = this.occupiedCellToBrickId.get(cKey);
+                      if (!bId) { canReplace = false; break; }
+
+                      const b = this.placedBricks.get(bId);
+                      if (!b || b.size[2] !== 1 || b.profile === 'tile_flat') {
+                        canReplace = false;
+                        break;
+                      }
+
+                      if (y + 1 < numPlatesY && this.occupiedCellToBrickId.has(this.cellKey(x + dx, z + dz, y + 1))) {
+                        canReplace = false;
+                        break;
+                      }
+
+                      platesToReplace.add(bId);
+                    }
+                  }
+
+                  if (canReplace && platesToReplace.size > 0) {
+                    const connector = CONNECTOR_DATABASE.getConnector(tp.partId);
+                    if (connector) {
+                      const variant = connector.fingerprint.variants.get(rot as any)!;
+                      const freedCells: Array<{ x: number; z: number; y: number }> = [];
+                      for (const bId of platesToReplace) {
+                        const oldB = this.placedBricks.get(bId);
+                        if (oldB) {
+                          for (let fx = 0; fx < oldB.size[0]; fx++) {
+                            for (let fz = 0; fz < oldB.size[1]; fz++) {
+                              for (let fy = 0; fy < oldB.size[2]; fy++) {
+                                freedCells.push({
+                                  x: oldB.gridPos[0] + fx,
+                                  z: oldB.gridPos[1] + fz,
+                                  y: oldB.gridPos[2] + fy
+                                });
+                              }
+                            }
+                          }
+                        }
+                        this.removeBrick(bId);
+                      }
+
+                      const newTile = this.commitBrick(x, z, y, connector, variant, 'TILE_FINISH', 0, placed.colorHex);
+                      newBricks.push(newTile);
+                      tilesPlaced++;
+                      tileReplaced = true;
+
+                      // Refill any leftover freed cells not covered by newTile with 1x1 plates
+                      const plate1x1 = CONNECTOR_DATABASE.getConnector('3024');
+                      if (plate1x1) {
+                        const pVariant = plate1x1.fingerprint.variants.get(0)!;
+                        for (const fc of freedCells) {
+                          if (!this.isCellCovered(fc.x, fc.z, fc.y)) {
+                            const fCell = this.grid.grid[fc.x]?.[fc.z]?.[fc.y];
+                            if (fCell && fCell.occupied) {
+                              this.commitBrick(fc.x, fc.z, fc.y, plate1x1, pVariant, 'CORE_EXPANSION', 0, fCell.colorHex);
+                            }
+                          }
+                        }
+                      }
+                      break;
+                    }
+                  }
+                }
+              }
+              if (tileReplaced) break;
+            }
+          }
+
+          break; // Processed topmost brick of this (x, z) column
         }
       }
     }
 
-    return null;
+    if (tilesPlaced === 0) {
+      this.currentPhase = 'DONE';
+    }
+
+    return newBricks;
+  }
+
+  /**
+   * Executes a single discretization step according to the current phase.
+   */
+  public step(): GrowthStepResult {
+    this.stepIndex++;
+    let newBricks: PlacedBrick[] = [];
+
+    switch (this.currentPhase) {
+      case 'VOLUME_FILL':
+        newBricks = this.stepForwardVolumeFill();
+        break;
+
+      case 'SURFACE_REPLACE':
+        newBricks = this.stepSurfaceReplace();
+        break;
+
+      case 'OPTIMIZE_MERGE':
+        newBricks = this.stepBackwardOptimizeMerge();
+        break;
+
+      case 'TILE_FINISH':
+        newBricks = this.stepTileFinish();
+        break;
+
+      case 'DONE':
+      default:
+        break;
+    }
+
+    return this.formatStepResult(newBricks);
   }
 
   private formatStepResult(newBricks: PlacedBrick[] = []): GrowthStepResult {
@@ -713,29 +929,17 @@ export class MarkovCoreGrowingEngine {
     const placedVoxels = this.occupiedCellToBrickId.size;
     const targetVoxels = this.grid.totalOccupied;
 
-    let activeHeads = 0;
-    for (const head of this.heads) {
-      if (head.active && (this.activeFrontiersByHead.get(head.headId)?.length || 0) > 0) {
-        activeHeads++;
-      }
-    }
-
-    let totalFrontier = 0;
-    for (const list of this.activeFrontiersByHead.values()) {
-      totalFrontier += list.length;
-    }
-
     return {
       stepIndex: this.stepIndex,
       phase: this.currentPhase,
       newBrick: newBricks[0],
       newBricks,
-      activeHeadsCount: Math.max(1, activeHeads),
-      activeFrontierCount: totalFrontier,
+      activeHeadsCount: this.heads.length,
+      activeFrontierCount: this.fillFrontierQueue.length,
       totalPlacedBricks: totalPlaced,
       totalPlacedVoxels: placedVoxels,
       totalTargetVoxels: targetVoxels,
-      coverageRatio: targetVoxels > 0 ? placedVoxels / targetVoxels : 1.0,
+      coverageRatio: targetVoxels > 0 ? Math.min(1.0, placedVoxels / targetVoxels) : 1.0,
       bomStats: {
         leafCount: this.bomStats.leafCount,
         edgeCount: this.bomStats.edgeCount,
@@ -746,9 +950,9 @@ export class MarkovCoreGrowingEngine {
   }
 
   /**
-   * Solves the entire build in multi-head parallel batches until completion.
+   * Solves the complete discretization pipeline to completion.
    */
-  public solveAll(maxSteps: number = 3000): GrowthStepResult {
+  public solveAll(maxSteps: number = 4000): GrowthStepResult {
     let lastResult = this.formatStepResult();
     let steps = 0;
 

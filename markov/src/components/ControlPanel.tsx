@@ -2,16 +2,18 @@
  * Markov Growing Core Control Panel.
  *
  * Provides full control over:
- * - Model selection and custom file upload
+ * - Authentic 3D Model selection (Duck, Dolphin, Mini, Beetle, Concorde, Delacroix, Castle)
+ * - Custom 3D file upload (GLB, GLTF, OBJ, PLY)
+ * - Source 3D mesh overlay controls (Ghost Translucent Solid / Wireframe / Off)
  * - Arbitrary scale adjustment (target height in plates)
- * - Growing Core simulation parameters (seed mode, running bond, modern parts)
+ * - Discretization pipeline parameters (running bond, modern parts, studless tiles, direct RGB)
  * - Play / Pause / Step / Instant solver controls
  * - LDraw Export and inspector modal triggers
  */
 
 import React from 'react';
 import { MarkovEngineOptions } from '../engine/types';
-import { ViewportMode } from './Viewport3D';
+import { ViewportMode, SourceMeshMode } from './Viewport3D';
 
 interface ControlPanelProps {
   modelType: string;
@@ -23,6 +25,8 @@ interface ControlPanelProps {
   onChangeOptions: (opts: Partial<MarkovEngineOptions>) => void;
   viewportMode: ViewportMode;
   onChangeViewportMode: (m: ViewportMode) => void;
+  sourceMeshMode: SourceMeshMode;
+  onChangeSourceMeshMode: (m: SourceMeshMode) => void;
   isPlaying: boolean;
   onTogglePlay: () => void;
   onStep: () => void;
@@ -37,6 +41,8 @@ interface ControlPanelProps {
   onToggleAutoRotate: () => void;
   speed: number;
   onChangeSpeed: (s: number) => void;
+  isLoading?: boolean;
+  loadingMessage?: string;
 }
 
 export const ControlPanel: React.FC<ControlPanelProps> = ({
@@ -49,6 +55,8 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   onChangeOptions,
   viewportMode,
   onChangeViewportMode,
+  sourceMeshMode,
+  onChangeSourceMeshMode,
   isPlaying,
   onTogglePlay,
   onStep,
@@ -62,16 +70,28 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   autoRotate,
   onToggleAutoRotate,
   speed,
-  onChangeSpeed
+  onChangeSpeed,
+  isLoading = false,
+  loadingMessage = 'Loading 3D model...'
 }) => {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const modelPresets = [
+    { id: 'duck', label: '🦆 Duck', badge: 'GLB' },
+    { id: 'dolphin', label: '🐬 Dolphin', badge: 'GLB' },
+    { id: 'mini', label: '🚗 Mini Cooper', badge: 'GLB' },
+    { id: 'beetle', label: '🚙 VW Beetle', badge: 'GLB' },
+    { id: 'concorde', label: '✈️ Concorde', badge: 'GLB' },
+    { id: 'delacroix', label: '🗿 Delacroix', badge: 'PLY' },
+    { id: 'prison', label: '🏰 Castle', badge: 'OBJ' }
+  ];
 
   return (
     <div
       style={{
         width: 340,
         height: '100%',
-        backgroundColor: 'rgba(15, 23, 42, 0.85)',
+        backgroundColor: 'rgba(15, 23, 42, 0.88)',
         backdropFilter: 'blur(16px)',
         borderLeft: '1px solid rgba(148, 163, 184, 0.15)',
         display: 'flex',
@@ -95,7 +115,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               BRICKATOR<span style={{ color: '#e11d48' }}>3000</span>
             </h1>
             <div style={{ fontSize: 11, fontWeight: 600, color: '#38bdf8', letterSpacing: '0.05em' }}>
-              MARKOV GROWING CORE
+              MARKOV DISCRETIZATION STUDIO
             </div>
           </div>
           <div style={{ display: 'flex', gap: 6 }}>
@@ -133,43 +153,82 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
         </div>
       </div>
 
+      {/* Loading Banner */}
+      {isLoading && (
+        <div
+          style={{
+            padding: '10px 16px',
+            backgroundColor: 'rgba(56, 189, 248, 0.15)',
+            borderBottom: '1px solid rgba(56, 189, 248, 0.3)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            fontSize: 12,
+            color: '#38bdf8'
+          }}
+        >
+          <div style={{ animation: 'spin 1s linear infinite' }}>⏳</div>
+          <div style={{ fontWeight: 600 }}>{loadingMessage}</div>
+        </div>
+      )}
+
       {/* Scrollable Body */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: 20, display: 'flex', flexDirection: 'column', gap: 20 }}>
-        {/* Section 1: 3D Model Preset / Upload */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: 20, display: 'flex', flexDirection: 'column', gap: 18 }}>
+        {/* Section 1: Authentic 3D Models Presets */}
         <div>
-          <label style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>
-            Input 3D Model
+          <label
+            style={{
+              fontSize: 12,
+              fontWeight: 700,
+              color: '#94a3b8',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              display: 'block',
+              marginBottom: 8
+            }}
+          >
+            Source 3D Model Volume
           </label>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 8 }}>
-            {[
-              { id: 'duck', label: '🦆 Duck' },
-              { id: 'car', label: '🚗 Car' },
-              { id: 'airplane', label: '✈️ Plane' },
-              { id: 'dolphin', label: '🐬 Dolphin' },
-              { id: 'dome_creature', label: '🔮 Dome' }
-            ].map(m => (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 6, marginBottom: 8 }}>
+            {modelPresets.map((m) => (
               <button
                 key={m.id}
                 onClick={() => onSelectModel(m.id)}
+                disabled={isLoading}
                 style={{
-                  padding: '8px 4px',
+                  padding: '8px 10px',
                   borderRadius: 6,
                   border: 'none',
                   fontSize: 11,
                   fontWeight: 600,
-                  cursor: 'pointer',
+                  cursor: isLoading ? 'wait' : 'pointer',
                   backgroundColor: modelType === m.id ? '#38bdf8' : '#1e293b',
                   color: modelType === m.id ? '#0f172a' : '#cbd5e1',
-                  transition: 'all 0.15s ease'
+                  transition: 'all 0.15s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
                 }}
               >
-                {m.label}
+                <span>{m.label}</span>
+                <span
+                  style={{
+                    fontSize: 9,
+                    padding: '2px 4px',
+                    borderRadius: 4,
+                    backgroundColor: modelType === m.id ? 'rgba(15, 23, 42, 0.25)' : 'rgba(148, 163, 184, 0.15)',
+                    fontWeight: 700
+                  }}
+                >
+                  {m.badge}
+                </span>
               </button>
             ))}
           </div>
 
           <button
             onClick={() => fileInputRef.current?.click()}
+            disabled={isLoading}
             style={{
               width: '100%',
               padding: '8px 12px',
@@ -189,16 +248,65 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             type="file"
             accept=".glb,.gltf,.obj,.ply"
             style={{ display: 'none' }}
-            onChange={e => {
+            onChange={(e) => {
               if (e.target.files?.[0]) onFileUpload(e.target.files[0]);
             }}
           />
         </div>
 
-        {/* Section 2: Arbitrary Scale (Height in Plates) */}
+        {/* Section 2: Source 3D Mesh Overlay Mode */}
+        <div>
+          <label
+            style={{
+              fontSize: 12,
+              fontWeight: 700,
+              color: '#94a3b8',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              display: 'block',
+              marginBottom: 8
+            }}
+          >
+            3D Source Mesh Overlay
+          </label>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
+            {[
+              { id: 'ghost', label: '👻 Ghost Solid' },
+              { id: 'wireframe', label: '🕸️ Wireframe' },
+              { id: 'none', label: '❌ Hidden' }
+            ].map((sm) => (
+              <button
+                key={sm.id}
+                onClick={() => onChangeSourceMeshMode(sm.id as SourceMeshMode)}
+                style={{
+                  padding: '7px 4px',
+                  borderRadius: 6,
+                  border: 'none',
+                  fontSize: 10,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  backgroundColor: sourceMeshMode === sm.id ? '#0284c7' : '#1e293b',
+                  color: sourceMeshMode === sm.id ? '#ffffff' : '#94a3b8'
+                }}
+              >
+                {sm.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Section 3: Arbitrary Scale (Height in Plates) */}
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-            <label style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <label
+              style={{
+                fontSize: 12,
+                fontWeight: 700,
+                color: '#94a3b8',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em'
+              }}
+            >
               Scale (Height)
             </label>
             <span style={{ fontSize: 12, fontFamily: 'monospace', color: '#38bdf8', fontWeight: 700 }}>
@@ -208,26 +316,36 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           <input
             type="range"
             min={12}
-            max={60}
+            max={48}
             step={3}
             value={targetHeightPlates}
-            onChange={e => onChangeHeight(parseInt(e.target.value))}
+            onChange={(e) => onChangeHeight(parseInt(e.target.value))}
             style={{ width: '100%', accentColor: '#38bdf8' }}
           />
         </div>
 
-        {/* Section 3: Viewport Mode */}
+        {/* Section 4: Viewport Mode */}
         <div>
-          <label style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>
+          <label
+            style={{
+              fontSize: 12,
+              fontWeight: 700,
+              color: '#94a3b8',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              display: 'block',
+              marginBottom: 8
+            }}
+          >
             Visualization Mode
           </label>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
             {[
-              { id: 'GROWING_CORE', label: '🌱 Growing Core' },
+              { id: 'GROWING_CORE', label: '🌱 Growing Animation' },
               { id: 'FINAL_MODEL', label: '🧱 Final Model' },
               { id: 'CORE_HEATMAP', label: '🔥 Core Depth' },
               { id: 'SLOPE_CURVATURE', label: '📐 Slopes/Normals' }
-            ].map(vm => (
+            ].map((vm) => (
               <button
                 key={vm.id}
                 onClick={() => onChangeViewportMode(vm.id as ViewportMode)}
@@ -248,79 +366,57 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           </div>
         </div>
 
-        {/* Section 4: Parallel Growth Heads */}
+        {/* Section 5: LEGO Discretization Pipeline Guidelines */}
         <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-            <label style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Parallel Growth Heads
-            </label>
-            <span style={{ fontSize: 12, fontFamily: 'monospace', color: '#10b981', fontWeight: 700 }}>
-              {options.numHeads ?? 4} Heads
-            </span>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6, marginBottom: 8 }}>
-            {[1, 2, 4, 8].map(nh => (
-              <button
-                key={nh}
-                onClick={() => onChangeOptions({ numHeads: nh })}
-                style={{
-                  padding: '6px 4px',
-                  borderRadius: 6,
-                  border: 'none',
-                  fontSize: 11,
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  backgroundColor: (options.numHeads ?? 4) === nh ? '#10b981' : '#1e293b',
-                  color: (options.numHeads ?? 4) === nh ? '#0f172a' : '#cbd5e1'
-                }}
-              >
-                {nh} {nh === 1 ? 'Head' : 'Heads'}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Section 5: Markov Growing Core Options */}
-        <div>
-          <label style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>
-            Markov Constraints & Rules
+          <label
+            style={{
+              fontSize: 12,
+              fontWeight: 700,
+              color: '#94a3b8',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              display: 'block',
+              marginBottom: 8
+            }}
+          >
+            Discretization Rules
           </label>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 12 }}>
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
               <input
                 type="checkbox"
                 checked={options.staggerRunningBond}
-                onChange={e => onChangeOptions({ staggerRunningBond: e.target.checked })}
+                onChange={(e) => onChangeOptions({ staggerRunningBond: e.target.checked })}
                 style={{ accentColor: '#38bdf8' }}
               />
-              Interlocking Running Bond (Overlap Seams)
+              Interlocking Running Bond (Staggered Seams)
             </label>
 
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
               <input
                 type="checkbox"
                 checked={options.enableModernWeirdParts}
-                onChange={e => onChangeOptions({ enableModernWeirdParts: e.target.checked })}
+                onChange={(e) => onChangeOptions({ enableModernWeirdParts: e.target.checked })}
                 style={{ accentColor: '#38bdf8' }}
               />
-              Modern & Weird Parts (Curved/Macaroni/Spines)
+              Modern Database Parts (Curved Slopes, Macaroni, Horns)
             </label>
 
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
               <input
                 type="checkbox"
                 checked={options.enableStudlessTopFinish}
-                onChange={e => onChangeOptions({ enableStudlessTopFinish: e.target.checked })}
+                onChange={(e) => onChangeOptions({ enableStudlessTopFinish: e.target.checked })}
                 style={{ accentColor: '#38bdf8' }}
               />
-              Studless Top Finish (Smooth Tiles)
+              Studless Top Finish (Smooth Flat Tiles)
             </label>
 
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
               <input
                 type="checkbox"
                 checked={options.directRGBSampling}
-                onChange={e => onChangeOptions({ directRGBSampling: e.target.checked })}
+                onChange={(e) => onChangeOptions({ directRGBSampling: e.target.checked })}
                 style={{ accentColor: '#38bdf8' }}
               />
               Direct 24-bit RGB Sampling ("Cheat Mode")
@@ -328,10 +424,18 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           </div>
         </div>
 
-        {/* Section 5: Playback & Speed */}
+        {/* Section 6: Playback & Speed */}
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-            <label style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <label
+              style={{
+                fontSize: 12,
+                fontWeight: 700,
+                color: '#94a3b8',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em'
+              }}
+            >
               Growth Speed
             </label>
             <span style={{ fontSize: 11, fontFamily: 'monospace', color: '#cbd5e1' }}>{speed}x</span>
@@ -341,7 +445,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             min={1}
             max={20}
             value={speed}
-            onChange={e => onChangeSpeed(parseInt(e.target.value))}
+            onChange={(e) => onChangeSpeed(parseInt(e.target.value))}
             style={{ width: '100%', accentColor: '#38bdf8' }}
           />
         </div>
@@ -361,13 +465,14 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
           <button
             onClick={onTogglePlay}
+            disabled={isLoading}
             style={{
               padding: '10px 14px',
               borderRadius: 8,
               border: 'none',
               fontSize: 13,
               fontWeight: 700,
-              cursor: 'pointer',
+              cursor: isLoading ? 'wait' : 'pointer',
               backgroundColor: isPlaying ? '#f59e0b' : '#10b981',
               color: '#0f172a',
               display: 'flex',
@@ -376,11 +481,12 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               gap: 6
             }}
           >
-            {isPlaying ? '⏸ Pause' : '▶ Grow Core'}
+            {isPlaying ? '⏸ Pause' : '▶ Grow Model'}
           </button>
 
           <button
             onClick={onStep}
+            disabled={isLoading}
             style={{
               padding: '10px 14px',
               borderRadius: 8,
@@ -389,7 +495,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               color: '#f8fafc',
               fontSize: 13,
               fontWeight: 600,
-              cursor: 'pointer'
+              cursor: isLoading ? 'wait' : 'pointer'
             }}
           >
             ⏭ Step 1x
@@ -399,6 +505,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
           <button
             onClick={onSolveAll}
+            disabled={isLoading}
             style={{
               padding: '8px 12px',
               borderRadius: 6,
@@ -407,14 +514,15 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               color: '#ffffff',
               fontSize: 12,
               fontWeight: 600,
-              cursor: 'pointer'
+              cursor: isLoading ? 'wait' : 'pointer'
             }}
           >
-            ⚡ Solve Complete
+            ⚡ Solve All Passes
           </button>
 
           <button
             onClick={onReset}
+            disabled={isLoading}
             style={{
               padding: '8px 12px',
               borderRadius: 6,
@@ -423,7 +531,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               color: '#cbd5e1',
               fontSize: 12,
               fontWeight: 600,
-              cursor: 'pointer'
+              cursor: isLoading ? 'wait' : 'pointer'
             }}
           >
             ↺ Reset
@@ -445,7 +553,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               cursor: 'pointer'
             }}
           >
-            📚 Connectors DB
+            📚 207 Connectors
           </button>
 
           <button
@@ -467,6 +575,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
 
         <button
           onClick={onExportLDR}
+          disabled={isLoading}
           style={{
             marginTop: 4,
             padding: '10px 14px',
@@ -476,14 +585,14 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             color: '#ffffff',
             fontSize: 13,
             fontWeight: 700,
-            cursor: 'pointer',
+            cursor: isLoading ? 'wait' : 'pointer',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             gap: 6
           }}
         >
-          💾 Export .LDR (LDraw Cheat Mode)
+          💾 Export .LDR (0x2RRGGBB Cheat Mode)
         </button>
       </div>
     </div>

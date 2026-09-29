@@ -1,11 +1,12 @@
 /**
- * Three.js 3D Viewport for Brickator3000 Markov Growing Core.
+ * Three.js 3D Viewport for Brickator3000 Markov Discretization Studio.
  *
  * Renders LEGO models with authentic LDraw dimensions, procedural studs,
  * curved slope profiles, macaroni corners, radar dishes, and teeth:
  * - 1 Stud = 20 LDU (X/Z), 1 Plate = 8 LDU (Y), 1 Brick = 24 LDU (Y).
  * - Direct RGB materials ("Cheat Mode").
- * - Multi-mode visualizer: Final Model, Growing Core Animation, Core Depth Heatmap, Slope/Curvature vectors.
+ * - Multi-mode visualizer: Final Model, Growing Animation, Core Depth Heatmap, Slope/Curvature vectors.
+ * - Source 3D Mesh Overlay: Ghost translucent solid or wireframe mode aligned with voxel volume.
  */
 
 import React, { useEffect, useRef } from 'react';
@@ -15,6 +16,7 @@ import { PlacedBrick, VoxelGrid } from '../engine/types';
 import { LDU_STUD_PITCH, LDU_PLATE_HEIGHT } from '../engine/connectivityDictionary';
 
 export type ViewportMode = 'FINAL_MODEL' | 'GROWING_CORE' | 'CORE_HEATMAP' | 'SLOPE_CURVATURE';
+export type SourceMeshMode = 'ghost' | 'wireframe' | 'none';
 
 interface Viewport3DProps {
   bricks: PlacedBrick[];
@@ -23,6 +25,8 @@ interface Viewport3DProps {
   currentStepIndex: number;
   autoRotate: boolean;
   onFrameModel?: () => void;
+  sourceModel?: THREE.Object3D | null;
+  sourceMeshMode?: SourceMeshMode;
 }
 
 export const Viewport3D: React.FC<Viewport3DProps> = ({
@@ -30,16 +34,20 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
   grid,
   mode,
   currentStepIndex,
-  autoRotate
+  autoRotate,
+  sourceModel = null,
+  sourceMeshMode = 'ghost'
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const controlsRef = useRef<OrbitControls | null>(null);
+
   const modelGroupRef = useRef<THREE.Group>(new THREE.Group());
   const heatmapGroupRef = useRef<THREE.Group>(new THREE.Group());
   const vectorsGroupRef = useRef<THREE.Group>(new THREE.Group());
+  const sourceMeshGroupRef = useRef<THREE.Group>(new THREE.Group());
 
   // Cached reusable geometries & materials
   const geomCacheRef = useRef<Map<string, THREE.BufferGeometry>>(new Map());
@@ -60,12 +68,17 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
    * Builds or retrieves procedural geometry for a given piece profile and size.
    */
   const getPieceGeometry = (brick: PlacedBrick): THREE.BufferGeometry => {
-    const [wX, wZ, hY] = brick.size;
-    const widthLDU = wX * LDU_STUD_PITCH;
-    const depthLDU = wZ * LDU_STUD_PITCH;
-    const heightLDU = hY * LDU_PLATE_HEIGHT;
+    // Determine canonical unrotated base dimensions
+    const isQuarterTurn = brick.rotation === 90 || brick.rotation === 270;
+    const baseWX = brick.baseSize ? brick.baseSize[0] : (isQuarterTurn ? brick.size[1] : brick.size[0]);
+    const baseDZ = brick.baseSize ? brick.baseSize[1] : (isQuarterTurn ? brick.size[0] : brick.size[1]);
+    const baseHY = brick.baseSize ? brick.baseSize[2] : brick.size[2];
 
-    const cacheKey = `${brick.partId}_${brick.profile}_${wX}x${wZ}x${hY}`;
+    const widthLDU = baseWX * LDU_STUD_PITCH;
+    const depthLDU = baseDZ * LDU_STUD_PITCH;
+    const heightLDU = baseHY * LDU_PLATE_HEIGHT;
+
+    const cacheKey = `${brick.partId}_${brick.profile}_${baseWX}x${baseDZ}x${baseHY}`;
     let geom = geomCacheRef.current.get(cacheKey);
     if (geom) return geom;
 
@@ -73,38 +86,104 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
       case 'slope_curved': {
         // Modern curved slope: convex quarter-cylinder top
         const shape = new THREE.Shape();
-        const w2 = widthLDU / 2.0;
-        const d2 = depthLDU / 2.0;
+        const d = depthLDU;
+        const h = heightLDU;
+        const w = widthLDU;
 
-        // 2D side cross-section along Z axis
-        const curveGeom = new THREE.BufferGeometry();
-        // Construct custom curved slope box
-        geom = new THREE.BoxGeometry(widthLDU, heightLDU, depthLDU);
+        shape.moveTo(-d / 2, -h / 2);
+        shape.lineTo(d / 2, -h / 2);
+        shape.lineTo(d / 2, -h / 2 + Math.min(h * 0.33, 8));
+        shape.quadraticCurveTo(0, h / 2, -d / 2 + Math.min(20, d * 0.5), h / 2);
+        shape.lineTo(-d / 2, h / 2);
+        shape.closePath();
+
+        const ext = new THREE.ExtrudeGeometry(shape, { depth: w, bevelEnabled: false });
+        ext.center();
+        ext.rotateY(Math.PI / 2);
+        geom = ext;
         break;
       }
 
-      case 'slope_45':
+      case 'slope_inverted': {
+        // Inverted curved slope: concave underhang
+        const shape = new THREE.Shape();
+        const d = depthLDU;
+        const h = heightLDU;
+        const w = widthLDU;
+
+        shape.moveTo(-d / 2, -h / 2);
+        shape.lineTo(-d / 2 + Math.min(20, d * 0.5), -h / 2);
+        shape.quadraticCurveTo(0, -h / 2, d / 2, h / 2);
+        shape.lineTo(-d / 2, h / 2);
+        shape.closePath();
+
+        const ext = new THREE.ExtrudeGeometry(shape, { depth: w, bevelEnabled: false });
+        ext.center();
+        ext.rotateY(Math.PI / 2);
+        geom = ext;
+        break;
+      }
+
+      case 'slope_45': {
+        // Triangular ramp at 45 degrees
+        const shape = new THREE.Shape();
+        const d = depthLDU;
+        const h = heightLDU;
+        const w = widthLDU;
+
+        shape.moveTo(-d / 2, -h / 2);
+        shape.lineTo(d / 2, -h / 2);
+        shape.lineTo(-d / 2, h / 2);
+        shape.closePath();
+
+        const ext = new THREE.ExtrudeGeometry(shape, { depth: w, bevelEnabled: false });
+        ext.center();
+        ext.rotateY(Math.PI / 2);
+        geom = ext;
+        break;
+      }
+
+      case 'slope_33':
       case 'cheese': {
-        // Triangular ramp
-        geom = new THREE.BoxGeometry(widthLDU, heightLDU, depthLDU);
+        // Wedge ramp at ~33 degrees
+        const shape = new THREE.Shape();
+        const d = depthLDU;
+        const h = heightLDU;
+        const w = widthLDU;
+
+        shape.moveTo(-d / 2, -h / 2);
+        shape.lineTo(d / 2, -h / 2);
+        shape.lineTo(d / 2, -h / 2 + 4);
+        shape.lineTo(-d / 2, h / 2);
+        shape.closePath();
+
+        const ext = new THREE.ExtrudeGeometry(shape, { depth: w, bevelEnabled: false });
+        ext.center();
+        ext.rotateY(Math.PI / 2);
+        geom = ext;
         break;
       }
 
       case 'macaroni': {
         // Curved round corner quadrant
         geom = new THREE.CylinderGeometry(widthLDU, widthLDU, heightLDU, 16, 1, false, 0, Math.PI / 2);
+        geom.center();
         break;
       }
 
       case 'dish': {
         // Inverted radar dish dome
         geom = new THREE.SphereGeometry(widthLDU / 2.0, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2);
+        geom.rotateX(Math.PI);
+        geom.center();
         break;
       }
 
       case 'tooth_creature': {
         // Bionicle tapered spine / horn
         geom = new THREE.ConeGeometry(widthLDU / 2.0, heightLDU, 12);
+        geom.rotateZ(Math.PI / 6);
+        geom.center();
         break;
       }
 
@@ -195,7 +274,7 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
     fillLight.position.set(-200, 150, -200);
     scene.add(fillLight);
 
-    // Dark Studio Grid Floor with circular LEGO-like rings
+    // Dark Studio Grid Floor
     const gridHelper = new THREE.GridHelper(800, 40, 0x334155, 0x1e293b);
     gridHelper.position.y = 0;
     scene.add(gridHelper);
@@ -212,18 +291,15 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
     scene.add(modelGroupRef.current);
     scene.add(heatmapGroupRef.current);
     scene.add(vectorsGroupRef.current);
+    scene.add(sourceMeshGroupRef.current);
 
     // Animation Loop
     let animId: number;
     const animate = () => {
       animId = requestAnimationFrame(animate);
       if (controlsRef.current) {
-        if (autoRotate) {
-          controlsRef.current.autoRotate = true;
-          controlsRef.current.autoRotateSpeed = 1.0;
-        } else {
-          controlsRef.current.autoRotate = false;
-        }
+        controlsRef.current.autoRotate = autoRotate;
+        controlsRef.current.autoRotateSpeed = 1.0;
         controlsRef.current.update();
       }
       if (rendererRef.current && sceneRef.current && cameraRef.current) {
@@ -253,6 +329,68 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
     };
   }, []);
 
+  // Update Auto-rotate in controls
+  useEffect(() => {
+    if (controlsRef.current) {
+      controlsRef.current.autoRotate = autoRotate;
+    }
+  }, [autoRotate]);
+
+  // Update Source 3D Mesh Overlay Group
+  useEffect(() => {
+    const group = sourceMeshGroupRef.current;
+    group.clear();
+
+    if (!sourceModel || !grid || sourceMeshMode === 'none') {
+      group.visible = false;
+      return;
+    }
+    group.visible = true;
+
+    // Clone source object to avoid mutating original
+    const cloned = sourceModel.clone(true);
+    cloned.updateMatrixWorld(true);
+
+    const bbox = new THREE.Box3().setFromObject(cloned);
+    const size = new THREE.Vector3();
+    bbox.getSize(size);
+
+    if (size.y > 0) {
+      const targetHeightLDU = grid.numPlatesY * LDU_PLATE_HEIGHT;
+      const scaleFactor = targetHeightLDU / size.y;
+      cloned.scale.setScalar(scaleFactor);
+      cloned.updateMatrixWorld(true);
+
+      const scaledBox = new THREE.Box3().setFromObject(cloned);
+      const center = new THREE.Vector3();
+      scaledBox.getCenter(center);
+
+      cloned.position.x = -center.x;
+      cloned.position.z = -center.z;
+      cloned.position.y = -scaledBox.min.y;
+
+      const isWire = sourceMeshMode === 'wireframe';
+      const overlayMaterial = new THREE.MeshStandardMaterial({
+        color: 0x38bdf8,
+        wireframe: isWire,
+        transparent: true,
+        opacity: isWire ? 0.6 : 0.22,
+        roughness: 0.3,
+        metalness: 0.1,
+        depthWrite: false
+      });
+
+      cloned.traverse((child) => {
+        if ((child as THREE.Mesh).isMesh) {
+          const mesh = child as THREE.Mesh;
+          mesh.material = overlayMaterial;
+        }
+      });
+
+      group.add(cloned);
+    }
+  }, [sourceModel, grid, sourceMeshMode]);
+
   // Update Bricks Model Group
   useEffect(() => {
     const group = modelGroupRef.current;
@@ -266,7 +404,7 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
 
     const visibleBricks =
       mode === 'GROWING_CORE'
-        ? bricks.filter(b => b.stepIndex <= currentStepIndex)
+        ? bricks.filter((b) => b.stepIndex <= currentStepIndex)
         : bricks;
 
     const studGeom = getStudGeometry();
@@ -284,22 +422,27 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
       bodyMesh.receiveShadow = true;
       brickGroup.add(bodyMesh);
 
-      // Top studs (if not studless tile or curved slope)
+      // Top studs (if not studless tile, slope, dish, etc.)
       const hasStuds =
         brick.profile !== 'tile_flat' &&
         brick.profile !== 'slope_curved' &&
         brick.profile !== 'cheese' &&
         brick.profile !== 'macaroni' &&
-        brick.profile !== 'tooth_creature';
+        brick.profile !== 'tooth_creature' &&
+        brick.profile !== 'dish';
 
       if (hasStuds) {
-        const [wX, wZ, hY] = brick.size;
-        const halfW = (wX * LDU_STUD_PITCH) / 2.0;
-        const halfD = (wZ * LDU_STUD_PITCH) / 2.0;
-        const topY = (hY * LDU_PLATE_HEIGHT) / 2.0;
+        const isQuarterTurn = brick.rotation === 90 || brick.rotation === 270;
+        const baseWX = brick.baseSize ? brick.baseSize[0] : (isQuarterTurn ? brick.size[1] : brick.size[0]);
+        const baseDZ = brick.baseSize ? brick.baseSize[1] : (isQuarterTurn ? brick.size[0] : brick.size[1]);
+        const baseHY = brick.baseSize ? brick.baseSize[2] : brick.size[2];
 
-        for (let sx = 0; sx < wX; sx++) {
-          for (let sz = 0; sz < wZ; sz++) {
+        const halfW = (baseWX * LDU_STUD_PITCH) / 2.0;
+        const halfD = (baseDZ * LDU_STUD_PITCH) / 2.0;
+        const topY = (baseHY * LDU_PLATE_HEIGHT) / 2.0;
+
+        for (let sx = 0; sx < baseWX; sx++) {
+          for (let sz = 0; sz < baseDZ; sz++) {
             const studMesh = new THREE.Mesh(studGeom, mat);
             studMesh.position.set(
               (sx + 0.5) * LDU_STUD_PITCH - halfW,
@@ -342,7 +485,7 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
           const cell = grid.grid[x][z][y];
           if (!cell.occupied) continue;
 
-          // Color mapped from depth: 1 = cool blue/cyan, maxDepth = hot red/magenta
+          // Color mapped from depth: 1 = cool cyan, maxDepth = hot magenta
           const t = maxCoreDepth > 1 ? (cell.depth - 1) / (maxCoreDepth - 1) : 0.5;
           const color = new THREE.Color();
           if (cell.depth === 1) {
@@ -378,10 +521,10 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
     }
     group.visible = true;
 
-    const { numStudsX, numStudsZ, numPlatesY } = grid;
+    const { numStudsX, numStudsZ } = grid;
     for (let x = 0; x < numStudsX; x++) {
       for (let z = 0; z < numStudsZ; z++) {
-        for (let y = 0; y < numPlatesY; y++) {
+        for (let y = 0; y < grid.numPlatesY; y++) {
           const cell = grid.grid[x][z][y];
           if (!cell.occupied || !cell.isBoundary) continue;
 
@@ -425,6 +568,11 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
         <div style={{ fontWeight: 700, letterSpacing: '0.05em', color: '#38bdf8' }}>
           VIEWPORT MODE: {mode}
         </div>
+        {sourceMeshMode !== 'none' && (
+          <div style={{ color: '#38bdf8', fontSize: 11 }}>
+            Source 3D Mesh: {sourceMeshMode.toUpperCase()}
+          </div>
+        )}
         {mode === 'GROWING_CORE' && (
           <div style={{ color: '#fbbf24', fontSize: 11 }}>
             Step {currentStepIndex} of {bricks.length}
