@@ -44,9 +44,9 @@ const MODEL_PRESETS: Record<
 };
 
 const PHASE_LABELS: Record<string, { title: string; color: string }> = {
-  VOLUME_FILL: { title: '1. SOLID BASE (RUNNING BOND)', color: '#38bdf8' },
-  SURFACE_REPLACE: { title: '2. EXTERIOR SLOPES & CURVES', color: '#a855f7' },
-  TILE_FINISH: { title: '3. STUDLESS TOP FINISH', color: '#10b981' },
+  SURFACE_SHELL: { title: '1. WFC EXTERIOR SKIN (N = 2)', color: '#ec4899' },
+  CORE_INFILL: { title: '2. MACRO STRUCTURAL CORE (N = 8, 4)', color: '#38bdf8' },
+  TILE_FINISH: { title: '3. STUDLESS TOP FINISH (N = 0)', color: '#06b6d4' },
   DONE: { title: '4. BUILD COMPLETE', color: '#34d399' }
 };
 
@@ -78,7 +78,7 @@ export const MarkovStudio: React.FC = () => {
   const [bricks, setBricks] = useState<PlacedBrick[]>([]);
   const [currentStepIndex, setCurrentStepIndex] = useState<number>(0);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
-  const [phase, setPhase] = useState<string>('VOLUME_FILL');
+  const [phase, setPhase] = useState<string>('SURFACE_SHELL');
 
   const [options, setOptions] = useState<MarkovEngineOptions>({
     seedMode: 'DEEPEST_CORE',

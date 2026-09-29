@@ -42,6 +42,7 @@ import {
 import { CONNECTOR_DATABASE, LDrawConnectorMeta } from './connectorDatabase';
 import { RotatedPieceVariant } from './pieceFingerprint';
 import { LDU_STUD_PITCH, LDU_BRICK_HEIGHT } from './connectivityDictionary';
+import { WFC_REFINER } from './wfcRefinerEngine';
 
 export interface GrowthHead {
   headId: number;
@@ -53,10 +54,12 @@ export interface GrowthHead {
 }
 
 export type DiscretizationPhase =
-  | 'VOLUME_FILL'
-  | 'SURFACE_REPLACE'
+  | 'SURFACE_SHELL'
+  | 'CORE_INFILL'
   | 'TILE_FINISH'
-  | 'DONE';
+  | 'DONE'
+  | 'VOLUME_FILL'
+  | 'SURFACE_REPLACE';
 
 export interface StructuralPieceSpec {
   partId: string;
@@ -104,7 +107,7 @@ export class MarkovCoreGrowingEngine {
   // Multi-Head Management
   public heads: GrowthHead[] = [];
   public stepIndex: number = 0;
-  public currentPhase: DiscretizationPhase = 'VOLUME_FILL';
+  public currentPhase: DiscretizationPhase = 'SURFACE_SHELL';
 
   // Layer cursors for smooth animation
   public targetIslandId: number | null = null;
@@ -158,8 +161,9 @@ export class MarkovCoreGrowingEngine {
       });
     }
 
+    this.initSurfaceCandidates();
+    this.currentPhase = this.options.enableModernWeirdParts ? 'SURFACE_SHELL' : 'CORE_INFILL';
     this.baseTilingLayerCursor = 0;
-    this.currentPhase = 'VOLUME_FILL';
   }
 
   private cellKey(x: number, z: number, y: number): string {
@@ -375,20 +379,259 @@ export class MarkovCoreGrowingEngine {
   }
 
   /**
-   * STEP 1: FAST STRUCTURAL BASE DISCRETIZATION (1*1*1 BRICK UNITS)
-   * Tiles the 3D voxel volume into solid structural LEGO SYSTEM bricks with running bond.
-   * Alternates X/Z orientation per layer for authentic interlocking stability.
+   * Initializes candidate boundary cells for exterior surface shell discretization (Outside-In).
    */
-  private stepBaseSolidDiscretization(): PlacedBrick[] {
+  private initSurfaceCandidates(): void {
+    const { numStudsX, numStudsZ, numPlatesY } = this.grid;
+    this.surfaceCandidates = [];
+    for (let x = 0; x < numStudsX; x++) {
+      for (let z = 0; z < numStudsZ; z++) {
+        for (let y = 0; y < numPlatesY; y++) {
+          const cell = this.grid.grid[x]?.[z]?.[y];
+          if (
+            cell &&
+            cell.occupied &&
+            cell.isBoundary &&
+            (this.targetIslandId == null || cell.islandId === this.targetIslandId)
+          ) {
+            this.surfaceCandidates.push({ x, z, y });
+          }
+        }
+      }
+    }
+
+    // Sort surface candidates:
+    // 1. Prioritize cells with curved / angled slopes (slope_curved, slope_inverted, slope_33, slope_45, corner_macaroni, spherical_dome)
+    // 2. Sort top-down (higher Y first) to lay sweeps (hood, roof, trunk) naturally
+    this.surfaceCandidates.sort((a, b) => {
+      const cellA = this.grid.grid[a.x][a.z][a.y];
+      const cellB = this.grid.grid[b.x][b.z][b.y];
+      const hasSlopeA = cellA.slopeClass !== 'flat' || cellA.curvatureClass !== 'flat';
+      const hasSlopeB = cellB.slopeClass !== 'flat' || cellB.curvatureClass !== 'flat';
+      if (hasSlopeA && !hasSlopeB) return -1;
+      if (!hasSlopeA && hasSlopeB) return 1;
+      return b.y - a.y;
+    });
+
+    this.surfaceCandidateCursor = 0;
+  }
+
+  /**
+   * STEP 1: EXTERIOR SURFACE SHELL PASS (WFC SLOPES & CURVES - OUTSIDE-IN)
+   * Discretizes boundary cells first using authentic LEGO curved slopes, inverted slopes,
+   * 45° slopes, cheese slopes, macaroni, and radar dishes.
+   * Multi-stud anchor searching allows 4-stud and 2-stud slopes to fit whenever any portion contains the voxel.
+   * WFC OMR transition probability rewards parts that naturally continue adjoining curves.
+   * Scale Level: N = 2 (Vibrant Magenta #ec4899).
+   */
+  private stepSurfaceShell(): PlacedBrick[] {
+    const newBricks: PlacedBrick[] = [];
+    const { numStudsX, numStudsZ, numPlatesY } = this.grid;
+    let placedInTick = 0;
+    const maxPlacementsPerTick = this.options.batchStepSize ?? 16;
+
+    while (this.surfaceCandidateCursor < this.surfaceCandidates.length && placedInTick < maxPlacementsPerTick) {
+      const { x, z, y } = this.surfaceCandidates[this.surfaceCandidateCursor++];
+      const cell = this.grid.grid[x]?.[z]?.[y];
+      if (!cell || !cell.occupied || this.isCellCovered(x, z, y)) continue;
+      if (this.targetIslandId != null && cell.islandId !== this.targetIslandId) continue;
+
+      const islandId = cell.islandId;
+
+      // Compute outward heading from surface normal (nx, ny, nz)
+      const [nx, ny, nz] = cell.normal;
+      let baseRot: 0 | 90 | 180 | 270 = 0;
+      if (Math.abs(nz) >= Math.abs(nx)) {
+        baseRot = nz >= 0 ? 0 : 180;
+      } else {
+        baseRot = nx >= 0 ? 270 : 90;
+      }
+
+      // Candidate parts for this surface feature - LARGEST & LONGEST FIRST!
+      const candidatePartIds: string[] = [];
+
+      // 1. Curved Slopes (Convex outer surfaces)
+      if (cell.slopeClass === 'slope_curved' || cell.curvatureClass === 'cylindrical_convex') {
+        candidatePartIds.push('88930', '61678', '15068', '11477', '85984', '3039', '3040');
+      }
+
+      // 2. Inverted Slopes (Underhangs)
+      if (cell.slopeClass === 'slope_inverted') {
+        candidatePartIds.push('93273', '24201', '3665', '3660');
+      }
+
+      // 3. Cheese Slopes & 33° Slopes
+      if (cell.slopeClass === 'slope_33') {
+        candidatePartIds.push('3298', '85984', '54200');
+      }
+
+      // 4. 45° Slopes
+      if (cell.slopeClass === 'slope_45') {
+        candidatePartIds.push('3038', '3039', '3040');
+      }
+
+      // 5. Macaroni & Round Corners
+      if (cell.curvatureClass === 'corner_macaroni') {
+        candidatePartIds.push('27925', '25269', '2357');
+      }
+
+      // 6. Spherical Dome Apex
+      if (cell.curvatureClass === 'spherical_dome' && ny > 0.6) {
+        candidatePartIds.push('4740', '43898', '3960');
+      }
+
+      // 7. General Boundary Fallback
+      if (candidatePartIds.length === 0) {
+        if (cell.slopeClass !== 'flat') {
+          candidatePartIds.push('88930', '61678', '15068', '11477', '3039', '3040');
+        } else {
+          candidatePartIds.push('3068b', '3069b', '2431', '3010', '3004', '3005');
+        }
+      }
+
+      // Neighbor directions for WFC OMR transition probability
+      const neighbors = [
+        { dx: 1, dz: 0, dy: 0, dir: '+X' as const },
+        { dx: -1, dz: 0, dy: 0, dir: '-X' as const },
+        { dx: 0, dz: 1, dy: 0, dir: '+Z' as const },
+        { dx: 0, dz: -1, dy: 0, dir: '-Z' as const },
+        { dx: 0, dz: 0, dy: 1, dir: '+Y' as const },
+        { dx: 0, dz: 0, dy: -1, dir: '-Y' as const }
+      ];
+
+      // Score candidates: base priority (larger first) + WFC OMR transition boost
+      const scoredCandidates = candidatePartIds.map((partId, idx) => {
+        let maxProb = 0;
+        for (const n of neighbors) {
+          const nKey = this.cellKey(x + n.dx, z + n.dz, y + n.dy);
+          const nBrickId = this.occupiedCellToBrickId.get(nKey);
+          if (nBrickId) {
+            const nBrick = this.placedBricks.get(nBrickId);
+            if (nBrick) {
+              const prob = WFC_REFINER.getTransitionProbability(nBrick.partId, n.dir, partId);
+              if (prob > maxProb) maxProb = prob;
+            }
+          }
+        }
+        const score = (candidatePartIds.length - idx) * 10 + maxProb * 50;
+        return { partId, score };
+      });
+
+      scoredCandidates.sort((a, b) => b.score - a.score);
+
+      let placed = false;
+
+      for (const item of scoredCandidates) {
+        const candidatePartId = item.partId;
+        const connector = CONNECTOR_DATABASE.getConnector(candidatePartId);
+        if (!connector) continue;
+
+        // Try primary rotation; if dome or flat, allow all 4 rotations
+        const rotationsToTry: Array<0 | 90 | 180 | 270> = [baseRot];
+        if (cell.curvatureClass === 'spherical_dome' || cell.slopeClass === 'flat') {
+          rotationsToTry.push(
+            ((baseRot + 90) % 360) as any,
+            ((baseRot + 180) % 360) as any,
+            ((baseRot + 270) % 360) as any
+          );
+        }
+
+        for (const rot of rotationsToTry) {
+          const variant: RotatedPieceVariant | undefined = connector.fingerprint.variants.get(rot);
+          if (!variant) continue;
+
+          const wX = variant.widthX;
+          const dZ = variant.depthZ;
+          const hY = variant.heightY;
+
+          // Test multi-stud anchor offsets so the piece can contain (x, z, y) at any position
+          let bestAnchor: { startX: number; startZ: number; startY: number } | null = null;
+
+          for (let ci = 0; ci < variant.occupiedCells.length; ci++) {
+            const cellOffset: { dx: number; dz: number; dy: number } = variant.occupiedCells[ci];
+            const startX: number = x - cellOffset.dx;
+            const startZ: number = z - cellOffset.dz;
+            const startY: number = y - cellOffset.dy;
+
+            if (
+              startX < 0 ||
+              startZ < 0 ||
+              startY < 0 ||
+              startX + wX > numStudsX ||
+              startZ + dZ > numStudsZ ||
+              startY + hY > numPlatesY
+            ) {
+              continue;
+            }
+
+            let fits = true;
+            for (let oi = 0; oi < variant.occupiedCells.length; oi++) {
+              const offset: { dx: number; dz: number; dy: number } = variant.occupiedCells[oi];
+              const gx = startX + offset.dx;
+              const gz = startZ + offset.dz;
+              const gy = startY + offset.dy;
+              const cCell = this.grid.grid[gx]?.[gz]?.[gy];
+              if (!cCell || !cCell.occupied || this.isCellCovered(gx, gz, gy)) {
+                fits = false;
+                break;
+              }
+              if (islandId !== undefined && cCell.islandId !== undefined && cCell.islandId !== islandId) {
+                fits = false;
+                break;
+              }
+            }
+
+            if (fits) {
+              bestAnchor = { startX, startZ, startY };
+              break;
+            }
+          }
+
+          if (bestAnchor) {
+            const headId = (bestAnchor.startX + bestAnchor.startZ + bestAnchor.startY) % this.heads.length;
+            const b = this.commitBrick(
+              bestAnchor.startX,
+              bestAnchor.startZ,
+              bestAnchor.startY,
+              connector,
+              variant,
+              'SURFACE_EDGE',
+              headId,
+              undefined,
+              2
+            );
+            newBricks.push(b);
+            placedInTick++;
+            placed = true;
+            break;
+          }
+        }
+        if (placed) break;
+      }
+    }
+
+    if (this.surfaceCandidateCursor >= this.surfaceCandidates.length) {
+      this.currentPhase = 'CORE_INFILL';
+      this.baseTilingLayerCursor = 0;
+    }
+
+    return newBricks;
+  }
+
+  /**
+   * STEP 2: MACRO STRUCTURAL CORE INFILL (Running Bond - INSIDE-OUT)
+   * Fills remaining interior voxels with solid LEGO SYSTEM bricks:
+   * - Macro Core (N = 8): 2x8, 2x6, 2x4, 1x8, 1x6 Bricks (Royal Blue)
+   * - Mid Running Bond (N = 4): 2x3, 2x2, 1x4, 1x3, 1x2 Bricks (Amber Gold)
+   * - Unit Detail (N = 1): 1x1x1 Bricks 3005, 3062b (Emerald Green)
+   */
+  private stepCoreInfill(): PlacedBrick[] {
     const newBricks: PlacedBrick[] = [];
     const { numStudsX, numStudsZ, numPlatesY } = this.grid;
 
     const y = this.baseTilingLayerCursor;
     if (y >= numPlatesY) {
-      if (this.options.enableModernWeirdParts) {
-        this.currentPhase = 'SURFACE_REPLACE';
-        this.initSurfaceCandidates();
-      } else if (this.options.enableStudlessTopFinish) {
+      if (this.options.enableStudlessTopFinish) {
         this.currentPhase = 'TILE_FINISH';
         this.tileFinishCursor = 0;
       } else {
@@ -482,219 +725,12 @@ export class MarkovCoreGrowingEngine {
     this.baseTilingLayerCursor++;
 
     if (this.baseTilingLayerCursor >= numPlatesY) {
-      if (this.options.enableModernWeirdParts) {
-        this.currentPhase = 'SURFACE_REPLACE';
-        this.initSurfaceCandidates();
-      } else if (this.options.enableStudlessTopFinish) {
+      if (this.options.enableStudlessTopFinish) {
         this.currentPhase = 'TILE_FINISH';
         this.tileFinishCursor = 0;
       } else {
         this.currentPhase = 'DONE';
       }
-    }
-
-    return newBricks;
-  }
-
-  /**
-   * Initializes candidate boundary cells for exterior surface replacement.
-   */
-  private initSurfaceCandidates(): void {
-    const { numStudsX, numStudsZ, numPlatesY } = this.grid;
-    this.surfaceCandidates = [];
-    for (let x = 0; x < numStudsX; x++) {
-      for (let z = 0; z < numStudsZ; z++) {
-        for (let y = 0; y < numPlatesY; y++) {
-          const cell = this.grid.grid[x][z][y];
-          if (cell && cell.occupied && cell.isBoundary && (this.targetIslandId == null || cell.islandId === this.targetIslandId)) {
-            this.surfaceCandidates.push({ x, z, y });
-          }
-        }
-      }
-    }
-    this.surfaceCandidateCursor = 0;
-  }
-
-  /**
-   * STEP 2: EXTERIOR SURFACE REPLACEMENT PASS (WFC SLOPES & CURVES)
-   * Evaluates boundary cells and replaces exterior rectangular bricks with authentic LEGO SYSTEM
-   * curved slopes, inverted slopes, 45° slopes, cheese slopes, macaroni, and radar dishes.
-   * STRICT OUTWARD HEADING ALIGNMENT: Never places backward or upside down pieces!
-   * Scale Level: N = 2 (Vibrant Magenta #ec4899).
-   */
-  private stepSurfaceReplace(): PlacedBrick[] {
-    const newBricks: PlacedBrick[] = [];
-    const { numStudsX, numStudsZ, numPlatesY } = this.grid;
-    let replacedInTick = 0;
-    const maxReplacementsPerTick = 16;
-
-    while (this.surfaceCandidateCursor < this.surfaceCandidates.length && replacedInTick < maxReplacementsPerTick) {
-      const { x, z, y } = this.surfaceCandidates[this.surfaceCandidateCursor++];
-      const cell = this.grid.grid[x]?.[z]?.[y];
-      if (!cell || !cell.occupied) continue;
-
-      const currentBId = this.occupiedCellToBrickId.get(this.cellKey(x, z, y));
-      if (!currentBId) continue;
-      const currentBrick = this.placedBricks.get(currentBId);
-      if (currentBrick && (currentBrick.category === 'LEAF' || currentBrick.growthPhase === 'SURFACE_EDGE')) {
-        continue;
-      }
-
-      // Compute outward heading from surface normal (nx, ny, nz)
-      const [nx, ny, nz] = cell.normal;
-      let baseRot: 0 | 90 | 180 | 270 = 0;
-      if (Math.abs(nz) >= Math.abs(nx)) {
-        baseRot = nz >= 0 ? 0 : 180;
-      } else {
-        baseRot = nx >= 0 ? 270 : 90;
-      }
-
-      const candidatePartIds: string[] = [];
-
-      // 1. Curved Slopes (Convex outer surfaces) - LARGEST & LONGEST FIRST!
-      if (cell.slopeClass === 'slope_curved' || cell.curvatureClass === 'cylindrical_convex') {
-        candidatePartIds.push('88930', '61678', '15068', '11477', '85984', '3039', '3040');
-      }
-
-      // 2. Inverted Slopes (Underhangs) - LARGEST & LONGEST FIRST!
-      if (cell.slopeClass === 'slope_inverted') {
-        candidatePartIds.push('93273', '24201', '3665', '3660');
-      }
-
-      // 3. Cheese Slopes & 33° Slopes - LARGEST FIRST!
-      if (cell.slopeClass === 'slope_33') {
-        candidatePartIds.push('3298', '85984', '54200');
-      }
-
-      // 4. 45° Slopes - LARGEST FIRST!
-      if (cell.slopeClass === 'slope_45') {
-        candidatePartIds.push('3038', '3039', '3040');
-      }
-
-      // 5. Macaroni & Round Corners
-      if (cell.curvatureClass === 'corner_macaroni') {
-        candidatePartIds.push('27925', '2357');
-      }
-
-      // 6. Spherical Dome Apex (crown top with authentic radar dishes)
-      if (cell.curvatureClass === 'spherical_dome' && ny > 0.6) {
-        candidatePartIds.push('4740', '43898', '3960');
-      }
-
-      // Fallback boundary slopes
-      if (candidatePartIds.length === 0) {
-        candidatePartIds.push('88930', '61678', '15068', '11477', '3039', '3040');
-      }
-
-      for (const candidatePartId of candidatePartIds) {
-        const connector = CONNECTOR_DATABASE.getConnector(candidatePartId);
-        if (!connector) continue;
-
-        const variant = connector.fingerprint.variants.get(baseRot);
-        if (!variant) continue;
-
-        if (
-          x + variant.widthX <= numStudsX &&
-          z + variant.depthZ <= numStudsZ &&
-          y + variant.heightY <= numPlatesY
-        ) {
-          let footprintValid = true;
-          const bricksToReplace = new Set<string>();
-
-          for (const cellOffset of variant.occupiedCells) {
-            const gx = x + cellOffset.dx;
-            const gz = z + cellOffset.dz;
-            const gy = y + cellOffset.dy;
-            const cCell = this.grid.grid[gx]?.[gz]?.[gy];
-            if (!cCell || !cCell.occupied) {
-              footprintValid = false;
-              break;
-            }
-            if (cell.islandId !== undefined && cCell.islandId !== undefined && cCell.islandId !== cell.islandId) {
-              footprintValid = false;
-              break;
-            }
-            const bId = this.occupiedCellToBrickId.get(this.cellKey(gx, gz, gy));
-            if (bId) {
-              const existingBrick = this.placedBricks.get(bId);
-              if (existingBrick && (existingBrick.category === 'LEAF' || existingBrick.growthPhase === 'SURFACE_EDGE')) {
-                footprintValid = false;
-                break;
-              }
-              bricksToReplace.add(bId);
-            }
-          }
-
-          if (footprintValid && bricksToReplace.size > 0) {
-            const freedVoxels: Array<{ x: number; z: number; y: number; colorHex: string; islandId?: number }> = [];
-            for (const bId of bricksToReplace) {
-              const b = this.placedBricks.get(bId);
-              if (b) {
-                const [bx, bz, by] = b.gridPos;
-                const [bw, bd, bh] = b.size;
-                for (let dx = 0; dx < bw; dx++) {
-                  for (let dz = 0; dz < bd; dz++) {
-                    for (let dy = 0; dy < bh; dy++) {
-                      const cx = bx + dx;
-                      const cz = bz + dz;
-                      const cy = by + dy;
-                      const fCell = this.grid.grid[cx]?.[cz]?.[cy];
-                      if (fCell && fCell.occupied) {
-                        freedVoxels.push({ x: cx, z: cz, y: cy, colorHex: fCell.colorHex, islandId: fCell.islandId });
-                      }
-                    }
-                  }
-                }
-              }
-              this.removeBrick(bId);
-            }
-
-            // Commit the boundary slope (Scale N = 2: Vibrant Magenta #ec4899)
-            const newSlope = this.commitBrick(x, z, y, connector, variant, 'SURFACE_EDGE', 0, cell.colorHex, 2);
-            newBricks.push(newSlope);
-            replacedInTick++;
-
-            // Refill freed voxels using larger bricks first (2x2, 1x2, 1x1x1) - NEVER 1x1 plates!
-            for (const fv of freedVoxels) {
-              if (!this.isCellCovered(fv.x, fv.z, fv.y)) {
-                let refilled = false;
-                if (this.canFitSolidBlock(fv.x, fv.z, fv.y, 2, 2, 1, fv.islandId)) {
-                  const b2x2 = CONNECTOR_DATABASE.getConnector('3003');
-                  if (b2x2) {
-                    const bVar = b2x2.fingerprint.variants.get(0)!;
-                    const rB = this.commitBrick(fv.x, fv.z, fv.y, b2x2, bVar, 'CORE_EXPANSION', 0, fv.colorHex, 4);
-                    newBricks.push(rB);
-                    refilled = true;
-                  }
-                }
-                if (!refilled && this.canFitSolidBlock(fv.x, fv.z, fv.y, 1, 2, 1, fv.islandId)) {
-                  const b1x2 = CONNECTOR_DATABASE.getConnector('3004');
-                  if (b1x2) {
-                    const bVar = b1x2.fingerprint.variants.get(0)!;
-                    const rB = this.commitBrick(fv.x, fv.z, fv.y, b1x2, bVar, 'CORE_EXPANSION', 0, fv.colorHex, 4);
-                    newBricks.push(rB);
-                    refilled = true;
-                  }
-                }
-                if (!refilled && !this.isCellCovered(fv.x, fv.z, fv.y)) {
-                  const b1x1 = CONNECTOR_DATABASE.getConnector('3005');
-                  if (b1x1) {
-                    const bVar = b1x1.fingerprint.variants.get(0)!;
-                    const rB = this.commitBrick(fv.x, fv.z, fv.y, b1x1, bVar, 'CORE_EXPANSION', 0, fv.colorHex, 1);
-                    newBricks.push(rB);
-                  }
-                }
-              }
-            }
-            break;
-          }
-        }
-      }
-    }
-
-    if (this.surfaceCandidateCursor >= this.surfaceCandidates.length) {
-      this.currentPhase = this.options.enableStudlessTopFinish ? 'TILE_FINISH' : 'DONE';
-      this.tileFinishCursor = 0;
     }
 
     return newBricks;
@@ -800,16 +836,22 @@ export class MarkovCoreGrowingEngine {
     let newBricks: PlacedBrick[] = [];
 
     switch (this.currentPhase) {
-      case 'VOLUME_FILL':
-        newBricks = this.stepBaseSolidDiscretization();
+      case 'SURFACE_SHELL':
+        newBricks = this.stepSurfaceShell();
         break;
-      case 'SURFACE_REPLACE':
-        newBricks = this.stepSurfaceReplace();
+      case 'CORE_INFILL':
+        newBricks = this.stepCoreInfill();
         break;
       case 'TILE_FINISH':
         newBricks = this.stepTileFinish();
         break;
       case 'DONE':
+        break;
+      case 'VOLUME_FILL':
+        newBricks = this.stepCoreInfill();
+        break;
+      case 'SURFACE_REPLACE':
+        newBricks = this.stepSurfaceShell();
         break;
     }
 
@@ -855,7 +897,8 @@ export class MarkovCoreGrowingEngine {
    */
   public solveSingleIsland(islandId: number, maxSteps: number = 1000): GrowthStepResult {
     this.targetIslandId = islandId;
-    this.currentPhase = 'VOLUME_FILL';
+    this.initSurfaceCandidates();
+    this.currentPhase = this.options.enableModernWeirdParts ? 'SURFACE_SHELL' : 'CORE_INFILL';
     this.baseTilingLayerCursor = 0;
     let steps = 0;
     let res = this.step();
