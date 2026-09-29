@@ -251,6 +251,95 @@ export async function runTests(): Promise<void> {
   if (buildRep.interlockRatio <= 0) {
     throw new Error('Model should have positive running bond interlocking ratio');
   }
+
+  // Explicit Unit Verification for Polish Harmonizer: Curve Merging, Tile Smoothing, and Grounding Column Remediation
+  console.log('  Validating PolishHarmonizer slope merging, tile smoothing, and support remediation...');
+  const synthBricks = new Map<string, any>();
+  const synthCells = new Map<string, string>();
+  const dummyGrid: any = { numStudsX: 20, numStudsZ: 20, numPlatesY: 10 };
+
+  // 1. Two collinear 1x2 curved slopes (11477)
+  const slopeA: any = {
+    id: 's1', partId: '11477', name: 'Slope Brick Curved 2 x 1', profile: 'slope_curved',
+    gridPos: [2, 2, 1], ldrawPos: [0, -24, 0], rotation: 0, size: [1, 2, 1], baseSize: [1, 2, 1],
+    colorHex: '#c91a09', colorCode: 4, islandId: 1, stepIndex: 1
+  };
+  const slopeB: any = {
+    id: 's2', partId: '11477', name: 'Slope Brick Curved 2 x 1', profile: 'slope_curved',
+    gridPos: [3, 2, 1], ldrawPos: [20, -24, 0], rotation: 0, size: [1, 2, 1], baseSize: [1, 2, 1],
+    colorHex: '#c91a09', colorCode: 4, islandId: 1, stepIndex: 2
+  };
+  synthBricks.set('s1', slopeA);
+  synthBricks.set('s2', slopeB);
+  synthCells.set('2,2,1', 's1'); synthCells.set('2,3,1', 's1');
+  synthCells.set('3,2,1', 's2'); synthCells.set('3,3,1', 's2');
+
+  // 2. Two adjacent 1x1 flat tiles
+  const tileA: any = {
+    id: 't1', partId: '3070b', name: 'Tile 1 x 1 Flat', profile: 'tile_flat',
+    gridPos: [6, 6, 2], ldrawPos: [0, -48, 0], rotation: 0, size: [1, 1, 1], baseSize: [1, 1, 1],
+    colorHex: '#0055bf', colorCode: 1, islandId: 1, stepIndex: 3
+  };
+  const tileB: any = {
+    id: 't2', partId: '3070b', name: 'Tile 1 x 1 Flat', profile: 'tile_flat',
+    gridPos: [7, 6, 2], ldrawPos: [20, -48, 0], rotation: 0, size: [1, 1, 1], baseSize: [1, 1, 1],
+    colorHex: '#0055bf', colorCode: 1, islandId: 1, stepIndex: 4
+  };
+  synthBricks.set('t1', tileA);
+  synthBricks.set('t2', tileB);
+  synthCells.set('6,6,2', 't1');
+  synthCells.set('7,6,2', 't2');
+
+  // 3. Ground base brick at y=0 and floating brick at y=3
+  const groundBase: any = {
+    id: 'g0', partId: '3001', name: 'Brick 2 x 4', profile: 'brick',
+    gridPos: [10, 10, 0], ldrawPos: [0, 0, 0], rotation: 0, size: [2, 4, 1], baseSize: [2, 4, 1],
+    colorHex: '#f4f4f4', colorCode: 15, islandId: 1, stepIndex: 5
+  };
+  const floatingBrick: any = {
+    id: 'fl1', partId: '3005', name: 'Brick 1 x 1', profile: 'brick',
+    gridPos: [10, 10, 3], ldrawPos: [0, -72, 0], rotation: 0, size: [1, 1, 1], baseSize: [1, 1, 1],
+    colorHex: '#f4f4f4', colorCode: 15, islandId: 1, stepIndex: 6
+  };
+  synthBricks.set('g0', groundBase);
+  synthBricks.set('fl1', floatingBrick);
+  synthCells.set('10,10,0', 'g0');
+  synthCells.set('10,10,3', 'fl1');
+
+  const { PolishHarmonizer } = await import('../engine/polishHarmonizer');
+  const synthHarm = PolishHarmonizer.harmonizeNeighborhoods(synthBricks, synthCells, dummyGrid);
+  console.log(`    Merged curves: ${synthHarm.mergedContinuousCurvesCount}, Smoothed tiles: ${synthHarm.smoothedTilesCount}`);
+  if (synthHarm.mergedContinuousCurvesCount !== 1) {
+    throw new Error(`Expected exactly 1 merged continuous curve, got ${synthHarm.mergedContinuousCurvesCount}`);
+  }
+  if (synthHarm.smoothedTilesCount !== 1) {
+    throw new Error(`Expected exactly 1 smoothed tile, got ${synthHarm.smoothedTilesCount}`);
+  }
+
+  // Verify merged slope properties
+  const mergedSlope = synthBricks.get('s1');
+  if (!mergedSlope || mergedSlope.partId !== '15068' || mergedSlope.size[0] !== 2 || mergedSlope.size[1] !== 2) {
+    throw new Error(`Merged slope should be 15068 with 2x2 dimensions, got ${mergedSlope?.partId} [${mergedSlope?.size.join(',')}]`);
+  }
+  // Verify recomputed ldrawPos
+  const expectedSlopeLdrawX = (2 + 2 / 2.0 - dummyGrid.numStudsX / 2.0) * 20;
+  if (mergedSlope.ldrawPos[0] !== expectedSlopeLdrawX) {
+    throw new Error(`Merged slope ldrawPos.x should be ${expectedSlopeLdrawX}, got ${mergedSlope.ldrawPos[0]}`);
+  }
+
+  // Verify buildability and auto-remediation
+  const synthBuild = PolishHarmonizer.verifyBuildability(synthBricks, synthCells, dummyGrid);
+  console.log(`    Auto-remediated bricks: ${synthBuild.remediatedBricksCount}, Floating remaining: ${synthBuild.floatingBricksCount}`);
+  if (synthBuild.remediatedBricksCount < 1 || !synthBuild.is100PercentGrounded) {
+    throw new Error(`Auto-remediation failed to support floating piece: floating=${synthBuild.floatingBricksCount}`);
+  }
+  // Check that real support bricks (3005) were added at y=1 and y=2
+  const supp1 = synthBricks.get('b_support_3005_10_10_1');
+  const supp2 = synthBricks.get('b_support_3005_10_10_2');
+  if (!supp1 || !supp2) {
+    throw new Error('Support pillar bricks (3005) were not correctly synthesized and added to placedBricks');
+  }
+  console.log('    Support column synthesis and grounding verified -> PASS');
   console.log('  Polish phase & buildability verification verified -> PASS\n');
 
   // Test 11: Set-Specific / Category OMR Tensors Runtime Switching

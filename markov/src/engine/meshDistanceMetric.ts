@@ -342,9 +342,11 @@ export class MeshDistanceEvaluator {
       const cz = Math.max(0, Math.min(gridSize - 1, Math.floor((p.z - modelBBoxLDU.min.z) / cellD)));
 
       let bestDistSq = Infinity;
+      const minCellDim = Math.min(cellW, cellH, cellD);
+      const maxSearchR = Math.min(gridSize, 6);
 
       // Search immediate neighbor cells in expanding radius
-      for (let r = 0; r <= 2; r++) {
+      for (let r = 0; r <= maxSearchR; r++) {
         const minX = Math.max(0, cx - r);
         const maxX = Math.min(gridSize - 1, cx + r);
         const minY = Math.max(0, cy - r);
@@ -355,6 +357,9 @@ export class MeshDistanceEvaluator {
         for (let x = minX; x <= maxX; x++) {
           for (let y = minY; y <= maxY; y++) {
             for (let z = minZ; z <= maxZ; z++) {
+              if (r > 0 && x > minX && x < maxX && y > minY && y < maxY && z > minZ && z < maxZ) {
+                continue; // Boundary shell check
+              }
               const list = spatialGrid.get(hashCell(x, y, z));
               if (list) {
                 for (let k = 0; k < list.length; k++) {
@@ -368,15 +373,14 @@ export class MeshDistanceEvaluator {
           }
         }
 
-        if (bestDistSq < (r * Math.min(cellW, cellH, cellD)) ** 2) {
+        if (bestDistSq <= (r * minCellDim) ** 2) {
           break;
         }
       }
 
-      // If still infinity, fallback to checking a random subset of all triangles
+      // If still infinity, exact fallback to full triangle scan
       if (bestDistSq === Infinity) {
-        const step = Math.max(1, Math.floor(triangles.length / 50));
-        for (let i = 0; i < triangles.length; i += step) {
+        for (let i = 0; i < triangles.length; i++) {
           const dSq = MeshDistanceEvaluator.pointToTriangleDistanceSquared(p, triangles[i]);
           if (dSq < bestDistSq) {
             bestDistSq = dSq;
@@ -387,8 +391,29 @@ export class MeshDistanceEvaluator {
       return Math.sqrt(bestDistSq);
     };
 
-    // Step 2: Sample surface points from placed LEGO bricks
-    const distances: number[] = [];
+    // Step 2: Build spatial lookup for exterior face filtering
+    const occupiedCellSet = new Set<string>();
+    for (const b of bricks) {
+      const [bx, bz, by] = b.gridPos;
+      const [bw, bd, bh] = b.size;
+      for (let dx = 0; dx < bw; dx++) {
+        for (let dz = 0; dz < bd; dz++) {
+          for (let dy = 0; dy < bh; dy++) {
+            occupiedCellSet.add(`${bx + dx},${bz + dz},${by + dy}`);
+          }
+        }
+      }
+    }
+
+    const isExposed = (gx: number, gz: number, gy: number): boolean => {
+      if (gx < 0 || gx >= grid.numStudsX || gz < 0 || gz >= grid.numStudsZ || gy < 0 || gy >= grid.numPlatesY) {
+        return true;
+      }
+      return !occupiedCellSet.has(`${gx},${gz},${gy}`);
+    };
+
+    // Direction 1: Sample exposed exterior surface points of LEGO bricks -> Mesh
+    const brickToMeshDistances: number[] = [];
     const samplePoint = new THREE.Vector3();
     const halfStudX = grid.numStudsX / 2.0;
     const halfStudZ = grid.numStudsZ / 2.0;
@@ -405,28 +430,135 @@ export class MeshDistanceEvaluator {
       const minY = gy * LDU_BRICK_HEIGHT;
       const maxY = (gy + bh) * LDU_BRICK_HEIGHT;
 
-      // Sample top horizontal face
-      samplePoint.set((minX + maxX) * 0.5, maxY, (minZ + maxZ) * 0.5);
-      distances.push(queryNearestTriangleDist(samplePoint));
+      // Check exposure of faces to skip deep internal infill
+      let topExposed = false;
+      let bottomExposed = false;
+      let xPosExposed = false;
+      let xNegExposed = false;
+      let zPosExposed = false;
+      let zNegExposed = false;
 
-      // Sample 4 corners of top face
-      samplePoint.set(minX + 2, maxY, minZ + 2);
-      distances.push(queryNearestTriangleDist(samplePoint));
-      samplePoint.set(maxX - 2, maxY, maxZ - 2);
-      distances.push(queryNearestTriangleDist(samplePoint));
+      for (let dx = 0; dx < bw; dx++) {
+        for (let dz = 0; dz < bd; dz++) {
+          if (!topExposed && isExposed(gx + dx, gz + dz, gy + bh)) topExposed = true;
+          if (!bottomExposed && isExposed(gx + dx, gz + dz, gy - 1)) bottomExposed = true;
+        }
+      }
 
-      // Sample lateral faces
-      samplePoint.set(minX, (minY + maxY) * 0.5, (minZ + maxZ) * 0.5);
-      distances.push(queryNearestTriangleDist(samplePoint));
-      samplePoint.set(maxX, (minY + maxY) * 0.5, (minZ + maxZ) * 0.5);
-      distances.push(queryNearestTriangleDist(samplePoint));
-      samplePoint.set((minX + maxX) * 0.5, (minY + maxY) * 0.5, minZ);
-      distances.push(queryNearestTriangleDist(samplePoint));
-      samplePoint.set((minX + maxX) * 0.5, (minY + maxY) * 0.5, maxZ);
-      distances.push(queryNearestTriangleDist(samplePoint));
+      for (let dy = 0; dy < bh; dy++) {
+        for (let dz = 0; dz < bd; dz++) {
+          if (!xPosExposed && isExposed(gx + bw, gz + dz, gy + dy)) xPosExposed = true;
+          if (!xNegExposed && isExposed(gx - 1, gz + dz, gy + dy)) xNegExposed = true;
+        }
+        for (let dx = 0; dx < bw; dx++) {
+          if (!zPosExposed && isExposed(gx + dx, gz + bd, gy + dy)) zPosExposed = true;
+          if (!zNegExposed && isExposed(gx + dx, gz - 1, gy + dy)) zNegExposed = true;
+        }
+      }
+
+      // If brick is completely enclosed inside other bricks, skip
+      if (!topExposed && !bottomExposed && !xPosExposed && !xNegExposed && !zPosExposed && !zNegExposed) {
+        continue;
+      }
+
+      if (topExposed) {
+        samplePoint.set((minX + maxX) * 0.5, maxY, (minZ + maxZ) * 0.5);
+        brickToMeshDistances.push(queryNearestTriangleDist(samplePoint));
+        samplePoint.set(minX + 2, maxY, minZ + 2);
+        brickToMeshDistances.push(queryNearestTriangleDist(samplePoint));
+        samplePoint.set(maxX - 2, maxY, maxZ - 2);
+        brickToMeshDistances.push(queryNearestTriangleDist(samplePoint));
+      }
+
+      if (bottomExposed) {
+        samplePoint.set((minX + maxX) * 0.5, minY, (minZ + maxZ) * 0.5);
+        brickToMeshDistances.push(queryNearestTriangleDist(samplePoint));
+      }
+
+      if (xNegExposed) {
+        samplePoint.set(minX, (minY + maxY) * 0.5, (minZ + maxZ) * 0.5);
+        brickToMeshDistances.push(queryNearestTriangleDist(samplePoint));
+      }
+      if (xPosExposed) {
+        samplePoint.set(maxX, (minY + maxY) * 0.5, (minZ + maxZ) * 0.5);
+        brickToMeshDistances.push(queryNearestTriangleDist(samplePoint));
+      }
+      if (zNegExposed) {
+        samplePoint.set((minX + maxX) * 0.5, (minY + maxY) * 0.5, minZ);
+        brickToMeshDistances.push(queryNearestTriangleDist(samplePoint));
+      }
+      if (zPosExposed) {
+        samplePoint.set((minX + maxX) * 0.5, (minY + maxY) * 0.5, maxZ);
+        brickToMeshDistances.push(queryNearestTriangleDist(samplePoint));
+      }
     }
 
-    if (distances.length === 0) {
+    // Direction 2: Sample points on source mesh surface -> Brick model
+    const meshSampleTarget = Math.max(100, Math.min(2000, options.sampleMeshPoints ?? 500));
+    const meshToBrickDistances: number[] = [];
+
+    // Precompute triangle areas for area-weighted sampling
+    const triAreas: number[] = new Array(triangles.length);
+    let totalArea = 0;
+    for (let i = 0; i < triangles.length; i++) {
+      const cross = new THREE.Vector3().crossVectors(triangles[i].u, triangles[i].v);
+      const area = 0.5 * cross.length();
+      triAreas[i] = area;
+      totalArea += area;
+    }
+
+    if (totalArea > 0 && triangles.length > 0) {
+      // Spatial lookup for bricks to find distance from mesh sample to nearest brick
+      const brickBoxes: Array<{ minX: number; maxX: number; minY: number; maxY: number; minZ: number; maxZ: number }> = [];
+      for (const b of bricks) {
+        const [gx, gz, gy] = b.gridPos;
+        const [bw, bd, bh] = b.size;
+        brickBoxes.push({
+          minX: (gx - halfStudX) * LDU_STUD_PITCH,
+          maxX: (gx + bw - halfStudX) * LDU_STUD_PITCH,
+          minY: gy * LDU_BRICK_HEIGHT,
+          maxY: (gy + bh) * LDU_BRICK_HEIGHT,
+          minZ: (gz - halfStudZ) * LDU_STUD_PITCH,
+          maxZ: (gz + bd - halfStudZ) * LDU_STUD_PITCH
+        });
+      }
+
+      // Sample points uniformly distributed across surface area
+      const stepStride = Math.max(1, Math.floor(triangles.length / meshSampleTarget));
+      for (let i = 0; i < triangles.length; i += stepStride) {
+        const tri = triangles[i];
+        // Barycentric centroid + random perturbation
+        const r1 = Math.random();
+        const r2 = Math.random();
+        const sqrtR1 = Math.sqrt(r1);
+        const uW = 1.0 - sqrtR1;
+        const vW = sqrtR1 * (1.0 - r2);
+        const wW = sqrtR1 * r2;
+
+        const mpX = uW * tri.a.x + vW * tri.b.x + wW * tri.c.x;
+        const mpY = uW * tri.a.y + vW * tri.b.y + wW * tri.c.y;
+        const mpZ = uW * tri.a.z + vW * tri.b.z + wW * tri.c.z;
+
+        // Query distance to nearest brick box
+        let bestDistSq = Infinity;
+        for (let j = 0; j < brickBoxes.length; j++) {
+          const bb = brickBoxes[j];
+          const dx = Math.max(0, bb.minX - mpX, mpX - bb.maxX);
+          const dy = Math.max(0, bb.minY - mpY, mpY - bb.maxY);
+          const dz = Math.max(0, bb.minZ - mpZ, mpZ - bb.maxZ);
+          const dSq = dx * dx + dy * dy + dz * dz;
+          if (dSq < bestDistSq) {
+            bestDistSq = dSq;
+            if (bestDistSq === 0) break;
+          }
+        }
+        meshToBrickDistances.push(Math.sqrt(bestDistSq));
+      }
+    }
+
+    const allDistances = [...brickToMeshDistances, ...meshToBrickDistances];
+
+    if (allDistances.length === 0) {
       return {
         meanDistanceLDU: 0,
         rmsDistanceLDU: 0,
@@ -443,23 +575,33 @@ export class MeshDistanceEvaluator {
       };
     }
 
-    // Sort distances for quantile metrics
-    distances.sort((a, b) => a - b);
+    allDistances.sort((a, b) => a - b);
 
-    let sum = 0;
+    // Symmetric Chamfer: average of directional means
+    const brickMean = brickToMeshDistances.length > 0
+      ? brickToMeshDistances.reduce((acc, v) => acc + v, 0) / brickToMeshDistances.length
+      : 0;
+    const meshMean = meshToBrickDistances.length > 0
+      ? meshToBrickDistances.reduce((acc, v) => acc + v, 0) / meshToBrickDistances.length
+      : 0;
+    const meanLDU = (brickToMeshDistances.length > 0 && meshToBrickDistances.length > 0)
+      ? (brickMean + meshMean) / 2.0
+      : (brickMean || meshMean);
+
+    // Hausdorff: max of both directions
+    const maxBrick = brickToMeshDistances.length > 0 ? Math.max(...brickToMeshDistances) : 0;
+    const maxMesh = meshToBrickDistances.length > 0 ? Math.max(...meshToBrickDistances) : 0;
+    const maxLDU = Math.max(maxBrick, maxMesh);
+
+    // RMS across all evaluated surface points
     let sumSq = 0;
-    for (let i = 0; i < distances.length; i++) {
-      const d = distances[i];
-      sum += d;
-      sumSq += d * d;
+    for (let i = 0; i < allDistances.length; i++) {
+      sumSq += allDistances[i] * allDistances[i];
     }
+    const rmsLDU = Math.sqrt(sumSq / allDistances.length);
 
-    const n = distances.length;
-    const meanLDU = sum / n;
-    const rmsLDU = Math.sqrt(sumSq / n);
-    const maxLDU = distances[n - 1];
-    const p95Idx = Math.min(n - 1, Math.floor(n * 0.95));
-    const p95LDU = distances[p95Idx];
+    const p95Idx = Math.min(allDistances.length - 1, Math.floor(allDistances.length * 0.95));
+    const p95LDU = allDistances[p95Idx];
 
     // 1 LDU = 0.4 millimeters
     const LDU_TO_MM = 0.4;
@@ -469,7 +611,6 @@ export class MeshDistanceEvaluator {
     const p95Mm = p95LDU * LDU_TO_MM;
 
     const relativeError = targetHeightLDU > 0 ? (meanLDU / targetHeightLDU) * 100 : 0;
-    // Surface fidelity score: 100% when mean error is <= 2 LDU (~0.8mm)
     const surfaceFidelityScore = Math.max(0, Math.min(100, Math.round((1.0 - meanLDU / (LDU_STUD_PITCH * 1.5)) * 100)));
 
     return {
@@ -482,7 +623,7 @@ export class MeshDistanceEvaluator {
       maxDistanceMm: parseFloat(maxMm.toFixed(2)),
       p95DistanceMm: parseFloat(p95Mm.toFixed(2)),
       relativeError: parseFloat(relativeError.toFixed(2)),
-      sampleCount: n,
+      sampleCount: allDistances.length,
       meshTrianglesCount: triangles.length,
       surfaceFidelityScore
     };

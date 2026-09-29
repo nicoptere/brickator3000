@@ -56,6 +56,24 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
   const vectorsGroupRef = useRef<THREE.Group>(new THREE.Group());
   const sourceMeshGroupRef = useRef<THREE.Group>(new THREE.Group());
 
+  // Cached materials to avoid shader recompilation and memory leaks across ticks
+  const plasticMaterialRef = useRef<THREE.MeshStandardMaterial>(
+    new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      roughness: 0.28,
+      metalness: 0.04
+    })
+  );
+  const highlightMaterialRef = useRef<THREE.MeshStandardMaterial>(
+    new THREE.MeshStandardMaterial({
+      color: 0x38bdf8,
+      emissive: 0x38bdf8,
+      emissiveIntensity: 0.6,
+      roughness: 0.2,
+      metalness: 0.1
+    })
+  );
+
   // Initialize Three.js Scene
   useEffect(() => {
     const container = containerRef.current;
@@ -157,6 +175,8 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
         container.removeChild(rendererRef.current.domElement);
         rendererRef.current.dispose();
       }
+      plasticMaterialRef.current?.dispose();
+      highlightMaterialRef.current?.dispose();
     };
   }, []);
 
@@ -302,10 +322,14 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
       const hasStuds =
         brick.profile !== 'tile_flat' &&
         brick.profile !== 'slope_curved' &&
+        brick.profile !== 'slope_45' &&
+        brick.profile !== 'slope_33' &&
         brick.profile !== 'cheese' &&
         brick.profile !== 'macaroni' &&
         brick.profile !== 'tooth_creature' &&
-        brick.profile !== 'dish';
+        brick.profile !== 'dish' &&
+        brick.profile !== 'cone' &&
+        brick.profile !== 'wedge';
 
       if (hasStuds) {
         const halfW = (baseWX * LDU_STUD_PITCH) / 2.0;
@@ -327,11 +351,7 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
     }
 
     // Shared high-performance ABS plastic material with instance color support
-    const plasticMaterial = new THREE.MeshStandardMaterial({
-      color: 0xffffff,
-      roughness: 0.28,
-      metalness: 0.04
-    });
+    const plasticMaterial = plasticMaterialRef.current;
 
     for (const [, groupData] of geomGroups) {
       const count = groupData.instances.length;
@@ -370,13 +390,7 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
 
     // Dedicated highlight mesh overlay for newly placed brick
     if (newestBrickOverlay) {
-      const highlightMat = new THREE.MeshStandardMaterial({
-        color: 0x38bdf8,
-        emissive: 0x38bdf8,
-        emissiveIntensity: 0.6,
-        roughness: 0.2,
-        metalness: 0.1
-      });
+      const highlightMat = highlightMaterialRef.current;
       const highlightMesh = new THREE.Mesh(newestBrickOverlay.geom, highlightMat);
       highlightMesh.applyMatrix4(newestBrickOverlay.matrix);
       group.add(highlightMesh);

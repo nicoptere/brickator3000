@@ -117,6 +117,9 @@ export class PolishHarmonizer {
 
     // 2. Continuous Curve Merging: Merge two adjacent 1x2 curved slopes (11477) into 2x2 curved slope (15068)
     const processedIds = new Set<string>();
+    const numStudsX = grid.numStudsX;
+    const numStudsZ = grid.numStudsZ;
+
     for (const brick of Array.from(placedBricks.values())) {
       if (processedIds.has(brick.id)) continue;
 
@@ -142,10 +145,21 @@ export class PolishHarmonizer {
             candidate.islandId === brick.islandId
           ) {
             // Merge into 15068 (Slope Curved 2 x 2)
+            const minX = Math.min(bx, candidate.gridPos[0]);
+            const minZ = Math.min(bz, candidate.gridPos[1]);
+            const minY = by;
+
             brick.partId = '15068';
-            brick.name = 'Slope Curved 2 x 2';
-            brick.baseSize = [2, 2, 1];
-            brick.size = [2, 2, 1];
+            brick.name = 'Slope Brick Curved 2 x 2';
+            brick.gridPos = [minX, minZ, minY];
+            brick.baseSize = [2, 2, brick.baseSize ? brick.baseSize[2] : brick.size[2]];
+            brick.size = [2, 2, brick.size[2]];
+
+            // Recalculate 3D center in LDraw coordinates
+            const ldrawX = (minX + brick.size[0] / 2.0 - numStudsX / 2.0) * LDU_STUD_PITCH;
+            const ldrawZ = -((minZ + brick.size[1] / 2.0 - numStudsZ / 2.0) * LDU_STUD_PITCH);
+            const ldrawY = -(minY + brick.size[2]) * LDU_BRICK_HEIGHT;
+            brick.ldrawPos = [ldrawX, ldrawY, ldrawZ];
 
             // Re-map occupied cells of candidate to brick
             const [cx, cz, cy] = candidate.gridPos;
@@ -172,29 +186,51 @@ export class PolishHarmonizer {
     for (const brick of Array.from(placedBricks.values())) {
       if (processedIds.has(brick.id)) continue;
 
-      if (brick.profile === 'tile_flat' && (brick.partId === '3005' || brick.partId === '3068b' || brick.size[0] === 1 && brick.size[1] === 1)) {
+      if (brick.profile === 'tile_flat' && brick.size[0] === 1 && brick.size[1] === 1) {
         const [bx, bz, by] = brick.gridPos;
-        // Check +X neighbor
-        const nextId = occupiedCellToBrickId.get(this.cellKey(bx + 1, bz, by));
-        if (nextId && nextId !== brick.id) {
-          const nextBrick = placedBricks.get(nextId);
-          if (
-            nextBrick &&
-            nextBrick.profile === 'tile_flat' &&
-            nextBrick.size[0] === 1 &&
-            nextBrick.size[1] === 1 &&
-            nextBrick.colorHex === brick.colorHex &&
-            nextBrick.islandId === brick.islandId
-          ) {
-            brick.partId = '3069b';
-            brick.name = 'Tile 1 x 2';
-            brick.baseSize = [2, 1, 1];
-            brick.size = [2, 1, 1];
-            occupiedCellToBrickId.set(this.cellKey(bx + 1, bz, by), brick.id);
-            placedBricks.delete(nextBrick.id);
-            processedIds.add(brick.id);
-            processedIds.add(nextBrick.id);
-            smoothedTilesCount++;
+        // Check +X neighbor first, then +Z neighbor
+        const mergeDirections: Array<{
+          stepX: number;
+          stepZ: number;
+          newRot: number;
+          baseSize: [number, number, number];
+          newSize: [number, number, number];
+        }> = [
+          { stepX: 1, stepZ: 0, newRot: 90, baseSize: [1, 2, brick.baseSize ? brick.baseSize[2] : brick.size[2]], newSize: [2, 1, brick.size[2]] },
+          { stepX: 0, stepZ: 1, newRot: 0, baseSize: [1, 2, brick.baseSize ? brick.baseSize[2] : brick.size[2]], newSize: [1, 2, brick.size[2]] }
+        ];
+
+        for (const dir of mergeDirections) {
+          const nextId = occupiedCellToBrickId.get(this.cellKey(bx + dir.stepX, bz + dir.stepZ, by));
+          if (nextId && nextId !== brick.id && !processedIds.has(nextId)) {
+            const nextBrick = placedBricks.get(nextId);
+            if (
+              nextBrick &&
+              nextBrick.profile === 'tile_flat' &&
+              nextBrick.size[0] === 1 &&
+              nextBrick.size[1] === 1 &&
+              nextBrick.colorHex === brick.colorHex &&
+              nextBrick.islandId === brick.islandId
+            ) {
+              brick.partId = '3069b';
+              brick.name = 'Tile 1 x 2 Flat';
+              brick.rotation = dir.newRot;
+              brick.baseSize = dir.baseSize;
+              brick.size = dir.newSize;
+
+              occupiedCellToBrickId.set(this.cellKey(bx + dir.stepX, bz + dir.stepZ, by), brick.id);
+
+              const ldrawX = (bx + dir.newSize[0] / 2.0 - numStudsX / 2.0) * LDU_STUD_PITCH;
+              const ldrawZ = -((bz + dir.newSize[1] / 2.0 - numStudsZ / 2.0) * LDU_STUD_PITCH);
+              const ldrawY = -(by + dir.newSize[2]) * LDU_BRICK_HEIGHT;
+              brick.ldrawPos = [ldrawX, ldrawY, ldrawZ];
+
+              placedBricks.delete(nextBrick.id);
+              processedIds.add(brick.id);
+              processedIds.add(nextBrick.id);
+              smoothedTilesCount++;
+              break;
+            }
           }
         }
       }
@@ -325,45 +361,132 @@ export class PolishHarmonizer {
     for (const brick of placedBricks.values()) {
       if (!groundedBricks.has(brick.id)) {
         floatingBrickIds.push(brick.id);
+      }
+    }
 
-        // Remediation: Trace downwards from brick base to nearest grounded surface or build plate
-        const [bx, bz, by] = brick.gridPos;
-        let groundFound = false;
+    // Auto-remediation: Synthesize authentic vertical 1x1 support pillars (3005)
+    // from floating piece down to nearest grounded brick or build plate (y = 0)
+    for (const floatingId of floatingBrickIds) {
+      if (groundedBricks.has(floatingId)) continue; // Already grounded by previous pillar
 
-        for (let targetY = by - 1; targetY >= 0; targetY--) {
-          const checkKey = this.cellKey(bx, bz, targetY);
-          const supportId = occupiedCellToBrickId.get(checkKey);
+      const brick = placedBricks.get(floatingId);
+      if (!brick) continue;
 
-          if (supportId && groundedBricks.has(supportId)) {
-            // Anchor achieved via vertical column
-            groundedBricks.add(brick.id);
-            remediatedBricksCount++;
-            groundFound = true;
-            break;
+      const [bx, bz, by] = brick.gridPos;
+      let bestAnchorY = -1;
+      let bestAnchorX = bx;
+      let bestAnchorZ = bz;
+      let canRemediate = false;
+
+      // Check all (dx, dz) under the brick footprint
+      for (let dx = 0; dx < brick.size[0] && !canRemediate; dx++) {
+        for (let dz = 0; dz < brick.size[1] && !canRemediate; dz++) {
+          const checkX = bx + dx;
+          const checkZ = bz + dz;
+
+          let unobstructed = true;
+          let targetAnchorY = -1;
+
+          for (let y = by - 1; y >= 0; y--) {
+            const key = this.cellKey(checkX, checkZ, y);
+            const occId = occupiedCellToBrickId.get(key);
+            if (occId) {
+              if (groundedBricks.has(occId)) {
+                targetAnchorY = y;
+              } else {
+                unobstructed = false;
+              }
+              break;
+            }
+            if (y === 0) {
+              targetAnchorY = 0;
+            }
           }
 
-          if (targetY === 0) {
-            // Can be directly supported to build plate
-            groundedBricks.add(brick.id);
-            remediatedBricksCount++;
-            groundFound = true;
-            break;
+          if (targetAnchorY >= 0 && unobstructed) {
+            bestAnchorY = targetAnchorY;
+            bestAnchorX = checkX;
+            bestAnchorZ = checkZ;
+            canRemediate = true;
           }
         }
+      }
 
-        if (!groundFound) {
-          // Check lateral grounded neighbors
-          const latNeighbors = adjacency.get(brick.id);
-          if (latNeighbors) {
-            for (const nId of latNeighbors) {
-              if (groundedBricks.has(nId)) {
-                groundedBricks.add(brick.id);
-                remediatedBricksCount++;
-                break;
+      if (canRemediate) {
+        const startPillarY = (bestAnchorY === 0 && !occupiedCellToBrickId.has(this.cellKey(bestAnchorX, bestAnchorZ, 0))) ? 0 : bestAnchorY + 1;
+        let pillarSuccess = true;
+        const pillarBricks: PlacedBrick[] = [];
+
+        for (let py = startPillarY; py < by; py++) {
+          const pKey = this.cellKey(bestAnchorX, bestAnchorZ, py);
+          if (occupiedCellToBrickId.has(pKey)) {
+            pillarSuccess = false;
+            break;
+          }
+
+          const supportId = `b_support_3005_${bestAnchorX}_${bestAnchorZ}_${py}`;
+          const ldrawX = (bestAnchorX + 0.5 - grid.numStudsX / 2.0) * LDU_STUD_PITCH;
+          const ldrawZ = -((bestAnchorZ + 0.5 - grid.numStudsZ / 2.0) * LDU_STUD_PITCH);
+          const ldrawY = -(py + 1) * LDU_BRICK_HEIGHT;
+
+          const supportBrick: PlacedBrick = {
+            id: supportId,
+            partId: '3005',
+            name: 'Brick 1 x 1 Support Column',
+            category: 'FILL',
+            profile: 'brick',
+            colorCode: brick.colorCode,
+            colorHex: brick.colorHex,
+            colorName: brick.colorName,
+            gridPos: [bestAnchorX, bestAnchorZ, py],
+            ldrawPos: [ldrawX, ldrawY, ldrawZ],
+            rotation: 0,
+            matrix: [1, 0, 0, 0, 1, 0, 0, 0, 1],
+            size: [1, 1, 1],
+            baseSize: [1, 1, 1],
+            stepIndex: brick.stepIndex,
+            growthPhase: 'CORE_EXPANSION',
+            clutchScore: 1.0,
+            parentBrickIds: [brick.id],
+            islandId: brick.islandId,
+            islandColorHex: brick.islandColorHex
+          };
+          pillarBricks.push(supportBrick);
+        }
+
+        if (pillarSuccess && pillarBricks.length > 0) {
+          for (const sb of pillarBricks) {
+            placedBricks.set(sb.id, sb);
+            occupiedCellToBrickId.set(this.cellKey(sb.gridPos[0], sb.gridPos[1], sb.gridPos[2]), sb.id);
+            groundedBricks.add(sb.id);
+            adjacency.set(sb.id, new Set());
+            underMap.set(sb.id, new Set());
+          }
+          // Propagate grounding through adjacency to the floating brick and its sub-assembly
+          groundedBricks.add(brick.id);
+          const subQueue = [brick.id];
+          while (subQueue.length > 0) {
+            const curr = subQueue.shift()!;
+            const nbrs = adjacency.get(curr);
+            if (nbrs) {
+              for (const nid of nbrs) {
+                if (!groundedBricks.has(nid)) {
+                  groundedBricks.add(nid);
+                  subQueue.push(nid);
+                }
               }
             }
           }
+          remediatedBricksCount++;
         }
+      }
+    }
+
+    // Recount remaining ungrounded bricks honestly
+    const remainingFloatingIds: string[] = [];
+    for (const b of placedBricks.values()) {
+      if (!groundedBricks.has(b.id)) {
+        remainingFloatingIds.push(b.id);
       }
     }
 
@@ -387,17 +510,18 @@ export class PolishHarmonizer {
 
     const interlockRatio = multiStudCount > 0 ? Math.round((interlockedCount / multiStudCount) * 100) : 100;
     const finalGroundedCount = groundedBricks.size;
-    const finalFloatingCount = totalBricks - finalGroundedCount;
+    const finalFloatingCount = remainingFloatingIds.length;
+    const totalCount = placedBricks.size;
 
     return {
       is100PercentGrounded: finalFloatingCount === 0,
-      totalBricks,
+      totalBricks: totalCount,
       groundedBricksCount: finalGroundedCount,
       floatingBricksCount: finalFloatingCount,
       remediatedBricksCount,
       interlockRatio,
       cantileverWarningsCount,
-      floatingBrickIds
+      floatingBrickIds: remainingFloatingIds
     };
   }
 }

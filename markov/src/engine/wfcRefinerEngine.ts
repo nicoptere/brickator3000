@@ -33,6 +33,7 @@ export class WFCRefinerEngine {
   private currentCategory: OMRCategory = 'universal';
   private tensorCache: Map<string, any> = new Map();
   private tensor: Record<string, Record<string, Array<{ partId: string; count: number; prob: number }>>>;
+  private probCache: Map<string, number> = new Map();
 
   constructor() {
     this.tensor = omrTensor as any;
@@ -47,6 +48,7 @@ export class WFCRefinerEngine {
     this.tensorCache.set(category, tensorData);
     this.currentCategory = category;
     this.tensor = tensorData;
+    this.probCache.clear();
   }
 
   /**
@@ -58,6 +60,7 @@ export class WFCRefinerEngine {
     if (this.tensorCache.has(category)) {
       this.currentCategory = category;
       this.tensor = this.tensorCache.get(category);
+      this.probCache.clear();
       return;
     }
 
@@ -76,26 +79,35 @@ export class WFCRefinerEngine {
       this.tensorCache.set(category, loaded);
       this.currentCategory = category;
       this.tensor = loaded;
+      this.probCache.clear();
     } catch (err) {
       console.warn(`Could not dynamically load OMR category tensor for ${category}, falling back to universal:`, err);
       this.currentCategory = 'universal';
       this.tensor = this.tensorCache.get('universal') || (omrTensor as any);
+      this.probCache.clear();
     }
   }
 
   /**
-   * Evaluates directional transition compatibility between two adjacent pieces.
+   * Evaluates directional transition compatibility between two adjacent pieces in O(1).
    */
   public getTransitionProbability(
     fromPartId: string,
     direction: '+X' | '-X' | '+Y' | '-Y' | '+Z' | '-Z',
     toPartId: string
   ): number {
-    const transitions = this.tensor[fromPartId]?.[direction];
-    if (!transitions) return 0.05; // Base unseen transition prior
+    const key = `${fromPartId}|${direction}|${toPartId}`;
+    const cached = this.probCache.get(key);
+    if (cached !== undefined) return cached;
 
-    const match = transitions.find((t) => t.partId === toPartId);
-    return match ? match.prob : 0.01;
+    const transitions = this.tensor[fromPartId]?.[direction];
+    let prob = 0.05;
+    if (transitions) {
+      const match = transitions.find((t) => t.partId === toPartId);
+      prob = match ? match.prob : 0.01;
+    }
+    this.probCache.set(key, prob);
+    return prob;
   }
 
   /**

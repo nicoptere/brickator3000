@@ -264,6 +264,7 @@ export const MarkovStudio: React.FC = () => {
     if (!engine || bricks.length === 0 || !grid) return;
     const rep = engine.verifyBuildability();
     setBuildabilityReport(rep);
+    setBricks(Array.from(engine.placedBricks.values()));
   };
 
   // Switch category OMR profile

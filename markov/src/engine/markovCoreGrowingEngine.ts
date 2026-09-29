@@ -209,19 +209,22 @@ export class MarkovCoreGrowingEngine {
         if (cell) {
           colorCode = cell.colorCode;
           colorName = cell.colorName;
-          const cleanHex = cell.colorHex.replace('#', '');
-          sumR += parseInt(cleanHex.substring(0, 2), 16) || 200;
-          sumG += parseInt(cleanHex.substring(2, 4), 16) || 200;
-          sumB += parseInt(cleanHex.substring(4, 6), 16) || 200;
-          count++;
+          const hexStr = cell.colorHex.charCodeAt(0) === 35 ? cell.colorHex.slice(1) : cell.colorHex;
+          const num = parseInt(hexStr, 16);
+          if (!isNaN(num)) {
+            sumR += (num >> 16) & 255;
+            sumG += (num >> 8) & 255;
+            sumB += num & 255;
+            count++;
+          }
         }
       }
 
       if (count > 0) {
-        const avgR = Math.round(sumR / count);
-        const avgG = Math.round(sumG / count);
-        const avgB = Math.round(sumB / count);
-        colorHex = `#${avgR.toString(16).padStart(2, '0')}${avgG.toString(16).padStart(2, '0')}${avgB.toString(16).padStart(2, '0')}`;
+        const avgR = (sumR / count) | 0;
+        const avgG = (sumG / count) | 0;
+        const avgB = (sumB / count) | 0;
+        colorHex = `#${((1 << 24) + (avgR << 16) + (avgG << 8) + avgB).toString(16).slice(1)}`;
       }
     }
 
@@ -985,10 +988,12 @@ export class MarkovCoreGrowingEngine {
     if (islands.length === 0) {
       return this.solveAll(maxStepsPerIsland);
     }
-    let lastRes = this.step();
-    for (const isl of islands) {
-      lastRes = this.solveSingleIsland(isl.id, maxStepsPerIsland);
+    let lastRes: GrowthStepResult = this.solveSingleIsland(islands[0].id, maxStepsPerIsland);
+    for (let i = 1; i < islands.length; i++) {
+      lastRes = this.solveSingleIsland(islands[i].id, maxStepsPerIsland);
     }
+    this.harmonizeNeighborhoods();
+    this.verifyBuildability();
     return lastRes;
   }
 }
