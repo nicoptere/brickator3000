@@ -196,6 +196,8 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           onFileUpload={onFileUpload}
           sourceMeshMode={sourceMeshMode}
           onChangeSourceMeshMode={onChangeSourceMeshMode}
+          voxelizeMode={options.voxelizeMode || 'surface'}
+          onChangeVoxelizeMode={(m) => onChangeOptions({ voxelizeMode: m })}
           isLoading={isLoading}
         />
 

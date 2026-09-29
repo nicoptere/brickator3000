@@ -191,6 +191,7 @@ export interface MarkovEngineOptions {
   targetHeightPlates?: number;
   targetHeightBricks?: number;
   colorMode?: 'actual' | 'wfc_hierarchy' | 'island_components';
+  voxelizeMode?: 'surface' | 'solid'; // 'surface' = voxels that hit/contain mesh surface (default); 'solid' = volumetric solid filling
   numHeads?: number; // Number of parallel Growth Heads (1 to 16, default: 4)
   batchStepSize?: number; // Number of placements per tick
 }

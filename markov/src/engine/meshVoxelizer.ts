@@ -28,6 +28,7 @@ export interface VoxelizerOptions {
   pitchLDU?: number; // 20 LDU = 1 stud
   brickHeightLDU?: number; // 24 LDU = 1 brick (1*1*1 brick height)
   plateHeightLDU?: number; // 8 LDU = 1 plate (for legacy compatibility)
+  voxelizeMode?: 'surface' | 'solid'; // 'surface' = only voxels that hit/contain mesh surface (default); 'solid' = volumetric solid filling
 }
 
 // Standard official LEGO palette for fallback color code mapping
@@ -846,11 +847,121 @@ export class MeshVoxelizer {
     const centerX = minGeom.x + 0.5 * size.x;
     const centerZ = minGeom.z + 0.5 * size.z;
 
-    // Phase 1: If multiple islands are detected, voxelize each isolated component separately
-    if (islands.length > 1) {
+    const voxelizeMode = options.voxelizeMode || 'surface';
+
+    if (voxelizeMode === 'surface') {
+      // Direct Triangle Surface Voxelization:
+      // Preserves ONLY the voxels that hit/contain the mesh surface.
+      // Eliminates occlusion: prevents open shells (car body, fenders) from extruding
+      // solid blocks downwards over wheel wells, chassis gaps, or windows.
+      const stepSize = studPitchLDU * invScale * 0.45;
+      const vA = new THREE.Vector3();
+      const vB = new THREE.Vector3();
+      const vC = new THREE.Vector3();
+      const uvA = new THREE.Vector2();
+      const uvB = new THREE.Vector2();
+      const uvC = new THREE.Vector2();
+      const edge1 = new THREE.Vector3();
+      const edge2 = new THREE.Vector3();
+      const sampleP = new THREE.Vector3();
+
       for (const isl of islands) {
         isl.mesh.updateMatrixWorld(true);
-        const islBbox = isl.bbox;
+        const geom = isl.geometry;
+        const pos = geom.attributes.position;
+        const norm = geom.attributes.normal;
+        const col = geom.attributes.color;
+        const uv = geom.attributes.uv;
+
+        // Texture map if available on child mesh
+        let decodedTex: any = null;
+        object.traverse((c) => {
+          if ((c as any).userData?.decodedTexture && !decodedTex) {
+            decodedTex = (c as any).userData.decodedTexture;
+          }
+        });
+
+        for (let i = 0; i < pos.count; i += 3) {
+          vA.set(pos.getX(i), pos.getY(i), pos.getZ(i));
+          vB.set(pos.getX(i + 1), pos.getY(i + 1), pos.getZ(i + 1));
+          vC.set(pos.getX(i + 2), pos.getY(i + 2), pos.getZ(i + 2));
+
+          edge1.subVectors(vB, vA);
+          edge2.subVectors(vC, vA);
+
+          const len1 = edge1.length();
+          const len2 = edge2.length();
+          const steps1 = Math.max(1, Math.ceil(len1 / stepSize));
+          const steps2 = Math.max(1, Math.ceil(len2 / stepSize));
+
+          let nX = 0, nY = 1, nZ = 0;
+          if (norm) {
+            nX = (norm.getX(i) + norm.getX(i + 1) + norm.getX(i + 2)) / 3;
+            nY = (norm.getY(i) + norm.getY(i + 1) + norm.getY(i + 2)) / 3;
+            nZ = (norm.getZ(i) + norm.getZ(i + 1) + norm.getZ(i + 2)) / 3;
+          }
+
+          if (uv) {
+            uvA.set(uv.getX(i), uv.getY(i));
+            uvB.set(uv.getX(i + 1), uv.getY(i + 1));
+            uvC.set(uv.getX(i + 2), uv.getY(i + 2));
+          }
+
+          for (let u = 0; u <= steps1; u++) {
+            const fu = u / steps1;
+            for (let v = 0; v <= steps2; v++) {
+              const fv = v / steps2;
+              if (fu + fv > 1.0) continue;
+
+              sampleP.copy(vA).addScaledVector(edge1, fu).addScaledVector(edge2, fv);
+
+              const gridX = Math.floor(((sampleP.x - centerX) / (studPitchLDU * invScale)) + numStudsX * 0.5);
+              const gridZ = Math.floor(((sampleP.z - centerZ) / (studPitchLDU * invScale)) + numStudsZ * 0.5);
+              const gridY = Math.floor(((sampleP.y - minGeom.y) * scaleFactor) / brickHeightLDU);
+
+              if (gridX >= 0 && gridX < numStudsX && gridZ >= 0 && gridZ < numStudsZ && gridY >= 0 && gridY < numPlatesY) {
+                const cell = grid[gridX][gridZ][gridY];
+                if (!cell.occupied) {
+                  cell.occupied = true;
+                  occupiedCount++;
+                  cell.islandId = isl.id;
+                  cell.islandColorHex = isl.colorHex;
+                  cell.colorHex = isl.colorHex;
+                  cell.colorName = isl.name;
+                  cell.normal = [nX, nY, nZ];
+
+                  // Direct color sampling if vertex colors exist
+                  if (col) {
+                    const fw = 1.0 - fu - fv;
+                    const r = fw * col.getX(i) + fu * col.getX(i + 1) + fv * col.getX(i + 2);
+                    const g = fw * col.getY(i) + fu * col.getY(i + 1) + fv * col.getY(i + 2);
+                    const b = fw * col.getZ(i) + fu * col.getZ(i + 1) + fv * col.getZ(i + 2);
+                    const toHex = (c: number) => Math.round(Math.min(1, Math.max(0, c)) * 255).toString(16).padStart(2, '0');
+                    cell.colorHex = `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+                  } else if (decodedTex && uv) {
+                    const fw = 1.0 - fu - fv;
+                    const curU = fw * uvA.x + fu * uvB.x + fv * uvC.x;
+                    const curV = fw * uvA.y + fu * uvB.y + fv * uvC.y;
+                    const px = Math.min(decodedTex.width - 1, Math.max(0, Math.floor(((curU % 1 + 1) % 1) * decodedTex.width)));
+                    const py = Math.min(decodedTex.height - 1, Math.max(0, Math.floor((1 - ((curV % 1 + 1) % 1)) * decodedTex.height)));
+                    const idx = (py * decodedTex.width + px) * 4;
+                    if (decodedTex.pixels[idx + 3] > 20) {
+                      const toHex = (c: number) => c.toString(16).padStart(2, '0');
+                      cell.colorHex = `#${toHex(decodedTex.pixels[idx])}${toHex(decodedTex.pixels[idx + 1])}${toHex(decodedTex.pixels[idx + 2])}`;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    } else {
+      // Phase 1: If multiple islands are detected, voxelize each isolated component separately
+      if (islands.length > 1) {
+        for (const isl of islands) {
+          isl.mesh.updateMatrixWorld(true);
+          const islBbox = isl.bbox;
 
         const minX = Math.max(0, Math.floor(((islBbox.min.x - centerX) / (studPitchLDU * invScale)) + numStudsX * 0.5));
         const maxX = Math.min(numStudsX - 1, Math.ceil(((islBbox.max.x - centerX) / (studPitchLDU * invScale)) + numStudsX * 0.5));
@@ -1018,6 +1129,7 @@ export class MeshVoxelizer {
         }
       }
     }
+  }
 
     // Robust Fallback if raycasting caught no hits
     if (occupiedCount === 0) {

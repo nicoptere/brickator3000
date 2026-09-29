@@ -11,6 +11,8 @@ interface ModelSelectorProps {
   onFileUpload: (file: File) => void;
   sourceMeshMode: SourceMeshMode;
   onChangeSourceMeshMode: (m: SourceMeshMode) => void;
+  voxelizeMode?: 'surface' | 'solid';
+  onChangeVoxelizeMode?: (m: 'surface' | 'solid') => void;
   isLoading: boolean;
 }
 
@@ -20,6 +22,8 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
   onFileUpload,
   sourceMeshMode,
   onChangeSourceMeshMode,
+  voxelizeMode = 'surface',
+  onChangeVoxelizeMode,
   isLoading
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -112,6 +116,47 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
           }}
         />
       </div>
+
+      {onChangeVoxelizeMode && (
+        <div>
+          <label
+            style={{
+              fontSize: 11,
+              fontWeight: 700,
+              color: '#94a3b8',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              display: 'block',
+              marginBottom: 6
+            }}
+          >
+            Voxel Shell Mode
+          </label>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 6, marginBottom: 10 }}>
+            {[
+              { id: 'surface', label: '🌐 Surface (Hits Only)' },
+              { id: 'solid', label: '🧱 Solid Volume' }
+            ].map((vm) => (
+              <button
+                key={vm.id}
+                onClick={() => onChangeVoxelizeMode(vm.id as 'surface' | 'solid')}
+                style={{
+                  padding: '6px 4px',
+                  borderRadius: 6,
+                  border: 'none',
+                  fontSize: 10,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  backgroundColor: voxelizeMode === vm.id ? '#0284c7' : '#1e293b',
+                  color: voxelizeMode === vm.id ? '#ffffff' : '#94a3b8'
+                }}
+              >
+                {vm.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div>
         <label

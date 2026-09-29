@@ -87,7 +87,8 @@ export const MarkovStudio: React.FC = () => {
     enableStudlessTopFinish: true,
     directRGBSampling: true,
     batchStepSize: 16,
-    colorMode: 'island_components'
+    colorMode: 'island_components',
+    voxelizeMode: 'surface'
   });
 
   const [stats, setStats] = useState({
@@ -122,7 +123,8 @@ export const MarkovStudio: React.FC = () => {
 
         setLoadingMessage('Voxelizing into 1*1*1 bricks & isolating mesh components...');
         const newGrid = MeshVoxelizer.voxelizeObject(modelObj, {
-          targetHeightBricks: heightBricks
+          targetHeightBricks: heightBricks,
+          voxelizeMode: opts.voxelizeMode || 'surface'
         });
 
         const newEngine = new MarkovCoreGrowingEngine(newGrid, opts);
@@ -144,7 +146,10 @@ export const MarkovStudio: React.FC = () => {
       } catch (err: any) {
         console.error('Failed to initialize model:', err);
         const fallbackObj = MeshVoxelizer.createSampleModel('car');
-        const newGrid = MeshVoxelizer.voxelizeObject(fallbackObj, { targetHeightBricks: heightBricks });
+        const newGrid = MeshVoxelizer.voxelizeObject(fallbackObj, {
+          targetHeightBricks: heightBricks,
+          voxelizeMode: opts.voxelizeMode || 'surface'
+        });
         const newEngine = new MarkovCoreGrowingEngine(newGrid, opts);
         setSourceModel(fallbackObj);
         setGrid(newGrid);
