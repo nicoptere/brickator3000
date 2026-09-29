@@ -10,7 +10,8 @@
 import { PieceCategory, PieceProfile, StudConnection } from './types';
 
 export const LDU_STUD_PITCH = 20.0; // 1 Stud in X and Z = 20 LDU
-export const LDU_PLATE_HEIGHT = 8.0; // 1 Plate in Y = 8 LDU (1 Brick = 3 Plates = 24 LDU)
+export const LDU_BRICK_HEIGHT = 24.0; // 1 Brick in Y = 24 LDU (1*1*1 brick height = 3 plates)
+export const LDU_PLATE_HEIGHT = 8.0; // 1 Plate in Y = 8 LDU
 
 export interface ConnectivitySignature {
   signatureId: string;

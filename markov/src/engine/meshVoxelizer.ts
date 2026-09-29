@@ -20,11 +20,14 @@ import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader.js';
 import { VoxelGrid, VoxelCell } from './types';
 import { MultiResolutionLattice } from './multiResolutionLattice';
+import { MeshIslandSegmenter, MeshIsland } from './meshIslandSegmenter';
 
 export interface VoxelizerOptions {
-  targetHeightPlates?: number;
+  targetHeightBricks?: number; // Target model height in 1*1*1 bricks (e.g. 16, 24, 32, 64)
+  targetHeightPlates?: number; // Legacy alias: if targetHeightPlates is provided, targetHeightBricks = Math.round(targetHeightPlates / 3) or targetHeightBricks
   pitchLDU?: number; // 20 LDU = 1 stud
-  plateHeightLDU?: number; // 8 LDU = 1 plate
+  brickHeightLDU?: number; // 24 LDU = 1 brick (1*1*1 brick height)
+  plateHeightLDU?: number; // 8 LDU = 1 plate (for legacy compatibility)
 }
 
 // Standard official LEGO palette for fallback color code mapping
@@ -777,12 +780,12 @@ export class MeshVoxelizer {
     const size = new THREE.Vector3();
     bbox.getSize(size);
 
-    const targetHeightPlates = options.targetHeightPlates || 24;
-    const plateHeightLDU = options.plateHeightLDU || 8.0;
+    const targetHeightBricks = options.targetHeightBricks || (options.targetHeightPlates ? Math.max(1, Math.round(options.targetHeightPlates / 3)) : 16);
+    const brickHeightLDU = options.brickHeightLDU || 24.0;
     const studPitchLDU = options.pitchLDU || 20.0;
 
-    // Aspect ratio in LDU: 1 stud = 20 LDU, 1 plate = 8 LDU
-    const targetHeightLDU = targetHeightPlates * plateHeightLDU;
+    // Aspect ratio in LDU: 1 stud = 20 LDU, 1 brick = 24 LDU (1*1*1 Bricks)
+    const targetHeightLDU = targetHeightBricks * brickHeightLDU;
     const scaleFactor = size.y > 0 ? targetHeightLDU / size.y : 1.0;
 
     const scaledWidthLDU = size.x * scaleFactor;
@@ -790,7 +793,7 @@ export class MeshVoxelizer {
 
     const numStudsX = Math.max(3, Math.ceil(scaledWidthLDU / studPitchLDU));
     const numStudsZ = Math.max(3, Math.ceil(scaledDepthLDU / studPitchLDU));
-    const numPlatesY = Math.max(3, targetHeightPlates);
+    const numPlatesY = Math.max(2, targetHeightBricks); // 1 unit in Y = 1*1*1 brick!
 
     // Initialize 3D grid
     const grid: VoxelCell[][][] = [];
@@ -831,6 +834,10 @@ export class MeshVoxelizer {
       }
     });
 
+    // Prepass: Topological half-edge connected island extraction
+    const islands = MeshIslandSegmenter.segmentObject(object);
+    console.log(`[MeshVoxelizer] Detected ${islands.length} topological mesh islands via half-edge prepass.`);
+
     const raycaster = new THREE.Raycaster();
     const invScale = 1.0 / scaleFactor;
     const minGeom = bbox.min;
@@ -839,20 +846,93 @@ export class MeshVoxelizer {
     const centerX = minGeom.x + 0.5 * size.x;
     const centerZ = minGeom.z + 0.5 * size.z;
 
+    // Phase 1: If multiple islands are detected, voxelize each isolated component separately
+    if (islands.length > 1) {
+      for (const isl of islands) {
+        isl.mesh.updateMatrixWorld(true);
+        const islBbox = isl.bbox;
+
+        const minX = Math.max(0, Math.floor(((islBbox.min.x - centerX) / (studPitchLDU * invScale)) + numStudsX * 0.5));
+        const maxX = Math.min(numStudsX - 1, Math.ceil(((islBbox.max.x - centerX) / (studPitchLDU * invScale)) + numStudsX * 0.5));
+        const minZ = Math.max(0, Math.floor(((islBbox.min.z - centerZ) / (studPitchLDU * invScale)) + numStudsZ * 0.5));
+        const maxZ = Math.min(numStudsZ - 1, Math.ceil(((islBbox.max.z - centerZ) / (studPitchLDU * invScale)) + numStudsZ * 0.5));
+
+        for (let x = minX; x <= maxX; x++) {
+          for (let z = minZ; z <= maxZ; z++) {
+            const sampleX = centerX + (x + 0.5 - numStudsX * 0.5) * (studPitchLDU * invScale);
+            const sampleZ = centerZ + (z + 0.5 - numStudsZ * 0.5) * (studPitchLDU * invScale);
+
+            const rayOrigin = new THREE.Vector3(sampleX, bbox.max.y + 10.0, sampleZ);
+            const rayDir = new THREE.Vector3(0, -1, 0);
+            raycaster.set(rayOrigin, rayDir);
+
+            const rawHits = raycaster.intersectObject(isl.mesh, true);
+            const hits: THREE.Intersection[] = [];
+            for (const h of rawHits) {
+              if (hits.length === 0 || Math.abs(hits[hits.length - 1].point.y - h.point.y) > 0.001) {
+                hits.push(h);
+              }
+            }
+
+            if (hits.length % 2 === 1) {
+              hits.push({
+                point: new THREE.Vector3(sampleX, Math.max(minGeom.y, islBbox.min.y), sampleZ),
+                distance: rayOrigin.y - Math.max(minGeom.y, islBbox.min.y),
+                object: hits[0].object,
+                face: hits[0].face,
+                uv: hits[0].uv
+              } as THREE.Intersection);
+            }
+
+            if (hits.length >= 2) {
+              for (let i = 0; i < hits.length - 1; i += 2) {
+                const topEnter = Math.max(hits[i].point.y, hits[i + 1].point.y);
+                const bottomExit = Math.min(hits[i].point.y, hits[i + 1].point.y);
+
+                const topBrick = Math.min(
+                  numPlatesY - 1,
+                  Math.floor(((topEnter - minGeom.y) * scaleFactor) / brickHeightLDU)
+                );
+                const bottomBrick = Math.max(
+                  0,
+                  Math.floor(((bottomExit - minGeom.y) * scaleFactor) / brickHeightLDU)
+                );
+
+                for (let y = bottomBrick; y <= topBrick; y++) {
+                  const cell = grid[x][z][y];
+                  if (!cell.occupied) {
+                    cell.occupied = true;
+                    occupiedCount++;
+                  }
+                  cell.islandId = isl.id;
+                  cell.islandColorHex = isl.colorHex;
+                  cell.colorHex = isl.colorHex; // Color-code each part with its distinct random color
+                  cell.colorName = isl.name;
+
+                  if (hits[0].face) {
+                    const normalMatrix = new THREE.Matrix3().getNormalMatrix(hits[0].object.matrixWorld);
+                    const norm = hits[0].face.normal.clone().applyMatrix3(normalMatrix).normalize();
+                    cell.normal = [norm.x, norm.y, norm.z];
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Phase 2: Full volume raycast fallback to ensure 100% solid watertight envelope
     for (let x = 0; x < numStudsX; x++) {
       for (let z = 0; z < numStudsZ; z++) {
-        // Exact symmetric centering of voxel columns relative to 3D mesh
         const sampleX = centerX + (x + 0.5 - numStudsX * 0.5) * (studPitchLDU * invScale);
         const sampleZ = centerZ + (z + 0.5 - numStudsZ * 0.5) * (studPitchLDU * invScale);
 
-        // Cast ray downwards from above
         const rayOrigin = new THREE.Vector3(sampleX, bbox.max.y + 10.0, sampleZ);
         const rayDir = new THREE.Vector3(0, -1, 0);
         raycaster.set(rayOrigin, rayDir);
 
         const rawHits = raycaster.intersectObject(object, true);
-
-        // Deduplicate close hits along ray
         const hits: THREE.Intersection[] = [];
         for (const h of rawHits) {
           if (hits.length === 0 || Math.abs(hits[hits.length - 1].point.y - h.point.y) > 0.001) {
@@ -860,8 +940,6 @@ export class MeshVoxelizer {
           }
         }
 
-        // If odd number of hits, mesh is open at the bottom (e.g. car chassis, scan bust, castle terrain)
-        // Append ground contact hit at minGeom.y so volume is solid down to ground plane
         if (hits.length % 2 === 1) {
           hits.push({
             point: new THREE.Vector3(sampleX, minGeom.y, sampleZ),
@@ -877,28 +955,26 @@ export class MeshVoxelizer {
             const topEnter = Math.max(hits[i].point.y, hits[i + 1].point.y);
             const bottomExit = Math.min(hits[i].point.y, hits[i + 1].point.y);
 
-            const topPlate = Math.min(
+            const topBrick = Math.min(
               numPlatesY - 1,
-              Math.floor(((topEnter - minGeom.y) * scaleFactor) / plateHeightLDU)
+              Math.floor(((topEnter - minGeom.y) * scaleFactor) / brickHeightLDU)
             );
-            const bottomPlate = Math.max(
+            const bottomBrick = Math.max(
               0,
-              Math.floor(((bottomExit - minGeom.y) * scaleFactor) / plateHeightLDU)
+              Math.floor(((bottomExit - minGeom.y) * scaleFactor) / brickHeightLDU)
             );
 
-            for (let y = bottomPlate; y <= topPlate; y++) {
+            for (let y = bottomBrick; y <= topBrick; y++) {
               const cell = grid[x][z][y];
               if (!cell.occupied) {
                 cell.occupied = true;
                 occupiedCount++;
 
-                const plateWorldY = minGeom.y + (y + 0.5) * (plateHeightLDU * invScale);
-
-                // Find nearest surface hit for authentic color and normal
+                const brickWorldY = minGeom.y + (y + 0.5) * (brickHeightLDU * invScale);
                 let nearestHit = hits[0];
-                let minDist = Math.abs(nearestHit.point.y - plateWorldY);
+                let minDist = Math.abs(nearestHit.point.y - brickWorldY);
                 for (let k = 1; k < hits.length; k++) {
-                  const d = Math.abs(hits[k].point.y - plateWorldY);
+                  const d = Math.abs(hits[k].point.y - brickWorldY);
                   if (d < minDist) {
                     minDist = d;
                     nearestHit = hits[k];
@@ -906,16 +982,33 @@ export class MeshVoxelizer {
                 }
 
                 if (nearestHit.face) {
-                  // Transform normal to world coords
                   const normalMatrix = new THREE.Matrix3().getNormalMatrix(nearestHit.object.matrixWorld);
                   const norm = nearestHit.face.normal.clone().applyMatrix3(normalMatrix).normalize();
                   cell.normal = [norm.x, norm.y, norm.z];
                 }
 
                 const sampled = this.sampleColorFromHit(nearestHit);
-                cell.colorHex = sampled.colorHex;
-                cell.colorCode = sampled.colorCode;
-                cell.colorName = sampled.colorName;
+                // If not assigned to an island yet, assign to closest island by center
+                if (cell.islandId === undefined && islands.length > 0) {
+                  let closestIsl = islands[0];
+                  let minIslDist = Infinity;
+                  const vPos = new THREE.Vector3(sampleX, brickWorldY, sampleZ);
+                  for (const isl of islands) {
+                    const d = vPos.distanceTo(isl.center);
+                    if (d < minIslDist) {
+                      minIslDist = d;
+                      closestIsl = isl;
+                    }
+                  }
+                  cell.islandId = closestIsl.id;
+                  cell.islandColorHex = closestIsl.colorHex;
+                  cell.colorHex = closestIsl.colorHex;
+                  cell.colorName = closestIsl.name;
+                } else if (cell.islandId === undefined) {
+                  cell.colorHex = sampled.colorHex;
+                  cell.colorCode = sampled.colorCode;
+                  cell.colorName = sampled.colorName;
+                }
               }
             }
           }
@@ -959,7 +1052,8 @@ export class MeshVoxelizer {
         min: [0, 0, 0],
         max: [numStudsX, numStudsZ, numPlatesY]
       },
-      unitScale: studPitchLDU
+      unitScale: studPitchLDU,
+      islands
     };
 
     // Analyze topological distance field, lattice slope, and curvature

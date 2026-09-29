@@ -56,6 +56,8 @@ export interface VoxelCell {
   curvatureClass: CurvatureClass;
   assignedBrickId?: string;
   assignedCategory?: PieceCategory;
+  islandId?: number; // Prepass topological half-edge island component ID
+  islandColorHex?: string; // Assigned distinct random color for this component
 }
 
 export interface VoxelGrid {
@@ -71,6 +73,7 @@ export interface VoxelGrid {
     max: [number, number, number];
   };
   unitScale: number; // LDU units per plate/stud
+  islands?: any[]; // Prepass topological half-edge islands
 }
 
 export interface StudConnection {
@@ -131,7 +134,20 @@ export interface PlacedBrick {
   clutchScore: number;
   parentBrickIds: string[];
   headId?: number; // Index of the Growth Head that placed this piece
+  scaleN?: 16 | 8 | 4 | 2 | 1; // Hierarchical WFC resolution level
+  scaleColorHex?: string; // Distinct debug color for WFC N= hierarchy level
+  islandId?: number; // Prepass topological half-edge island component ID
+  islandColorHex?: string; // Random distinct color assigned to this island
 }
+
+export const WFC_SCALE_COLORS: Record<number, string> = {
+  16: '#1e40af', // Deep Blue (N = 16 Macro Base)
+  8: '#2563eb',  // Royal Blue (N = 8 Large Core Bricks 2x8, 2x6, 2x4)
+  4: '#f59e0b',  // Vibrant Amber (N = 4 Mid Bricks 2x3, 2x2, 1x4, 1x2)
+  2: '#ec4899',  // Vibrant Magenta (N = 2 Boundary Slopes, Curves, Macaroni, Dishes)
+  1: '#10b981',  // Emerald Green (N = 1 Unit 1x1x1 Bricks 3005)
+  0: '#06b6d4',  // Cyan (Top Studless Tiles 3068b, 3069b, 2431)
+};
 
 export interface FrontierPoint {
   x: number;
@@ -173,6 +189,8 @@ export interface MarkovEngineOptions {
   randomSeed?: number;
   maxSteps?: number;
   targetHeightPlates?: number;
+  targetHeightBricks?: number;
+  colorMode?: 'actual' | 'wfc_hierarchy' | 'island_components';
   numHeads?: number; // Number of parallel Growth Heads (1 to 16, default: 4)
   batchStepSize?: number; // Number of placements per tick
 }

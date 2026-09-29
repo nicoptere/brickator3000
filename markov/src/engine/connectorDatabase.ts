@@ -65,7 +65,7 @@ export class ConnectorDatabase {
         profile: item.profile as PieceProfile,
         baseWidthX: item.widthX,
         baseDepthZ: item.depthZ,
-        baseHeightY: item.heightY,
+        baseHeightY: Math.max(1, Math.round(item.heightY / 3)), // 1*1*1 Brick Units
         slopeClass: item.slopeClass as SlopeClass,
         slopeAngle: item.slopeAngle,
         baseHeading: 0,
@@ -77,11 +77,11 @@ export class ConnectorDatabase {
 
       // Custom offsets for special parts
       if (item.partId === '2357') {
-        // Corner brick 2x2 L-shape
+        // Corner brick 2x2 L-shape (1 brick tall)
         descriptor.customOccupiedCells = [
-          { dx: 0, dz: 0, dy: 0 }, { dx: 0, dz: 0, dy: 1 }, { dx: 0, dz: 0, dy: 2 },
-          { dx: 1, dz: 0, dy: 0 }, { dx: 1, dz: 0, dy: 1 }, { dx: 1, dz: 0, dy: 2 },
-          { dx: 0, dz: 1, dy: 0 }, { dx: 0, dz: 1, dy: 1 }, { dx: 0, dz: 1, dy: 2 }
+          { dx: 0, dz: 0, dy: 0 },
+          { dx: 1, dz: 0, dy: 0 },
+          { dx: 0, dz: 1, dy: 0 }
         ];
         descriptor.customTopStuds = [{ dx: 0, dz: 0 }, { dx: 1, dz: 0 }, { dx: 0, dz: 1 }];
         descriptor.customBottomTubes = [{ dx: 0, dz: 0 }, { dx: 1, dz: 0 }, { dx: 0, dz: 1 }];

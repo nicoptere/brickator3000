@@ -9,10 +9,10 @@
 
 import { PieceCategory, PieceProfile, CurvatureClass, SlopeClass, StudConnection } from './types';
 
-// Dimensions of local fingerprint volume (up to 4x4 studs x 3 plates = 48 bits, fits into BigInt)
-export const FP_WIDTH_X = 4;
-export const FP_DEPTH_Z = 4;
-export const FP_HEIGHT_Y = 3;
+// Dimensions of local fingerprint volume (supports up to 8x8 bricks footprint)
+export const FP_WIDTH_X = 8;
+export const FP_DEPTH_Z = 8;
+export const FP_HEIGHT_Y = 2;
 
 /**
  * Packs 3D relative coordinate into a bit index: [0, 47].

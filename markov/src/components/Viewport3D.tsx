@@ -13,7 +13,7 @@ import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { PlacedBrick, VoxelGrid } from '../engine/types';
-import { LDU_STUD_PITCH, LDU_PLATE_HEIGHT } from '../engine/connectivityDictionary';
+import { LDU_STUD_PITCH, LDU_BRICK_HEIGHT, LDU_PLATE_HEIGHT } from '../engine/connectivityDictionary';
 
 export type ViewportMode = 'FINAL_MODEL' | 'GROWING_CORE' | 'CORE_HEATMAP' | 'SLOPE_CURVATURE';
 export type SourceMeshMode = 'ghost' | 'wireframe' | 'none';
@@ -27,6 +27,7 @@ interface Viewport3DProps {
   onFrameModel?: () => void;
   sourceModel?: THREE.Object3D | null;
   sourceMeshMode?: SourceMeshMode;
+  colorMode?: 'actual' | 'wfc_hierarchy' | 'island_components';
 }
 
 export const Viewport3D: React.FC<Viewport3DProps> = ({
@@ -36,7 +37,8 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
   currentStepIndex,
   autoRotate,
   sourceModel = null,
-  sourceMeshMode = 'ghost'
+  sourceMeshMode = 'none',
+  colorMode = 'island_components'
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
@@ -76,7 +78,7 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
 
     const widthLDU = baseWX * LDU_STUD_PITCH;
     const depthLDU = baseDZ * LDU_STUD_PITCH;
-    const heightLDU = baseHY * LDU_PLATE_HEIGHT;
+    const heightLDU = baseHY * LDU_BRICK_HEIGHT;
 
     const cacheKey = `${brick.partId}_${brick.profile}_${baseWX}x${baseDZ}x${baseHY}`;
     let geom = geomCacheRef.current.get(cacheKey);
@@ -361,7 +363,7 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
     bbox.getSize(size);
 
     if (size.y > 0) {
-      const targetHeightLDU = grid.numPlatesY * LDU_PLATE_HEIGHT;
+      const targetHeightLDU = grid.numPlatesY * LDU_BRICK_HEIGHT;
       const scaleFactor = targetHeightLDU / size.y;
       cloned.scale.setScalar(scaleFactor);
       cloned.updateMatrixWorld(true);
@@ -416,7 +418,17 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
 
     for (const brick of visibleBricks) {
       const isNewest = mode === 'GROWING_CORE' && brick.stepIndex === currentStepIndex;
-      const mat = getBrickMaterial(brick.colorHex, isNewest);
+
+      let displayColor = brick.colorHex;
+      if (colorMode === 'island_components') {
+        displayColor = brick.islandColorHex || brick.colorHex;
+      } else if (colorMode === 'wfc_hierarchy') {
+        displayColor = brick.scaleColorHex || brick.colorHex;
+      } else {
+        displayColor = brick.colorHex;
+      }
+
+      const mat = getBrickMaterial(displayColor, isNewest);
       const pieceGeom = getPieceGeometry(brick);
 
       const brickGroup = new THREE.Group();
@@ -444,7 +456,7 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
 
         const halfW = (baseWX * LDU_STUD_PITCH) / 2.0;
         const halfD = (baseDZ * LDU_STUD_PITCH) / 2.0;
-        const topY = (baseHY * LDU_PLATE_HEIGHT) / 2.0;
+        const topY = (baseHY * LDU_BRICK_HEIGHT) / 2.0;
 
         for (let sx = 0; sx < baseWX; sx++) {
           for (let sz = 0; sz < baseDZ; sz++) {
@@ -460,15 +472,15 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
         }
       }
 
-      // Position in Three.js world coordinates
+      // Position in Three.js world coordinates (1*1*1 Bricks: 24 LDU per layer)
       // LDraw Y-down is inverted to Three.js Y-up
       const [lx, ly, lz] = brick.ldrawPos;
-      brickGroup.position.set(lx, -ly - (brick.size[2] * LDU_PLATE_HEIGHT) / 2.0, -lz);
+      brickGroup.position.set(lx, -ly - (brick.size[2] * LDU_BRICK_HEIGHT) / 2.0, -lz);
       brickGroup.rotation.y = -(brick.rotation * Math.PI) / 180.0;
 
       group.add(brickGroup);
     }
-  }, [bricks, currentStepIndex, mode]);
+  }, [bricks, currentStepIndex, mode, colorMode]);
 
   // Update Core Heatmap Group
   useEffect(() => {
@@ -482,7 +494,7 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
     group.visible = true;
 
     const { numStudsX, numStudsZ, numPlatesY, maxCoreDepth } = grid;
-    const boxGeo = new THREE.BoxGeometry(LDU_STUD_PITCH * 0.9, LDU_PLATE_HEIGHT * 0.9, LDU_STUD_PITCH * 0.9);
+    const boxGeo = new THREE.BoxGeometry(LDU_STUD_PITCH * 0.9, LDU_BRICK_HEIGHT * 0.9, LDU_STUD_PITCH * 0.9);
 
     for (let x = 0; x < numStudsX; x++) {
       for (let z = 0; z < numStudsZ; z++) {
@@ -506,7 +518,7 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
 
           const posX = (x + 0.5 - numStudsX / 2.0) * LDU_STUD_PITCH;
           const posZ = (z + 0.5 - numStudsZ / 2.0) * LDU_STUD_PITCH;
-          const posY = (y + 0.5) * LDU_PLATE_HEIGHT;
+          const posY = (y + 0.5) * LDU_BRICK_HEIGHT;
 
           m.position.set(posX, posY, posZ);
           group.add(m);
@@ -535,7 +547,7 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
 
           const posX = (x + 0.5 - numStudsX / 2.0) * LDU_STUD_PITCH;
           const posZ = (z + 0.5 - numStudsZ / 2.0) * LDU_STUD_PITCH;
-          const posY = (y + 0.5) * LDU_PLATE_HEIGHT;
+          const posY = (y + 0.5) * LDU_BRICK_HEIGHT;
 
           const origin = new THREE.Vector3(posX, posY, posZ);
           const dir = new THREE.Vector3(...cell.normal).normalize();

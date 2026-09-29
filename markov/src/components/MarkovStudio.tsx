@@ -49,10 +49,11 @@ const PHASE_LABELS: Record<string, { title: string; color: string }> = {
 };
 
 export const MarkovStudio: React.FC = () => {
-  const [modelType, setModelType] = useState<string>('duck');
-  const [targetHeightPlates, setTargetHeightPlates] = useState<number>(48); // Start with 16 bricks (48 plates)
+  const [modelType, setModelType] = useState<string>('beetle'); // Default to VW Beetle
+  const [targetHeightBricks, setTargetHeightBricks] = useState<number>(16); // Default 16 bricks (1*1*1 brick grid)
   const [viewportMode, setViewportMode] = useState<ViewportMode>('GROWING_CORE');
-  const [sourceMeshMode, setSourceMeshMode] = useState<SourceMeshMode>('ghost');
+  const [sourceMeshMode, setSourceMeshMode] = useState<SourceMeshMode>('none'); // Default: zero ghost mesh overlay
+  const [colorMode, setColorMode] = useState<'island_components' | 'wfc_hierarchy' | 'actual'>('island_components'); // Color code each part with distinct color
   const [autoRotate, setAutoRotate] = useState<boolean>(false);
   const [isMuted, setIsMuted] = useState<boolean>(false);
   const [speed, setSpeed] = useState<number>(6);
@@ -63,7 +64,7 @@ export const MarkovStudio: React.FC = () => {
 
   // Loading state
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [loadingMessage, setLoadingMessage] = useState<string>('Loading 3D model...');
+  const [loadingMessage, setLoadingMessage] = useState<string>('Loading 3D model & segmenting islands...');
 
   // Engine & Simulation State
   const [sourceModel, setSourceModel] = useState<THREE.Object3D | null>(null);
@@ -80,7 +81,8 @@ export const MarkovStudio: React.FC = () => {
     enableModernWeirdParts: true,
     enableStudlessTopFinish: true,
     directRGBSampling: true,
-    batchStepSize: 16
+    batchStepSize: 16,
+    colorMode: 'island_components'
   });
 
   const [stats, setStats] = useState({
@@ -94,17 +96,17 @@ export const MarkovStudio: React.FC = () => {
 
   // Re-build Voxel Grid from authentic 3D model or custom upload
   const initializeModel = useCallback(
-    async (type: string, heightPlates: number, opts: MarkovEngineOptions, customFile?: File) => {
+    async (type: string, heightBricks: number, opts: MarkovEngineOptions, customFile?: File) => {
       setIsPlaying(false);
       setIsLoading(true);
-      setLoadingMessage('Loading authentic 3D model & materials...');
+      setLoadingMessage('Loading authentic 3D model & extracting half-edge islands...');
 
       try {
         let modelObj: THREE.Object3D;
         if (customFile) {
           modelObj = await MeshVoxelizer.loadModel(customFile);
         } else {
-          const preset = MODEL_PRESETS[type] || MODEL_PRESETS['duck'];
+          const preset = MODEL_PRESETS[type] || MODEL_PRESETS['beetle'];
           try {
             modelObj = await MeshVoxelizer.loadModel(preset.url);
           } catch (err) {
@@ -113,9 +115,9 @@ export const MarkovStudio: React.FC = () => {
           }
         }
 
-        setLoadingMessage('Voxelizing 3D volume into 1x1 plates & sampling colors...');
+        setLoadingMessage('Voxelizing into 1*1*1 bricks & isolating mesh components...');
         const newGrid = MeshVoxelizer.voxelizeObject(modelObj, {
-          targetHeightPlates: heightPlates
+          targetHeightBricks: heightBricks
         });
 
         const newEngine = new MarkovCoreGrowingEngine(newGrid, opts);
@@ -136,8 +138,8 @@ export const MarkovStudio: React.FC = () => {
         });
       } catch (err: any) {
         console.error('Failed to initialize model:', err);
-        const fallbackObj = MeshVoxelizer.createSampleModel('duck');
-        const newGrid = MeshVoxelizer.voxelizeObject(fallbackObj, { targetHeightPlates: heightPlates });
+        const fallbackObj = MeshVoxelizer.createSampleModel('car');
+        const newGrid = MeshVoxelizer.voxelizeObject(fallbackObj, { targetHeightBricks: heightBricks });
         const newEngine = new MarkovCoreGrowingEngine(newGrid, opts);
         setSourceModel(fallbackObj);
         setGrid(newGrid);
@@ -151,23 +153,23 @@ export const MarkovStudio: React.FC = () => {
 
   // Initialize on mount
   useEffect(() => {
-    initializeModel(modelType, targetHeightPlates, options);
+    initializeModel(modelType, targetHeightBricks, options);
   }, []);
 
   const handleSelectModel = (type: string) => {
     setModelType(type);
-    initializeModel(type, targetHeightPlates, options);
+    initializeModel(type, targetHeightBricks, options);
   };
 
   const handleChangeHeight = (h: number) => {
-    setTargetHeightPlates(h);
+    setTargetHeightBricks(h);
     initializeModel(modelType, h, options);
   };
 
   const handleChangeOptions = (newOpts: Partial<MarkovEngineOptions>) => {
     const merged = { ...options, ...newOpts };
     setOptions(merged);
-    initializeModel(modelType, targetHeightPlates, merged);
+    initializeModel(modelType, targetHeightBricks, merged);
   };
 
   // Perform single step
@@ -246,7 +248,7 @@ export const MarkovStudio: React.FC = () => {
   };
 
   const handleReset = () => {
-    initializeModel(modelType, targetHeightPlates, options);
+    initializeModel(modelType, targetHeightBricks, options);
   };
 
   const handleExportLDR = () => {
@@ -257,7 +259,7 @@ export const MarkovStudio: React.FC = () => {
 
   const handleFileUpload = (file: File) => {
     setModelType('custom');
-    initializeModel('custom', targetHeightPlates, options, file);
+    initializeModel('custom', targetHeightBricks, options, file);
   };
 
   const currentPhaseInfo = PHASE_LABELS[phase] || { title: phase, color: '#38bdf8' };
@@ -283,6 +285,7 @@ export const MarkovStudio: React.FC = () => {
           autoRotate={autoRotate}
           sourceModel={sourceModel}
           sourceMeshMode={sourceMeshMode}
+          colorMode={colorMode}
         />
 
         {/* Top Floating HUD: Real-time BOM & Pipeline Analytics */}
@@ -427,8 +430,11 @@ export const MarkovStudio: React.FC = () => {
         modelType={modelType}
         onSelectModel={handleSelectModel}
         onFileUpload={handleFileUpload}
-        targetHeightPlates={targetHeightPlates}
+        targetHeightBricks={targetHeightBricks}
         onChangeHeight={handleChangeHeight}
+        colorMode={colorMode}
+        onChangeColorMode={setColorMode}
+        islands={grid?.islands}
         options={options}
         onChangeOptions={handleChangeOptions}
         viewportMode={viewportMode}

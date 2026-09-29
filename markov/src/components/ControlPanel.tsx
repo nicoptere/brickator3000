@@ -15,12 +15,17 @@ import React from 'react';
 import { MarkovEngineOptions } from '../engine/types';
 import { ViewportMode, SourceMeshMode } from './Viewport3D';
 
+export type ColorMode = 'island_components' | 'wfc_hierarchy' | 'actual';
+
 interface ControlPanelProps {
   modelType: string;
   onSelectModel: (type: string) => void;
   onFileUpload: (file: File) => void;
-  targetHeightPlates: number;
+  targetHeightBricks: number;
   onChangeHeight: (h: number) => void;
+  colorMode: ColorMode;
+  onChangeColorMode: (m: ColorMode) => void;
+  islands?: Array<{ id: number; triangleCount: number; colorHex: string; name?: string }>;
   options: MarkovEngineOptions;
   onChangeOptions: (opts: Partial<MarkovEngineOptions>) => void;
   viewportMode: ViewportMode;
@@ -49,8 +54,11 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   modelType,
   onSelectModel,
   onFileUpload,
-  targetHeightPlates,
+  targetHeightBricks,
   onChangeHeight,
+  colorMode,
+  onChangeColorMode,
+  islands,
   options,
   onChangeOptions,
   viewportMode,
@@ -77,11 +85,11 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const modelPresets = [
+    { id: 'beetle', label: '🚙 VW Beetle', badge: 'GLB' },
+    { id: 'mini', label: '🚗 Mini Cooper', badge: 'GLB' },
+    { id: 'concorde', label: '✈️ Concorde', badge: 'GLB' },
     { id: 'duck', label: '🦆 Duck', badge: 'GLB' },
     { id: 'dolphin', label: '🐬 Dolphin', badge: 'GLB' },
-    { id: 'mini', label: '🚗 Mini Cooper', badge: 'GLB' },
-    { id: 'beetle', label: '🚙 VW Beetle', badge: 'GLB' },
-    { id: 'concorde', label: '✈️ Concorde', badge: 'GLB' },
     { id: 'delacroix', label: '🗿 Delacroix', badge: 'PLY' },
     { id: 'prison', label: '🏰 Castle', badge: 'OBJ' }
   ];
@@ -295,7 +303,50 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           </div>
         </div>
 
-        {/* Section 3: Arbitrary Scale (Height in Plates / Bricks) */}
+        {/* Section 2.5: Color Scheme & Component Isolation */}
+        <div>
+          <label
+            style={{
+              fontSize: 12,
+              fontWeight: 700,
+              color: '#94a3b8',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              display: 'block',
+              marginBottom: 8
+            }}
+          >
+            Color Mode & Island Isolation
+          </label>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
+            {[
+              { id: 'island_components', label: '🏝️ Mesh Islands', desc: 'Random part colors' },
+              { id: 'wfc_hierarchy', label: '🎨 WFC Scale N=', desc: 'Macro to detail' },
+              { id: 'actual', label: '🌈 Source RGB', desc: 'Direct sampling' }
+            ].map((cm) => (
+              <button
+                key={cm.id}
+                onClick={() => onChangeColorMode(cm.id as ColorMode)}
+                style={{
+                  padding: '7px 4px',
+                  borderRadius: 6,
+                  border: 'none',
+                  fontSize: 10,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  backgroundColor: colorMode === cm.id ? '#8b5cf6' : '#1e293b',
+                  color: colorMode === cm.id ? '#ffffff' : '#94a3b8',
+                  transition: 'all 0.15s ease'
+                }}
+                title={cm.desc}
+              >
+                {cm.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Section 3: Arbitrary Scale (Height in 1*1*1 Bricks) */}
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
             <label
@@ -307,32 +358,32 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                 letterSpacing: '0.05em'
               }}
             >
-              Scale (Height)
+              Scale (1*1*1 Bricks)
             </label>
             <span style={{ fontSize: 12, fontFamily: 'monospace', color: '#38bdf8', fontWeight: 700 }}>
-              {Math.round(targetHeightPlates / 3)} BRICKS ({targetHeightPlates}p)
+              {targetHeightBricks} BRICKS ({targetHeightBricks * 24} LDU)
             </span>
           </div>
           <input
             type="range"
-            min={24}
-            max={192}
-            step={3}
-            value={targetHeightPlates}
+            min={8}
+            max={64}
+            step={1}
+            value={targetHeightBricks}
             onChange={(e) => onChangeHeight(parseInt(e.target.value))}
             style={{ width: '100%', accentColor: '#38bdf8', cursor: 'pointer' }}
           />
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 4, marginTop: 6 }}>
             {[
-              { bricks: 16, plates: 48, label: '16b' },
-              { bricks: 24, plates: 72, label: '24b' },
-              { bricks: 32, plates: 96, label: '32b' },
-              { bricks: 48, plates: 144, label: '48b' },
-              { bricks: 64, plates: 192, label: '64b' }
+              { bricks: 12, label: '12b' },
+              { bricks: 16, label: '16b' },
+              { bricks: 24, label: '24b' },
+              { bricks: 32, label: '32b' },
+              { bricks: 48, label: '48b' }
             ].map((preset) => (
               <button
                 key={preset.bricks}
-                onClick={() => onChangeHeight(preset.plates)}
+                onClick={() => onChangeHeight(preset.bricks)}
                 style={{
                   padding: '4px 2px',
                   borderRadius: 4,
@@ -340,8 +391,8 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                   fontSize: 10,
                   fontWeight: 700,
                   cursor: 'pointer',
-                  backgroundColor: targetHeightPlates === preset.plates ? '#38bdf8' : '#1e293b',
-                  color: targetHeightPlates === preset.plates ? '#0f172a' : '#94a3b8',
+                  backgroundColor: targetHeightBricks === preset.bricks ? '#38bdf8' : '#1e293b',
+                  color: targetHeightBricks === preset.bricks ? '#0f172a' : '#94a3b8',
                   transition: 'all 0.15s ease'
                 }}
               >
@@ -350,6 +401,70 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             ))}
           </div>
         </div>
+
+        {/* Section 3.5: Isolated Mesh Components Inspector */}
+        {islands && islands.length > 0 && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+              <label
+                style={{
+                  fontSize: 12,
+                  fontWeight: 700,
+                  color: '#94a3b8',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em'
+                }}
+              >
+                Half-Edge Islands ({islands.length})
+              </label>
+              <span style={{ fontSize: 10, color: '#34d399', fontWeight: 600 }}>
+                Isolated No-Cross
+              </span>
+            </div>
+            <div
+              style={{
+                maxHeight: 120,
+                overflowY: 'auto',
+                backgroundColor: 'rgba(15, 23, 42, 0.6)',
+                borderRadius: 6,
+                padding: '6px 8px',
+                border: '1px solid rgba(148, 163, 184, 0.1)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 4
+              }}
+            >
+              {islands.map((isl) => (
+                <div
+                  key={isl.id}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    fontSize: 11,
+                    color: '#e2e8f0'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <div
+                      style={{
+                        width: 10,
+                        height: 10,
+                        borderRadius: 3,
+                        backgroundColor: isl.colorHex,
+                        border: '1px solid rgba(255,255,255,0.2)'
+                      }}
+                    />
+                    <span style={{ fontWeight: 600 }}>Island #{isl.id}</span>
+                  </div>
+                  <span style={{ color: '#94a3b8', fontFamily: 'monospace', fontSize: 10 }}>
+                    {isl.triangleCount} tris
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Section 4: Viewport Mode */}
         <div>
