@@ -738,4 +738,32 @@
 0 !AVATAR CATEGORY "Windscreen" DESCRIPTION "Windscreen" PART 1 0 0  0 1 0  0 0 1 "3823.dat"
 0 !AVATAR CATEGORY "Wing" DESCRIPTION "Wing" PART 1 0 0  0 1 0  0 0 1 "3936.dat"
 
-0 !AVATAR CATEGORY "Znap" DESCRIPTION "Znap" PART 1 0 0  0 1 0  0 0 1 "32210.dat" 
+0 !AVATAR CATEGORY "Znap" DESCRIPTION "Znap" PART 1 0 0  0 1 0  0 0 1 "32210.dat" 0 !COLOUR Coral                                         CODE  1050   VALUE #E45366   EDGE #333333
+0 !COLOUR Reddish_Orange                                CODE  1136   VALUE #CA4C0B   EDGE #333333
+0 !COLOUR Vibrant_Yellow                                CODE  1062   VALUE #EBD800   EDGE #333333
+0 !COLOUR Warm_Tan                                      CODE  1089   VALUE #CCA373   EDGE #333333
+0 !COLOUR Medium_Brown                                  CODE  1088   VALUE #755945   EDGE #333333
+0 !COLOUR Blue_Violet                                   CODE  1147   VALUE #A3A9FF   EDGE #333333
+0 !COLOUR Pastel_Blue                                   CODE  1051   VALUE #5AC4DA   EDGE #333333
+0 !COLOUR Warm_Pink                                     CODE  1146   VALUE #F6B7BF   EDGE #333333
+0 !COLOUR Reddish_Gold                                  CODE  1065   VALUE #AC8247   EDGE #333333
+0 !COLOUR Sienna_Brown                                  CODE  1137   VALUE #915C3C   EDGE #333333
+0 !COLOUR Metal                                         CODE  1135   VALUE #A5ADB4   EDGE #333333
+0 !COLOUR Reddish_Lilac                                 CODE  1007   VALUE #8E5597   EDGE #333333
+0 !COLOUR Warm_Yellowish_Orange                         CODE  1091   VALUE #FFCB78   EDGE #333333
+0 !COLOUR Light_Lilac                                   CODE  1093   VALUE #9195CA   EDGE #333333
+0 !COLOUR Umber_Brown                                   CODE  1138   VALUE #5E3F33   EDGE #333333
+0 !COLOUR Neon_Green                                    CODE  1141   VALUE #D2FC43   EDGE #333333
+0 !COLOUR HO_Olive_Green                                CODE  1129   VALUE #9B9A5A   EDGE #333333
+0 !COLOUR Ochre_Yellow                                  CODE  1145   VALUE #DD9E47   EDGE #333333
+0 !COLOUR Medium_Violet                                 CODE  1001   VALUE #9391E4   EDGE #333333
+0 !COLOUR Bright_Reddish_Orange                         CODE  1068   VALUE #EE5434   EDGE #333333
+0 !COLOUR HO_Dark_Gray                                  CODE  1110   VALUE #6D6E5C   EDGE #333333
+0 !COLOUR Dark_Nougat                                   CODE  1067   VALUE #AD6140   EDGE #333333
+0 !COLOUR HO_Dark_Red                                   CODE  1113   VALUE #631314   EDGE #333333
+0 !COLOUR HO_Dark_Blue                                  CODE  1109   VALUE #0A3463   EDGE #333333
+0 !COLOUR Vintage_Green                                 CODE  1009   VALUE #1E601E   EDGE #333333
+0 !COLOUR Vintage_Red                                   CODE  1010   VALUE #CA1F08   EDGE #333333
+0 !COLOUR Curry                                         CODE  1066   VALUE #DD982E   EDGE #333333
+0 !COLOUR Duplo_Blue                                    CODE  1074   VALUE #009ECE   EDGE #333333
+0 !COLOUR Neon_Orange                                   CODE  1140   VALUE #EC4612   EDGE #333333

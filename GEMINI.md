@@ -13,11 +13,9 @@
 - **Default to Model Actual Colors**: Always prioritize direct 24-bit RGB sampling from the input mesh (`0x2RRGGBB` in LDraw line format: `1 0x2RRGGBB X Y Z ...`).
 - **Zero Color Quantization Artifacts**: Do not force source mesh colors into small, basic LEGO palettes unless the user explicitly selects official quantization. Direct color fidelity preserves textures, gradients, and original aesthetic intent.
 
-## 3. Functional Vehicle Mechanics & Ground Alignment
-- **Rolling Wheels with Technic Bricks**: Vehicles must incorporate functional rolling wheel assemblies using authentic Technic bricks with axle holes (`3700` 1x2, `3701` 1x4, `3702` 1x8), axles (`3704`–`3708`), and bushings.
-- **Dynamic Wheel Scaling**: Wheels must dynamically scale to match the vehicle's detected wheel arch dimensions, never remaining static in size.
-- **Ground Clearance Invariant ($Y = 0$)**: Wheel bottoms must touch the ground plane ($Y = 0$ in world coordinates, $-Y$ in LDraw coordinates where $+Y$ points downward). Wheels must NEVER penetrate or clip below the ground plane or hover unrealistically.
-- **Carved Wheel Wells**: Ensure a 1-stud clearance pocket around rotating wheels so the vehicle can roll freely without colliding with the fender bodywork.
+## 3. Pure Model Discretization Policy (Zero Artificial Vehicle / Gear Mechanics)
+- **No Artificial Chassis or Gear Constraints**: Never synthesize artificial Technic chassis, axles, differential/pinion gears, steering wheels, or wheel assemblies into the discretized build, and never carve artificial wheel well voids out of voxel fields.
+- **Faithful Mesh Geometry**: Discretize the input 3D model faithfully according to its actual surface geometry, volume, and color, maintaining structural stability and running bond interlocking without hardcoded automotive mechanics.
 
 ## 4. LEGO Design Series Aesthetic Standards
 - **Studless Top Finish**: Cover exposed top plate surfaces with smooth tiles (`3068b` 2x2, `3069b` 1x2, `2431` 1x4, `6636` 1x6, `98138` 1x1 round).

@@ -31,3 +31,6 @@ Thumbs.db
 # Large Datasets
 docs/papers/rebrickable_database/
 
+# Sub-repository
+generator/
+

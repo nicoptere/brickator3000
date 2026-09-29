@@ -131,7 +131,7 @@ export class InferenceEngine {
   public async runInferenceOnPatches(
     candidates: PatchCandidate[],
     onPatchStart: (index: number, total: number, candidate: PatchCandidate) => void,
-    onPatchComplete: (index: number, total: number, region: DetectedRegion) => void
+    onPatchComplete?: (index: number, total: number, region: DetectedRegion) => void
   ): Promise<DetectedRegion[]> {
     const detectedRegions: DetectedRegion[] = [];
     const batchSize = 1;
@@ -146,7 +146,9 @@ export class InferenceEngine {
 
       for (let b = 0; b < batchRegions.length; b++) {
         detectedRegions.push(batchRegions[b]);
-        onPatchComplete(i + b, candidates.length, batchRegions[b]);
+        if (onPatchComplete) {
+          onPatchComplete(i + b, candidates.length, batchRegions[b]);
+        }
       }
 
       // Non-blocking micro-yield to keep animations and browser UI 60fps responsive

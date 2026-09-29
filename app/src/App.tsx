@@ -836,12 +836,8 @@ export const App: React.FC = () => {
   const handleSubmit = async () => {
     if (!mainImageRef.current || !currentImageLoaded) return;
 
-    // Immediately dismiss any active piece selection or inspection
-    setSelectedRegion(null);
-    setActiveSiblingPartId(null);
-    vectorOverlayRef.current?.stopSiblingPulse();
-    viewer3DRef.current?.detach();
-    setScaleFeedback(null);
+    // Immediately clear previous detections and active piece selection
+    clearDetections();
 
     // Leave detected pieces panel visible during detection (do not close it)
     if (!isMobile) {
@@ -931,7 +927,6 @@ export const App: React.FC = () => {
       setPipelineMessage(`Classifying ${candidates.length} pieces with BrickNet V6...`);
       addPipelineLog(`✓ Found ${candidates.length} candidate pieces. Running BrickNet V6 neural classification...`);
 
-      const progressiveRegions: DetectedRegion[] = [];
       let rawRegions = await inferenceEngineRef.current.runInferenceOnPatches(
         candidates,
         (idx, total, candidate) => {
@@ -949,12 +944,6 @@ export const App: React.FC = () => {
               stage: 'bricknet'
             });
           }
-        },
-        (_idx, _total, region) => {
-          progressiveRegions.push(region);
-          setRegions([...progressiveRegions]);
-          vectorOverlayRef.current?.setRegions([...progressiveRegions]);
-          vectorOverlayRef.current?.render();
         }
       );
 
