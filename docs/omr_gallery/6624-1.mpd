@@ -1,0 +1,98 @@
+0 FILE 6624 - main.ldr
+0 main
+0 Name: 6624 - main.ldr
+0 Author: Robert Paciorek [bercik]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HISTORY 2018-01-08 [bercik] OMR version by Robert Paciorek [bercik] with perrmision of juraj3579
+
+1 4 0 0 0 1 0 0 0 1 0 0 0 1 6624 - van.ldr
+1 1 100 0 110 1 0 0 0 1 0 0 0 1 6624 - minifig.ldr
+
+
+
+
+0 FILE 6624 - van.ldr
+0 van
+0 Name: 6624 - van.ldr
+0 Author: Robert Paciorek [bercik]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HISTORY 2018-01-08 [bercik] OMR version by Robert Paciorek [bercik] with perrmision of juraj3579
+
+1 0 0 0 0 0 0 -1 0 1 0 1 0 0 3034.dat
+1 0 0 -16 -40 1 0 0 0 1 0 0 0 1 4211.dat
+1 0 0 -8 70 1 0 0 0 1 0 0 0 1 3710.dat
+1 0 0 -8 40 1 0 0 0 1 0 0 0 1 3022.dat
+1 16 0 -16 -70 1 0 0 0 1 0 0 0 1 3710.dat
+1 16 -30 -16 -10 1 0 0 0 1 0 0 0 1 3024.dat
+1 16 30 -16 -10 1 0 0 0 1 0 0 0 1 3024.dat
+1 16 0 -16 -50 1 0 0 0 1 0 0 0 1 3829c01.dat
+1 0 0 -32 10 1 0 0 0 1 0 0 0 1 3004.dat
+1 16 0 -40 -70 1 0 0 0 1 0 0 0 1 3004p06.dat
+1 16 30 -40 -70 1 0 0 0 1 0 0 0 1 4070.dat
+1 16 -30 -40 -70 1 0 0 0 1 0 0 0 1 4070.dat
+1 46 30 -30 -84 1 0 0 0 0 -1 0 1 0 3024.dat
+1 46 -30 -30 -84 1 0 0 0 0 -1 0 1 0 3024.dat
+1 16 30 -40 -50 1 0 0 0 1 0 0 0 1 3822.dat
+1 16 -30 -40 -50 1 0 0 0 1 0 0 0 1 3821.dat
+1 47 0 -88 -50 1 0 0 0 1 0 0 0 1 3823.dat
+1 16 30 -80 40 0 0 1 0 1 0 -1 0 0 4215a.dat
+1 16 -30 -80 40 0 0 -1 0 1 0 1 0 0 4215a.dat
+1 16 40 -48 40 0 -1 0 0 0 -1 1 0 0 190145a.dat
+1 16 -40 -48 40 0 1 0 0 0 -1 -1 0 0 190145a.dat
+1 16 30 -88 40 0 0 1 0 1 0 -1 0 0 3023.dat
+1 16 -30 -88 40 0 0 1 0 1 0 -1 0 0 3023.dat
+1 16 30 -88 10 0 0 1 0 1 0 -1 0 0 3070b.dat
+1 16 -30 -88 10 0 0 1 0 1 0 -1 0 0 3070b.dat
+1 16 0 -88 70 -1 0 0 0 1 0 0 0 -1 4315.dat
+1 16 0 -85 84 1 0 0 0 1 0 0 0 1 6624 - van - back door.ldr
+1 0 0 -96 30 1 0 0 0 1 0 0 0 1 4315.dat
+1 0 0 -96 -20 1 0 0 0 1 0 0 0 1 4213.dat
+1 0 0 -96 60 1 0 0 0 1 0 0 0 1 3020.dat
+1 0 0 8 -40 1 0 0 0 1 0 0 0 1 122c01.dat
+1 0 0 8 40 1 0 0 0 1 0 0 0 1 122c01.dat
+1 256 30 14 -40 0 0 -1 0 1 0 1 0 0 3641.dat
+1 256 30 14 40 0 0 -1 0 1 0 1 0 0 3641.dat
+1 256 -30 14 -40 0 0 -1 0 1 0 1 0 0 3641.dat
+1 256 -30 14 40 0 0 -1 0 1 0 1 0 0 3641.dat
+
+
+
+
+0 FILE 6624 - van - back door.ldr
+0 van - back door
+0 Name: 6624 - van - back door.ldr
+0 Author: Robert Paciorek [bercik]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HISTORY 2018-01-08 [bercik] OMR version by Robert Paciorek [bercik] with perrmision of juraj3579
+
+1 16 0 37 4 -1 0 0 0 0 -1 0 -1 0 4213.dat
+1 36 30 67 12 1 0 0 0 0 1 0 -1 0 3024.dat
+1 36 -30 67 12 1 0 0 0 0 1 0 -1 0 3024.dat
+
+
+
+
+0 FILE 6624 - minifig.ldr
+0 minifig
+0 Name: 6624 - minifig.ldr
+0 Author: Robert Paciorek [bercik]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HISTORY 2018-01-08 [bercik] OMR version by Robert Paciorek [bercik] with perrmision of juraj3579
+
+1 0 0 3 0 1 0 0 0 1 0 0 0 1 3816.dat
+1 0 0 3 0 1 0 0 0 1 0 0 0 1 3817.dat
+1 0 0 -9 0 1 0 0 0 1 0 0 0 1 3815.dat
+1 14 23.807 -14.291 -9.9 1 -0.123 -0.123 0 0.718 -0.696 0.174 0.685 0.707 3820.dat
+1 16 15.6 -32 0 1 0.174 0 -0.174 1 0 0 0 1 3819.dat
+1 16 0 -41 0 1 0 0 0 1 0 0 0 1 973.dat
+1 14 -23.807 -14.291 -9.9 1 -0.123 0.123 0.174 0.696 -0.696 0 0.707 0.707 3820.dat
+1 16 -15.6 -32 0 1 -0.174 0 0.174 1 0 0 0 1 3818.dat
+1 0 0 -64 1 1 0 0 0 1 0 0 0 1 3624.dat
+1 14 0 -65 0 1 0 0 0 1 0 0 0 1 3626bp01.dat
+
+
+

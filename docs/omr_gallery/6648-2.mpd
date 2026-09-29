@@ -1,0 +1,103 @@
+0 FILE 6648-2 - main.ldr
+0 2 - main
+0 Name: 6648-2 - main.ldr
+0 Author: Robert Paciorek [bercik]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HISTORY 2018-01-08 [bercik] OMR version by Robert Paciorek [bercik] with perrmision of juraj3579
+
+1 14 0 0 0 1 0 0 0 1 0 0 0 1 6648-2 - car.ldr
+1 16 170 0 -50 0.866 0 0.5 0 1 0 -0.5 0 0.866 6648-2 - minifig.ldr
+
+
+
+
+0 FILE 6648-2 - car.ldr
+0 2 - car
+0 Name: 6648-2 - car.ldr
+0 Author: Robert Paciorek [bercik]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HISTORY 2018-01-08 [bercik] OMR version by Robert Paciorek [bercik] with perrmision of juraj3579
+
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 3832.dat
+1 0 80 8 0 1 0 0 0 1 0 0 0 1 3020.dat
+1 0 -80 -8 0 1 0 0 0 1 0 0 0 1 3020.dat
+1 0 -30 8 0 0 0 1 0 1 0 -1 0 0 3023.dat
+1 0 -110 0 0 0 0 1 0 1 0 -1 0 0 3023.dat
+1 0 110 0 0 0 0 1 0 1 0 -1 0 0 3710.dat
+1 0 -80 8 0 1 0 0 0 1 0 0 0 1 3020.dat
+1 0 20 -8 0 0 0 -1 0 1 0 1 0 0 3020.dat
+1 16 100 -8 0 0 0 -1 0 1 0 1 0 0 3020.dat
+1 0 -40 -16 0 -1 0 0 0 1 0 0 0 -1 3034.dat
+1 16 60 -16 -30 -1 0 0 0 1 0 0 0 -1 3710.dat
+1 16 60 -16 30 -1 0 0 0 1 0 0 0 -1 3710.dat
+1 16 10 -16 -30 -1 0 0 0 1 0 0 0 -1 3024.dat
+1 16 10 -16 30 -1 0 0 0 1 0 0 0 -1 3024.dat
+1 16 90 -16 0 0 0 -1 0 1 0 1 0 0 9553.dat
+1 16 110 -32 -30 0 0 -1 0 1 0 1 0 0 4070.dat
+1 16 110 -32 30 0 0 -1 0 1 0 1 0 0 4070.dat
+1 16 90 -40 30 0 0 -1 0 1 0 1 0 0 3822.dat
+1 16 90 -40 -30 0 0 -1 0 1 0 1 0 0 3821.dat
+1 0 110 -32 0 0 0 -1 0 1 0 1 0 0 3004.dat
+1 16 20 -40 0 0 0 -1 0 1 0 1 0 0 3001.dat
+1 0 -130 -22 0 0 0 -1 0 1 0 1 0 0 3149e.dat
+1 16 110 -40 0 0 0 -1 0 1 0 1 0 0 3710.dat
+1 47 90 -88 0 0 0 -1 0 1 0 1 0 0 3823.dat
+1 16 90 -96 0 0 0 -1 0 1 0 1 0 0 3710.dat
+1 46 124 -22 -30 0 -1 0 0 0 -1 1 0 0 3024.dat
+1 46 124 -22 30 0 -1 0 0 0 -1 1 0 0 3024.dat
+1 0 30 -88 0 0 0 -1 0 1 0 1 0 0 4083.dat
+1 16 -130 -22 0 1 0 0 0 1 0 0 0 1 6648-2 - car - movable.ldr
+1 0 60 16 0 0 0 -1 0 1 0 1 0 0 422.dat
+1 4 60 22 0 0 0 -1 0 1 0 1 0 0 u9132c01.dat
+1 0 -100 16 0 0 0 -1 0 1 0 1 0 0 422.dat
+1 4 -100 22 0 0 0 -1 0 1 0 1 0 0 u9132c01.dat
+1 0 -40 16 0 0 0 -1 0 1 0 1 0 0 422.dat
+1 4 -40 22 0 0 0 -1 0 1 0 1 0 0 u9132c01.dat
+1 256 -40 22 31 -1 0 0 0 1 0 0 0 -1 4084.dat
+1 256 -100 22 31 -1 0 0 0 1 0 0 0 -1 4084.dat
+1 256 -100 22 -31 -1 0 0 0 1 0 0 0 -1 4084.dat
+1 256 -40 22 -31 -1 0 0 0 1 0 0 0 -1 4084.dat
+1 256 60 22 -31 -1 0 0 0 1 0 0 0 -1 4084.dat
+1 256 60 22 31 -1 0 0 0 1 0 0 0 -1 4084.dat
+1 4 -130 -22 0 0 0 1 0 1 0 -1 0 0 313.dat
+
+
+
+
+0 FILE 6648-2 - car - movable.ldr
+0 2 - car - movable
+0 Name: 6648-2 - car - movable.ldr
+0 Author: Robert Paciorek [bercik]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HISTORY 2018-01-08 [bercik] OMR version by Robert Paciorek [bercik] with perrmision of juraj3579
+
+1 16 50 -18 0 0 0 -1 0 1 0 1 0 0 4080.dat
+1 0 0 0 0 0 0 -1 0 1 0 1 0 0 314d.dat
+
+
+
+
+0 FILE 6648-2 - minifig.ldr
+0 2 - minifig
+0 Name: 6648-2 - minifig.ldr
+0 Author: Robert Paciorek [bercik]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HISTORY 2018-01-08 [bercik] OMR version by Robert Paciorek [bercik] with perrmision of juraj3579
+
+1 1 0 -25 0 1 0 0 0 1 0 0 0 1 973.dat
+1 1 15.6 -16 0 1 0.174 0 -0.174 1 0 0 0 1 3819.dat
+1 1 -15.6 -16 0 1 -0.174 0 0.174 1 0 0 0 1 3818.dat
+1 14 -23.807 1.709 -9.899 1 -0.123 0.123 0.174 0.696 -0.696 0 0.707 0.707 3820.dat
+1 14 23.807 1.709 -9.899 1 -0.123 -0.123 0 0.718 -0.696 0.174 0.685 0.707 3820.dat
+1 14 0 -49 0 1 0 0 0 1 0 0 0 1 3626ap01.dat
+1 0 0 7 0 1 0 0 0 1 0 0 0 1 3815.dat
+1 0 0 19 0 1 0 0 0 1 0 0 0 1 3816.dat
+1 0 0 19 0 1 0 0 0 1 0 0 0 1 3817.dat
+1 4 0 -49 0 1 0 0 0 1 0 0 0 1 3833.dat
+
+
+

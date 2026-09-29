@@ -99,7 +99,7 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
 
         const ext = new THREE.ExtrudeGeometry(shape, { depth: w, bevelEnabled: false });
         ext.center();
-        ext.rotateY(Math.PI / 2);
+        ext.rotateY(-Math.PI / 2);
         geom = ext;
         break;
       }
@@ -119,7 +119,7 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
 
         const ext = new THREE.ExtrudeGeometry(shape, { depth: w, bevelEnabled: false });
         ext.center();
-        ext.rotateY(Math.PI / 2);
+        ext.rotateY(-Math.PI / 2);
         geom = ext;
         break;
       }
@@ -138,7 +138,7 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
 
         const ext = new THREE.ExtrudeGeometry(shape, { depth: w, bevelEnabled: false });
         ext.center();
-        ext.rotateY(Math.PI / 2);
+        ext.rotateY(-Math.PI / 2);
         geom = ext;
         break;
       }
@@ -159,7 +159,7 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
 
         const ext = new THREE.ExtrudeGeometry(shape, { depth: w, bevelEnabled: false });
         ext.center();
-        ext.rotateY(Math.PI / 2);
+        ext.rotateY(-Math.PI / 2);
         geom = ext;
         break;
       }
@@ -172,17 +172,22 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
       }
 
       case 'dish': {
-        // Inverted radar dish dome
+        // Inverted radar dish dome (convex apex pointing UP)
         geom = new THREE.SphereGeometry(widthLDU / 2.0, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2);
-        geom.rotateX(Math.PI);
+        geom.center();
+        break;
+      }
+
+      case 'cone': {
+        // Authentic LEGO System Cone
+        geom = new THREE.ConeGeometry(widthLDU / 2.0, heightLDU, 16);
         geom.center();
         break;
       }
 
       case 'tooth_creature': {
-        // Bionicle tapered spine / horn
+        // Legacy fallback
         geom = new THREE.ConeGeometry(widthLDU / 2.0, heightLDU, 12);
-        geom.rotateZ(Math.PI / 6);
         geom.center();
         break;
       }

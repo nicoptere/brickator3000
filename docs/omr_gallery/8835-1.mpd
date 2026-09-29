@@ -1,0 +1,452 @@
+0 FILE 8835 - main.ldr
+0 main
+0 Name: 8835 - main.ldr
+0 Author: Takeshi Takahashi [RainbowDolphin]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 ROTATION CENTER 0 0 0 1 "Custom" 
+0 ROTATION CONFIG 0 0
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 8835 - Car.ldr
+
+
+
+0
+0 FILE 8835 - Car.ldr
+0 Car
+0 Name: 8835 - Car.ldr
+0 Author: Takeshi Takahashi [RainbowDolphin]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 ROTATION CENTER 0 0 0 1 "Custom" 
+0 ROTATION CONFIG 0 0
+1 7 0 0 30 1 0 0 0 1 0 0 0 1 3895.dat
+1 7 0 0 -30 1 0 0 0 1 0 0 0 1 3895.dat
+1 7 -120 24 0 0 0 1 0 1 0 -1 0 0 3034.dat
+1 7 50 24 0 0 0 1 0 1 0 -1 0 0 4442.dat
+1 7 -60 10 -40 0 0 1 0 1 0 -1 0 0 3673.dat
+1 7 -60 10 40 0 0 1 0 1 0 -1 0 0 3673.dat
+0 STEP
+1 7 -130 0 0 0 0 1 0 1 0 -1 0 0 3894.dat
+1 7 90 -8 0 0 0 1 0 1 0 -1 0 0 2431.dat
+1 7 -140 10 0 -1 0 0 0 1 0 0 0 -1 3749.dat
+1 7 50 0 -70 0 0 1 0 1 0 -1 0 0 8835 - Steering axle left.ldr
+1 7 50 0 70 0 0 1 0 1 0 -1 0 0 8835 - Steering axle right.ldr
+0 STEP
+1 7 -160 0 70 1 0 0 0 1 0 0 0 1 3702.dat
+1 7 10 -24 0 0 0 1 0 1 0 -1 0 0 3010.dat
+1 4 110 -24 0 0 0 1 0 1 0 -1 0 0 3010.dat
+1 7 50 -8 0 0 0 1 0 1 0 -1 0 0 4442.dat
+1 7 -150 10 0 0 0 1 0 1 0 -1 0 0 4019.dat
+0 STEP
+1 0 -180 10 0 0 0 1 0 1 0 -1 0 0 3708.dat
+1 7 -180 10 -22 1 0 0 0 1 0 0 0 1 3650a.dat
+1 7 -180 10 -35 1 0 0 0 1 0 0 0 1 4265a.dat
+1 7 -180 10 -55 1 0 0 0 1 0 0 0 1 4265a.dat
+1 7 -90 -8 70 1 0 0 0 1 0 0 0 1 3024.dat
+0 STEP
+1 7 -220 10 0 0 1 0 1 0 0 0 0 -1 8835 - Lift.ldr
+1 7 -160 0 -70 1 0 0 0 1 0 0 0 1 3702.dat
+1 7 -90 -8 -70 1 0 0 0 1 0 0 0 1 3024.dat
+0 STEP
+1 7 -120 -8 0 0 0 1 0 1 0 -1 0 0 3034.dat
+1 7 10 -48 0 0 0 1 0 1 0 -1 0 0 3700.dat
+1 4 110 -48 0 0 0 1 0 1 0 -1 0 0 3700.dat
+1 7 10 -56 0 0 0 1 0 1 0 -1 0 0 3023b.dat
+1 4 110 -56 0 0 0 1 0 1 0 -1 0 0 3023b.dat
+1 0 -100 10 0 0 0 1 0 1 0 -1 0 0 3737.dat
+1 0 60 -38 0 1 0 0 0 1 0 0 0 1 3707.dat
+1 7 130 -38 0 0 0 -1 0 1 0 1 0 0 3713.dat
+1 7 90 -38 0 0 0 -1 0 1 0 1 0 0 3647.dat
+1 7 -3 -38 0 0 0 1 0 1 0 -1 0 0 4143.dat
+0 STEP
+1 4 -110 -16 70 1 0 0 0 1 0 0 0 1 3623.dat
+1 4 -110 -16 -70 1 0 0 0 1 0 0 0 1 3623.dat
+1 7 -110 -16 0 1 0 0 0 1 0 0 0 1 3021.dat
+1 7 -100 10 90 -1 0 0 0 1 0 0 0 -1 3713.dat
+1 7 -100 10 -90 1 0 0 0 1 0 0 0 1 3713.dat
+1 7 10 -48 30 -1 0 0 0 1 0 0 0 -1 3665a.dat
+1 4 110 -48 30 -1 0 0 0 1 0 0 0 -1 3665a.dat
+1 7 10 -48 -30 1 0 0 0 1 0 0 0 1 3665a.dat
+1 4 110 -48 -30 1 0 0 0 1 0 0 0 1 3665a.dat
+1 4 60 -56 30 1 0 0 0 1 0 0 0 1 3666.dat
+1 4 60 -56 -30 1 0 0 0 1 0 0 0 1 3666.dat
+1 4 60 -56 70 -1 0 0 0 1 0 0 0 -1 2419.dat
+1 4 60 -56 -70 1 0 0 0 1 0 0 0 1 2419.dat
+1 4 90 -64 30 1 0 0 0 1 0 0 0 1 2420.dat
+1 4 90 -64 -30 0 0 1 0 1 0 -1 0 0 2420.dat
+0 STEP
+1 4 -120 -40 70 1 0 0 0 1 0 0 0 1 3004.dat
+1 4 -120 -40 -70 1 0 0 0 1 0 0 0 1 3004.dat
+1 7 -130 -40 0 0 0 1 0 1 0 -1 0 0 3700.dat
+1 7 -110 -40 0 0 0 1 0 1 0 -1 0 0 3700.dat
+1 4 -90 -40 0 0 0 1 0 1 0 -1 0 0 3702.dat
+1 4 40 -64 0 1 0 0 0 1 0 0 0 1 3738.dat
+1 0 -100 -30 0 1 0 0 0 1 0 0 0 1 3706.dat
+1 7 -150 -30 0 0 0 1 0 1 0 -1 0 0 4019.dat
+1 7 -75 -30 0 0 0 1 0 1 0 -1 0 0 4265a.dat
+1 7 -60 -30 0 0 0 1 0 1 0 -1 0 0 3648a.dat
+1 0 -20 -148 0 0 0 1 1 0 0 0 1 0 3737.dat
+1 7 -20 -56 0 1 0 0 0 0 -1 0 1 0 4143.dat
+0 STEP
+1 4 -110 -48 70 1 0 0 0 1 0 0 0 1 3623.dat
+1 4 -110 -48 -70 1 0 0 0 1 0 0 0 1 3623.dat
+1 4 20 -80 30 1 0 0 0 1 0 0 0 1 3894.dat
+1 4 20 -80 -30 1 0 0 0 1 0 0 0 1 3894.dat
+1 4 90 -88 0 0 0 -1 0 1 0 1 0 0 3037.dat
+1 7 -20 -70 40 0 0 1 0 1 0 -1 0 0 3673.dat
+1 7 -20 -70 -40 0 0 1 0 1 0 -1 0 0 3673.dat
+0 STEP
+1 4 -130 -56 80 1 0 0 0 1 0 0 0 1 3021.dat
+1 4 -130 -56 -80 1 0 0 0 1 0 0 0 1 3021.dat
+1 4 -90 -56 70 1 0 0 0 1 0 0 0 1 3024.dat
+1 4 -90 -56 -70 1 0 0 0 1 0 0 0 1 3024.dat
+1 4 -20 -88 0 0 0 1 0 1 0 -1 0 0 3709b.dat
+1 4 40 -88 0 1 0 0 0 1 0 0 0 1 3031.dat
+1 4 -50 -30 50 0 -1 0 1 0 0 0 0 1 3894.dat
+1 4 -42 -70 50 0 -1 0 1 0 0 0 0 1 3023b.dat
+1 4 -34 -70 50 0 -1 0 1 0 0 0 0 1 3023b.dat
+1 15 -10 -130 50 0 -1 0 1 0 0 0 0 1 3702.dat
+0 STEP
+1 4 -60 -80 70 1 0 0 0 1 0 0 0 1 3702.dat
+1 15 -40 -200 30 1 0 0 0 1 0 0 0 1 3701.dat
+1 15 -40 -200 -30 1 0 0 0 1 0 0 0 1 3701.dat
+1 15 -20 -176 0 0 0 1 0 1 0 -1 0 0 3709b.dat
+1 0 -120 -70 60 0 0 1 0 1 0 -1 0 0 4459.dat
+1 0 -20 -190 40 0 0 1 0 1 0 -1 0 0 4459.dat
+1 0 -20 -190 -40 0 0 1 0 1 0 -1 0 0 4459.dat
+0 STEP
+1 4 -130 -70 50 0 1 0 -1 0 0 0 0 1 3700.dat
+1 15 -20 -208 0 0 0 1 0 1 0 -1 0 0 3709b.dat
+1 4 -50 -30 -50 0 -1 0 1 0 0 0 0 1 3894.dat
+1 4 -42 -70 -50 0 -1 0 1 0 0 0 0 1 3023b.dat
+1 4 -34 -70 -50 0 -1 0 1 0 0 0 0 1 3023b.dat
+1 15 -10 -130 -50 0 -1 0 1 0 0 0 0 1 3702.dat
+1 0 -60 -70 20 0 0 1 0 1 0 -1 0 0 3737.dat
+1 7 -60 -70 30 -1 0 0 0 1 0 0 0 -1 3713.dat
+1 7 -60 -70 -30 1 0 0 0 1 0 0 0 1 3713.dat
+1 0 -60 -70 0 1 0 0 0 1 0 0 0 1 4716.dat
+0 STEP
+1 4 -130 -70 -50 0 1 0 -1 0 0 0 0 1 3700.dat
+1 4 -120 -70 -70 0 -0.866025 0.5 0 0.5 0.866025 -1 0 0 8835 - Tilt lever.ldr
+1 4 -60 -80 -70 1 0 0 0 1 0 0 0 1 3702.dat
+1 7 -60 -70 90 -1 0 0 0 1 0 0 0 -1 3713.dat
+1 7 -60 -70 110 -1 0 0 0 1 0 0 0 -1 3736.dat
+1 7 -30 -70 120 0 0 -1 0 1 0 1 0 0 3673.dat
+1 7 -20 -219 0 1 0 0 0 0 -1 0 1 0 4265a.dat
+0 STEP
+1 0 0 -70 0 0 0 1 0 1 0 -1 0 0 3737.dat
+1 46 -20 -248 0 0 0 1 0 1 0 -1 0 0 3941.dat
+1 15 -138 -70 50 0 1 0 -1 0 0 0 0 1 4276b.dat
+1 15 -138 -70 -50 0 1 0 -1 0 0 0 0 1 4276b.dat
+1 15 -110 -196 0 0.241922 0.970296 0 -0.970296 0.241922 0 0 0 1 8835 - Front pillar.ldr
+1 15 -80 -200 50 -1 0 0 0 1 0 0 0 -1 4276b.dat
+1 15 -80 -200 -50 -1 0 0 0 1 0 0 0 -1 4276b.dat
+0 STEP
+1 7 0 -70 90 -1 0 0 0 1 0 0 0 -1 3713.dat
+1 7 0 -70 -90 1 0 0 0 1 0 0 0 1 3713.dat
+1 15 -80 -208 0 0 0 1 0 1 0 -1 0 0 3032.dat
+1 15 -20 -256 0 0 0 1 0 1 0 -1 0 0 4150.dat
+0 STEP
+1 15 -180 10 90 -1 0 0 0 1 0 0 0 -1 2695c01.dat
+1 15 -180 10 -90 1 0 0 0 1 0 0 0 1 2695c01.dat
+1 7 -180 10 105 1 0 0 0 1 0 0 0 1 4265a.dat
+1 7 -180 10 -105 -1 0 0 0 1 0 0 0 -1 4265a.dat
+
+
+
+0
+0 FILE 8835 - Steering axle left.ldr
+0 Steering axle left
+0 Name: 8835 - Steering axle left.ldr
+0 Author: Takeshi Takahashi [RainbowDolphin]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 ROTATION CENTER 0 0 0 1 "Custom" 
+0 ROTATION CONFIG 0 0
+1 7 0 0 0 1 0 0 0 1 0 0 0 1 4261.dat
+1 7 10 10 0 1 0 0 0 1 0 0 0 1 3673.dat
+0 STEP
+1 7 0 0 40 0 -1 0 1 0 0 0 0 1 3749.dat
+0 STEP
+1 7 0 -16 40 1 0 0 0 1 0 0 0 1 8835 - Steering rack.ldr
+0 STEP
+1 15 20 10 0 0 0 -1 0 1 0 1 0 0 2695c01.dat
+
+
+
+0
+0 FILE 8835 - Steering axle right.ldr
+0 Steering axle right
+0 Name: 8835 - Steering axle right.ldr
+0 Author: Takeshi Takahashi [RainbowDolphin]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 ROTATION CENTER 0 0 0 1 "Custom" 
+0 ROTATION CONFIG 0 0
+1 7 0 0 0 1 0 0 0 1 0 0 0 1 4261.dat
+1 7 -10 10 0 1 0 0 0 1 0 0 0 1 3673.dat
+0 STEP
+1 7 0 0 40 0 -1 0 1 0 0 0 0 1 3749.dat
+0 STEP
+1 15 -20 10 0 0 0 1 0 1 0 -1 0 0 2695c01.dat
+
+
+
+0
+0 FILE 8835 - Steering rack.ldr
+0 Steering rack
+0 Name: 8835 - Steering rack.ldr
+0 Author: Takeshi Takahashi [RainbowDolphin]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 ROTATION CENTER 0 0 0 1 "Custom" 
+0 ROTATION CONFIG 0 0
+1 7 -70 0 0 1 0 0 0 1 0 0 0 1 4442.dat
+1 7 -70 -8 0 1 0 0 0 1 0 0 0 1 3743.dat
+
+
+
+0
+0 FILE 8835 - Fork.ldr
+0 Fork
+0 Name: 8835 - Fork.ldr
+0 Author: Takeshi Takahashi [RainbowDolphin]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 ROTATION CENTER 0 0 0 1 "Custom" 
+0 ROTATION CONFIG 0 0
+1 4 -18 21 0 0 0 1 0 1 0 -1 0 0 3460.dat
+1 4 2 21 70 1 0 0 0 1 0 0 0 1 3024.dat
+1 4 2 21 -70 1 0 0 0 1 0 0 0 1 3024.dat
+0 STEP
+1 7 -18 -3 0 0 0 1 0 1 0 -1 0 0 3701.dat
+1 7 -8 -3 60 1 0 0 0 1 0 0 0 1 3003.dat
+1 7 -8 -3 -60 1 0 0 0 1 0 0 0 1 3003.dat
+1 7 2 -11 60 0 0 1 0 1 0 -1 0 0 3023b.dat
+1 7 2 -11 -60 0 0 1 0 1 0 -1 0 0 3023b.dat
+0 STEP
+1 7 -18 -27 0 0 0 1 0 1 0 -1 0 0 3702.dat
+0 STEP
+1 7 -8 7 20 1 0 0 0 1 0 0 0 1 3749.dat
+1 7 -8 7 -20 1 0 0 0 1 0 0 0 1 3749.dat
+1 7 -8 -17 20 1 0 0 0 1 0 0 0 1 3749.dat
+1 7 -8 -17 -20 1 0 0 0 1 0 0 0 1 3749.dat
+0 STEP
+1 7 3 -17 20 0 0 1 0 1 0 -1 0 0 4265a.dat
+1 7 3 -17 -20 0 0 1 0 1 0 -1 0 0 4265a.dat
+1 7 3 7 20 0 0 1 0 1 0 -1 0 0 4265a.dat
+1 7 3 7 -20 0 0 1 0 1 0 -1 0 0 4265a.dat
+0 STEP
+1 0 0 0 0 0 1 0 0 0 -1 -1 0 0 3873.dat
+0 STEP
+1 7 2 -19 50 1 0 0 0 1 0 0 0 1 3024.dat
+1 7 2 -19 -50 1 0 0 0 1 0 0 0 1 3024.dat
+1 7 32 -19 70 1 0 0 0 1 0 0 0 1 3710.dat
+1 7 32 -19 -70 1 0 0 0 1 0 0 0 1 3710.dat
+1 7 2 -27 70 0 0 1 0 1 0 -1 0 0 2420.dat
+1 7 62 -27 70 -1 0 0 0 1 0 0 0 -1 2420.dat
+1 7 2 -27 -70 1 0 0 0 1 0 0 0 1 2420.dat
+1 7 62 -27 -70 0 0 -1 0 1 0 1 0 0 2420.dat
+1 4 12 -51 70 -1 0 0 0 1 0 0 0 -1 3701.dat
+1 4 12 -51 -70 -1 0 0 0 1 0 0 0 -1 3701.dat
+1 4 -8 29 70 0 0 1 0 1 0 -1 0 0 2823.dat
+1 4 -8 29 -70 0 0 1 0 1 0 -1 0 0 2823.dat
+1 0 -8 39 80 0 0 1 0 1 0 -1 0 0 4459.dat
+1 0 -8 39 -80 0 0 1 0 1 0 -1 0 0 4459.dat
+1 0 -8 -41 80 0 0 1 0 1 0 -1 0 0 4459.dat
+1 0 -8 -41 -80 0 0 1 0 1 0 -1 0 0 4459.dat
+0 STEP
+1 4 -18 -1 90 0 1 0 -1 0 0 0 0 1 3894.dat
+1 4 -18 -1 -90 0 1 0 -1 0 0 0 0 1 3894.dat
+
+
+
+0
+0 FILE 8835 - Lift.ldr
+0 Lift
+0 Name: 8835 - Lift.ldr
+0 Author: Takeshi Takahashi [RainbowDolphin]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 ROTATION CENTER 0 0 0 1 "Custom" 
+0 ROTATION CONFIG 0 0
+1 7 -140 -10 -50 1 0 0 0 1 0 0 0 1 3703.dat
+1 7 -290 -18 -50 1 0 0 0 1 0 0 0 1 3623.dat
+1 7 -140 -18 -50 1 0 0 0 1 0 0 0 1 3710.dat
+1 7 0 -18 -50 1 0 0 0 1 0 0 0 1 3023b.dat
+0 STEP
+1 7 -220 -26 -50 1 0 0 0 1 0 0 0 1 4162.dat
+1 7 -60 -26 -50 1 0 0 0 1 0 0 0 1 4162.dat
+1 7 -122 -38 0 0 1 0 1 0 0 0 0 -1 8835 - Fork.ldr
+0 STEP
+1 0 -280 0 0 0 0 1 0 1 0 -1 0 0 3706.dat
+1 7 -280 0 30 -1 0 0 0 1 0 0 0 -1 3713.dat
+1 7 -280 0 -30 1 0 0 0 1 0 0 0 1 3713.dat
+1 7 -280 0 0 1 0 0 0 1 0 0 0 1 4019.dat
+1 0 0 0 0 0 0 1 0 1 0 -1 0 0 3707.dat
+1 7 0 0 -30 1 0 0 0 1 0 0 0 1 3713.dat
+1 7 0 0 0 1 0 0 0 1 0 0 0 1 4019.dat
+1 7 0 0 20 1 0 0 0 1 0 0 0 1 3647.dat
+1 7 0 0 35 -1 0 0 0 1 0 0 0 -1 4265a.dat
+1 7 -280 0 0 0 -1 0 0 0 1 -1 0 0 8835 - Chain.ldr
+0 STEP
+1 7 -140 -10 50 1 0 0 0 1 0 0 0 1 3703.dat
+1 7 -290 -18 50 1 0 0 0 1 0 0 0 1 3623.dat
+1 7 -140 -18 50 1 0 0 0 1 0 0 0 1 3710.dat
+1 7 0 -18 50 1 0 0 0 1 0 0 0 1 3023b.dat
+1 0 -100 0 40 0 0 1 0 1 0 -1 0 0 4459.dat
+1 0 -100 0 22 0 0 1 1 0 0 0 1 0 8835 - Tilt link.ldr
+1 7 -220 -26 50 1 0 0 0 1 0 0 0 1 4162.dat
+1 7 -60 -26 50 1 0 0 0 1 0 0 0 1 4162.dat
+1 7 -310 -26 0 0 0 1 0 1 0 -1 0 0 3666.dat
+
+
+
+0
+0 FILE 8835 - Chain link.ldr
+0 Chain link
+0 Name: 8835 - Chain link.ldr
+0 Author: Takeshi Takahashi [RainbowDolphin]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 ROTATION CENTER 0 0 0 1 "Custom" 
+0 ROTATION CONFIG 0 0
+1 0 0 -16 0 -1 0 0 0 0 1 0 1 0 3711.dat
+
+
+
+0
+0 FILE 8835 - Chain.ldr
+0 Chain
+0 Name: 8835 - Chain.ldr
+0 Author: Takeshi Takahashi [RainbowDolphin]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 ROTATION CENTER 0 0 0 1 "Custom" 
+0 ROTATION CONFIG 0 0
+1 0 0 -286 -22 1 0 0 0 0.991445 0.130526 0 -0.130526 0.991445 8835 - Chain group 1.ldr
+1 7 0 -286 -22 1 0 0 0 0.866025 0.5 0 -0.5 0.866025 8835 - Chain link.ldr
+1 7 0 -299.856 -14 1 0 0 0 0.258819 0.965926 0 -0.965926 0.258819 8835 - Chain link.ldr
+1 7 0 -303.998 1.455 1 0 0 0 -0.422618 0.906308 0 -0.906308 -0.422618 8835 - Chain link.ldr
+1 7 0 -297.234 15.957 1 0 0 0 -0.939693 0.34202 0 -0.34202 -0.939693 8835 - Chain link.ldr
+1 7 0 -282.2 21.43 1 0 0 0 -1 0 0 0 -1 8835 - Chain link.ldr
+1 7 0 -26.2 21.5 1 0 0 0 -1 0 0 0 -1 8835 - Chain link.ldr
+1 7 0 -10.2 21.5 1 0 0 0 -1 0 0 0 -1 8835 - Chain link.ldr
+1 7 0 5.8 21.5 1 0 0 0 -0.866025 -0.5 0 0.5 -0.866025 8835 - Chain link.ldr
+1 7 0 19.656 13.5 1 0 0 0 -0.258819 -0.965926 0 0.965926 -0.258819 8835 - Chain link.ldr
+1 7 0 23.798 -1.955 1 0 0 0 0.422618 -0.906308 0 0.906308 0.422618 8835 - Chain link.ldr
+1 7 0 17.034 -16.457 1 0 0 0 0.939693 -0.34202 0 0.34202 0.939693 8835 - Chain link.ldr
+1 7 0 -266.199 21.427 1 0 0 0 -1 0 0 0 -1 8835 - Chain link.ldr
+1 7 0 -250.203 21.429 1 0 0 0 -1 0 0 0 -1 8835 - Chain link.ldr
+1 7 0 -234.203 21.432 1 0 0 0 -1 0 0 0 -1 8835 - Chain link.ldr
+1 7 0 -218.2 21.43 1 0 0 0 -1 0 0 0 -1 8835 - Chain link.ldr
+1 7 0 -202.199 21.427 1 0 0 0 -1 0 0 0 -1 8835 - Chain link.ldr
+1 7 0 -186.203 21.429 1 0 0 0 -1 0 0 0 -1 8835 - Chain link.ldr
+1 7 0 -170.203 21.432 1 0 0 0 -1 0 0 0 -1 8835 - Chain link.ldr
+1 7 0 -154.2 21.43 1 0 0 0 -1 0 0 0 -1 8835 - Chain link.ldr
+1 7 0 -138.199 21.427 1 0 0 0 -1 0 0 0 -1 8835 - Chain link.ldr
+1 7 0 -122.203 21.429 1 0 0 0 -1 0 0 0 -1 8835 - Chain link.ldr
+1 7 0 -106.203 21.432 1 0 0 0 -1 0 0 0 -1 8835 - Chain link.ldr
+1 7 0 -90.2 21.43 1 0 0 0 -1 0 0 0 -1 8835 - Chain link.ldr
+1 7 0 -74.199 21.427 1 0 0 0 -1 0 0 0 -1 8835 - Chain link.ldr
+1 7 0 -58.203 21.429 1 0 0 0 -1 0 0 0 -1 8835 - Chain link.ldr
+1 7 0 -42.203 21.432 1 0 0 0 -1 0 0 0 -1 8835 - Chain link.ldr
+1 7 0 2 -22 1 0 0 0 0.993572 -0.113203 0 0.113203 0.993572 8835 - Chain group 2.ldr
+
+
+
+0
+0 FILE 8835 - Chain group 1.ldr
+0 Chain group 1
+0 Name: 8835 - Chain group 1.ldr
+0 Author: Takeshi Takahashi [RainbowDolphin]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 ROTATION CENTER 0 0 0 1 "Custom" 
+0 ROTATION CONFIG 0 0
+1 7 0 128 0 1 0 0 0 1 0 0 0 1 8835 - Chain link.ldr
+1 7 0 112 0 1 0 0 0 1 0 0 0 1 8835 - Chain link.ldr
+1 7 0 96 0 1 0 0 0 1 0 0 0 1 8835 - Chain link.ldr
+1 7 0 80 0 1 0 0 0 1 0 0 0 1 8835 - Chain link.ldr
+1 7 0 64 0 1 0 0 0 1 0 0 0 1 8835 - Chain link.ldr
+1 7 0 48 0 1 0 0 0 1 0 0 0 1 8835 - Chain link.ldr
+1 7 0 32 0 1 0 0 0 1 0 0 0 1 8835 - Chain link.ldr
+1 7 0 16 0 1 0 0 0 1 0 0 0 1 8835 - Chain link.ldr
+
+
+
+0
+0 FILE 8835 - Chain group 2.ldr
+0 Chain group 2
+0 Name: 8835 - Chain group 2.ldr
+0 Author: Takeshi Takahashi [RainbowDolphin]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 ROTATION CENTER 0 0 0 1 "Custom" 
+0 ROTATION CONFIG 0 0
+1 7 0 0 0 1 0 0 0 1 0 0 0 1 8835 - Chain link.ldr
+1 7 0 -16 0 1 0 0 0 1 0 0 0 1 8835 - Chain link.ldr
+1 7 0 -32 0 1 0 0 0 1 0 0 0 1 8835 - Chain link.ldr
+1 7 0 -48 0 1 0 0 0 1 0 0 0 1 8835 - Chain link.ldr
+1 7 0 -64 0 1 0 0 0 1 0 0 0 1 8835 - Chain link.ldr
+1 7 0 -80 0 1 0 0 0 1 0 0 0 1 8835 - Chain link.ldr
+1 7 0 -96 0 1 0 0 0 1 0 0 0 1 8835 - Chain link.ldr
+1 7 0 -112 0 1 0 0 0 1 0 0 0 1 8835 - Chain link.ldr
+1 7 0 -128 0 1 0 0 0 1 0 0 0 1 8835 - Chain link.ldr
+
+
+
+0
+0 FILE 8835 - Tilt link.ldr
+0 Tilt link
+0 Name: 8835 - Tilt link.ldr
+0 Author: Takeshi Takahashi [RainbowDolphin]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 ROTATION CENTER 0 0 0 1 "Custom" 
+0 ROTATION CONFIG 0 0
+1 0 50 0 0 1 0 0 0 1 0 0 0 1 4262.dat
+
+
+
+
+
+0
+0 FILE 8835 - Tilt lever.ldr
+0 Tilt lever
+0 Name: 8835 - Tilt lever.ldr
+0 Author: Takeshi Takahashi [RainbowDolphin]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 ROTATION CENTER 0 0 0 1 "Custom" 
+0 ROTATION CONFIG 0 0
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 3705.dat
+1 7 -35 0 0 0 0 1 0 1 0 -1 0 0 4185a.dat
+1 7 20 0 0 0 1 0 1 0 0 0 0 -1 2825.dat
+1 7 -40 -10 -17.3 1 0 0 0 1 0 0 0 1 4274.dat
+
+
+
+0
+0 FILE 8835 - Front pillar.ldr
+0 Front pillar
+0 Name: 8835 - Front pillar.ldr
+0 Author: Takeshi Takahashi [RainbowDolphin]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 ROTATION CENTER 0 0 0 1 "Custom" 
+0 ROTATION CONFIG 0 0
+1 15 -50 4 50 1 0 0 0 1 0 0 0 1 3710.dat
+1 15 -50 4 -50 1 0 0 0 1 0 0 0 1 3710.dat
+1 15 -30 -4 50 1 0 0 0 1 0 0 0 1 4275b.dat
+1 15 -30 -4 -50 1 0 0 0 1 0 0 0 1 4275b.dat
+1 15 -70 -4 50 -1 0 0 0 1 0 0 0 -1 4275b.dat
+1 15 -70 -4 -50 -1 0 0 0 1 0 0 0 -1 4275b.dat
+
+
+
+
+
+0
+0

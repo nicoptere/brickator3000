@@ -1,0 +1,62 @@
+0 FILE 625 - main.ldr
+0 main
+0 Name: 625 - main.ldr
+0 Author: Robert Paciorek [bercik]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HISTORY 2018-01-08 [bercik] OMR version by Robert Paciorek [bercik] with perrmision of juraj3579
+1 14 0 0 0 1 0 0 0 1 0 0 0 1 625 - tractor.ldr
+1 16 89.282 0 -94.639 0.5 0 0.866 0 1 0 -0.866 0 0.5 625 - minifig.ldr
+0 FILE 625 - tractor.ldr
+0 tractor
+0 Name: 625 - tractor.ldr
+0 Author: Robert Paciorek [[bercik]]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HISTORY 2018-01-08 [bercik] OMR version by Robert Paciorek [bercik] with perrmision of juraj3579
+1 16 0 0 0 1 0 0 0 1 0 0 0 1 3034.dat
+1 16 70 -24 0 0 0 -1 0 1 0 1 0 0 3004.dat
+1 16 -70 -24 0 0 0 -1 0 1 0 1 0 0 3004.dat
+1 16 -30 -24 0 0 0 -1 0 1 0 1 0 0 3004.dat
+1 16 -50 -24 0 0 0 -1 0 1 0 1 0 0 3317.dat
+1 16 -10 -24 10 -1 0 0 0 1 0 0 0 -1 3665a.dat
+1 16 -10 -24 -10 1 0 0 0 1 0 0 0 1 3665a.dat
+1 0 -60 8 0 0 0 -1 0 1 0 1 0 0 3137.dat
+1 4 -60 30 0 0 0 -1 0 1 0 1 0 0 u9132c01.dat
+1 256 -60 30 -31 1 0 0 0 1 0 0 0 1 3641.dat
+1 256 -60 30 31 1 0 0 0 1 0 0 0 1 3641.dat
+1 0 -10 8 0 1 0 0 0 1 0 0 0 1 3021.dat
+1 0 40 8 10 1 0 0 0 1 0 0 0 1 3700.dat
+1 0 40 8 -10 1 0 0 0 1 0 0 0 1 3700.dat
+1 0 40 18 0 0 0 1 0 1 0 -1 0 0 3705.dat
+1 4 40 18 30 -1 0 0 0 1 0 0 0 -1 3482.dat
+1 256 40 18 30 -1 0 0 0 1 0 0 0 -1 3483.dat
+1 4 40 18 -30 -1 0 0 0 1 0 0 0 -1 3482.dat
+1 256 40 18 -30 -1 0 0 0 1 0 0 0 -1 3483.dat
+1 16 -40 -32 0 1 0 0 0 1 0 0 0 1 3020.dat
+1 16 0 -32 -30 1 0 0 0 1 0 0 0 1 3023.dat
+1 16 0 -32 30 1 0 0 0 1 0 0 0 1 3023.dat
+1 16 10 -8 0 0 0 1 0 1 0 -1 0 0 3829a.dat
+1 0 9.76 -34.32 0 -0.6 -0.8 0 -0.8 0.6 0 0 0 -1 3828.dat
+1 47 10 -80 0 0 0 1 0 1 0 -1 0 0 3823.dat
+1 0 -50 -15 0 -1 0 0 0 1 0 0 0 -1 3314.dat
+1 16 -130 -53 0.2 -1 0 0 0 1 0 0 0 -1 784.dat
+1 7 -50 -56 10 -1 0 0 0 1 0 0 0 -1 3062a.dat
+0 FILE 625 - minifig.ldr
+0 minifig
+0 Name: 625 - minifig.ldr
+0 Author: Robert Paciorek [[bercik]]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HISTORY 2018-01-08 [bercik] OMR version by Robert Paciorek [bercik] with perrmision of juraj3579
+1 4 0 -24 0 -1 0 0 0 1 0 0 0 -1 973.dat
+1 4 15.6 -15 0 1 0.174 0 -0.174 1 0 0 0 1 3819.dat
+1 4 -15.6 -15 0 1 -0.174 0 0.174 1 0 0 0 1 3818.dat
+1 14 -23.806 2.709 -9.899 1 -0.123 0.123 0.174 0.696 -0.696 0 0.707 0.707 3820.dat
+1 14 23.806 2.709 -9.899 1 -0.123 -0.123 0 0.718 -0.696 0.174 0.685 0.707 3820.dat
+1 14 0 -48 0 1 0 0 0 1 0 0 0 1 3626bp01.dat
+1 4 0 -48 0 1 0 0 0 1 0 0 0 1 3833.dat
+1 1 0 8 0 1 0 0 0 1 0 0 0 1 3815.dat
+1 1 0 20 0 1 0 0 0 1 0 0 0 1 3816.dat
+1 1 0 20 0 1 0 0 0 1 0 0 0 1 3817.dat
+1 8 -25.288 11.112 -13.858 0.437 0.088 0.895 -0.758 -0.5 0.42 0.484 -0.862 -0.152 3837.dat

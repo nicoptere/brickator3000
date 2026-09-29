@@ -1,0 +1,96 @@
+0 FILE 40191 - Main.ldr
+0 Main
+0 Name: 40191 - Main.ldr
+0 Author: Stefan Frenz [smf]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 40191 - Ferrari F12 Berlinetta.ldr
+
+
+0 FILE 40191 - Ferrari F12 Berlinetta.ldr
+0 Ferrari F12 Berlinetta
+0 Name: 40191 - Ferrari F12 Berlinetta.ldr
+0 Author: Stefan Frenz [smf]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 10039.dat
+1 0 0 8 -20 1 0 0 0 1 0 0 0 1 3020.dat
+0 STEP
+1 0 0 8 -50 1 0 0 0 1 0 0 0 1 3710.dat
+0 STEP
+1 0 0 0 -80 1 0 0 0 1 0 0 0 1 11002.dat
+0 STEP
+1 4 30 0 -40 0 0 -1 0 1 0 1 0 0 3023.dat
+1 4 -30 0 -40 0 0 -1 0 1 0 1 0 0 3023.dat
+1 14 0 0 -90 1 0 0 0 1 0 0 0 1 3023.dat
+0 STEP
+1 14 0 -8 70 1 0 0 0 1 0 0 0 1 3023.dat
+1 72 0 -8 -20 0 0 -1 0 1 0 1 0 0 3034.dat
+1 4 -30 0 -40 -1 0 0 0 1 0 0 0 -1 61409.dat
+1 4 30 0 -40 -1 0 0 0 1 0 0 0 -1 61409.dat
+0 STEP
+1 4 30 -16 -10 0 0 -1 0 1 0 1 0 0 4070.dat
+1 4 30 -16 10 0 0 -1 0 1 0 1 0 0 4070.dat
+1 4 30 -16 30 0 0 -1 0 1 0 1 0 0 4070.dat
+1 4 -30 -16 -10 0 0 1 0 1 0 -1 0 0 4070.dat
+1 4 -30 -16 10 0 0 1 0 1 0 -1 0 0 4070.dat
+1 4 -30 -16 30 0 0 1 0 1 0 -1 0 0 4070.dat
+0 STEP
+1 4 0 -16 -70 1 0 0 0 1 0 0 0 1 98835.dat
+0 STEP
+1 4 44 -6 10 0 -1 0 0 0 -1 1 0 0 63864.dat
+1 4 -44 -6 10 0 1 0 0 0 1 1 0 0 63864.dat
+1 0 0 -16 -20 0 0 -1 0 1 0 1 0 0 3020.dat
+0 STEP
+1 4 0 -24 60 1 0 0 0 1 0 0 0 1 60212.dat
+1 4 10 -24 -50 0 0 1 0 1 0 -1 0 0 63325.dat
+1 4 -10 -24 -50 -1 0 0 0 1 0 0 0 -1 63325.dat
+0 STEP
+1 4 0 -24 70 -1 0 0 0 1 0 0 0 -1 40191 - Back.ldr
+0 STEP
+1 4 0 -48 -10 1 0 0 0 1 0 0 0 1 93591.dat
+0 STEP
+1 0 40 5 -80 1 0 0 0 1 0 0 0 1 40191 - Wheel.ldr
+1 0 40 5 60 1 0 0 0 1 0 0 0 1 40191 - Wheel.ldr
+1 0 -40 5 -80 -1 0 0 0 -1 0 0 0 1 40191 - Wheel.ldr
+1 0 -40 5 60 -1 0 0 0 -1 0 0 0 1 40191 - Wheel.ldr
+
+
+0 FILE 40191 - Wheel.ldr
+0 Wheel
+0 Name: 40191 - Wheel.ldr
+0 Author: Stefan Frenz [smf]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+1 256 0 0 0 0 0 -1 0 1 0 1 0 0 50951.dat
+1 0 0 0 0 0 0 -1 0 1 0 1 0 0 51719.dat
+
+
+0 FILE 40191 - Back.ldr
+0 Back
+0 Name: 40191 - Back.ldr
+0 Author: Stefan Frenz [smf]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+1 4 0 0 0 1 0 0 0 1 0 0 0 1 93274.dat
+0 STEP
+1 4 -20 10 -22 1 0 0 0 0 -1 0 1 0 3023.dat
+1 4 20 10 -22 1 0 0 0 0 -1 0 1 0 3023.dat
+1 0 0 30 -22 1 0 0 0 0 -1 0 1 0 3794b.dat
+0 STEP
+1 0 -30 30 -14 1 0 0 0 0 -1 0 1 0 54200.dat
+1 0 30 30 -14 1 0 0 0 0 -1 0 1 0 54200.dat
+1 4 0 30 -22 1 0 0 0 0 -1 0 1 0 54200.dat
+0 STEP
+1 4 0 10 -30 -1 0 0 0 0 1 0 1 0 2436b.dat
+0 STEP
+1 36 30 10 -30 1 0 0 0 0 -1 0 1 0 98138.dat
+1 36 -30 10 -30 1 0 0 0 0 -1 0 1 0 98138.dat
+1 4 0 10 -38 1 0 0 0 0 -1 0 1 0 3069b.dat
+
+
+

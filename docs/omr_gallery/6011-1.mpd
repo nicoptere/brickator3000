@@ -1,0 +1,78 @@
+0 FILE 6011 - main.ldr
+0 main
+0 Name: 6011 - main.ldr
+0 Author: Takeshi Takahashi [RainbowDolphin]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 ROTATION CENTER 0 0 0 1 "Custom"
+0 ROTATION CONFIG 0 0
+1 0 -158 -16 0 0 0 1 0 1 0 -1 0 0 4493c01.dat
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 6011 - Car.ldr
+1 0 -10 -72 0 0 0 1 0 1 0 -1 0 0 6011 - Minifig.ldr
+
+
+
+
+0 FILE 6011 - Car.ldr
+0 Car
+0 Name: 6011 - Car.ldr
+0 Author: Takeshi Takahashi [RainbowDolphin]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 ROTATION CENTER 0 0 0 1 "Custom"
+0 ROTATION CONFIG 0 0
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 3020.dat
+0 STEP
+1 0 20 -8 -20 0 0 1 0 1 0 -1 0 0 4488.dat
+1 0 20 -8 20 0 0 -1 0 1 0 1 0 0 4488.dat
+0 STEP
+1 4 -20 -8 0 0 0 1 0 1 0 -1 0 0 4508c01.dat
+1 14 -60 -4 0 1 0 0 0 1 0 0 0 1 4587.dat
+0 STEP
+1 4 20 -16 0 1 0 0 0 1 0 0 0 1 3032.dat
+1 0 50 -24 0 0 0 1 0 1 0 -1 0 0 3023.dat
+1 0 70 -24 0 0 0 -1 0 1 0 1 0 0 4623.dat
+0 STEP
+1 14 -158 -48 0 0 0 1 0 1 0 -1 0 0 3004.dat
+1 4 -10 -40 30 0 0 1 0 1 0 -1 0 0 3040b.dat
+1 4 -10 -40 -30 0 0 1 0 1 0 -1 0 0 3040b.dat
+1 4 50 -40 30 0 0 -1 0 1 0 1 0 0 3040b.dat
+1 4 50 -40 -30 0 0 -1 0 1 0 1 0 0 3040b.dat
+0 STEP
+1 14 110 -24 30 0 0 -1 0 1 0 1 0 0 4491a.dat
+1 6 20 -2 -50 1 0 0 0 1 0 0 0 1 4489a.dat
+1 6 20 -2 50 -1 0 0 0 1 0 0 0 -1 4489a.dat
+1 7 20 -48 0 0 0 1 0 1 0 -1 0 0 4738b.dat
+1 7 20 -64 0 0 0 1 0 1 0 -1 0 0 4739a.dat
+
+
+
+
+
+0 FILE 6011 - Minifig.ldr
+0 Minifig
+0 Name: 6011 - Minifig.ldr
+0 Author: Takeshi Takahashi [RainbowDolphin]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 ROTATION CENTER 0 0 0 1 "Custom"
+0 ROTATION CONFIG 0 0
+1 0 0 -24 0 1 0 0 0 1 0 0 0 1 3844.dat
+1 14 0 -24 0 1 0 0 0 1 0 0 0 1 3626bp01.dat
+1 1 0 0 0 1 0 0 0 1 0 0 0 1 973p43.dat
+1 0 0 32 0 1 0 0 0 1 0 0 0 1 3815b.dat
+1 0 -15.552 9 0 0.985 -0.085 -0.147224 0.17 0.4925 0.853035 0 -0.866025 0.5 3818.dat
+1 0 15.552 9 0 0.985 0.085 0.147224 -0.17 0.4925 0.853035 0 -0.866025 0.5 3819.dat
+1 14 -20.749 8.552 -21.408 0.985 -0.164183 -0.0439926 0.17 0.951293 0.254898 0 -0.25878 0.96578 3820.dat
+1 14 20.749 8.552 -21.408 0.985 0.164183 0.0439926 -0.17 0.951293 0.254898 0 -0.25878 0.96578 3820.dat
+1 6 -13.557 -33.12 -29.408 0.985 -0.169903 -0.00294063 0.17 0.98444 0.0170383 0 -0.0172978 0.999431 4497.dat
+1 0 0 44 0 1 0 0 0 0.0174524 0.999848 0 -0.999848 0.0174524 3816b.dat
+1 0 0 44 0 1 0 0 0 0.0174524 0.999848 0 -0.999848 0.0174524 3817b.dat
+
+
+
+
+
+
+
+

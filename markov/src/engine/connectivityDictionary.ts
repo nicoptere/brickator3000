@@ -329,27 +329,27 @@ export const CONNECTIVITY_SIGNATURES: Record<string, ConnectivitySignature> = {
     canStraddleSeam: false
   },
 
-  // --- Bionicle, Constraction, Teeth, Horns & Radar Dishes ---
-  'BIONICLE_TOOTH_1x3x2': {
-    signatureId: 'BIONICLE_TOOTH_1x3x2',
-    widthX: 1,
-    depthZ: 3,
-    heightY: 6,
-    topStudPattern: 'ORGANIC_SPINE',
-    bottomTubePattern: 'AXLE_PIN_SOCKET',
+  // --- Domes, Dishes & Cones (System LEAF Pieces) ---
+  'DOME_2x2': {
+    signatureId: 'DOME_2x2',
+    widthX: 2,
+    depthZ: 2,
+    heightY: 3,
+    topStudPattern: 'SPHERICAL_DOME',
+    bottomTubePattern: 'STANDARD_TUBES',
     totalTopStuds: 0,
-    totalBottomTubes: 2,
-    clutchEfficiency: 0.85,
+    totalBottomTubes: 4,
+    clutchEfficiency: 0.9,
     canStraddleSeam: true
   },
-  'CREATURE_TOOTH_1x1': {
-    signatureId: 'CREATURE_TOOTH_1x1',
+  'CONE_1x1': {
+    signatureId: 'CONE_1x1',
     widthX: 1,
     depthZ: 1,
-    heightY: 2,
-    topStudPattern: 'POINTED_HORN',
+    heightY: 3,
+    topStudPattern: 'HOLLOW_STUD',
     bottomTubePattern: 'SINGLE_PIN',
-    totalTopStuds: 0,
+    totalTopStuds: 1,
     totalBottomTubes: 1,
     clutchEfficiency: 0.75,
     canStraddleSeam: false

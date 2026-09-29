@@ -1,0 +1,272 @@
+0 FILE 6594 - main.ldr
+0 main
+0 Name: 6594 - main.ldr
+0 Author: Iván Sánchez Ortega [IvanSanchez]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !KEYWORDS Octan, tanker
+
+
+
+0 !THEME City
+0 !HISTORY 2021-04-26 [IvanSanchez] First try, using wrong stickers for the trailer submodel.
+0 !LEOCAD MODEL BACKGROUND GRADIENT 0 0 0.74902 1 1 1
+1 4 60 -8 -50 1 0 0 0 1 0 0 0 1 6594 - Truck Head.ldr
+1 4 0 0 130 1 0 0 0 1 0 0 0 1 6594 - Trailer.ldr
+1 4 100 0 -110 1 0 0 0 1 0 0 0 1 6594 - Minifig.ldr
+
+
+
+
+
+
+
+0 FILE 6594 - Truck Head.ldr
+0 Truck Head
+0 Name: 6594 - Truck Head.ldr
+0 Author: Iván Sánchez Ortega [IvanSanchez]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !KEYWORDS Octan, tanker
+
+
+
+1 0 -60.05 -32 17.05 0 0 -1 0 1 0 1 0 0 3034.dat
+0 !THEME City
+0 !HISTORY 2021-04-26 [IvanSanchez] First try, using wrong stickers for the trailer submodel.
+1 0 -60.05 -24 -22.95 1 0 0 0 1 0 0 0 1 4600.dat
+1 0 -60.05 -24 97.05 1 0 0 0 1 0 0 0 1 4600.dat
+1 7 -70.05 -32 107.05 1 0 0 0 1 0 0 0 1 6141.dat
+1 7 -50.05 -32 107.05 1 0 0 0 1 0 0 0 1 6141.dat
+1 0 -60.05 -40 97.05 1 0 0 0 1 0 0 0 1 3022.dat
+1 0 -60.05 -40 47.05 -1 0 0 0 1 0 0 0 -1 4590.dat
+1 2 -60.05 -40 -12.95 0 0 -1 0 1 0 1 0 0 3021.dat
+1 2 -60.05 -40 -52.95 1 0 0 0 1 0 0 0 1 2436a.dat
+1 2 -60.05 -30 -74.95 1 0 0 0 0 -1 0 1 0 3710.dat
+0 !LEOCAD PIECE PIVOT  10 0 0 1 0 0 0 1 0 0 0 1
+1 47 -30.05 -30 -82.95 0 0 -1 -1 0 0 0 1 0 3024.dat
+1 47 -90.05 -30 -82.95 0 0 -1 -1 0 0 0 1 0 3024.dat
+1 2 -60.05 -30 -82.95 -1 0 0 0 0 1 0 1 0 2412a.dat
+1 4 -60.05 -48 -42.95 0 0 -1 0 1 0 1 0 0 3022.dat
+1 0 -60.05 -48 77.05 0 0 1 0 1 0 -1 0 0 3709b.dat
+1 7 -60.05 -56 77.05 0 0 1 0 1 0 -1 0 0 4032b.dat
+1 4 -60.05 -56 -22.95 -1 0 0 0 1 0 0 0 -1 4211.dat
+1 4 -60.05 -56 -62.95 -1 0 0 0 1 0 0 0 -1 3020.dat
+1 4 -60.05 -56 7.05 -1 0 0 0 1 0 0 0 -1 3710.dat
+1 15 -80.05 -80 -72.95 -1 0 0 0 1 0 0 0 -1 2877.dat
+1 15 -40.05 -80 -72.95 -1 0 0 0 1 0 0 0 -1 2877.dat
+1 15 -30.05 -80 -52.95 1 0 0 0 1 0 0 0 1 3822.dat
+1 15 -90.05 -80 -52.95 1 0 0 0 1 0 0 0 1 3821.dat
+1 15 -60.05 -80 7.05 -1 0 0 0 1 0 0 0 -1 3010.dat
+1 43 -60.05 -128 -52.95 1 0 0 0 1 0 0 0 1 3823.dat
+1 15 -60.05 -136 -22.95 1 0 0 0 1 0 0 0 1 4213.dat
+1 15 -60.05 -128 7.05 1 0 0 0 1 0 0 0 1 4214.dat
+1 15 -80.05 -160 -32.95 -1 0 0 0 1 0 0 0 -1 4865a.dat
+1 15 -40.05 -160 -32.95 -1 0 0 0 1 0 0 0 -1 4865a.dat
+1 0 -30.05 -144 -12.95 -1 0 0 0 1 0 0 0 -1 4592.dat
+1 7 -30.05 -144 -12.95 1 0 0 0 1 0 0 0 1 4593.dat
+0 !LEOCAD GROUP BEGIN tyre1
+1 0 -24.05 -19 -22.95 0 0 -1 0 1 0 1 0 0 6015.dat
+0 !LEOCAD GROUP END
+0 !LEOCAD GROUP BEGIN tyre2
+1 0 -24.05 -19 97.05 0 0 -1 0 1 0 1 0 0 6015.dat
+0 !LEOCAD GROUP END
+0 !LEOCAD GROUP BEGIN tyre3
+1 0 -96.05 -19 -22.95 0 0 1 0 1 0 -1 0 0 6015.dat
+0 !LEOCAD GROUP END
+0 !LEOCAD GROUP BEGIN tyre
+1 0 -96.05 -19 97.05 0 0 1 0 1 0 -1 0 0 6015.dat
+0 !LEOCAD GROUP END
+0 !LEOCAD GROUP BEGIN tyre1
+1 7 -30.05 -19 -22.95 0 0 -1 0 1 0 1 0 0 6014.dat
+0 !LEOCAD GROUP END
+0 !LEOCAD GROUP BEGIN tyre2
+1 7 -30.05 -19 97.05 0 0 -1 0 1 0 1 0 0 6014.dat
+0 !LEOCAD GROUP END
+0 !LEOCAD GROUP BEGIN tyre3
+1 7 -90.05 -19 -22.95 0 0 1 0 1 0 -1 0 0 6014.dat
+0 !LEOCAD GROUP END
+0 !LEOCAD GROUP BEGIN tyre
+1 7 -90.05 -19 97.05 0 0 1 0 1 0 -1 0 0 6014.dat
+0 !LEOCAD GROUP END
+1 15 -60.05 -150 -42.95 1 0 0 0 0 -1 0 1 0 168185a.dat
+
+
+
+
+0 FILE 6594 - Trailer.ldr
+0 Trailer
+0 Name: 6594 - Trailer.ldr
+0 Author: Iván Sánchez Ortega [IvanSanchez]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !KEYWORDS Octan, tanker
+
+
+
+1 0 0 -56 130 0 0 -1 0 1 0 1 0 0 3738.dat
+0 !THEME City
+0 !HISTORY 2021-04-26 [IvanSanchez] First try, using wrong stickers for the trailer submodel.
+1 0 0 -48 120 1 0 0 0 1 0 0 0 1 3023.dat
+1 0 0 -48 60 1 0 0 0 1 0 0 0 1 3023.dat
+1 0 0 -40 120 1 0 0 0 1 0 0 0 1 3023.dat
+1 0 0 -40 60 1 0 0 0 1 0 0 0 1 3023.dat
+1 15 0 -48 180 -1 0 0 0 1 0 0 0 -1 2436a.dat
+1 36 -30 -38 202 0 0 -1 1 0 0 0 -1 0 3070b.dat
+1 36 30 -38 202 0 0 -1 1 0 0 0 -1 0 3070b.dat
+1 15 0 -64 180 1 0 0 0 1 0 0 0 1 3023.dat
+1 15 0 -64 120 1 0 0 0 1 0 0 0 1 3023.dat
+1 15 0 -64 200 1 0 0 0 1 0 0 0 1 2412a.dat
+1 15 0 -64 50 0 0 -1 0 1 0 1 0 0 3022.dat
+1 15 0 -56 10 1 0 0 0 1 0 0 0 1 4854.dat
+1 15 20 -48 10 0 0 1 0 1 0 -1 0 0 3956.dat
+1 15 -30 -64 40 0 0 1 0 1 0 -1 0 0 6019.dat
+1 7 -32 -68 10 0 1 0 0 0 1 1 0 0 2584.dat
+1 15 -20 -72 110 0 0 -1 0 1 0 1 0 0 3034.dat
+1 15 20 -72 110 0 0 -1 0 1 0 1 0 0 3034.dat
+1 15 30 -64 40 0 0 -1 0 1 0 1 0 0 3024.dat
+1 15 20 -80 -20 1 0 0 0 1 0 0 0 1 3660.dat
+1 15 -20 -80 -20 1 0 0 0 1 0 0 0 1 3660.dat
+1 4 0 -68 10 0 1 0 0 0 -1 -1 0 0 3022.dat
+1 15 8 -58 10 0 1 0 0 0 1 1 0 0 3660p01.dat
+1 0 -38 -68 10 0 1 0 0 0 1 1 0 0 2585.dat
+1 0 0 -88 -50 0 0 -1 0 1 0 1 0 0 3491.dat
+1 2 0 -80 40 -1 0 0 0 1 0 0 0 -1 3023.dat
+1 2 0 -80 180 -1 0 0 0 1 0 0 0 -1 3023.dat
+1 4 0 -88 180 -1 0 0 0 1 0 0 0 -1 3023.dat
+1 2 30 -80 110 0 0 -1 0 1 0 1 0 0 3460.dat
+1 2 -30 -80 110 0 0 -1 0 1 0 1 0 0 3460.dat
+1 2 0 -88 40 -1 0 0 0 1 0 0 0 -1 3710.dat
+1 4 30 -88 130 0 0 -1 0 1 0 1 0 0 3666.dat
+1 15 30 -88 -70 0 0 -1 0 1 0 1 0 0 3666.dat
+1 15 -30 -88 -70 0 0 -1 0 1 0 1 0 0 3666.dat
+1 4 -30 -88 130 0 0 -1 0 1 0 1 0 0 3666.dat
+1 4 30 -104 60 0 0 -1 0 1 0 1 0 0 3005.dat
+1 4 -30 -104 60 0 0 -1 0 1 0 1 0 0 3005.dat
+1 15 0 -96 -40 -1 0 0 0 1 0 0 0 -1 3023.dat
+1 2 30 -96 -30 0 0 -1 0 1 0 1 0 0 3460.dat
+1 2 -30 -96 -30 0 0 -1 0 1 0 1 0 0 3460.dat
+1 2 0 -96 -120 1 0 0 0 1 0 0 0 1 3710.dat
+1 7 34 -58 20 0 1 0 0 0 1 1 0 0 6141.dat
+1 7 34 -58 0 0 1 0 0 0 1 1 0 0 6141.dat
+1 15 0 -136 180 1 0 0 0 1 0 0 0 1 4864b.dat
+1 15 30 -112 130 0 0 -1 0 1 0 1 0 0 3009.dat
+1 15 -30 -112 130 0 0 -1 0 1 0 1 0 0 3009.dat
+1 4 0 -104 -40 -1 0 0 0 1 0 0 0 -1 3710.dat
+1 4 30 -104 10 0 0 1 0 1 0 -1 0 0 3710.dat
+1 4 30 -104 -90 0 0 1 0 1 0 -1 0 0 3710.dat
+1 4 -30 -104 10 0 0 1 0 1 0 -1 0 0 3710.dat
+1 4 -30 -104 -90 0 0 1 0 1 0 -1 0 0 3710.dat
+1 4 0 -104 -120 1 0 0 0 1 0 0 0 1 3023.dat
+1 15 30 -112 -10 0 0 1 0 1 0 -1 0 0 3460.dat
+1 15 -30 -112 -10 0 0 1 0 1 0 -1 0 0 3460.dat
+1 15 -30 -112 -120 1 0 0 0 1 0 0 0 1 2420.dat
+1 15 30 -112 -120 0 0 -1 0 1 0 1 0 0 2420.dat
+1 15 0 -136 -120 1 0 0 0 1 0 0 0 1 3004.dat
+1 15 30 -136 30 0 0 1 0 1 0 -1 0 0 2465.dat
+1 15 -30 -136 30 0 0 1 0 1 0 -1 0 0 2465.dat
+1 15 10 -160 110 0 0 -1 0 1 0 1 0 0 4445.dat
+1 15 -10 -160 -50 0 0 1 0 1 0 -1 0 0 4445.dat
+1 15 10 -160 -50 0 0 -1 0 1 0 1 0 0 4445.dat
+1 15 -10 -160 110 0 0 1 0 1 0 -1 0 0 4445.dat
+1 4 0 -168 150 0 0 -1 0 1 0 1 0 0 4032a.dat
+1 4 0 -168 -90 0 0 -1 0 1 0 1 0 0 4032a.dat
+1 4 0 -168 30 0 0 -1 0 1 0 1 0 0 4032a.dat
+0 !LEOCAD GROUP BEGIN tyres1
+1 0 0 -32 150 1 0 0 0 1 0 0 0 1 4600.dat
+0 !LEOCAD GROUP END
+0 !LEOCAD GROUP BEGIN tyres
+1 0 0 -32 90 1 0 0 0 1 0 0 0 1 4600.dat
+0 !LEOCAD GROUP END
+0 !LEOCAD GROUP BEGIN tyres1
+0 !LEOCAD GROUP BEGIN tyre3
+1 0 36 -27 150 0 0 -1 0 1 0 1 0 0 6015.dat
+0 !LEOCAD GROUP END
+0 !LEOCAD GROUP END
+0 !LEOCAD GROUP BEGIN tyres
+0 !LEOCAD GROUP BEGIN tyre2
+1 0 36 -27 90 0 0 -1 0 1 0 1 0 0 6015.dat
+0 !LEOCAD GROUP END
+0 !LEOCAD GROUP END
+0 !LEOCAD GROUP BEGIN tyres1
+0 !LEOCAD GROUP BEGIN tyre4
+1 0 -36 -27 150 0 0 1 0 1 0 -1 0 0 6015.dat
+0 !LEOCAD GROUP END
+0 !LEOCAD GROUP END
+0 !LEOCAD GROUP BEGIN tyres
+0 !LEOCAD GROUP BEGIN tyre
+1 0 -36 -27 90 0 0 1 0 1 0 -1 0 0 6015.dat
+0 !LEOCAD GROUP END
+0 !LEOCAD GROUP END
+0 !LEOCAD GROUP BEGIN tyres1
+0 !LEOCAD GROUP BEGIN tyre3
+1 7 30 -27 150 0 0 -1 0 1 0 1 0 0 6014.dat
+0 !LEOCAD GROUP END
+0 !LEOCAD GROUP END
+0 !LEOCAD GROUP BEGIN tyres
+0 !LEOCAD GROUP BEGIN tyre2
+1 7 30 -27 90 0 0 -1 0 1 0 1 0 0 6014.dat
+0 !LEOCAD GROUP END
+0 !LEOCAD GROUP END
+0 !LEOCAD GROUP BEGIN tyres1
+0 !LEOCAD GROUP BEGIN tyre4
+1 7 -30 -27 150 0 0 1 0 1 0 -1 0 0 6014.dat
+0 !LEOCAD GROUP END
+0 !LEOCAD GROUP END
+0 !LEOCAD GROUP BEGIN tyres
+0 !LEOCAD GROUP BEGIN tyre
+1 7 -30 -27 90 0 0 1 0 1 0 -1 0 0 6014.dat
+0 !LEOCAD GROUP END
+0 !LEOCAD GROUP END
+0 !LEOCAD GROUP BEGIN tyres1
+1 0 0 -40 150 1 0 0 0 1 0 0 0 1 2460.dat
+0 !LEOCAD GROUP END
+0 !LEOCAD GROUP BEGIN tyres
+1 0 0 -40 90 1 0 0 0 1 0 0 0 1 2460.dat
+0 !LEOCAD GROUP END
+1 7 0 -64 -102 0 0 -1 1 0 0 0 -1 0 2736.dat
+1 15 40 -120 130 0 -1 0 0 0 -1 1 0 0 168185a.dat
+1 15 -40 -120 130 0 1 0 0 0 -1 -1 0 0 168185a.dat
+1 15 0 -110 190 -1 0 0 0 0 -1 0 -1 0 4521703e.dat
+1 15 40 -120 -100 0 -1 0 0 0 -1 1 0 0 170876a.dat
+1 15 -41 -120 -100 0 1 0 0 0 -1 -1 0 0 170876a.dat
+1 7 -50 -62 56 1 0 0 0 0 1 0 -1 0 4210a.dat
+
+
+
+
+0 FILE 6594 - Minifig.ldr
+0 Minifig
+0 Name: 6594 - Minifig.ldr
+0 Author: Iván Sánchez Ortega [IvanSanchez]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !KEYWORDS Octan, tanker
+
+
+
+0 !LEOCAD GROUP BEGIN Minifig #1
+0 !THEME City
+0 !HISTORY 2021-04-26 [IvanSanchez] First try, using wrong stickers for the trailer submodel.
+1 4 0 -96 0 1 0 0 0 1 0 0 0 1 4485.dat
+1 14 0 -96 0 1 0 0 0 1 0 0 0 1 3626bp01.dat
+1 15 0 -72 0 1 0 0 0 1 0 0 0 1 973pt2.dat
+1 2 0 -40 0 1 0 0 0 1 0 0 0 1 3815.dat
+1 15 15.5 -64 0 0.985435 0.170055 0 -0.170055 0.985435 0 0 0 1 3819.dat
+1 15 -15.5 -64 0 0.985435 -0.170055 0 0.170055 0.985435 0 0 0 1 3818.dat
+1 14 23.6582 -46.127 -10 0.985435 0.120247 -0.120247 -0.170055 0.696808 -0.696808 0 0.707107 0.707107 3820.dat
+1 14 -23.6582 -46.127 -10 0.985435 -0.120247 0.120247 0.170055 0.696808 -0.696808 0 0.707107 0.707107 3820.dat
+1 2 0 -28 0 1 0 0 0 1 0 0 0 1 3817.dat
+1 2 0 -28 0 1 0 0 0 1 0 0 0 1 3816.dat
+0 !LEOCAD GROUP END
+
+
+
+
+

@@ -295,7 +295,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           </div>
         </div>
 
-        {/* Section 3: Arbitrary Scale (Height in Plates) */}
+        {/* Section 3: Arbitrary Scale (Height in Plates / Bricks) */}
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
             <label
@@ -310,18 +310,45 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               Scale (Height)
             </label>
             <span style={{ fontSize: 12, fontFamily: 'monospace', color: '#38bdf8', fontWeight: 700 }}>
-              {targetHeightPlates} plates ({Math.round(targetHeightPlates / 3)} bricks)
+              {Math.round(targetHeightPlates / 3)} BRICKS ({targetHeightPlates}p)
             </span>
           </div>
           <input
             type="range"
-            min={12}
-            max={48}
+            min={24}
+            max={192}
             step={3}
             value={targetHeightPlates}
             onChange={(e) => onChangeHeight(parseInt(e.target.value))}
-            style={{ width: '100%', accentColor: '#38bdf8' }}
+            style={{ width: '100%', accentColor: '#38bdf8', cursor: 'pointer' }}
           />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 4, marginTop: 6 }}>
+            {[
+              { bricks: 16, plates: 48, label: '16b' },
+              { bricks: 24, plates: 72, label: '24b' },
+              { bricks: 32, plates: 96, label: '32b' },
+              { bricks: 48, plates: 144, label: '48b' },
+              { bricks: 64, plates: 192, label: '64b' }
+            ].map((preset) => (
+              <button
+                key={preset.bricks}
+                onClick={() => onChangeHeight(preset.plates)}
+                style={{
+                  padding: '4px 2px',
+                  borderRadius: 4,
+                  border: 'none',
+                  fontSize: 10,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  backgroundColor: targetHeightPlates === preset.plates ? '#38bdf8' : '#1e293b',
+                  color: targetHeightPlates === preset.plates ? '#0f172a' : '#94a3b8',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                {preset.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Section 4: Viewport Mode */}

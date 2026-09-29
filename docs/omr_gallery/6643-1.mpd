@@ -1,0 +1,135 @@
+0 FILE 6643 - main.ldr
+0 main
+0 Name: 6643 - main.ldr
+0 Author: Robert Paciorek [bercik]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HELP Copyright (c) 2002-2017, Robert Paciorek (http://www.opcode.eu.org/)
+0 !HELP Released under a dual license, you can choise "CCAL version 2.0" or "BSD/MIT-type licence":
+0 !HELP Redistribution and use in source or any others forms, with or without modification, ARE PERMITTED provided save information about author(s).
+0 !HELP This material is distributed WITHOUT any warranty, use at YOUR own risk.
+1 4 -50 -56 -10 1 0 0 0 1 0 0 0 1 6643 - CAR.LDR
+1 15 -134 0 123 0.906 0 0.423 0 1 0 -0.423 0 0.906 6643 - FIREMEN.LDR
+
+
+
+
+0 FILE 6643 - car.ldr
+0 car
+0 Name: 6643 - car.ldr
+0 Author: Robert Paciorek [bercik]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HELP Copyright (c) 2002-2017, Robert Paciorek (http://www.opcode.eu.org/)
+0 !HELP Released under a dual license, you can choise "CCAL version 2.0" or "BSD/MIT-type licence":
+0 !HELP Redistribution and use in source or any others forms, with or without modification, ARE PERMITTED provided save information about author(s).
+0 !HELP This material is distributed WITHOUT any warranty, use at YOUR own risk.
+1 15 10 0 0 1 0 0 0 1 0 0 0 1 4212A.DAT
+0 STEP
+1 15 10 8 -60 0 0 -1 0 1 0 1 0 0 3022.DAT
+1 15 10 8 70 0 0 -1 0 1 0 1 0 0 3021.DAT
+1 7 20 8 -90 1 0 0 0 1 0 0 0 1 4081B.DAT
+1 7 0 8 -90 1 0 0 0 1 0 0 0 1 4081B.DAT
+0 STEP
+1 15 40 8 0 0 0 -1 0 1 0 1 0 0 3023.DAT
+1 15 -20 8 0 0 0 -1 0 1 0 1 0 0 3023.DAT
+1 0 10 16 60 -1 0 0 0 1 0 0 0 -1 3022.DAT
+1 0 10 16 -70 0 0 -1 0 1 0 1 0 0 3021.DAT
+1 7 32 10 -110 0 -1 0 1 0 0 0 0 1 6141.DAT
+1 7 -12 10 -110 0 1 0 1 0 0 0 0 -1 6141.DAT
+0 STEP
+1 0 10 24 -60 -1 0 0 0 1 0 0 0 -1 4600.DAT
+1 0 10 24 60 -1 0 0 0 1 0 0 0 -1 4600.DAT
+0 STEP
+1 16 10 -8 90 -1 0 0 0 1 0 0 0 -1 3710.DAT
+1 16 10 -8 30 -1 0 0 0 1 0 0 0 -1 3710.DAT
+1 16 10 -16 60 -1 0 0 0 1 0 0 0 -1 3788.DAT
+1 16 10 -16 -60 -1 0 0 0 1 0 0 0 -1 3788.DAT
+0 STEP
+1 16 40 -16 90 -1 0 0 0 1 0 0 0 -1 3024.DAT
+1 16 -20 -16 90 -1 0 0 0 1 0 0 0 -1 3024.DAT
+1 16 10 -16 30 -1 0 0 0 1 0 0 0 -1 3710.DAT
+1 16 10 -8 -30 1 0 0 0 1 0 0 0 1 3829C01.DAT
+1 16 0 -24 -90 1 0 0 0 1 0 0 0 1 4070.DAT
+1 16 20 -24 -90 1 0 0 0 1 0 0 0 1 4070.DAT
+0 STEP
+1 16 -20 -24 -90 1 0 0 0 1 0 0 0 1 4070.DAT
+1 15 10 -14 -104 1 0 0 0 0 -1 0 1 0 2412B.DAT
+1 16 40 -24 -90 1 0 0 0 1 0 0 0 1 4070.DAT
+1 16 10 -40 30 -1 0 0 0 1 0 0 0 -1 4865A.DAT
+0 STEP
+1 47 40 -14 -104 1 0 0 0 0 -1 0 1 0 3024.DAT
+1 47 -20 -14 -104 1 0 0 0 0 -1 0 1 0 3024.DAT
+1 16 40 -64 60 0 0 -1 0 1 0 1 0 0 4863.DAT
+1 16 -20 -64 60 0 0 1 0 1 0 -1 0 0 4863.DAT
+1 43 -20 -64 80 0 0 1 0 1 0 -1 0 0 4862.DAT
+1 43 -20 -64 40 0 0 1 0 1 0 -1 0 0 4862.DAT
+1 43 40 -64 40 0 0 -1 0 1 0 1 0 0 4862.DAT
+1 43 40 -64 80 0 0 -1 0 1 0 1 0 0 4862.DAT
+1 16 10 -24 -60 1 0 0 0 1 0 0 0 1 3020.DAT
+1 16 40 -24 -30 1 0 0 0 1 0 0 0 1 3822.DAT
+1 16 -20 -24 -30 1 0 0 0 1 0 0 0 1 3821.DAT
+0 STEP
+1 43 10 -72 -30 1 0 0 0 1 0 0 0 1 3823.DAT
+1 16 10 -32 -80 1 0 0 0 1 0 0 0 1 3068BP57.DAT
+1 16 40 -72 30 0 0 -1 0 1 0 1 0 0 3070B.DAT
+1 16 -20 -72 30 0 0 -1 0 1 0 1 0 0 3070B.DAT
+1 16 -20 -72 70 0 0 1 0 1 0 -1 0 0 3623.DAT
+1 16 40 -72 70 0 0 1 0 1 0 -1 0 0 3623.DAT
+0 STEP
+1 16 10 -80 0 1 0 0 0 1 0 0 0 1 4213.DAT
+1 16 10 -40 107 -1 0 0 0 0 -1 0 -1 0 2349A.DAT
+1 16 10 -80 90 -1 0 0 0 1 0 0 0 -1 4315.DAT
+1 16 10 -80 50 1 0 0 0 1 0 0 0 1 4315.DAT
+1 43 10 -57 103 1 0 0 0 0 1 0 -1 0 2348B.DAT
+0 STEP
+1 36 40 -10 116 -1 0 0 0 0 -1 0 -1 0 3070B.DAT
+1 15 10 -88 -10 -1 0 0 0 1 0 0 0 -1 3710.DAT
+1 15 10 -10 116 -1 0 0 0 0 -1 0 -1 0 3069B.DAT
+1 16 10 -80 70 1 0 0 0 1 0 0 0 1 3710.DAT
+1 15 20 -88 50 1 0 0 0 1 0 0 0 1 4592C01.DAT
+1 36 -20 -10 116 -1 0 0 0 0 -1 0 -1 0 3070B.DAT
+0 STEP
+1 15 10 -96 -10 -1 0 0 0 1 0 0 0 -1 3069B.DAT
+1 33 40 -96 -10 -1 0 0 0 1 0 0 0 -1 3024.DAT
+1 33 -20 -96 -10 -1 0 0 0 1 0 0 0 -1 3024.DAT
+0 STEP
+1 0 -20 28 60 0 0 1 0 1 0 -1 0 0 4084.DAT
+1 15 -20 28 60 0 0 1 0 1 0 -1 0 0 4624.DAT
+1 0 -20 29 -60 0 0 1 0 1 0 -1 0 0 4084.DAT
+1 15 -20 29 -60 0 0 1 0 1 0 -1 0 0 4624.DAT
+1 0 41 29 -60 0 0 -1 0 1 0 1 0 0 4084.DAT
+1 15 41 29 -60 0 0 -1 0 1 0 1 0 0 4624.DAT
+1 0 41 29 60 0 0 -1 0 1 0 1 0 0 4084.DAT
+1 15 41 29 60 0 0 -1 0 1 0 1 0 0 4624.DAT
+
+
+
+
+0 FILE 6643 - firemen.ldr
+0 firemen
+0 Name: 6643 - firemen.ldr
+0 Author: Robert Paciorek [bercik]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HELP Copyright (c) 2002-2017, Robert Paciorek (http://www.opcode.eu.org/)
+0 !HELP Released under a dual license, you can choise "CCAL version 2.0" or "BSD/MIT-type licence":
+0 !HELP Redistribution and use in source or any others forms, with or without modification, ARE PERMITTED provided save information about author(s).
+0 !HELP This material is distributed WITHOUT any warranty, use at YOUR own risk.
+1 15 0 -96 0 1 0 0 0 1 0 0 0 1 3834.DAT
+1 14 0 -96 0 1 0 0 0 1 0 0 0 1 3626BP01.DAT
+1 0 0 -72 0 1 0 0 0 1 0 0 0 1 973P21.DAT
+1 0 0 -40 0 1 0 0 0 1 0 0 0 1 3815.DAT
+1 0 15.5 -64 0 1 0.17 0 -0.17 1 0 0 0 1 3819.DAT
+1 0 -15.5 -64 0 1 -0.17 0 0.17 1 0 0 0 1 3818.DAT
+1 14 23.658001 -46.148998 -10 1 0.12 -0.12 -0.17 0.697 -0.697 0 0.707 0.707 3820.DAT
+1 14 -23.658001 -46.148998 -10 1 -0.12 0.12 0.17 0.697 -0.697 0 0.707 0.707 3820.DAT
+1 0 0 -28 0 1 0 0 0 1 0 0 0 1 3817.DAT
+1 0 0 -28 0 1 0 0 0 1 0 0 0 1 3816.DAT
+1 15 0 -72 0 1 0 0 0 1 0 0 0 1 3838.DAT
+1 7 22.937 -50.330002 -28.385 1 0.12 -0.12 -0.17 0.697 -0.697 0 0.707 0.707 3835.DAT
+1 15 -23.348 -46.674 -28.883001 -0.985 -0.087 -0.146 -0.17 0.507 0.845 0 0.857 -0.514 4599A.DAT
+1 15 -25.093 -34.492001 -7.818 -0.985 -0.087 -0.146 -0.17 0.507 0.845 0 0.857 -0.514 3062B.DAT
+
+
+

@@ -1,0 +1,115 @@
+0 FILE 6642 - main.ldr
+0 main
+0 Name: 6642 - main.ldr
+0 Author: Robert Paciorek [bercik]
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HELP Copyright (c) 2002-2017, Robert Paciorek (http://www.opcode.eu.org/)
+0 !HELP Released under a dual license, you can choise "CCAL version 2.0" or "BSD/MIT-type licence":
+0 !HELP Redistribution and use in source or any others forms, with or without modification, ARE PERMITTED provided save information about author(s).
+0 !HELP This material is distributed WITHOUT any warranty, use at YOUR own risk.
+1 4 120 -8 40 0.5 0 0.866 0 1 0 -0.866 0 0.5 6642 - helicopter.ldr
+1 4 -80 0 90 1 0 0 0 1 0 0 0 1 6642 - minifig.ldr
+
+0 FILE 6642 - helicopter.ldr
+0 helicopter
+0 Name: 6642 - helicopter.ldr
+0 Author: Robert Paciorek [bercik]
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HELP Copyright (c) 2002-2017, Robert Paciorek (http://www.opcode.eu.org/)
+0 !HELP Released under a dual license, you can choise "CCAL version 2.0" or "BSD/MIT-type licence":
+0 !HELP Redistribution and use in source or any others forms, with or without modification, ARE PERMITTED provided save information about author(s).
+0 !HELP This material is distributed WITHOUT any warranty, use at YOUR own risk.
+1 15 -60 0 50 1 0 0 0 1 0 0 0 1 3460.dat
+1 15 -60 0 -50 1 0 0 0 1 0 0 0 1 3460.dat
+1 15 -10 -24 0 0 0 -1 0 1 0 1 0 0 6140.dat
+1 15 -70 -24 0 0 0 -1 0 1 0 1 0 0 6140.dat
+0 STEP
+1 15 -10 -32 0 0 0 -1 0 1 0 1 0 0 3710.dat
+1 15 -70 -32 0 0 0 -1 0 1 0 1 0 0 3710.dat
+0 STEP
+1 15 -40 -40 30 1 0 0 0 1 0 0 0 1 3710.dat
+1 15 -40 -40 -30 1 0 0 0 1 0 0 0 1 3710.dat
+1 15 -40 -40 0 1 0 0 0 1 0 0 0 1 3795.dat
+0 STEP
+1 15 1 -22 0 0 1 0 0 0 1 1 0 0 3937.dat
+1 15 10 -32 0 0 0 1 0 1 0 -1 0 0 3938.dat
+1 0 -90 -64 0 0 0 1 0 1 0 -1 0 0 3660.dat
+1 0 -70 -64 -30 0 0 1 0 1 0 -1 0 0 3665.dat
+1 0 -70 -64 30 0 0 1 0 1 0 -1 0 0 3665.dat
+1 0 -50 -64 0 0 0 1 0 1 0 -1 0 0 4865a.dat
+0 STEP
+1 0 -50 -64 -30 0 0 -1 0 1 0 1 0 0 4286.dat
+1 0 -50 -64 30 0 0 -1 0 1 0 1 0 0 4286.dat
+1 46 24 -22 -10 0 1 0 0 0 1 1 0 0 6141.dat
+1 46 24 -22 10 0 1 0 0 0 1 1 0 0 6141.dat
+1 15 -90 -88 -30 0 0 1 0 1 0 -1 0 0 3665.dat
+1 15 -90 -88 30 0 0 1 0 1 0 -1 0 0 3665.dat
+1 15 -110 -88 0 0 0 1 0 1 0 -1 0 0 3747a.dat
+1 15 -90 -88 0 0 0 1 0 1 0 -1 0 0 3004.dat
+0 STEP
+1 15 -150 -96 0 0 0 1 0 1 0 -1 0 0 3794a.dat
+1 15 -130 -96 0 0 0 1 0 1 0 -1 0 0 3794a.dat
+1 15 -100 -96 0 0 0 1 0 1 0 -1 0 0 3020.dat
+1 15 10 -48 -10 0 0 -1 0 1 0 1 0 0 4592c01.dat
+1 15 10 -48 10 0 0 -1 0 1 0 1 0 0 4592c01.dat
+0 STEP
+1 15 -240 -96 0 -1 0 0 0 1 0 0 0 -1 3460.dat
+1 15 -100 -104 0 -1 0 0 0 1 0 0 0 -1 3022.dat
+0 STEP
+1 15 -200 -104 0 -1 0 0 0 1 0 0 0 -1 3460.dat
+1 15 -300 -104 -10 0 0 1 0 1 0 -1 0 0 4488.dat
+1 15 -60 -112 -30 1 0 0 0 1 0 0 0 1 2377.dat
+1 47 -60 -112 -30 1 0 0 0 1 0 0 0 1 4862.dat
+1 15 -60 -112 30 -1 0 0 0 1 0 0 0 -1 2377.dat
+1 47 -60 -112 30 -1 0 0 0 1 0 0 0 -1 4862.dat
+0 STEP
+1 15 -90 -120 -30 0 0 1 0 1 0 -1 0 0 3040b.dat
+1 15 -90 -120 30 0 0 1 0 1 0 -1 0 0 3040b.dat
+1 0 -100 -112 0 0 0 1 0 1 0 -1 0 0 3176.dat
+1 15 -60 -120 0 0 0 1 0 1 0 -1 0 0 3020.dat
+1 0 -310 -128 0 0 0 -1 0 1 0 1 0 0 4286.dat
+1 36 -310 -136 0 0 0 -1 0 1 0 1 0 0 3070a.dat
+1 0 -300 -99 -40 -1 0 0 0 0 -1 0 -1 0 2421.dat
+0 STEP
+1 15 -50 -128 0 0 0 1 0 1 0 -1 0 0 3710.dat
+1 0 -70 -128 0 0 0 1 0 1 0 -1 0 0 3023.dat
+1 0 -90 -136 0 0 0 1 0 1 0 -1 0 0 3298.dat
+0 STEP
+1 0 -70 -136 -10 1 0 0 0 1 0 0 0 1 4081b.dat
+1 0 -70 -136 10 -1 0 0 0 1 0 0 0 -1 4081b.dat
+1 15 -50 -136 0 0 0 -1 0 1 0 1 0 0 4315.dat
+0 STEP
+1 0 -98 -133 29 0 1 0 0 0 1 1 0 0 4589.dat
+1 0 -98 -133 -31 0 1 0 0 0 1 1 0 0 4589.dat
+1 0 -80 -144 0 1 0 0 0 1 0 0 0 1 2460.dat
+1 36 -50 -144 30 1 0 0 0 1 0 0 0 1 3070a.dat
+1 34 -50 -144 -30 1 0 0 0 1 0 0 0 1 3070a.dat
+1 0 -50 -144 0 0 0 -1 0 1 0 1 0 0 3069b.dat
+0 STEP
+1 41 -36 -132 0 0 0 -1 0 1 0 1 0 0 2483.dat
+1 0 -80 -168 0 0 0 -1 0 1 0 1 0 0 2479.dat
+1 0 -80 -176 90 0 0 -1 0 1 0 1 0 0 4162.dat
+1 0 -80 -176 -90 0 0 -1 0 1 0 1 0 0 4162.dat
+
+0 FILE 6642 - minifig.ldr
+0 minifig
+0 Name: 6642 - minifig.ldr
+0 Author: Robert Paciorek [bercik]
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HELP Copyright (c) 2002-2017, Robert Paciorek (http://www.opcode.eu.org/)
+0 !HELP Released under a dual license, you can choise "CCAL version 2.0" or "BSD/MIT-type licence":
+0 !HELP Redistribution and use in source or any others forms, with or without modification, ARE PERMITTED provided save information about author(s).
+0 !HELP This material is distributed WITHOUT any warranty, use at YOUR own risk.
+1 15 0 -96.08 0 1 0 0 0 1 0 0 0 1 2446.dat
+1 43 0 -96.08 0 1 0 0 0 1 0 0 0 1 2447.dat
+1 14 0 -96.08 0 1 0 0 0 1 0 0 0 1 3626bp01.dat
+1 0 0 -72 0 1 0 0 0 1 0 0 0 1 973p1g.dat
+1 0 0 -40 0 1 0 0 0 1 0 0 0 1 3815.dat
+1 0 15.5 -64 0 0.985 0.17 0 -0.17 0.985 0 0 0 1 3819.dat
+1 0 -15.5 -64 0 0.985 -0.17 0 0.17 0.985 0 0 0 1 3818.dat
+1 14 23.658 -46.127 -10 0.985 0.12 -0.12 -0.17 0.697 -0.697 0 0.707 0.707 3820.dat
+1 14 -23.658 -46.127 -10 0.985 -0.12 0.12 0.17 0.697 -0.697 0 0.707 0.707 3820.dat
+1 0 0 -28 0 1 0 0 0 1 0 0 0 1 3817.dat
+1 0 0 -28 0 1 0 0 0 1 0 0 0 1 3816.dat
+1 0 -24.861 -39.159 -17.071 0.985 -0.098 0.139 0.17 0.565 -0.807 0 0.819 0.574 3962b.dat
+

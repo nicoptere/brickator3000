@@ -1,0 +1,167 @@
+0 FILE 6877 - Vector Detector.ldr
+0 Vector Detector
+0 Name: 6877 - Vector Detector.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / M:Tron
+
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 6877 - Spaceship + Minifig.ldr
+
+
+0 FILE 6877 - Spaceship.ldr
+0 Spaceship
+0 Name: 6877 - Spaceship.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / M:Tron
+
+1 4 0 0 0 0 0 1 0 1 0 -1 0 0 3795.dat
+1 4 0 -8 50 0 0 1 0 1 0 -1 0 0 3021.dat
+1 0 -80 -8 -20 0 0 1 0 1 0 -1 0 0 3933.dat
+1 0 80 -8 -20 0 0 -1 0 1 0 1 0 0 3934.dat
+1 4 -50 -16 10 0 0 -1 0 1 0 1 0 0 3024.dat
+1 4 50 -16 10 0 0 -1 0 1 0 1 0 0 3024.dat
+1 4 -50 -24 10 0 0 1 0 1 0 -1 0 0 4081b.dat
+1 4 50 -24 10 0 0 -1 0 1 0 1 0 0 4081b.dat
+1 4 0 -24 -50 1 0 0 0 1 0 0 0 1 3747a.dat
+1 4 0 -32 70 -1 0 0 0 1 0 0 0 -1 3747a.dat
+1 4 0 -32 -60 1 0 0 0 1 0 0 0 1 4475.dat
+1 0 0 -40 0 -1 0 0 0 1 0 0 0 -1 4732.dat
+1 0 0 -40 100 -1 0 0 0 1 0 0 0 -1 3022.dat
+1 0 0 -40 -120 0 0 -1 0 1 0 1 0 0 3020.dat
+1 42 70 -22 38 0 0 -1 1 0 0 0 -1 0 4589.dat
+1 42 -70 -22 38 0 0 -1 1 0 0 0 -1 0 4589.dat
+1 0 -80 -48 80 0 0 1 0 1 0 -1 0 0 3933.dat
+1 0 80 -48 80 0 0 -1 0 1 0 1 0 0 3934.dat
+1 4 0 -48 50 1 0 0 0 1 0 0 0 1 3023.dat
+1 4 0 -48 -50 1 0 0 0 1 0 0 0 1 3023.dat
+1 15 0 -48 -30 -1 0 0 0 1 0 0 0 -1 3069bp68.dat
+1 0 0 -32 -150 1 0 0 0 1 0 0 0 1 3839b.dat
+1 7 110 -40 100 -1 0 0 0 1 0 0 0 -1 4595.dat
+1 7 -110 -40 100 -1 0 0 0 1 0 0 0 -1 4595.dat
+1 4 0 -72 90 1 0 0 0 1 0 0 0 1 3298.dat
+1 4 0 -56 110 1 0 0 0 1 0 0 0 1 3023.dat
+1 4 0 -64 110 1 0 0 0 1 0 0 0 1 3023.dat
+1 4 0 -96 110 1 0 0 0 1 0 0 0 1 3023.dat
+1 4 0 -88 110 -1 0 0 0 1 0 0 0 -1 2458.dat
+1 4 0 -72 -50 -1 0 0 0 1 0 0 0 -1 3937.dat
+1 4 0 -64 -70 1 0 0 0 1 0 0 0 1 3298p68.dat
+1 0 60 -96 120 1 0 0 0 1 0 0 0 1 3479.dat
+1 0 -60 -96 120 1 0 0 0 1 0 0 0 1 3479.dat
+1 0 0 -88 130 -1 0 0 0 1 0 0 0 -1 6877 - Spaceship - Magnet + Box.ldr
+1 0 0 -62 -50 1 0 0 0 0.172789 0.984959 0 -0.984959 0.172789 6877 - Spaceship - Windscreen.ldr
+1 0 0 -104 120 1 0 0 0 1 0 0 0 1 3034.dat
+1 0 0 -112 130 1 0 0 0 1 0 0 0 1 3023.dat
+1 0 0 -120 130 1 0 0 0 1 0 0 0 1 3023.dat
+1 0 10 -128 130 1 0 0 0 1 0 0 0 1 4085c.dat
+1 0 -10 -128 130 1 0 0 0 1 0 0 0 1 4085c.dat
+1 42 10 -112 110 1 0 0 0 1 0 0 0 1 2569.dat
+1 42 -10 -112 110 1 0 0 0 1 0 0 0 1 2569.dat
+1 4 -10 -120 90 -1 0 0 0 1 0 0 0 -1 4085c.dat
+1 4 10 -120 90 -1 0 0 0 1 0 0 0 -1 4085c.dat
+1 42 -26 -26 -176 0 0 -1 1 0 0 0 -1 0 4740.dat
+1 42 26 -26 -176 0 0 -1 1 0 0 0 -1 0 4740.dat
+
+
+0 FILE 6877 - Spaceship - Magnet + Box.ldr
+0 Spaceship - Magnet + Box
+0 Name: 6877 - Spaceship - Magnet + Box.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / M:Tron
+
+1 4 0 0 0 1 0 0 0 1 0 0 0 1 2607.dat
+1 0 0 -8 0 1 0 0 0 1 0 0 0 1 3070b.dat
+1 0 0 9 -26.5 -1 0 0 0 0 -1 0 -1 0 73092.dat
+1 0 0 39.5 -26.5 1 0 0 0 1 0 0 0 1 6877 - Spaceship - Box.ldr
+
+
+
+0 FILE 6877 - Spaceship - Box.ldr
+0 Spaceship - Box
+0 Name: 6877 - Spaceship - Box.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / M:Tron
+
+1 4 0 0 0 1 0 0 0 1 0 0 0 1 4345a.dat
+1 7 0 0 0 1 0 0 0 1 0 0 0 1 4346p68.dat
+1 0 0 -8 0 1 0 0 0 1 0 0 0 1 2609a.dat
+1 0 0 -14.5 0 1 0 0 0 0 -1 0 1 0 73092.dat
+1 42 6 32 6 1 0 0 0 1 0 0 0 1 6141.dat
+1 42 -6 32 -10 1 0 0 0 1 0 0 0 1 6141.dat
+
+
+
+0 FILE 6877 - Spaceship - Windscreen.ldr
+0 Spaceship - Windscreen
+0 Name: 6877 - Spaceship - Windscreen.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / M:Tron
+
+1 0 0 -10 0 1 0 0 0 1 0 0 0 1 3938.dat
+1 42 0 -146 0 1 0 0 0 1 0 0 0 1 2466.dat
+
+
+
+0 FILE 6877 - Spaceship + Minifig.ldr
+0 Spaceship + Minifig
+0 Name: 6877 - Spaceship + Minifig.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / M:Tron
+
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 6877 - Spaceship.ldr
+1 0 0 -69 8 1 0 0 0 1 0 0 0 1 6877 - Minifig.ldr
+
+
+0 FILE 6877 - Minifig.ldr
+0 Minifig
+0 Name: 6877 - Minifig.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / M:Tron
+
+1 0 0 -25.151 16.098 0.75471 0 0.656059 -0.148697 0.973976 0.171056 -0.638986 -0.226651 0.735069 6877 - Minifig - Helmet.ldr
+1 14 0 -25.151 16.098 0.75471 0 0.656059 -0.148697 0.973976 0.171056 -0.638986 -0.226651 0.735069 3626bp01.dat
+1 0 0 1.146 9.98 1 0 0 0 0.973976 0.226651 0 -0.226651 0.973976 3838.dat
+1 4 0 1.146 9.98 1 0 0 0 0.973976 0.226651 0 -0.226651 0.973976 973p68.dat
+1 0 0 32.312 2.739 1 0 0 0 0.973976 0.226651 0 -0.226651 0.973976 3815.dat
+1 15 -15.552 9.911 7.939 0.985 -0.152795 -0.0745231 0.165576 0.762915 0.624271 -0.0385307 -0.62762 0.777537 3818.dat
+1 15 15.552 9.911 7.939 0.985 0.0324375 0.166877 -0.165576 -0.0394314 0.984987 0.0385307 -0.99868 -0.0333064 3819.dat
+1 0 -22.771 16.92 -11.666 0.992061 -0.108943 0.0553382 0.114021 0.988063 -0.0980213 -0.0440251 0.103829 0.993446 3820.dat
+1 0 19.56 -1.857 -10.259 0.985 0.140915 0.0950484 -0.165576 0.668508 0.724264 0.0385307 -0.729614 0.682519 3820.dat
+1 0 -23.177 16.867 -20.949 0.506832 -0.0922826 -0.856571 -0.250386 0.934699 -0.248981 0.824233 0.341128 0.450988 3962a.dat
+1 15 0 44 0 1 0 0 0 0 1 0 -1 0 3816.dat
+1 15 0 44 0 1 0 0 0 0 1 0 -1 0 3817.dat
+
+
+0 FILE 6877 - Minifig - Helmet.ldr
+0 Minifig - Helmet
+0 Name: 6877 - Minifig - Helmet.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / M:Tron
+
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 2446.dat
+1 42 0 2.77 5.329 1 0 0 0 0.570714 0.821149 0 -0.821149 0.570714 2447.dat
+
+
+

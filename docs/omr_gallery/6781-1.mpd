@@ -1,0 +1,459 @@
+0 FILE 6781 - SP-Striker.ldr
+0 SP-Striker
+0 Name: 6781 - SP-Striker.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Space Police I
+
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 6781 - Spaceship.ldr
+1 0 -250 -32 0 -0.52344 0 0.852028 0 1 0 -0.852028 0 -0.52344 6781 - Jail + Minifig.ldr
+1 0 -149.28 -65.87 -312.048 -0.173631 0 0.98478 0 1 0 -0.98478 0 -0.173631 6781 - Minifig 1.ldr
+
+
+0 FILE 6781 - Spaceship.ldr
+0 Spaceship
+0 Name: 6781 - Spaceship.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Space Police I
+
+1 0 0 0 0 0 0 1 0 1 0 -1 0 0 3036.dat
+1 0 0 0 -200 0 0 1 0 1 0 -1 0 0 2445.dat
+1 1 -40 -8 -10 1 0 0 0 1 0 0 0 1 3023.dat
+1 1 40 -8 -10 1 0 0 0 1 0 0 0 1 3023.dat
+1 0 0 -24 -310 1 0 0 0 1 0 0 0 1 3747a.dat
+1 0 -10 -24 -210 0 0 1 0 1 0 -1 0 0 3665.dat
+1 0 10 -24 -210 0 0 -1 0 1 0 1 0 0 3665.dat
+1 0 0 -8 -80 0 0 -1 0 1 0 1 0 0 3020.dat
+1 0 -70 -8 -50 0 0 1 0 1 0 -1 0 0 2450.dat
+1 0 70 -8 -50 1 0 0 0 1 0 0 0 1 2450.dat
+1 0 -60 -8 80 -1 0 0 0 1 0 0 0 -1 3933.dat
+1 0 60 -8 80 -1 0 0 0 1 0 0 0 -1 3934.dat
+1 0 0 0 150 -1 0 0 0 1 0 0 0 -1 3710.dat
+1 0 0 -24 -260 0 0 1 0 1 0 -1 0 0 4854.dat
+1 0 0 -24 -160 0 0 1 0 1 0 -1 0 0 4854.dat
+1 0 0 -16 -140 0 0 1 0 1 0 -1 0 0 3068b.dat
+1 0 0 -16 -10 -1 0 0 0 1 0 0 0 -1 2431.dat
+1 0 0 -16 70 -1 0 0 0 1 0 0 0 -1 2431.dat
+1 0 0 -16 150 -1 0 0 0 1 0 0 0 -1 2431.dat
+1 0 -30 -16 40 0 0 -1 0 1 0 1 0 0 3069b.dat
+1 0 30 -16 40 0 0 -1 0 1 0 1 0 0 3069b.dat
+1 1 -30 -32 -310 1 0 0 0 1 0 0 0 1 2420.dat
+1 1 30 -32 -310 0 0 -1 0 1 0 1 0 0 2420.dat
+1 1 -30 -32 -220 0 0 -1 0 1 0 1 0 0 3666.dat
+1 1 30 -32 -220 0 0 -1 0 1 0 1 0 0 3666.dat
+1 1 -50 -32 -140 -1 0 0 0 1 0 0 0 -1 3021.dat
+1 1 50 -32 -140 -1 0 0 0 1 0 0 0 -1 3021.dat
+1 0 -50 -32 -70 1 0 0 0 1 0 0 0 1 4287.dat
+1 0 50 -32 -70 1 0 0 0 1 0 0 0 1 4287.dat
+1 0 -50 -32 -40 0 0 -1 0 1 0 1 0 0 3004.dat
+1 0 50 -32 -40 0 0 -1 0 1 0 1 0 0 3004.dat
+1 0 50 -32 0 0 0 -1 0 1 0 1 0 0 3039.dat
+1 0 -50 -32 0 0 0 1 0 1 0 -1 0 0 3039.dat
+1 0 -50 -32 30 -1 0 0 0 1 0 0 0 -1 4286.dat
+1 0 50 -32 30 -1 0 0 0 1 0 0 0 -1 4286.dat
+1 1 30 -56 -300 0 0 1 0 1 0 -1 0 0 4865a.dat
+1 1 30 -56 -260 0 0 1 0 1 0 -1 0 0 4865a.dat
+1 1 -30 -56 -260 0 0 -1 0 1 0 1 0 0 4865a.dat
+1 1 -30 -56 -300 0 0 -1 0 1 0 1 0 0 4865a.dat
+1 0 -30 -56 -180 0 0 -1 0 1 0 1 0 0 3009.dat
+1 0 30 -56 -180 0 0 -1 0 1 0 1 0 0 3009.dat
+1 0 50 -56 -80 0 0 -1 0 1 0 1 0 0 3008.dat
+1 0 -50 -56 -80 0 0 -1 0 1 0 1 0 0 3008.dat
+1 0 50 -56 20 0 0 -1 0 1 0 1 0 0 3937.dat
+1 0 -50 -56 20 0 0 1 0 1 0 -1 0 0 3937.dat
+1 1 0 -48 -370 -1 0 0 0 1 0 0 0 -1 4856.dat
+1 0 -50 -56 -350 0 0 1 0 1 0 -1 0 0 2450.dat
+1 0 50 -56 -350 1 0 0 0 1 0 0 0 1 2450.dat
+1 0 0 -48 -390 1 0 0 0 1 0 0 0 1 3023.dat
+1 0 0 -56 -390 1 0 0 0 1 0 0 0 1 3710.dat
+1 0 0 -56 -440 1 0 0 0 1 0 0 0 1 4859.dat
+1 0 70 -56 -140 0 0 -1 0 1 0 1 0 0 3004.dat
+1 0 -70 -56 -140 0 0 -1 0 1 0 1 0 0 3004.dat
+1 1 -50 -64 -140 1 0 0 0 1 0 0 0 1 3021.dat
+1 1 50 -64 -140 1 0 0 0 1 0 0 0 1 3021.dat
+1 0 -30 -64 -200 0 0 -1 0 1 0 1 0 0 2431.dat
+1 0 30 -64 -200 0 0 -1 0 1 0 1 0 0 2431.dat
+1 1 -50 -64 -110 0 0 -1 0 1 0 1 0 0 3024.dat
+1 1 50 -64 -110 0 0 -1 0 1 0 1 0 0 3024.dat
+1 36 -50 -64 -10 0 0 -1 0 1 0 1 0 0 3024.dat
+1 36 50 -64 -10 0 0 -1 0 1 0 1 0 0 3024.dat
+1 0 -110 -40 -180 1 0 0 0 1 0 0 0 1 6781 - Spaceship - Laser 1.ldr
+1 0 110 -40 -180 1 0 0 0 1 0 0 0 1 6781 - Spaceship - Laser 2.ldr
+1 1 50 -64 -80 0 0 -1 0 1 0 1 0 0 2452.dat
+1 1 50 -64 -40 0 0 -1 0 1 0 1 0 0 2452.dat
+1 1 -50 -64 -40 0 0 1 0 1 0 -1 0 0 2452.dat
+1 1 -50 -64 -80 0 0 1 0 1 0 -1 0 0 2452.dat
+1 0 -70 -60 -60 1 0 0 0 1 0 0 0 1 6781 - Spaceship - Wing 1.ldr
+1 0 70 -60 -60 1 0 0 0 1 0 0 0 1 6781 - Spaceship - Wing 2.ldr
+1 0 50 -46 20 1 0 0 0 1 0 0 0 1 6781 - Spaceship - Hinge.ldr
+1 0 -50 -46 20 -1 0 0 0 1 0 0 0 -1 6781 - Spaceship - Hinge.ldr
+1 1 0 -56 -330 -1 0 0 0 1 0 0 0 -1 3039p23.dat
+1 0 -50 -72 -80 0 0 -1 0 1 0 1 0 0 3460.dat
+1 0 50 -72 -80 0 0 -1 0 1 0 1 0 0 3460.dat
+1 0 -30 -88 -140 0 0 -1 0 1 0 1 0 0 3004.dat
+1 0 30 -88 -140 0 0 -1 0 1 0 1 0 0 3004.dat
+1 1 50 -96 -140 0 0 -1 0 1 0 1 0 0 3039.dat
+1 1 -50 -96 -140 0 0 1 0 1 0 -1 0 0 3039.dat
+1 0 -30 -96 -130 0 0 1 0 1 0 -1 0 0 3623.dat
+1 0 30 -96 -130 0 0 1 0 1 0 -1 0 0 3623.dat
+1 0 -40 -104 -140 -1 0 0 0 1 0 0 0 -1 3022.dat
+1 0 40 -104 -140 -1 0 0 0 1 0 0 0 -1 3022.dat
+1 0 0 -112 -130 -1 0 0 0 1 0 0 0 -1 3710.dat
+1 0 0 -112 -150 1 0 0 0 1 0 0 0 1 4315.dat
+1 36 0 -108 -244 1 0 0 0 1 0 0 0 1 2507.dat
+1 36 0 -108 -164 1 0 0 0 1 0 0 0 1 2337.dat
+1 0 -30 -120 -140 0 0 1 0 1 0 -1 0 0 3069b.dat
+1 0 30 -120 -140 0 0 1 0 1 0 -1 0 0 3069b.dat
+1 0 0 -40 -170 1 0 0 0 1 0 0 0 1 6781 - Spaceship - Tail.ldr
+
+
+0 FILE 6781 - Spaceship - Laser 1.ldr
+0 Spaceship - Laser 1
+0 Name: 6781 - Spaceship - Laser 1.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Space Police I
+
+1 1 0 0 0 0 0 -1 0 1 0 1 0 0 3023.dat
+1 0 0 -24 -10 1 0 0 0 1 0 0 0 1 4070.dat
+1 0 0 -24 10 0 0 1 0 1 0 -1 0 0 4070.dat
+1 0 -14 -14 10 0 1 0 0 0 -1 -1 0 0 6141.dat
+1 36 -22 -14 10 0 1 0 0 0 -1 -1 0 0 4740.dat
+1 1 0 -14 -88 -1 0 0 0 0 -1 0 -1 0 3957a.dat
+1 36 0 -14 -96 0 0 -1 1 0 0 0 -1 0 6141.dat
+1 0 20 -32 0 0 0 1 0 1 0 -1 0 0 2419.dat
+
+
+
+0 FILE 6781 - Spaceship - Laser 2.ldr
+0 Spaceship - Laser 2
+0 Name: 6781 - Spaceship - Laser 2.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Space Police I
+
+1 1 0 0 0 0 0 -1 0 1 0 1 0 0 3023.dat
+1 0 0 -24 10 0 0 -1 0 1 0 1 0 0 4070.dat
+1 0 0 -24 -10 1 0 0 0 1 0 0 0 1 4070.dat
+1 0 14 -14 10 0 -1 0 1 0 0 0 0 1 6141.dat
+1 36 22 -14 10 0 -1 0 1 0 0 0 0 1 4740.dat
+1 1 0 -14 -88 0 0 -1 1 0 0 0 -1 0 3957a.dat
+1 36 0 -14 -96 1 0 0 0 0 1 0 -1 0 6141.dat
+1 0 -20 -32 0 0 0 -1 0 1 0 1 0 0 2419.dat
+
+
+
+0 FILE 6781 - Spaceship - Wing 1.ldr
+0 Spaceship - Wing 1
+0 Name: 6781 - Spaceship - Wing 1.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Space Police I
+
+1 0 -40 4 0 -1 0 0 0 1 0 0 0 -1 2450.dat
+1 1 -40 -4 0 -1 0 0 0 1 0 0 0 -1 3623.dat
+1 1 -30 -4 -20 1 0 0 0 1 0 0 0 1 4276b.dat
+1 0 -80 -4 -40 0 0 1 0 1 0 -1 0 0 2450.dat
+1 0 -70 -12 10 0 0 1 0 1 0 -1 0 0 3934.dat
+1 1 -60 -12 -50 0 0 1 0 1 0 -1 0 0 2412a.dat
+1 1 -60 -20 -10 0 0 1 0 1 0 -1 0 0 3023.dat
+1 36 -60 -20 20 0 0 1 0 1 0 -1 0 0 6141.dat
+1 1 -30 -4 20 1 0 0 0 1 0 0 0 1 4276b.dat
+
+
+
+0 FILE 6781 - Spaceship - Wing 2.ldr
+0 Spaceship - Wing 2
+0 Name: 6781 - Spaceship - Wing 2.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Space Police I
+
+1 0 40 4 0 0 0 -1 0 1 0 1 0 0 2450.dat
+1 1 30 -4 -20 -1 0 0 0 1 0 0 0 -1 4276b.dat
+1 1 60 -4 0 -1 0 0 0 1 0 0 0 -1 3623.dat
+1 1 30 -4 20 -1 0 0 0 1 0 0 0 -1 4276b.dat
+1 0 80 -4 -40 1 0 0 0 1 0 0 0 1 2450.dat
+1 0 70 -12 10 0 0 -1 0 1 0 1 0 0 3933.dat
+1 1 60 -12 -50 0 0 -1 0 1 0 1 0 0 2412a.dat
+1 1 60 -20 -10 0 0 -1 0 1 0 1 0 0 3023.dat
+1 36 60 -20 20 0 0 -1 0 1 0 1 0 0 6141.dat
+
+
+
+0 FILE 6781 - Spaceship - Hinge.ldr
+0 Spaceship - Hinge
+0 Name: 6781 - Spaceship - Hinge.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Space Police I
+
+1 1 0 -10 0 0 0 -1 0 1 0 1 0 0 3938.dat
+1 1 0 -18 0 0 0 -1 0 1 0 1 0 0 3023.dat
+1 0 0 -50 0 0 0 -1 0 1 0 1 0 0 2432.dat
+
+
+
+0 FILE 6781 - Spaceship - Tail.ldr
+0 Spaceship - Tail
+0 Name: 6781 - Spaceship - Tail.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Space Police I
+
+1 1 0 0 0 1 0 0 0 1 0 0 0 1 3747a.dat
+1 1 0 16 50 0 0 -1 0 1 0 1 0 0 3020.dat
+1 1 0 8 30 0 0 -1 0 1 0 1 0 0 3022.dat
+1 1 0 0 30 0 0 -1 0 1 0 1 0 0 3022.dat
+1 0 0 -8 10 0 0 -1 0 1 0 1 0 0 4757.dat
+1 0 0 -16 40 -1 0 0 0 1 0 0 0 -1 4755.dat
+1 0 0 -24 40 -1 0 0 0 1 0 0 0 -1 4755.dat
+1 0 0 -32 40 -1 0 0 0 1 0 0 0 -1 4755.dat
+1 0 0 -40 40 -1 0 0 0 1 0 0 0 -1 4755.dat
+1 36 -10 -8 -40 -1 0 0 0 1 0 0 0 -1 3024.dat
+1 36 10 -8 -40 -1 0 0 0 1 0 0 0 -1 3024.dat
+1 0 0 -16 -30 0 0 1 0 1 0 -1 0 0 3020.dat
+1 15 0 -24 20 -1 0 0 0 1 0 0 0 -1 73666.dat
+1 0 0 -40 130 1 0 0 0 1 0 0 0 1 4760c01.dat
+1 1 30 16 130 0 0 1 0 1 0 -1 0 0 3460.dat
+1 1 -30 16 130 0 0 1 0 1 0 -1 0 0 3460.dat
+1 1 -10 -52 200 0 0 1 0 1 0 -1 0 0 6141.dat
+1 1 10 -52 200 0 0 1 0 1 0 -1 0 0 6141.dat
+1 1 0 -48 150 -1 0 0 0 1 0 0 0 -1 3020.dat
+1 36 -30 -48 60 -1 0 0 0 1 0 0 0 -1 3070b.dat
+1 36 30 -48 60 -1 0 0 0 1 0 0 0 -1 3070b.dat
+1 0 0 -48 70 0 0 1 0 1 0 -1 0 0 4757.dat
+1 15 0 -48 20 1 0 0 0 1 0 0 0 1 905c01.dat
+1 1 0 -24 -60 -1 0 0 0 1 0 0 0 -1 3069bp25.dat
+1 0 0 -56 30 -1 0 0 0 1 0 0 0 -1 3068b.dat
+1 0 0 -56 80 0 0 -1 0 1 0 1 0 0 3021.dat
+1 1 0 -64 80 0 0 -1 0 1 0 1 0 0 3021.dat
+1 15 0 -56 120 1 0 0 0 1 0 0 0 1 73664.dat
+1 0 0 -80 160 1 0 0 0 1 0 0 0 1 6781 - Spaceship - Tail - Top.ldr
+1 0 0 -88 100 1 0 0 0 1 0 0 0 1 3298p53.dat
+1 0 0 -136 150 1 0 0 0 1 0 0 0 1 3479.dat
+1 0 0 -144 140 1 0 0 0 1 0 0 0 1 3839b.dat
+1 0 0 -144 160 1 0 0 0 1 0 0 0 1 3069b.dat
+
+0 FILE 6781 - Spaceship - Tail - Top.ldr
+0 Spaceship - Tail - Top
+0 Name: 6781 - Spaceship - Tail - Top.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !THEME Space / Space Police I
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 3004.dat
+1 0 0 0 -20 1 0 0 0 1 0 0 0 1 2465.dat
+1 15 80 0 -40 1 0 0 0 1 0 0 0 1 2500c01.dat
+1 15 -80 0 -40 1 0 0 0 1 0 0 0 1 2500c01.dat
+1 0 0 -8 -20 0 0 1 0 1 0 -1 0 0 3021.dat
+1 36 -30 -8 -40 1 0 0 0 1 0 0 0 1 3024.dat
+1 36 30 -8 -40 1 0 0 0 1 0 0 0 1 3024.dat
+1 0 170 0 -40 0 0 -1 0 1 0 1 0 0 3665.dat
+1 0 -170 0 -40 0 0 1 0 1 0 -1 0 0 3665.dat
+1 0 120 -8 -10 0 0 -1 0 1 0 1 0 0 3933.dat
+1 0 -120 -8 -10 0 0 1 0 1 0 -1 0 0 3934.dat
+1 1 -50 -16 -30 0 0 1 0 1 0 -1 0 0 2412a.dat
+1 1 50 -16 -30 0 0 1 0 1 0 -1 0 0 2412a.dat
+1 0 -150 0 -60 1 0 0 0 1 0 0 0 1 6781 - Spaceship - Tail - Top - Arrow 1.ldr
+1 0 150 0 -60 1 0 0 0 1 0 0 0 1 6781 - Spaceship - Tail - Top - Arrow 2.ldr
+1 1 10 24 -20 1 0 0 0 1 0 0 0 1 2420.dat
+1 1 -10 24 -20 0 0 -1 0 1 0 1 0 0 2420.dat
+1 1 -150 24 -40 -1 0 0 0 1 0 0 0 -1 2420.dat
+1 1 150 24 -40 0 0 1 0 1 0 -1 0 0 2420.dat
+1 36 -80 10 -74 1 0 0 0 0 -1 0 1 0 3067.dat
+1 36 80 10 -74 1 0 0 0 0 -1 0 1 0 3067.dat
+
+0 FILE 6781 - Spaceship - Tail - Top - Arrow 1.ldr
+0 Spaceship - Tail - Top - Arrow 1
+0 Name: 6781 - Spaceship - Tail - Top - Arrow 1.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Space Police I
+
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 4070.dat
+1 0 0 -8 0 0 0 1 0 1 0 -1 0 0 4081b.dat
+1 0 0 -16 10 0 0 1 0 1 0 -1 0 0 3069bp07.dat
+1 36 -20 -6 -12 0 0 1 1 0 0 0 1 0 6141.dat
+1 0 -20 -6 -36 0 1 0 1 0 0 0 0 -1 3959.dat
+1 36 0 10 -78 0 0 -1 1 0 0 0 -1 0 3957a.dat
+
+
+0 FILE 6781 - Spaceship - Tail - Top - Arrow 2.ldr
+0 Spaceship - Tail - Top - Arrow 2
+0 Name: 6781 - Spaceship - Tail - Top - Arrow 2.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Space Police I
+
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 4070.dat
+1 0 0 -8 0 0 0 -1 0 1 0 1 0 0 4081b.dat
+1 0 0 -16 10 0 0 1 0 1 0 -1 0 0 3069bp07.dat
+1 36 20 -6 -12 0 0 1 1 0 0 0 1 0 6141.dat
+1 0 20 -6 -36 0 -1 0 -1 0 0 0 0 -1 3959.dat
+1 36 0 10 -78 0 0 1 -1 0 0 0 -1 0 3957a.dat
+
+
+
+0 FILE 6781 - Jail.ldr
+0 Jail
+0 Name: 6781 - Jail.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Space Police I
+
+1 1 0 0 0 0 0 -1 0 1 0 1 0 0 4854.dat
+1 0 0 8 0 0 0 -1 0 1 0 1 0 0 3068b.dat
+1 0 0 24 30 -1 0 0 0 1 0 0 0 -1 4590.dat
+1 0 0 24 -30 1 0 0 0 1 0 0 0 1 4590.dat
+1 1 0 -8 30 1 0 0 0 1 0 0 0 1 3004.dat
+1 1 0 -8 -30 1 0 0 0 1 0 0 0 1 3004.dat
+1 0 30 -8 0 0 0 1 0 1 0 -1 0 0 2431.dat
+1 0 -30 -8 30 0 0 1 0 1 0 -1 0 0 3024.dat
+1 0 -30 -8 -30 0 0 1 0 1 0 -1 0 0 3024.dat
+1 0 -30 -8 0 0 0 1 0 1 0 -1 0 0 4623.dat
+1 1 -30 -80 0 0 0 1 0 1 0 -1 0 0 4033.dat
+1 36 -29.5 -80 0 0 0 1 0 1 0 -1 0 0 3855.dat
+1 0 0 -80 -30 -1 0 0 0 1 0 0 0 -1 2362ap54.dat
+1 0 0 -80 30 1 0 0 0 1 0 0 0 1 2362ap53.dat
+1 0 -30 -88 0 0 0 1 0 1 0 -1 0 0 4623.dat
+1 0 -10 -88 -30 -1 0 0 0 1 0 0 0 -1 3623.dat
+1 0 -10 -88 30 -1 0 0 0 1 0 0 0 -1 3623.dat
+1 1 0 -96 -30 -1 0 0 0 1 0 0 0 -1 3069b.dat
+1 1 0 -96 30 -1 0 0 0 1 0 0 0 -1 3069b.dat
+1 1 -30 -96 0 0 0 -1 0 1 0 1 0 0 4625.dat
+1 0 -36 -100 0 0 0 -1 0 1 0 1 0 0 6781 - Jail - Door.ldr
+
+
+0 FILE 6781 - Jail - Door.ldr
+0 Jail - Door
+0 Name: 6781 - Jail - Door.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Space Police I
+
+1 1 0 -20 -36 1 0 0 0 1 0 0 0 1 4857.dat
+1 0 0 -28 -36 1 0 0 0 1 0 0 0 1 3068b.dat
+1 1 30 -12 -36 0 0 -1 0 1 0 1 0 0 3023.dat
+1 1 30 -4 -36 0 0 -1 0 1 0 1 0 0 3023.dat
+1 1 -30 -12 -36 0 0 -1 0 1 0 1 0 0 3023.dat
+1 1 -30 -4 -36 0 0 -1 0 1 0 1 0 0 3023.dat
+1 0 0 4 -66 -1 0 0 0 1 0 0 0 -1 4873.dat
+1 36 -50 28 -66 -1 0 0 0 1 0 0 0 -1 6141.dat
+1 36 50 28 -66 -1 0 0 0 1 0 0 0 -1 6141.dat
+1 36 -30 84 -66 -1 0 0 0 1 0 0 0 -1 3957a.dat
+1 36 -10 84 -66 -1 0 0 0 1 0 0 0 -1 3957a.dat
+1 36 10 84 -66 -1 0 0 0 1 0 0 0 -1 3957a.dat
+1 36 30 84 -66 -1 0 0 0 1 0 0 0 -1 3957a.dat
+
+
+0 FILE 6781 - Jail + Minifig.ldr
+0 Jail + Minifig
+0 Name: 6781 - Jail + Minifig.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Space Police I
+
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 6781 - Jail.ldr
+1 0 -8 -45 0 0 0 -1 0 1 0 1 0 0 6781 - Minifig 2.ldr
+
+
+0 FILE 6781 - Minifig 1.ldr
+0 Minifig 1
+0 Name: 6781 - Minifig 1.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Space Police I
+
+1 0 0 -27 0 0.927184 0 0.374607 0 1 0 -0.374607 0 0.927184 6781 - Minifig 1 - Helmet.ldr
+1 14 0 -27 0 0.927184 0 0.374607 0 1 0 -0.374607 0 0.927184 3626bp01.dat
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 3838.dat
+1 15 0 0 0 1 0 0 0 1 0 0 0 1 973p6b.dat
+1 0 0 32 0 1 0 0 0 1 0 0 0 1 3815.dat
+1 0 15.552 9 0 0.985 0.0609226 0.158709 -0.17 0.352992 0.919577 0 -0.93358 0.358368 3819.dat
+1 15 20.1789 5.24754 -21.2136 0.985 0.155279 0.0691348 -0.17 0.899706 0.400575 0 -0.406675 0.913408 3820.dat
+1 15 0 44 0 1 0 0 0 0.9744 -0.225 0 0.225 0.9744 3816.dat
+1 15 0 44 0 1 0 0 0 0.9945 0.1045 0 -0.1045 0.9945 3817.dat
+1 0 -15.552 9 0 0.985 -0.139256 -0.097508 0.17 0.806865 0.564973 0 -0.573576 0.819152 3818.dat
+1 15 -22.2802 17.4225 -19.2153 0.985 -0.167392 0.0295157 0.17 0.969889 -0.171018 0 0.173622 0.984659 3820.dat
+
+
+0 FILE 6781 - Minifig 1 - Helmet.ldr
+0 Minifig 1 - Helmet
+0 Name: 6781 - Minifig 1 - Helmet.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Space Police I
+
+1 15 0 0 0 1 0 0 0 1 0 0 0 1 2446.dat
+1 36 0 0 0 1 0 0 0 1 0 0 0 1 2447.dat
+
+
+
+0 FILE 6781 - Minifig 2.ldr
+0 Minifig 2
+0 Name: 6781 - Minifig 2.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Space Police I
+
+1 0 0 -27 0 0.970296 0 -0.241922 0 1 0 0.241922 0 0.970296 6781 - Minifig 2 - Helmet.ldr
+1 14 0 -27 0 0.970296 0 -0.241922 0 1 0 0.241922 0 0.970296 3626bp01.dat
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 3838.dat
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 973p52.dat
+1 0 0 32 0 1 0 0 0 1 0 0 0 1 3815.dat
+1 0 -15.552 9 0 0.985 -0.135768 -0.102309 0.17 0.786656 0.592788 0 -0.601815 0.798636 3818.dat
+1 0 15.552 9 0 0.985 0.135768 0.102309 -0.17 0.786656 0.592788 0 -0.601815 0.798636 3819.dat
+1 0 -22.1652 16.7563 -19.5334 0.985 -0.16832 0.0236559 0.17 0.975267 -0.137065 0 0.139152 0.990119 3820.dat
+1 0 22.1652 16.7563 -19.5334 0.985 0.16832 -0.0236559 -0.17 0.975267 -0.137065 0 0.139152 0.990119 3820.dat
+1 0 0 44 0 1 0 0 0 0 1 0 -1 0 3816.dat
+1 0 0 44 0 1 0 0 0 0 1 0 -1 0 3817.dat
+
+
+0 FILE 6781 - Minifig 2 - Helmet.ldr
+0 Minifig 2 - Helmet
+0 Name: 6781 - Minifig 2 - Helmet.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Space Police I
+
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 2446.dat
+1 0 0 1.904 4.596 1 0 0 0 0.707107 0.707107 0 -0.707107 0.707107 2447.dat
+
+
+

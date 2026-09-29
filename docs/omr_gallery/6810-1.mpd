@@ -1,0 +1,132 @@
+0 FILE 6810 - Laser Ranger.ldr
+0 Laser Ranger
+0 Name: 6810 - Laser Ranger.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Futuron
+
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 6810 - Spaceship.ldr
+1 0 0 -61 -12 1 0 0 0 1 0 0 0 1 6810 - Minifig.ldr
+
+
+0 FILE 6810 - Spaceship.ldr
+0 Spaceship
+0 Name: 6810 - Spaceship.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Futuron
+
+1 15 0 0 0 0 0 1 0 1 0 -1 0 0 3034.dat
+1 0 0 -8 10 0 0 1 0 1 0 -1 0 0 3021.dat
+1 0 10 -8 60 0 0 1 0 1 0 -1 0 0 3475a.dat
+1 0 -10 -8 60 0 0 -1 0 1 0 1 0 0 3475a.dat
+1 15 0 -8 -40 1 0 0 0 1 0 0 0 1 4859.dat
+1 15 0 -8 -70 1 0 0 0 1 0 0 0 1 4596.dat
+1 15 0 -32 70 -1 0 0 0 1 0 0 0 -1 3937.dat
+1 15 10 -32 40 0 0 -1 0 1 0 1 0 0 3937.dat
+1 15 -10 -32 40 0 0 1 0 1 0 -1 0 0 3937.dat
+1 15 0 -32 -50 1 0 0 0 1 0 0 0 1 3298p90.dat
+1 15 -10 -40 -50 0.92388 0 -0.382683 0 1 0 0.382683 0 0.92388 4592.dat
+1 15 10 -40 -50 0.92388 0 0.382683 0 1 0 -0.382683 0 0.92388 4592.dat
+1 0 -10 -40 -50 0.92388 0.270598 -0.270598 0 0.707107 0.707107 0.382683 -0.653281 0.653281 4593.dat
+1 0 10 -40 -50 0.92388 -0.270598 0.270598 0 0.707107 0.707107 -0.382683 -0.653281 0.653281 4593.dat
+1 0 0 -22 70 1 0 0 0 0.707107 0.707107 0 -0.707107 0.707107 6810 - Spaceship - Engine.ldr
+1 0 -10 -22 40 0.382683 0.92388 0 -0.92388 0.382683 0 0 0 1 6810 - Spaceship - Wing 1.ldr
+1 0 10 -22 40 0.382683 -0.92388 0 0.92388 0.382683 0 0 0 1 6810 - Spaceship - Wing 2.ldr
+1 33 0 -6 -140 1 0 0 0 0 1 0 -1 0 6141.dat
+1 33 0 -6 -148 1 0 0 0 0 1 0 -1 0 6141.dat
+
+
+0 FILE 6810 - Spaceship - Engine.ldr
+0 Spaceship - Engine
+0 Name: 6810 - Spaceship - Engine.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Futuron
+
+1 15 0 -10 0 1 0 0 0 1 0 0 0 1 3938.dat
+1 36 -10 -18 0 1 0 0 0 1 0 0 0 1 6141.dat
+1 36 10 -18 0 1 0 0 0 1 0 0 0 1 6141.dat
+1 15 -10 -58 0 1 0 0 0 1 0 0 0 1 2343.dat
+1 15 10 -58 0 1 0 0 0 1 0 0 0 1 2343.dat
+
+
+0 FILE 6810 - Spaceship - Wing 1.ldr
+0 Spaceship - Wing 1
+0 Name: 6810 - Spaceship - Wing 1.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Futuron
+
+1 0 0 -10 0 0 0 -1 0 1 0 1 0 0 3938.dat
+1 15 0 -58 0 0 0 1 0 1 0 -1 0 0 4864a.dat
+1 33 0 -66 -10 0 0 1 0 1 0 -1 0 0 3024.dat
+1 15 0 -66 10 0 0 -1 0 1 0 1 0 0 4081b.dat
+1 15 0 -74 0 0 0 -1 0 1 0 1 0 0 2412b.dat
+1 15 20 -64 -70 0 0 -1 1 0 0 0 -1 0 3957a.dat
+1 0 20 -64 22 0 0 -1 1 0 0 0 -1 0 6141.dat
+1 36 20 -64 -78 0 0 -1 1 0 0 0 -1 0 4740.dat
+
+
+0 FILE 6810 - Spaceship - Wing 2.ldr
+0 Spaceship - Wing 2
+0 Name: 6810 - Spaceship - Wing 2.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Futuron
+
+1 0 0 -10 0 0 0 -1 0 1 0 1 0 0 3938.dat
+1 15 0 -58 0 0 0 -1 0 1 0 1 0 0 4864a.dat
+1 33 0 -66 -10 0 0 1 0 1 0 -1 0 0 3024.dat
+1 15 0 -66 10 0 0 1 0 1 0 -1 0 0 4081b.dat
+1 15 0 -74 0 0 0 -1 0 1 0 1 0 0 2412b.dat
+1 15 -20 -64 -70 0 0 -1 1 0 0 0 -1 0 3957a.dat
+1 0 -20 -64 22 0 0 -1 1 0 0 0 -1 0 6141.dat
+1 36 -20 -64 -78 0 0 -1 1 0 0 0 -1 0 4740.dat
+
+
+0 FILE 6810 - Minifig.ldr
+0 Minifig
+0 Name: 6810 - Minifig.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Futuron
+
+1 0 0 -25.317 15.367 0.809017 0 0.587785 -0.12722 0.976296 0.175103 -0.573852 -0.21644 0.78984 6810 - Minifig - Helmet.ldr
+1 14 0 -25.317 15.367 0.809017 0 0.587785 -0.12722 0.976296 0.175103 -0.573852 -0.21644 0.78984 3626bp01.dat
+1 0 0 1.043 9.523 1 0 0 0 0.976296 0.21644 0 -0.21644 0.976296 3838.dat
+1 15 0 1.043 9.523 1 0 0 0 0.976296 0.21644 0 -0.21644 0.976296 973p6b.dat
+1 0 0 32.284 2.597 1 0 0 0 0.976296 0.21644 0 -0.21644 0.976296 3815.dat
+1 0 -15.552 9.83 7.576 0.985 -0.17 0 0.16597 0.961652 0.21644 -0.0367947 -0.213193 0.976296 3818.dat
+1 0 -23.863 24.774 -6.31 0.985 -0.12019 0.12019 0.16597 0.83291 -0.526865 -0.0367947 0.539514 0.840969 3820.dat
+1 0 0 44 0 1 0 0 0 0 1 0 -1 0 3816.dat
+1 0 0 44 0 1 0 0 0 0 1 0 -1 0 3817.dat
+1 0 15.552 9.83 7.576 0.985 -0.0265939 0.167907 -0.16597 -0.36421 0.915954 0.0367947 -0.930925 -0.363294 3819.dat
+1 0 18.442 -7.32 -5.948 0.985 0.0999084 0.137512 -0.16597 0.390082 0.905075 0.0367947 -0.915014 0.401315 3820.dat
+
+
+0 FILE 6810 - Minifig - Helmet.ldr
+0 Minifig - Helmet
+0 Name: 6810 - Minifig - Helmet.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Futuron
+
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 2446.dat
+1 33 0 1.904 4.596 1 0 0 0 0.707107 0.707107 0 -0.707107 0.707107 2447.dat
+
+

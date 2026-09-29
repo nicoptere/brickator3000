@@ -1,0 +1,80 @@
+0 FILE 6601 - main.ldr 
+0 main
+0 Name: 6601 - main.ldr 
+0 Author: Robert Paciorek [bercik]
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HELP Copyright (c) 2002-2017, Robert Paciorek (http://www.opcode.eu.org/)
+0 !HELP Released under a dual license, you can choise "CCAL version 2.0" or "BSD/MIT-type licence":
+0 !HELP Redistribution and use in source or any others forms, with or without modification, ARE PERMITTED provided save information about author(s).
+0 !HELP This material is distributed WITHOUT any warranty, use at YOUR own risk.
+1 15 -40 0 10 1 0 0 0 1 0 0 0 1 6601 - cart.ldr
+1 15 70.981 0 -53.66 0.5 0 0.866 0 1 0 -0.866 0 0.5 6601 - minifig.ldr
+0 NOFILE
+
+
+0 FILE 6601 - cart.ldr 
+0 cart
+0 Name: 6601 - cart.ldr 
+0 Author: Robert Paciorek [bercik]
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HELP Copyright (c) 2002-2017, Robert Paciorek (http://www.opcode.eu.org/)
+0 !HELP Released under a dual license, you can choise "CCAL version 2.0" or "BSD/MIT-type licence":
+0 !HELP Redistribution and use in source or any others forms, with or without modification, ARE PERMITTED provided save information about author(s).
+0 !HELP This material is distributed WITHOUT any warranty, use at YOUR own risk.
+1 15 0 -32 0 1 0 0 0 1 0 0 0 1 3795.dat
+0 STEP
+1 15 -20 -48 -0.001 0 0 1 0 1 0 -1 0 0 4211.dat
+1 15 50 -40 -0.001 0 0 -1 0 1 0 1 0 0 3839b.dat
+0 STEP
+1 4 29.999 -64 -29.999 0 0 1 0 1 0 -1 0 0 4599a.dat
+1 4 29.999 -64 30.001 0 0 1 0 1 0 -1 0 0 4599a.dat
+1 15 -20 -72 29.999 -1 0 0 0 1 0 0 0 -1 3938.dat
+1 15 -20 -72 29.999 -1 0 0 0 1 0 0 0 -1 3937.dat
+1 15 -20 -72 -30.001 1 0 0 0 1 0 0 0 1 3938.dat
+1 15 -20 -72 -30.001 1 0 0 0 1 0 0 0 1 3937.dat
+0 STEP
+1 15 -50 -64 -0.001 0 0 1 0 1 0 -1 0 0 3004p07.dat
+1 15 -49.999 -64 -30.001 0 0 1 0 1 0 -1 0 0 3005.dat
+1 15 -49.999 -64 29.999 0 0 1 0 1 0 -1 0 0 3005.dat
+1 15 10 -64 0 0 0 1 0 1 0 -1 0 0 3010.dat
+0 STEP
+1 1 -50.001 -72 19.999 0 0 1 0 1 0 -1 0 0 3069b.dat
+1 1 -50.001 -72 -20.001 0 0 1 0 1 0 -1 0 0 3069b.dat
+1 1 9.999 -72 19.999 0 0 1 0 1 0 -1 0 0 3069b.dat
+1 1 9.999 -72 -20.001 0 0 1 0 1 0 -1 0 0 3069b.dat
+1 15 -19.997 -80 -20.001 -1 0 0 0 1 0 0 0 -1 3068bp67.dat
+1 15 -19.997 -80 19.999 0 0 1 0 1 0 -1 0 0 3068bp67.dat
+0 STEP
+1 15 30.001 -24 -0.002 0 0 -1 0 1 0 1 0 0 3937.dat
+1 15 30.001 -24 -0.002 0 0 -1 0 1 0 1 0 0 3938.dat
+1 0 -20 -18 -30 1 0 0 0 1 0 0 0 1 3641.dat
+1 0 -20 -18 30 1 0 0 0 1 0 0 0 1 3641.dat
+1 0 -20 -24 0 0 0 1 0 1 0 -1 0 0 122c01.dat
+0 STEP
+1 14 50 -48 -10.001 0 0 -1 0 1 0 1 0 0 3957a.dat
+1 15 50 -144 -10.001 0 0 -1 0 1 0 1 0 0 3960.dat
+0 NOFILE
+
+
+0 FILE 6601 - minifig.ldr 
+0 minifig
+0 Name: 6601 - minifig.ldr 
+0 Author: Robert Paciorek [bercik]
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HELP Copyright (c) 2002-2017, Robert Paciorek (http://www.opcode.eu.org/)
+0 !HELP Released under a dual license, you can choise "CCAL version 2.0" or "BSD/MIT-type licence":
+0 !HELP Redistribution and use in source or any others forms, with or without modification, ARE PERMITTED provided save information about author(s).
+0 !HELP This material is distributed WITHOUT any warranty, use at YOUR own risk.
+1 4 2.26 -96 3.37 1 0 0 0 1 0 0 0 1 4485.dat
+1 14 2.26 -96 3.37 1 0 0 0 1 0 0 0 1 3626bp01.dat
+1 15 2.26 -72 3.37 1 0 0 0 1 0 0 0 1 973p2a.dat
+1 1 2.26 -40 3.37 1 0 0 0 1 0 0 0 1 3815.dat
+1 15 17.76 -64 3.37 0.99 0.17 0 -0.17 0.99 0 0 0 1 3819.dat
+1 15 -13.24 -64 3.37 0.99 -0.17 0 0.17 0.99 0 0 0 1 3818.dat
+1 14 25.92 -46.13 -6.63 0.99 0.12 -0.12 -0.17 0.7 -0.7 0 0.71 0.71 3820.dat
+1 14 -21.4 -46.13 -6.63 0.99 -0.12 0.12 0.17 0.7 -0.7 0 0.71 0.71 3820.dat
+1 1 2.26 -28 3.37 1 0 0 0 1 0 0 0 1 3817.dat
+1 1 2.26 -28 3.37 1 0 0 0 1 0 0 0 1 3816.dat
+0 NOFILE
+
+

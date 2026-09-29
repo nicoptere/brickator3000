@@ -1,0 +1,304 @@
+0 FILE 6370 - main.ldr
+0 !LEOCAD MODEL BACKGROUND GRADIENT 0 0 0.74902 1 1 1
+0 main
+0 Name: 6370 - main.ldr 
+0 Author: Robert Paciorek [bercik]
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HELP Copyright (c) 2002-2017, Robert Paciorek (http://www.opcode.eu.org/)
+0 !HELP Released under a dual license, you can choise "CCAL version 2.0" or "BSD/MIT-type licence":
+0 !HELP Redistribution and use in source or any others forms, with or without modification, ARE PERMITTED provided save information about author(s).
+0 !HELP This material is distributed WITHOUT any warranty, use at YOUR own risk.
+1 1 110 0 30 1 0 0 0 1 0 0 0 1 6370 - building.ldr
+1 15 -10 0 -80 1 0 0 0 1 0 0 0 1 6370 - minifig 1.ldr
+1 15 190 0 -100 1 0 0 0 1 0 0 0 1 6370 - minifig 2.ldr
+1 4 -190.003 8 -180.002 0 0 -1 0 1 0 1 0 0 6370 - bike.ldr
+0 NOFILE
+0 FILE 6370 - building.ldr
+0 !LEOCAD MODEL BACKGROUND GRADIENT 0 0 0.74902 1 1 1
+
+
+0 building
+0 Name: 6370 - building.ldr 
+0 Author: Robert Paciorek [bercik]
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HELP Copyright (c) 2002-2017, Robert Paciorek (http://www.opcode.eu.org/)
+0 !HELP Released under a dual license, you can choise "CCAL version 2.0" or "BSD/MIT-type licence":
+0 !HELP Redistribution and use in source or any others forms, with or without modification, ARE PERMITTED provided save information about author(s).
+0 !HELP This material is distributed WITHOUT any warranty, use at YOUR own risk.
+1 2 0 0 0 1 0 0 0 1 0 0 0 1 3857.dat
+1 4 -269.997 -24 20 0 0 1 0 1 0 -1 0 0 3009.dat
+1 4 -269.995 -24 -50 0 0 1 0 1 0 -1 0 0 3005.dat
+1 4 140.001 -24 130.001 -1 0 0 0 1 0 0 0 -1 3009.dat
+1 4 100.001 -24 80 0 0 1 0 1 0 -1 0 0 3001.dat
+1 4 209.999 -24 130.003 0 0 1 0 1 0 -1 0 0 3005.dat
+1 14 -39.998 -8 80.001 0 0 -1 0 1 0 1 0 0 4079.dat
+1 0 10.001 -24 80 0 0 1 0 1 0 -1 0 0 3004.dat
+1 1 -239.999 -8 80.001 0 0 1 0 1 0 -1 0 0 3022.dat
+1 4 -269.999 -24 110 0 0 1 0 1 0 -1 0 0 3622.dat
+1 4 -89.997 -24 0 0 0 1 0 1 0 -1 0 0 3009.dat
+1 4 89.999 -24 30.003 0 0 1 0 1 0 -1 0 0 3005.dat
+0 STEP
+1 15 10.001 -32 80 -1 0 0 0 1 0 0 0 -1 3021.dat
+1 15 -229.999 -32 90.001 0 0 1 0 1 0 -1 0 0 3899.dat
+1 4 -89.997 -48 0 0 0 1 0 1 0 -1 0 0 3009.dat
+1 4 90.001 -48 80.002 0 0 1 0 1 0 -1 0 0 3009.dat
+1 4 -270 -48 120 0 0 1 0 1 0 -1 0 0 3004.dat
+1 4 160.001 -48 130.002 -1 0 0 0 1 0 0 0 -1 3009.dat
+1 4 -270 -48 -40 0 0 1 0 1 0 -1 0 0 3004.dat
+1 4 -269.997 -48 40 0 0 1 0 1 0 -1 0 0 3009.dat
+1 0 120.001 -32 80 0 0 1 0 1 0 -1 0 0 3020.dat
+0 STEP
+1 4 -89.997 -72 0 0 0 1 0 1 0 -1 0 0 3009.dat
+1 4 -269.999 -72 110 0 0 1 0 1 0 -1 0 0 3622.dat
+1 4 209.999 -72 130.003 0 0 1 0 1 0 -1 0 0 3005.dat
+1 4 140.001 -72 130.001 -1 0 0 0 1 0 0 0 -1 3009.dat
+1 4 90.002 -72 40.009 0 0 1 0 1 0 -1 0 0 3004.dat
+1 4 -269.999 -72 -30 0 0 1 0 1 0 -1 0 0 3622.dat
+1 4 89.999 -72 110.003 0 0 1 0 1 0 -1 0 0 3005.dat
+1 1 -240.001 -48 30 0 0 -1 0 1 0 1 0 0 92410.dat
+1 15 -223.001 -44 6 1 0 0 0 1 0 0 0 1 4533.dat
+1 1 -240 -48 110 1 0 0 0 1 0 0 0 1 4864a.dat
+1 0 10 -56 90 -1 0 0 0 1 0 0 0 -1 3062b.dat
+1 4 90.001 -72 80.002 0 0 -1 0 1 0 1 0 0 3660.dat
+0 STEP
+1 4 -269.999 -96 -30 0 0 1 0 1 0 -1 0 0 3622.dat
+1 4 -269.999 -96 110 0 0 1 0 1 0 -1 0 0 3622.dat
+1 4 -89.997 -96 0 0 0 1 0 1 0 -1 0 0 3009.dat
+1 4 90.003 -96 80 0 0 1 0 1 0 -1 0 0 3009.dat
+1 15 -240 -56 60 0 0 -1 0 1 0 1 0 0 3795.dat
+1 0 -229.999 -69 110 0.5 0 0.866 0 1 0 -0.866 0 0.5 4528.dat
+1 46 10 -64 90 -1 0 0 0 1 0 0 0 -1 6141.dat
+0 STEP
+1 15 -270.001 -120 40 0 0 1 0 1 0 -1 0 0 3853.dat
+1 4 -89.997 -120 0 0 0 1 0 1 0 -1 0 0 3009.dat
+1 4 90.001 -120 100.002 0 0 1 0 1 0 -1 0 0 3660.dat
+1 0 120.001 -80 80 0 0 1 0 1 0 -1 0 0 3020.dat
+1 4 -269.999 -120 110 0 0 1 0 1 0 -1 0 0 3622.dat
+1 4 -269.999 -120 -30 0 0 1 0 1 0 -1 0 0 3622.dat
+1 4 90.001 -120 50 0 0 1 0 1 0 -1 0 0 3622.dat
+1 4 90.001 -120 130 0 0 1 0 1 0 -1 0 0 3005.dat
+1 47 -274.001 -86 40 0 0 1 0 1 0 -1 0 0 3855a.dat
+1 15 -220 -120 -30 1 0 0 0 1 0 0 0 1 2493a.dat
+1 47 -220 -120 -30 1 0 0 0 1 0 0 0 1 2494.dat
+1 15 40 -120 50 1 0 0 0 1 0 0 0 1 2493a.dat
+1 47 40 -120 50 1 0 0 0 1 0 0 0 1 2494.dat
+1 15 -40 -120 50 1 0 0 0 1 0 0 0 1 2493a.dat
+1 47 -40 -120 50 1 0 0 0 1 0 0 0 1 2494.dat
+1 15 -109.998 -120 -30 0 0 -1 0 1 0 1 0 0 73312.dat
+0 STEP
+1 4 -260.001 -128 80 0 0 1 0 1 0 -1 0 0 3020.dat
+1 4 -240 -128 -30 1 0 0 0 1 0 0 0 1 3710.dat
+1 4 -140 -128 -30 1 0 0 0 1 0 0 0 1 3666.dat
+1 4 -270.001 -128 10 0 0 1 0 1 0 -1 0 0 3623.dat
+1 4 -270.001 -128 -50 0 0 1 0 1 0 -1 0 0 3024.dat
+1 4 -270.001 -128 130 0 0 1 0 1 0 -1 0 0 3024.dat
+1 4 -90.001 -128 -50 0 0 1 0 1 0 -1 0 0 3024.dat
+1 4 -90.001 -128 10 0 0 1 0 1 0 -1 0 0 3623.dat
+1 4 -70.001 -128 50 -1 0 0 0 1 0 0 0 -1 3623.dat
+1 4 0 -128 50 1 0 0 0 1 0 0 0 1 3710.dat
+1 4 59.999 -128 80 0 0 1 0 1 0 -1 0 0 3020.dat
+1 4 90 -128 80 0 0 1 0 1 0 -1 0 0 3666.dat
+1 0 110.001 -104 90 0 0 -1 0 1 0 1 0 0 3045.dat
+1 0 110.001 -104 70 1 0 0 0 1 0 0 0 1 3045.dat
+0 STEP
+1 0 110.001 -112 80 0 0 -1 0 1 0 1 0 0 3023.dat
+0 !LEOCAD PIECE HIDDEN
+1 4 -180 -136 -20 1 0 0 0 1 0 0 0 1 3030.dat
+1 4 -270.001 -136 80 0 0 1 0 1 0 -1 0 0 3666.dat
+1 4 79.999 -136 80 0 0 1 0 1 0 -1 0 0 3795.dat
+0 STEP
+0 !LEOCAD PIECE HIDDEN
+1 4 -100.001 -136 80 -1 0 0 0 1 0 0 0 -1 3027.dat
+0 !LEOCAD PIECE HIDDEN
+1 0 49.999 -144 80 0 0 1 0 1 0 -1 0 0 3023.dat
+0 !LEOCAD PIECE HIDDEN
+1 0 -10.001 -144 80 0 0 1 0 1 0 -1 0 0 3023.dat
+0 !LEOCAD PIECE HIDDEN
+1 0 110.001 -136 80 0 0 -1 0 1 0 1 0 0 3004.dat
+0 STEP
+1 16 -270.001 -160 120 0 0 1 0 1 0 -1 0 0 3004.dat
+1 16 -270 -160 0 0 0 1 0 1 0 -1 0 0 3010.dat
+1 16 89.999 -160 120 0 0 1 0 1 0 -1 0 0 3004.dat
+1 16 -80.001 -160 60 -1 0 0 0 1 0 0 0 -1 3003.dat
+1 16 -90.001 -160 130 -1 0 0 0 1 0 0 0 -1 3005.dat
+0 !LEOCAD PIECE HIDDEN
+1 0 -120.001 -160 30 -1 0 0 0 1 0 0 0 -1 3004.dat
+0 !LEOCAD PIECE HIDDEN
+1 14 -159.998 -144 40.001 0 0 -1 0 1 0 1 0 0 4079.dat
+0 !LEOCAD PIECE HIDDEN
+1 15 19.999 -152 80 -1 0 0 0 1 0 0 0 -1 3795.dat
+0 STEP
+0 !LEOCAD PIECE HIDDEN
+1 15 59.999 -160 80 -1 0 0 0 1 0 0 0 -1 3068b.dat
+0 !LEOCAD PIECE HIDDEN
+1 15 -120.001 -168 30 0 0 -1 0 1 0 1 0 0 3021.dat
+1 16 -270.001 -184 110 -1 0 0 0 1 0 0 0 -1 3040b.dat
+1 16 -70.001 -160 30 1 0 0 0 1 0 0 0 1 3040b.dat
+1 16 -100 -160 -50 1 0 0 0 1 0 0 0 1 3039.dat
+1 16 -200 -160 -50 1 0 0 0 1 0 0 0 1 4445.dat
+1 16 20 -160 30 1 0 0 0 1 0 0 0 1 4445.dat
+1 16 -90.001 -184 130 -1 0 0 0 1 0 0 0 -1 3005.dat
+1 16 -90 -160 0 0 0 1 0 1 0 -1 0 0 3010.dat
+1 16 89.999 -160 50 -1 0 0 0 1 0 0 0 -1 3005.dat
+0 !LEOCAD PIECE HIDDEN
+1 0 99.999 -160 80 0 0 1 0 1 0 -1 0 0 3003.dat
+0 STEP
+0 !LEOCAD PIECE HIDDEN
+1 15 -243.001 -180 46 1 0 0 0 1 0 0 0 1 4533.dat
+1 16 -260.001 -184 70 0 0 -1 0 1 0 1 0 0 92410.dat
+1 16 89.999 -184 120 0 0 1 0 1 0 -1 0 0 3004.dat
+0 !LEOCAD PIECE HIDDEN
+1 0 99.999 -184 80 0 0 1 0 1 0 -1 0 0 3003.dat
+1 16 0 -184 50 1 0 0 0 1 0 0 0 1 4445.dat
+1 16 -160 -184 -30 1 0 0 0 1 0 0 0 1 4445.dat
+1 16 -260 -184 -30 1 0 0 0 1 0 0 0 1 3039.dat
+1 16 89.999 -184 50 1 0 0 0 1 0 0 0 1 3040b.dat
+1 16 -90 -184 20 0 0 1 0 1 0 -1 0 0 3010.dat
+1 16 -80.001 -184 70 -1 0 0 0 1 0 0 0 -1 3004.dat
+1 16 -270 -184 10 0 0 1 0 1 0 -1 0 0 3622.dat
+1 16 -90.001 -208 130 -1 0 0 0 1 0 0 0 -1 3005.dat
+0 STEP
+1 16 -270 -208 40 0 0 1 0 1 0 -1 0 0 3010.dat
+1 16 90 -208 110 0 0 1 0 1 0 -1 0 0 3622.dat
+1 16 -270.001 -208 90 -1 0 0 0 1 0 0 0 -1 3040b.dat
+1 16 -250 -208 -10 1 0 0 0 1 0 0 0 1 3038.dat
+1 16 -110 -208 -10 1 0 0 0 1 0 0 0 1 3038.dat
+1 16 70 -208 70 1 0 0 0 1 0 0 0 1 3038.dat
+1 16 -90 -208 40 0 0 1 0 1 0 -1 0 0 3010.dat
+1 16 -90.001 -232 100 0 0 1 0 1 0 -1 0 0 3659.dat
+0 !LEOCAD PIECE HIDDEN
+1 0 110.001 -208 80 0 0 -1 0 1 0 1 0 0 3004.dat
+0 STEP
+1 16 -60 -208 70 1 0 0 0 1 0 0 0 1 3039.dat
+1 16 -60 -232 90 1 0 0 0 1 0 0 0 1 3039.dat
+1 16 70 -232 90 1 0 0 0 1 0 0 0 1 3038.dat
+1 16 -110 -232 10 1 0 0 0 1 0 0 0 1 3038.dat
+1 16 -250 -232 10 1 0 0 0 1 0 0 0 1 3038.dat
+1 16 -270.001 -232 70 -1 0 0 0 1 0 0 0 -1 3040b.dat
+1 16 90 -232 120 0 0 1 0 1 0 -1 0 0 3004.dat
+1 16 -270 -232 40 0 0 1 0 1 0 -1 0 0 3004.dat
+1 16 -90 -232 40 0 0 1 0 1 0 -1 0 0 3004.dat
+0 !LEOCAD PIECE HIDDEN
+1 0 110.001 -232 80 0 0 -1 0 1 0 1 0 0 3004.dat
+0 STEP
+1 16 -270.001 -256 50 -1 0 0 0 1 0 0 0 -1 3040b.dat
+1 16 -250 -256 30 1 0 0 0 1 0 0 0 1 3038.dat
+1 16 -110 -256 30 1 0 0 0 1 0 0 0 1 3038.dat
+1 16 70 -256 110 1 0 0 0 1 0 0 0 1 3038.dat
+1 16 -90.001 -256 50 -1 0 0 0 1 0 0 0 -1 3040b.dat
+1 16 -70 -256 110 1 0 0 0 1 0 0 0 1 3038.dat
+0 !LEOCAD PIECE HIDDEN
+1 0 110.001 -256 80 0 0 -1 0 1 0 1 0 0 3004.dat
+1 16 -90.001 -256 130 -1 0 0 0 1 0 0 0 -1 3005.dat
+1 16 89.999 -256 130 -1 0 0 0 1 0 0 0 -1 3005.dat
+0 !LEOCAD PIECE HIDDEN
+1 47 0.01 -256 110.014 1 0 0 0 1 0 0 0 1 4448.dat
+0 !LEOCAD PIECE HIDDEN
+1 15 0.01 -256 110.005 1 0 0 0 1 0 0 0 1 4447.dat
+0 !LEOCAD PIECE HIDDEN
+1 47 -179.99 -256 30.014 1 0 0 0 1 0 0 0 1 4448.dat
+0 !LEOCAD PIECE HIDDEN
+1 15 -179.99 -256 30.005 1 0 0 0 1 0 0 0 1 4447.dat
+1 14 -39.998 -8 -39.999 0 0 -1 0 1 0 1 0 0 4079.dat
+1 0 40 -24 -40 1 0 0 0 1 0 0 0 1 3003.dat
+1 14 120.002 -8 -39.999 0 0 1 0 1 0 -1 0 0 4079.dat
+0 STEP
+0 !LEOCAD PIECE HIDDEN
+1 0 110.001 -280 80 0 0 -1 0 1 0 1 0 0 3004.dat
+1 16 60.009 -280 120.003 1 0 0 0 1 0 0 0 1 3041.dat
+1 16 0.009 -280 120.009 1 0 0 0 1 0 0 0 1 3043.dat
+1 16 -59.991 -280 120.003 1 0 0 0 1 0 0 0 1 3041.dat
+1 16 -119.991 -280 40.003 1 0 0 0 1 0 0 0 1 3041.dat
+1 16 -179.991 -280 40.009 1 0 0 0 1 0 0 0 1 3043.dat
+1 16 -239.991 -280 40.003 1 0 0 0 1 0 0 0 1 3041.dat
+1 14 40 -32 -40 1 0 0 0 1 0 0 0 1 3031.dat
+1 0 230 0 -90 1 0 0 0 1 0 0 0 1 6370 - light.ldr
+1 15 290 -13 -90 1 0 0 0 1 0 0 0 1 3741ac01.dat
+1 15 290 -13 -10 1 0 0 0 1 0 0 0 1 3741ac01.dat
+1 15 190 -13 -130 1 0 0 0 1 0 0 0 1 3741ac01.dat
+1 15 -290 -13 -130 1 0 0 0 1 0 0 0 1 3741ac01.dat
+1 2 240 -8 40 1 0 0 0 1 0 0 0 1 3471.dat
+0 NOFILE
+0 FILE 6370 - light.ldr
+0 !LEOCAD MODEL BACKGROUND GRADIENT 0 0 0.74902 1 1 1
+
+
+0 light
+0 Name: 6370 - light.ldr 
+0 Author: Robert Paciorek [bercik]
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HELP Copyright (c) 2002-2017, Robert Paciorek (http://www.opcode.eu.org/)
+0 !HELP Released under a dual license, you can choise "CCAL version 2.0" or "BSD/MIT-type licence":
+0 !HELP Redistribution and use in source or any others forms, with or without modification, ARE PERMITTED provided save information about author(s).
+0 !HELP This material is distributed WITHOUT any warranty, use at YOUR own risk.
+1 0 0 -24 0 1 0 0 0 1 0 0 0 1 3062b.dat
+0 STEP
+1 0 0 -48 0 1 0 0 0 1 0 0 0 1 3062b.dat
+0 STEP
+1 0 0 -56 0 1 0 0 0 1 0 0 0 1 3957a.dat
+0 STEP
+1 46 0 -144 0 1 0 0 0 1 0 0 0 1 3062b.dat
+1 0 0 -152 0 1 0 0 0 1 0 0 0 1 4740.dat
+0 NOFILE
+0 FILE 6370 - minifig 1.ldr
+0 !LEOCAD MODEL BACKGROUND GRADIENT 0 0 0.74902 1 1 1
+
+
+0 minifig 1
+0 Name: 6370 - minifig 1.ldr 
+0 Author: Robert Paciorek [bercik]
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HELP Copyright (c) 2002-2017, Robert Paciorek (http://www.opcode.eu.org/)
+0 !HELP Released under a dual license, you can choise "CCAL version 2.0" or "BSD/MIT-type licence":
+0 !HELP Redistribution and use in source or any others forms, with or without modification, ARE PERMITTED provided save information about author(s).
+0 !HELP This material is distributed WITHOUT any warranty, use at YOUR own risk.
+1 1 -0.008 -28 1.997 1 0 0.002 0 1 0 -0.002 0 1 3816.dat
+1 1 -0.008 -28 1.997 1 0 0.002 0 1 0 -0.002 0 1 3817.dat
+1 14 -23.471 -45.97 -7.88 0.985 -0.12 0.122 0.171 0.694 -0.699 -0.001 0.709 0.705 3820.dat
+1 14 23.524 -45.959 -8.093 0.985 0.121 -0.121 -0.171 0.694 -0.699 -0.001 0.709 0.705 3820.dat
+1 15 -15.357 -63.961 1.984 0.985 -0.171 0.001 0.171 0.985 0 -0.001 0 1 3818.dat
+1 15 15.35 -63.949 2.01 0.985 0.171 0.001 -0.171 0.985 0 -0.001 0 1 3819.dat
+1 1 -0.008 -40 1.997 1 0 0.002 0 1 0 -0.002 0 1 3815.dat
+1 15 -0.008 -72 1.997 1 0 0.002 0 1 0 -0.002 0 1 973p1d.dat
+1 14 -0.008 -96 1.997 1 0 0.002 0 1 0 -0.002 0 1 3626bp01.dat
+1 4 -0.008 -96 1.997 1 0 0.002 0 1 0 -0.002 0 1 4530.dat
+1 15 -25.199 -36.112 -40.374 0.985 -0.12 0.122 0.171 0.694 -0.699 -0.001 0.709 0.705 3899.dat
+0 NOFILE
+0 FILE 6370 - minifig 2.ldr
+0 !LEOCAD MODEL BACKGROUND GRADIENT 0 0 0.74902 1 1 1
+
+
+0 minifig 2
+0 Name: 6370 - minifig 2.ldr 
+0 Author: Robert Paciorek [bercik]
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HELP Copyright (c) 2002-2017, Robert Paciorek (http://www.opcode.eu.org/)
+0 !HELP Released under a dual license, you can choise "CCAL version 2.0" or "BSD/MIT-type licence":
+0 !HELP Redistribution and use in source or any others forms, with or without modification, ARE PERMITTED provided save information about author(s).
+0 !HELP This material is distributed WITHOUT any warranty, use at YOUR own risk.
+1 0 -0.008 -28 1.997 1 0 0.002 0 1 0 -0.002 0 1 3816.dat
+1 0 -0.008 -28 1.997 1 0 0.002 0 1 0 -0.002 0 1 3817.dat
+1 14 -23.471 -45.97 -7.88 0.985 -0.12 0.122 0.171 0.694 -0.699 -0.001 0.709 0.705 3820.dat
+1 14 23.524 -45.959 -8.093 0.985 0.121 -0.121 -0.171 0.694 -0.699 -0.001 0.709 0.705 3820.dat
+1 15 -15.357 -63.961 1.984 0.985 -0.171 0.001 0.171 0.985 0 -0.001 0 1 3818.dat
+1 15 15.35 -63.949 2.01 0.985 0.171 0.001 -0.171 0.985 0 -0.001 0 1 3819.dat
+1 0 -0.008 -40 1.997 1 0 0.002 0 1 0 -0.002 0 1 3815.dat
+1 15 -0.008 -72 1.997 1 0 0.002 0 1 0 -0.002 0 1 973p1e.dat
+1 14 -0.008 -96 1.997 1 0 0.002 0 1 0 -0.002 0 1 3626bp01.dat
+1 0 -0.008 -96 1.997 1 0 0.002 0 1 0 -0.002 0 1 3901.dat
+0 NOFILE
+0 FILE 6370 - bike.ldr
+0 !LEOCAD MODEL BACKGROUND GRADIENT 0 0 0.74902 1 1 1
+
+
+0 bike
+0 Name: 6370 - bike.ldr 
+0 Author: Robert Paciorek [bercik]
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HELP Copyright (c) 2002-2017, Robert Paciorek (http://www.opcode.eu.org/)
+0 !HELP Released under a dual license, you can choise "CCAL version 2.0" or "BSD/MIT-type licence":
+0 !HELP Redistribution and use in source or any others forms, with or without modification, ARE PERMITTED provided save information about author(s).
+0 !HELP This material is distributed WITHOUT any warranty, use at YOUR own risk.
+1 4 0 -48 0 1 0 0 0 1 0 0 0 1 4719c01.dat
+1 46 0 -52 -91 1 0 0 0 0 -1 0 1 0 6141.dat
+0 NOFILE

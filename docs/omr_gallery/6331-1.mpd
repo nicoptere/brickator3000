@@ -1,0 +1,258 @@
+0 FILE 6331 - main.ldr
+0 main
+0 Name: 6331 - main.ldr
+0 Author: Robert Paciorek [bercik]
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HELP Copyright (c) 2002-2017, Robert Paciorek (http://www.opcode.eu.org/)
+0 !HELP Released under a dual license, you can choise "CCAL version 2.0" or "BSD/MIT-type licence":
+0 !HELP Redistribution and use in source or any others forms, with or without modification, ARE PERMITTED provided save information about author(s).
+0 !HELP This material is distributed WITHOUT any warranty, use at YOUR own risk.
+1 4 -90 -64 -80 1 0 0 0 1 0 0 0 1 6331 - airplane.ldr
+1 4 -280 0 -310 -0.5 0 0.866 0 1 0 -0.866 0 -0.5 6331 - minifig 1.ldr
+1 4 -327.321 0 -150 0.866 0 0.5 0 1 0 -0.5 0 0.866 6331 - minifig 2.ldr
+1 4 -510 0 -120 0.5 0 0.866 0 1 0 -0.866 0 0.5 6331 - tool box.ldr
+1 8 -520 -8 -220 -0.94 -0.342 0 0 0 -1 0.342 -0.94 0 55300.dat
+1 8 -460 -16 -200 1 0 0 0 0.985 -0.174 0 0.174 0.985 55296.dat
+1 8 -510 -8 -270 0 -1 0 0 0 1 -1 0 0 55299.dat
+1 8 -580 -16 -210 -0.174 -0.925 0.337 -0.985 0.163 -0.059 0 -0.342 -0.94 55297.dat
+1 8 -429.933 -7.997 -267.283 0 0.866 -0.5 -1 0 0 0 0.5 0.866 55298.dat
+1 8 -540 -8 -300 0.643 -0.766 0 0 0 -1 0.766 0.643 0 55295.dat
+
+0 FILE 6331 - airplane.ldr
+0 airplane
+0 Name: 6331 - airplane.ldr
+0 Author: Robert Paciorek [bercik]
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HELP Copyright (c) 2002-2017, Robert Paciorek (http://www.opcode.eu.org/)
+0 !HELP Released under a dual license, you can choise "CCAL version 2.0" or "BSD/MIT-type licence":
+0 !HELP Redistribution and use in source or any others forms, with or without modification, ARE PERMITTED provided save information about author(s).
+0 !HELP This material is distributed WITHOUT any warranty, use at YOUR own risk.
+1 4 -100 0 -60 1 0 0 0 1 0 0 0 1 2625.dat
+1 4 -100 0 120 -1 0 0 0 1 0 0 0 -1 2625.dat
+1 4 -100 0 30 -1 0 0 0 1 0 0 0 -1 3795.dat
+0 STEP
+1 7 -100 -8 30 0 0 -1 0 1 0 1 0 0 3020.dat
+1 4 -100 -24 80 1 0 0 0 1 0 0 0 1 3004.dat
+0 STEP
+1 0 -100 -16 60 1 0 0 0 1 0 0 0 1 2412b.dat
+1 0 -100 -16 0 1 0 0 0 1 0 0 0 1 2412b.dat
+1 0 -100 -16 30 1 0 0 0 1 0 0 0 1 3068bp51.dat
+0 STEP
+1 4 -140 -24 60 0 0 1 0 1 0 -1 0 0 3002.dat
+1 4 -60 -24 60 0 0 1 0 1 0 -1 0 0 3002.dat
+1 4 -100 -24 -20 -1 0 0 0 1 0 0 0 -1 3009.dat
+0 STEP
+1 14 -100 -24 140 -1 0 0 0 1 0 0 0 -1 3004.dat
+1 14 -100 -8 -50 -1 0 0 0 1 0 0 0 -1 3022.dat
+1 14 -100 -8 -80 -1 0 0 0 1 0 0 0 -1 3069b.dat
+0 STEP
+1 0 -40 -24 10 0 0 -1 0 1 0 1 0 0 4871.dat
+1 0 -160 -24 10 0 0 -1 0 1 0 1 0 0 4871.dat
+1 4 -60 -24 -60 1 0 0 0 1 0 0 0 1 6565.dat
+1 4 -140 -24 -60 1 0 0 0 1 0 0 0 1 6564.dat
+1 4 -60 -24 120 -1 0 0 0 1 0 0 0 -1 6564.dat
+1 4 -140 -24 120 -1 0 0 0 1 0 0 0 -1 6565.dat
+0 STEP
+1 4 -100 -24 -140 -1 0 0 0 1 0 0 0 -1 4856.dat
+1 7 -100 -32 80 1 0 0 0 1 0 0 0 1 4596.dat
+1 4 -100 -24 200 1 0 0 0 1 0 0 0 1 4856.dat
+0 STEP
+1 1 -100 -16 -110 1 0 0 0 1 0 0 0 1 3022.dat
+1 15 -100 -32 -190 1 0 0 0 1 0 0 0 1 4859.dat
+1 15 -100 -32 -20 1 0 0 0 1 0 0 0 1 3023.dat
+1 15 -130 -32 130 0 0 1 0 1 0 -1 0 0 3666.dat
+1 15 -70 -32 130 0 0 1 0 1 0 -1 0 0 3666.dat
+1 15 -130 -32 -70 0 0 1 0 1 0 -1 0 0 3460.dat
+1 15 -70 -32 -70 0 0 1 0 1 0 -1 0 0 3460.dat
+1 15 -100 -32 190 0 0 1 0 1 0 -1 0 0 3795.dat
+0 STEP
+1 15 -260 -32 40 1 0 0 0 1 0 0 0 1 3585.dat
+1 15 60 -32 40 1 0 0 0 1 0 0 0 1 3586.dat
+1 15 -160 -32 210 0 0 1 0 1 0 -1 0 0 3936.dat
+1 15 -40 -32 210 0 0 -1 0 1 0 1 0 0 3935.dat
+1 46 -70 -32 60 0 0 -1 0 1 0 1 0 0 3024.dat
+1 46 -130 -32 60 0 0 -1 0 1 0 1 0 0 3024.dat
+1 0 -130 -32 30 0 0 -1 0 1 0 1 0 0 3069bp28.dat
+1 0 -70 -32 30 0 0 -1 0 1 0 1 0 0 3069bp28.dat
+0 STEP
+1 0 -30 -24 40 0 0 -1 0 1 0 1 0 0 3676.dat
+1 0 -170 -24 40 -1 0 0 0 1 0 0 0 -1 3676.dat
+1 15 -150 8 70 0 0 1 0 1 0 -1 0 0 2540.dat
+1 15 -50 8 70 0 0 -1 0 1 0 1 0 0 2540.dat
+1 15 -100 8 70 1 0 0 0 1 0 0 0 1 3020.dat
+1 15 -100 8 -90 1 0 0 0 1 0 0 0 1 3680c01.dat
+0 STEP
+1 1 160 -24 100 -1 0 0 0 1 0 0 0 -1 3839a.dat
+1 1 -360 -24 100 -1 0 0 0 1 0 0 0 -1 3839a.dat
+1 7 -10 10 74 0 0 1 -1 0 0 0 -1 0 4085c.dat
+1 46 -10 10 66 0 0 1 -1 0 0 0 -1 0 3024.dat
+1 7 -190 10 74 0 0 -1 1 0 0 0 -1 0 4085c.dat
+1 46 -190 10 66 0 0 -1 1 0 0 0 -1 0 3024.dat
+1 7 -100 16 -90 1 0 0 0 1 0 0 0 1 4870.dat
+1 7 -140 16 70 1 0 0 0 1 0 0 0 1 4870.dat
+1 7 -60 16 70 1 0 0 0 1 0 0 0 1 4870.dat
+1 7 -152 46 85 0 0 1 0 1 0 -1 0 0 4624.dat
+1 0 -151 46 85 -1 0 0 0 1 0 0 0 -1 3139.dat
+1 7 -127 46 85 0 0 1 0 1 0 -1 0 0 4624.dat
+1 0 -126 46 85 -1 0 0 0 1 0 0 0 -1 3139.dat
+1 7 -72 46 85 0 0 1 0 1 0 -1 0 0 4624.dat
+1 0 -71 46 85 -1 0 0 0 1 0 0 0 -1 3139.dat
+1 7 -47 46 85 0 0 1 0 1 0 -1 0 0 4624.dat
+1 0 -46 46 85 -1 0 0 0 1 0 0 0 -1 3139.dat
+1 7 -112 46 -75 0 0 1 0 1 0 -1 0 0 4624.dat
+1 0 -111 46 -75 -1 0 0 0 1 0 0 0 -1 3139.dat
+1 7 -87 46 -75 0 0 1 0 1 0 -1 0 0 4624.dat
+1 0 -86 46 -75 -1 0 0 0 1 0 0 0 -1 3139.dat
+0 STEP
+1 15 -100 -48 260 -1 0 0 0 1 0 0 0 -1 3700.dat
+1 1 -70 -40 -20 0 0 1 0 1 0 -1 0 0 2420.dat
+1 1 -130 -40 -20 -1 0 0 0 1 0 0 0 -1 2420.dat
+1 1 -100 -40 100 -1 0 0 0 1 0 0 0 -1 3710.dat
+1 1 -70 -40 200 -1 0 0 0 1 0 0 0 -1 2420.dat
+1 1 -130 -40 200 0 0 1 0 1 0 -1 0 0 2420.dat
+1 1 -130 -40 150 0 0 1 0 1 0 -1 0 0 3069b.dat
+1 1 -70 -40 150 0 0 1 0 1 0 -1 0 0 3069b.dat
+1 1 -100 -40 120 -1 0 0 0 1 0 0 0 -1 2431.dat
+0 STEP
+1 1 -150 -40 30 0 0 1 0 1 0 -1 0 0 3710.dat
+1 1 -50 -40 30 0 0 1 0 1 0 -1 0 0 3710.dat
+1 1 -100 -40 80 -1 0 0 0 1 0 0 0 -1 3666.dat
+1 1 -100 -56 260 -1 0 0 0 1 0 0 0 -1 3069b.dat
+1 1 -100 -40 -20 -1 0 0 0 1 0 0 0 -1 3023.dat
+1 7 -100 -40 -120 -1 0 0 0 1 0 0 0 -1 3039pc5.dat
+0 STEP
+1 1 -100 -56 160 -1 0 0 0 1 0 0 0 -1 3039.dat
+1 1 -100 -56 240 1 0 0 0 1 0 0 0 1 4865a.dat
+1 14 -100 -48 80 -1 0 0 0 1 0 0 0 -1 3710.dat
+1 14 -100 -40 -40 1 0 0 0 1 0 0 0 1 2432.dat
+0 STEP
+1 0 -100 -48 10 -1 0 0 0 1 0 0 0 -1 4590.dat
+1 0 -100 -56 10 -1 0 0 0 1 0 0 0 -1 3069bp28.dat
+1 15 -100 -48 -120 -1 0 0 0 1 0 0 0 -1 3069bp80.dat
+1 1 -100 -64 100 -1 0 0 0 1 0 0 0 -1 2399.dat
+1 1 -100 -38 270 0 0 1 1 0 0 0 1 0 2460.dat
+1 1 -100 -56 80 -1 0 0 0 1 0 0 0 -1 3710.dat
+1 1 -130 -40 240 0 0 -1 0 1 0 1 0 0 3623.dat
+1 1 -70 -40 240 0 0 -1 0 1 0 1 0 0 3623.dat
+0 STEP
+1 1 -130 -64 240 1 0 0 0 1 0 0 0 1 4286.dat
+1 1 -70 -64 240 1 0 0 0 1 0 0 0 1 4286.dat
+1 1 -130 -64 260 -1 0 0 0 1 0 0 0 -1 4287.dat
+1 1 -70 -64 260 -1 0 0 0 1 0 0 0 -1 4287.dat
+1 1 -50 -64 70 0 0 -1 0 1 0 1 0 0 4865a.dat
+1 1 -50 -64 30 0 0 -1 0 1 0 1 0 0 4865a.dat
+1 1 -50 -64 -10 0 0 -1 0 1 0 1 0 0 4865a.dat
+1 1 -150 -64 -10 0 0 1 0 1 0 -1 0 0 4865a.dat
+1 1 -150 -64 30 0 0 1 0 1 0 -1 0 0 4865a.dat
+1 1 -150 -64 70 0 0 1 0 1 0 -1 0 0 4865a.dat
+1 0 -100 -38 278 0 0 1 1 0 0 0 1 0 3941.dat
+0 STEP
+1 1 -70 -136 310 1 0 0 0 1 0 0 0 1 2340.dat
+1 1 -130 -136 310 1 0 0 0 1 0 0 0 1 2340.dat
+1 1 -110 -64 130 0 0 1 0 1 0 -1 0 0 2431.dat
+1 1 -130 -64 -20 0 0 1 0 1 0 -1 0 0 2357.dat
+1 1 -70 -64 -20 -1 0 0 0 1 0 0 0 -1 2357.dat
+1 1 -130 -56 -70 0 0 -1 0 1 0 1 0 0 4865a.dat
+1 1 -70 -56 -70 0 0 1 0 1 0 -1 0 0 4865a.dat
+1 1 -90 -64 130 0 0 1 0 1 0 -1 0 0 2431.dat
+0 STEP
+1 1 -70 -72 -30 0 0 1 0 1 0 -1 0 0 3069b.dat
+1 1 -130 -72 -30 0 0 1 0 1 0 -1 0 0 3069b.dat
+1 7 -100 -48 -140 1 0 0 0 1 0 0 0 1 3069bp02.dat
+1 1 -100 -56 -140 1 0 0 0 1 0 0 0 1 6153.dat
+1 1 -70 -144 310 0 0 1 0 1 0 -1 0 0 3069b.dat
+1 1 -130 -144 310 0 0 1 0 1 0 -1 0 0 3069b.dat
+1 1 -100 -64 30 1 0 0 0 1 0 0 0 1 4213.dat
+1 1 -100 -64 80 1 0 0 0 1 0 0 0 1 4315.dat
+0 STEP
+1 1 -100 -72 80 1 0 0 0 1 0 0 0 1 3794a.dat
+1 4 -100 -72 10 1 0 0 0 1 0 0 0 1 3022.dat
+1 1 -130 -72 10 0 0 1 0 1 0 -1 0 0 3069b.dat
+1 1 -70 -72 10 0 0 1 0 1 0 -1 0 0 3069b.dat
+1 41 -100 -88 -90 1 0 0 0 1 0 0 0 1 6152.dat
+0 STEP
+1 1 -100 -96 -40 -1 0 0 0 1 0 0 0 -1 4858.dat
+1 1 -100 -104 -40 -1 0 0 0 1 0 0 0 -1 3710.dat
+1 1 -100 -96 -90 1 0 0 0 1 0 0 0 1 4859.dat
+0 STEP
+1 1 -100 -104 -70 1 0 0 0 1 0 0 0 1 3068b.dat
+1 34 -370 -40 80 1 0 0 0 1 0 0 0 1 6141.dat
+1 36 170 -40 80 1 0 0 0 1 0 0 0 1 6141.dat
+1 1 -100 -80 80 1 0 0 0 1 0 0 0 1 4592.dat
+1 7 -100 -80 80 1 0 0 0 0.866 0.5 0 -0.5 0.866 4593.dat
+
+0 FILE 6331 - tool box.ldr
+0 tool box
+0 Name: 6331 - tool box.ldr
+0 Author: Robert Paciorek [bercik]
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HELP Copyright (c) 2002-2017, Robert Paciorek (http://www.opcode.eu.org/)
+0 !HELP Released under a dual license, you can choise "CCAL version 2.0" or "BSD/MIT-type licence":
+0 !HELP Redistribution and use in source or any others forms, with or without modification, ARE PERMITTED provided save information about author(s).
+0 !HELP This material is distributed WITHOUT any warranty, use at YOUR own risk.
+1 1 -10 -72 0 1 0 0 0 1 0 0 0 1 4532.dat
+1 1 20 -24 0 0 0 1 0 1 0 -1 0 0 2655.dat
+1 1 -20 -24 0 0 0 1 0 1 0 -1 0 0 2655.dat
+1 1 30 -48 10 0 0 -1 0 1 0 1 0 0 4070.dat
+1 1 30 -48 -10 0 0 -1 0 1 0 1 0 0 4070.dat
+1 0 -20 -8 0 0 0 1 0 1 0 -1 0 0 2496.dat
+1 0 20 -8 0 0 0 1 0 1 0 -1 0 0 2496.dat
+1 14 -10 -68 0 1 0 0 0 1 0 0 0 1 4536.dat
+1 14 -10 -50 0 1 0 0 0 1 0 0 0 1 4536.dat
+0 STEP
+1 1 30 -56 0 0 0 -1 0 1 0 1 0 0 3023.dat
+0 STEP
+1 1 30 -64 -10 1 0 0 0 1 0 0 0 1 4085c.dat
+1 1 30 -64 10 -1 0 0 0 1 0 0 0 -1 4085c.dat
+0 STEP
+1 1 30 -72 10 0 0 -1 0 1 0 1 0 0 4085c.dat
+1 1 30 -72 -10 0 0 -1 0 1 0 1 0 0 4085c.dat
+0 STEP
+1 1 0 -80 0 1 0 0 0 1 0 0 0 1 3020.dat
+1 1 68 -37 0 0 -1 0 0 0 -1 1 0 0 2432.dat
+
+0 FILE 6331 - minifig 1.ldr
+0 minifig 1
+0 Name: 6331 - minifig 1.ldr
+0 Author: Robert Paciorek [bercik]
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HELP Copyright (c) 2002-2017, Robert Paciorek (http://www.opcode.eu.org/)
+0 !HELP Released under a dual license, you can choise "CCAL version 2.0" or "BSD/MIT-type licence":
+0 !HELP Redistribution and use in source or any others forms, with or without modification, ARE PERMITTED provided save information about author(s).
+0 !HELP This material is distributed WITHOUT any warranty, use at YOUR own risk.
+1 14 0 -96.022 1.818 1 0 0 0 1 0 0 0 1 3626bp05.dat
+1 1 0 -72.022 1.818 1 0 0 0 1 0 0 0 1 973p81.dat
+1 1 0 -40.022 1.818 1 0 0 0 1 0 0 0 1 3815.dat
+1 1 15.5 -64.022 1.818 0.985 0.17 0 -0.17 0.985 0 0 0 1 3819.dat
+1 1 -15.5 -64.022 1.818 0.985 -0.17 0 0.17 0.985 0 0 0 1 3818.dat
+1 0 23.658 -46.149 -8.182 0.985 0.12 -0.12 -0.17 0.697 -0.697 0 0.707 0.707 3820.dat
+1 0 -23.658 -46.149 -8.182 0.985 -0.12 0.12 0.17 0.697 -0.697 0 0.707 0.707 3820.dat
+1 1 0 -28.022 1.818 1 0 0 0 1 0 0 0 1 3817.dat
+1 1 0 -28.022 1.818 1 0 0 0 1 0 0 0 1 3816.dat
+1 15 20.772 -62.851 -43.941 0.985 -0.12 -0.12 -0.17 -0.697 -0.697 0 0.707 -0.707 3900.dat
+1 15 -20.772 -62.851 -43.941 0.985 0.12 0.12 0.17 -0.697 -0.697 0 0.707 -0.707 3900.dat
+1 34 -21.734 -57.276 -49.598 0.985 0.12 0.12 0.17 -0.697 -0.697 0 0.707 -0.707 6141.dat
+1 36 21.734 -57.276 -49.598 0.985 -0.12 -0.12 -0.17 -0.697 -0.697 0 0.707 -0.707 6141.dat
+1 15 -0.008 -96 1.997 1 0 0.002 0 1 0 -0.002 0 1 4485.dat
+
+0 FILE 6331 - minifig 2.ldr
+0 minifig 2
+0 Name: 6331 - minifig 2.ldr
+0 Author: Robert Paciorek [bercik]
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HELP Copyright (c) 2002-2017, Robert Paciorek (http://www.opcode.eu.org/)
+0 !HELP Released under a dual license, you can choise "CCAL version 2.0" or "BSD/MIT-type licence":
+0 !HELP Redistribution and use in source or any others forms, with or without modification, ARE PERMITTED provided save information about author(s).
+0 !HELP This material is distributed WITHOUT any warranty, use at YOUR own risk.
+1 4 0 -96.022 1.818 1 0 0 0 1 0 0 0 1 2446.dat
+1 43 0 -96.022 1.818 1 0 0 0 1 0 0 0 1 2447.dat
+1 14 0 -96.022 1.818 1 0 0 0 1 0 0 0 1 3626bp04.dat
+1 4 0 -72.022 1.818 1 0 0 0 1 0 0 0 1 973p1h.dat
+1 4 0 -40.022 1.818 1 0 0 0 1 0 0 0 1 3815.dat
+1 4 15.5 -64.022 1.818 0.985 0.17 0 -0.17 0.985 0 0 0 1 3819.dat
+1 4 -15.5 -64.022 1.818 0.985 -0.17 0 0.17 0.985 0 0 0 1 3818.dat
+1 4 23.658 -46.149 -8.182 0.985 0.12 -0.12 -0.17 0.697 -0.697 0 0.707 0.707 3820.dat
+1 14 -23.658 -46.149 -8.182 0.985 -0.12 0.12 0.17 0.697 -0.697 0 0.707 0.707 3820.dat
+1 4 0 -28.022 1.818 1 0 0 0 1 0 0 0 1 3817.dat
+1 4 0 -28.022 1.818 1 0 0 0 1 0 0 0 1 3816.dat
+

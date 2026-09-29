@@ -1,0 +1,131 @@
+0 FILE 6035 - main.ldr
+0 main
+0 Name: 6035 - main.ldr
+0 Author: Takeshi Takahashi [RainbowDolphin]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 ROTATION CENTER 0 0 0 1 "Custom"
+0 ROTATION CONFIG 0 0
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 6035 - Building.ldr
+1 0 0 -72 -30 1 0 0 0 1 0 0 0 1 6035 - Minifig 1.ldr
+1 0 -120 -48 -120 0 0 -1 0 1 0 1 0 0 4493c01.dat
+1 1 -120 -56 -120 0 0 -1 0 1 0 1 0 0 4491a.dat
+1 1 -120 -128 -120 0 0 -1 0 1 0 1 0 0 6035 - Minifig 2.ldr
+
+
+
+0 FILE 6035 - Building.ldr
+0 Building
+0 Name: 6035 - Building.ldr
+0 Author: Takeshi Takahashi [RainbowDolphin]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 ROTATION CENTER 0 0 0 1 "Custom"
+0 ROTATION CONFIG 0 0
+1 2 0 0 0 1 0 0 0 1 0 0 0 1 3036.dat
+1 15 -50 -24 20 0 0 1 0 1 0 -1 0 0 3004.dat
+1 15 50 -24 20 0 0 1 0 1 0 -1 0 0 3004.dat
+1 4 0 -24 50 1 0 0 0 1 0 0 0 1 3010.dat
+1 15 -50 -24 -10 1 0 0 0 1 0 0 0 1 3040b.dat
+1 15 50 -24 -10 1 0 0 0 1 0 0 0 1 3040b.dat
+0 STEP
+1 15 -50 -48 30 1 0 0 0 1 0 0 0 1 3005.dat
+1 15 50 -48 30 1 0 0 0 1 0 0 0 1 3005.dat
+1 4 0 -48 50 1 0 0 0 1 0 0 0 1 3010.dat
+0 STEP
+1 15 -50 -72 30 1 0 0 0 1 0 0 0 1 3005.dat
+1 15 50 -72 30 1 0 0 0 1 0 0 0 1 3005.dat
+1 4 0 -72 50 1 0 0 0 1 0 0 0 1 3010.dat
+1 15 0 -80 50 1 0 0 0 1 0 0 0 1 3023.dat
+0 STEP
+1 15 30 -80 30 1 0 0 0 1 0 0 0 1 2420.dat
+1 15 -30 -80 30 0 0 -1 0 1 0 1 0 0 2420.dat
+0 STEP
+1 15 -50 -104 30 1 0 0 0 1 0 0 0 1 3005.dat
+1 15 50 -104 30 1 0 0 0 1 0 0 0 1 3005.dat
+1 4 0 -104 50 1 0 0 0 1 0 0 0 1 3010.dat
+1 15 -50 -96 10 1 0 0 0 1 0 0 0 1 4460a.dat
+1 15 50 -96 10 1 0 0 0 1 0 0 0 1 4460a.dat
+0 STEP
+1 15 -50 -104 10 0 0 1 0 1 0 -1 0 0 4085b.dat
+1 15 50 -104 10 0 0 -1 0 1 0 1 0 0 4085b.dat
+0 STEP
+1 15 -50 -128 20 0 0 1 0 1 0 -1 0 0 3004.dat
+1 15 50 -128 20 0 0 1 0 1 0 -1 0 0 3004.dat
+1 4 0 -128 50 1 0 0 0 1 0 0 0 1 3010.dat
+0 STEP
+1 15 -50 -136 10 1 0 0 0 1 0 0 0 1 3024.dat
+1 15 50 -136 10 1 0 0 0 1 0 0 0 1 3024.dat
+1 4 0 -136 50 -1 0 0 0 1 0 0 0 -1 2419.dat
+1 4 0 -160 70 -1 0 0 0 1 0 0 0 -1 3937.dat
+0 STEP
+1 4 0 -184 20 1 0 0 0 1 0 0 0 1 2418a.dat
+0 STEP
+1 0 0 -192 20 1 0 0 0 1 0 0 0 1 3957a.dat
+1 1 0 -272 20 0 0 1 0 1 0 -1 0 0 4495a.dat
+1 6 -70 -120 10 1 0 0 0 1 0 0 0 1 4497.dat
+1 6 70 -120 10 1 0 0 0 1 0 0 0 1 4497.dat
+
+
+
+0 FILE 6035 - Minifig 1.ldr
+0 Minifig 1
+0 Name: 6035 - Minifig 1.ldr
+0 Author: Takeshi Takahashi [RainbowDolphin]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 ROTATION CENTER 0 0 0 1 "Custom"
+0 ROTATION CONFIG 0 0
+1 0 0 -24 0 1 0 0 0 1 0 0 0 1 3844.dat
+1 14 0 -24 0 1 0 0 0 1 0 0 0 1 3626bp01.dat
+1 1 0 0 0 1 0 0 0 1 0 0 0 1 973p43.dat
+1 4 0 32 0 1 0 0 0 1 0 0 0 1 3815b.dat
+1 0 -15.552 9 0 0.985 -0.085 -0.147224 0.17 0.4925 0.853035 0 -0.866025 0.5 3818.dat
+1 0 15.552 9 0 0.985 0.17 0 -0.17 0.985 0 0 0 1 3819.dat
+1 14 -20.7492 8.55162 -21.408 0.985 -0.164183 -0.0439926 0.17 0.951293 0.254898 0 -0.25878 0.96578 3820.dat
+1 14 23.8634 26.5956 -10.321 0.985 0.12019 -0.12019 -0.17 0.696395 -0.696395 0 0.707 0.707 3820.dat
+1 6 -20.3532 6.25753 -30.1 -0.985 -0.169903 0.00294063 -0.17 0.98444 -0.0170383 0 -0.0172978 -0.999431 3848.dat
+1 0 0 44 0 1 0 0 0 1 0 0 0 1 3816b.dat
+1 0 0 44 0 1 0 0 0 1 0 0 0 1 3817b.dat
+
+
+
+0 FILE 6035 - Minifig 2.ldr
+0 Minifig 2
+0 Name: 6035 - Minifig 2.ldr
+0 Author: Takeshi Takahashi [RainbowDolphin]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 ROTATION CENTER 0 0 0 1 "Custom"
+0 ROTATION CONFIG 0 0
+1 0 0 -24 0 1 0 0 0 1 0 0 0 1 4503.dat
+1 0 0 -36 7 1 0 0 0 1 0 0 0 1 87692.dat
+1 14 0 -24 0 1 0 0 0 1 0 0 0 1 3626bp01.dat
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 973p40.dat
+1 0 0 32 0 1 0 0 0 1 0 0 0 1 3815b.dat
+1 0 -15.552 9 0 0.985 -0.085 -0.147224 0.17 0.4925 0.853035 0 -0.866025 0.5 3818.dat
+1 0 15.552 9 0 0.985 0.085 0.147224 -0.17 0.4925 0.853035 0 -0.866025 0.5 3819.dat
+1 14 -20.7492 8.55162 -21.408 0.985 -0.164183 -0.0439926 0.17 0.951293 0.254898 0 -0.25878 0.96578 3820.dat
+1 14 20.7492 8.55162 -21.408 0.985 0.164183 0.0439926 -0.17 0.951293 0.254898 0 -0.25878 0.96578 3820.dat
+1 0 -13.5571 -33.1201 -29.4081 0.985 -0.169903 -0.00294063 0.17 0.98444 0.0170383 0 -0.0172978 0.999431 6035 - Lance with flag.ldr
+1 7 18.3144 -5.55574 -29.8924 0.854505 0.169903 -0.489953 -0.138705 0.98444 0.0997556 0.499716 -0.0172978 0.865533 3846p46.dat
+1 0 0 44 0 1 0 0 0 1 0 0 0 1 3816b.dat
+1 0 0 44 0 1 0 0 0 1 0 0 0 1 3817b.dat
+
+
+
+0 FILE 6035 - Lance with flag.ldr
+0 Lance with flag
+0 Name: 6035 - Lance with flag.ldr
+0 Author: Takeshi Takahashi [RainbowDolphin]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 ROTATION CENTER 0 0 0 1 "Custom"
+0 ROTATION CONFIG 0 0
+1 0 0 24 0 -1 0 0 0 0 1 0 1 0 3849.dat
+1 15 0 -112 0 1 0 0 0 1 0 0 0 1 4495a.dat
+
+
+
+
+

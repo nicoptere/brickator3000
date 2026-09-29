@@ -1,0 +1,148 @@
+0 FILE 1974-3 - main.ldr
+0 main
+0 Name: 1974-3 - main.ldr
+0 Author: Takeshi Takahashi [RainbowDolphin]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 ROTATION CENTER 0 0 0 1 "Custom"
+0 ROTATION CONFIG 0 0
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 1974-3 - Cart.ldr
+1 0 -120 -32 -100 0 0 1 0 1 0 -1 0 0 1974-3 - Minifig 1.ldr
+1 0 -50 -70 0 0 0 1 0 1 0 -1 0 0 1974-3 - Minifig 2.ldr
+
+
+
+
+0 FILE 1974-3 - Cart.ldr
+0 Cart
+0 Name: 1974-3 - Cart.ldr
+0 Author: Takeshi Takahashi [RainbowDolphin]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 ROTATION CENTER 0 0 0 1 "Custom"
+0 ROTATION CONFIG 0 0
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 3034.dat
+0 STEP
+1 1 -140 -24 0 0 0 -1 0 1 0 1 0 0 2397.dat
+1 0 0 -8 20 0 0 -1 0 1 0 1 0 0 4488.dat
+1 0 0 -8 -20 0 0 1 0 1 0 -1 0 0 4488.dat
+1 0 70 -8 10 0 0 -1 0 1 0 1 0 0 4085b.dat
+1 0 70 -8 -10 0 0 -1 0 1 0 1 0 0 4085b.dat
+0 STEP
+1 0 0 -16 0 1 0 0 0 1 0 0 0 1 3035.dat
+1 0 -20 -40 -30 1 0 0 0 1 0 0 0 1 3937.dat
+1 0 60 -40 -30 1 0 0 0 1 0 0 0 1 3937.dat
+1 0 60 -40 30 -1 0 0 0 1 0 0 0 -1 3937.dat
+1 0 -20 -40 30 -1 0 0 0 1 0 0 0 -1 3937.dat
+1 0 20 -30 -30 1 0 0 0 0.965926 -0.258819 0 0.258819 0.965926 1974-3 - Fence.ldr
+1 0 20 -30 30 1 0 0 0 0.965926 0.258819 0 -0.258819 0.965926 1974-3 - Fence.ldr
+0 STEP
+1 0 -190 -48 0 0 0 1 0 1 0 -1 0 0 3004.dat
+0 STEP
+1 0 -190 -16 0 0 0 1 0 1 0 -1 0 0 4493c01.dat
+1 6 0 -3 -50 1 0 0 0 1 0 0 0 1 4489a.dat
+1 6 0 -3 50 -1 0 0 0 1 0 0 0 -1 4489a.dat
+0 STEP
+1 6 90 -72 10 1 0 0 0 1 0 0 0 1 4497.dat
+1 6 90 -16 -10 0 0 1 0 1 0 -1 0 0 4496.dat
+1 6 20 -48 0 1 0 0 0 1 0 0 0 1 1974-3 - Treasure chest.ldr
+0 STEP
+1 14 -20 -88 -10 1 0 0 0 1 0 0 0 1 3003.dat
+1 14 20 -88 10 1 0 0 0 1 0 0 0 1 3003.dat
+1 14 60 -88 -10 1 0 0 0 1 0 0 0 1 3003.dat
+1 14 0 -112 10 1 0 0 0 1 0 0 0 1 3003.dat
+1 14 40 -112 10 1 0 0 0 1 0 0 0 1 3003.dat
+
+
+
+
+0 FILE 1974-3 - Fence.ldr
+0 Fence
+0 Name: 1974-3 - Fence.ldr
+0 Author: Takeshi Takahashi [RainbowDolphin]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 ROTATION CENTER 0 0 0 1 "Custom"
+0 ROTATION CONFIG 0 0
+1 0 -40 -10 0 1 0 0 0 1 0 0 0 1 3938.dat
+1 0 40 -10 0 1 0 0 0 1 0 0 0 1 3938.dat
+0 STEP
+1 0 0 -18 0 1 0 0 0 1 0 0 0 1 3666.dat
+0 STEP
+1 0 0 -66 0 1 0 0 0 1 0 0 0 1 2486.dat
+1 0 0 -114 0 1 0 0 0 1 0 0 0 1 2486.dat
+
+
+
+
+0 FILE 1974-3 - Treasure chest.ldr
+0 Treasure chest
+0 Name: 1974-3 - Treasure chest.ldr
+0 Author: Takeshi Takahashi [RainbowDolphin]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 ROTATION CENTER 0 0 0 1 "Custom"
+0 ROTATION CONFIG 0 0
+1 6 0 0 0 1 0 0 0 1 0 0 0 1 4738b.dat
+1 14 -20 16 0 1 0 0 0 1 0 0 0 1 6141.dat
+1 14 20 16 0 1 0 0 0 1 0 0 0 1 6141.dat
+1 6 0 -16 0 1 0 0 0 1 0 0 0 1 4739a.dat
+
+
+
+
+
+0 FILE 1974-3 - Minifig 1.ldr
+0 Minifig 1
+0 Name: 1974-3 - Minifig 1.ldr
+0 Author: Takeshi Takahashi [RainbowDolphin]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 ROTATION CENTER 0 0 0 1 "Custom"
+0 ROTATION CONFIG 0 0
+1 2 0 -27 0 1 0 0 0 1 0 0 0 1 4506.dat
+1 0 -12 -31 5 1 0 0 0 1 0 0 0 1 87693.dat
+1 14 0 -27 0 1 0 0 0 1 0 0 0 1 3626bp01.dat
+1 6 0 0 0 -1 0 0 0 1 0 0 0 -1 4498.dat
+1 2 0 0 0 1 0 0 0 1 0 0 0 1 973p46.dat
+1 2 0 32 0 1 0 0 0 1 0 0 0 1 3815b.dat
+1 2 -15.552 9 0 0.985 -0.17 0 0.17 0.985 0 0 0 1 3818.dat
+1 2 15.552 9 0 0.985 0.120208 0.120208 -0.17 0.6965 0.6965 0 -0.707107 0.707107 3819.dat
+1 14 -23.8634 26.5956 -10.321 0.985 -0.12019 0.12019 0.17 0.696395 -0.696395 0 0.707 0.707 3820.dat
+1 14 21.6886 13.9945 -20.5641 0.985 0.169974 0 -0.17 0.984851 0 0 0 0.999849 3820.dat
+1 6 21.8534 14.9498 -29.3208 -0.0411338 0.164875 -0.985 -0.238334 0.955306 0.17 0.969854 0.241963 0 4499.dat
+1 2 0 44 0 1 0 0 0 1 0 0 0 1 3816b.dat
+1 2 0 44 0 1 0 0 0 1 0 0 0 1 3817b.dat
+
+
+
+
+
+
+0 FILE 1974-3 - Minifig 2.ldr
+0 Minifig 2
+0 Name: 1974-3 - Minifig 2.ldr
+0 Author: Takeshi Takahashi [RainbowDolphin]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 ROTATION CENTER 0 0 0 1 "Custom"
+0 ROTATION CONFIG 0 0
+1 0 0 -24 0 1 0 0 0 1 0 0 0 1 4505a.dat
+1 14 0 -24 0 1 0 0 0 1 0 0 0 1 3626bp01.dat
+1 7 0 0 0 1 0 0 0 1 0 0 0 1 973p46.dat
+1 7 0 32 0 1 0 0 0 1 0 0 0 1 3815b.dat
+1 1 -15.552 9 0 0.985 -0.120208 -0.120208 0.17 0.6965 0.6965 0 -0.707107 0.707107 3818.dat
+1 1 15.552 9 0 0.985 0.17 0 -0.17 0.985 0 0 0 1 3819.dat
+1 14 -21.6886 13.9945 -20.5641 0.985 -0.169974 0 0.17 0.984851 0 0 0 0.999849 3820.dat
+1 14 23.8634 26.5956 -10.321 0.985 0.12019 -0.12019 -0.17 0.696395 -0.696395 0 0.707 0.707 3820.dat
+1 2 -20.3696 6.35202 -31.4984 0.985 -0.164875 0.0411338 0.17 0.955306 -0.238334 0 0.241963 0.969854 2488.dat
+1 7 0 44 0 1 0 0 0 0.0174524 0.999848 0 -0.999848 0.0174524 3816b.dat
+1 7 0 44 0 1 0 0 0 0.0174524 0.999848 0 -0.999848 0.0174524 3817b.dat
+
+
+
+
+
+
+
+

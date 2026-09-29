@@ -1,0 +1,629 @@
+0 FILE 4555 - main.ldr
+0 !LEOCAD MODEL BACKGROUND GRADIENT 0 0 0.74902 1 1 1
+0 main
+0 Name: 4555 - main.ldr 
+0 Author: Robert Paciorek [bercik]
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HELP Copyright (c) 2002-2017, Robert Paciorek (http://www.opcode.eu.org/)
+0 !HELP Released under a dual license, you can choise "CCAL version 2.0" or "BSD/MIT-type licence":
+0 !HELP Redistribution and use in source or any others forms, with or without modification, ARE PERMITTED provided save information about author(s).
+0 !HELP This material is distributed WITHOUT any warranty, use at YOUR own risk.
+1 4 0 48 0 1 0 0 0 1 0 0 0 1 4555 - building.ldr
+1 14 -30.044 -496 20 -1 0 0 0 1 0 0 0 -1 4555 - gantry.ldr
+1 1 40 -96 -690 1 0 0 0 1 0 0 0 1 4555 - train car.ldr
+1 4 -349.996 -24 -260.003 0 0 1 0 1 0 -1 0 0 4555 - small car.ldr
+1 15 -370 -8 -20 1 0 0 0 1 0 0 0 1 4555 - container 3.ldr
+1 1 130 -40 -300 1 0 0 0 1 0 0 0 1 4555 - car.ldr
+1 15 100 -104 -680 1 0 0 0 1 0 0 0 1 4555 - container 1.ldr
+1 14 190 -64 -310 1 0 0 0 1 0 0 0 1 4555 - container 2.ldr
+1 1 70 0 -400 1 0 0 0 1 0 0 0 1 4555 - minifig 1.ldr
+1 1 -184.999 0 -293.301 0.5 0 0.866 0 1 0 -0.866 0 0.5 4555 - minifig 2.ldr
+1 1 60 0 -140 0 0 1 0 1 0 -1 0 0 4555 - minifig 3.ldr
+0 NOFILE
+0 FILE 4555 - building.ldr
+0 !LEOCAD MODEL BACKGROUND GRADIENT 0 0 0.74902 1 1 1
+
+
+0 building
+0 Name: 4555 - building.ldr 
+0 Author: Robert Paciorek [bercik]
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HELP Copyright (c) 2002-2017, Robert Paciorek (http://www.opcode.eu.org/)
+0 !HELP Released under a dual license, you can choise "CCAL version 2.0" or "BSD/MIT-type licence":
+0 !HELP Redistribution and use in source or any others forms, with or without modification, ARE PERMITTED provided save information about author(s).
+0 !HELP This material is distributed WITHOUT any warranty, use at YOUR own risk.
+1 7 40 -48 20 1 0 0 0 1 0 0 0 1 3857.dat
+1 7 40 -48 -460 -1 0 0 0 1 0 0 0 -1 425p01.dat
+1 8 200 -56 -680 -1 0 0 0 1 0 0 0 -1 2865.dat
+1 8 -120 -56 -680 -1 0 0 0 1 0 0 0 -1 2865.dat
+1 16 -230 -72 -10 -1 0 0 0 1 0 0 0 -1 3005.dat
+1 14 -60 -72 0 0 0 1 0 1 0 -1 0 0 3001.dat
+1 16 330 -72 -80 0 0 1 0 1 0 -1 0 0 6111.dat
+1 16 330 -72 30 0 0 1 0 1 0 -1 0 0 3005.dat
+1 16 30 -72 -20 0 0 1 0 1 0 -1 0 0 3009.dat
+1 16 -250 -72 20 1 0 0 0 1 0 0 0 1 3002.dat
+1 16 -230 -72 -100 0 0 -1 0 1 0 1 0 0 3008.dat
+0 STEP
+1 7 -280 -56 -780 0 0 -1 0 1 0 1 0 0 3022.dat
+1 7 -120 -56 -780 0 0 -1 0 1 0 1 0 0 3022.dat
+1 7 40 -56 -780 0 0 -1 0 1 0 1 0 0 3022.dat
+1 7 200 -56 -780 0 0 -1 0 1 0 1 0 0 3022.dat
+1 7 360 -56 -780 0 0 -1 0 1 0 1 0 0 3022.dat
+1 14 -20 -56 0 0 0 1 0 1 0 -1 0 0 4079.dat
+1 15 -50 -80 20 0 0 1 0 1 0 -1 0 0 3069bp80.dat
+1 16 330 -96 -20 0 0 1 0 1 0 -1 0 0 3009.dat
+1 15 -70 -96 20 0 0 -1 0 1 0 1 0 0 4865a.dat
+0 STEP
+1 7 -280 -64 -770 0 0 -1 0 1 0 1 0 0 3021.dat
+1 7 360 -64 -770 0 0 -1 0 1 0 1 0 0 3021.dat
+1 7 200 -64 -770 0 0 -1 0 1 0 1 0 0 3021.dat
+1 7 40 -64 -770 0 0 -1 0 1 0 1 0 0 3021.dat
+1 7 -120 -64 -770 0 0 -1 0 1 0 1 0 0 3021.dat
+1 15 -70 -96 -20 0 0 -1 0 1 0 1 0 0 3039p23.dat
+1 0 330 -120 -40 0 0 1 0 1 0 -1 0 0 3039p12.dat
+1 0 330 -120 0 0 0 1 0 1 0 -1 0 0 3004.dat
+1 16 30 -192 -20 0 0 1 0 1 0 -1 0 0 3754.dat
+1 16 -230 -192 -20 0 0 1 0 1 0 -1 0 0 3754.dat
+1 16 330 -216 30 0 0 1 0 1 0 -1 0 0 2453.dat
+1 16 330 -216 -70 0 0 1 0 1 0 -1 0 0 2453.dat
+1 15 -20 -192 -70 1 0 0 0 1 0 0 0 1 6160.dat
+1 15 -180 -192 -70 1 0 0 0 1 0 0 0 1 6160.dat
+1 15 -70 -168 -70 0 0 -1 0 1 0 1 0 0 73435.dat
+0 STEP
+1 7 370 -88 -780 0 0 -1 0 1 0 1 0 0 4865a.dat
+1 7 -290 -88 -780 0 0 1 0 1 0 -1 0 0 4865a.dat
+1 15 -100 -192 -70 1 0 0 0 1 0 0 0 1 3297.dat
+1 16 -230 -216 -70 1 0 0 0 1 0 0 0 1 2357.dat
+1 16 30 -216 -70 0 0 -1 0 1 0 1 0 0 2357.dat
+1 16 -260 -192 20 0 0 -1 0 1 0 1 0 0 2580c01.dat
+0 STEP
+1 16 -250 -216 20 -1 0 0 0 1 0 0 0 -1 3002.dat
+1 7 200 -80 -770 1 0 0 0 1 0 0 0 1 3228b.dat
+1 7 -120 -80 -770 1 0 0 0 1 0 0 0 1 3228b.dat
+1 16 -230 -216 -20 0 0 1 0 1 0 -1 0 0 3004.dat
+1 16 30 -216 0 0 0 1 0 1 0 -1 0 0 3010.dat
+1 16 -100 -216 -70 -1 0 0 0 1 0 0 0 -1 6111.dat
+0 STEP
+1 16 330 -224 -20 0 0 -1 0 1 0 1 0 0 3666.dat
+1 7 -120 -80 -790 1 0 0 0 1 0 0 0 1 3228b.dat
+1 7 200 -80 -790 1 0 0 0 1 0 0 0 1 3228b.dat
+1 0 -100 -224 -40 -1 0 0 0 1 0 0 0 -1 3456.dat
+1 16 30 -224 30 -1 0 0 0 1 0 0 0 -1 3024.dat
+0 STEP
+1 15 -100 -248 -70 -1 0 0 0 1 0 0 0 -1 3010.dat
+1 16 180 -248 30 -1 0 0 0 1 0 0 0 -1 2465.dat
+1 16 180 -248 -70 -1 0 0 0 1 0 0 0 -1 2465.dat
+0 STEP
+1 16 180 -256 -20 -1 0 0 0 1 0 0 0 -1 3456.dat
+1 16 30 -256 30 -1 0 0 0 1 0 0 0 -1 3024.dat
+1 16 30 -256 -70 -1 0 0 0 1 0 0 0 -1 3024.dat
+1 16 330 -256 30 -1 0 0 0 1 0 0 0 -1 3024.dat
+1 16 330 -256 -70 -1 0 0 0 1 0 0 0 -1 3024.dat
+1 15 -100 -272 -70 -1 0 0 0 1 0 0 0 -1 3010.dat
+0 STEP
+1 16 50 -280 -70 0 0 1 0 1 0 -1 0 0 3040b.dat
+1 16 50 -280 30 0 0 1 0 1 0 -1 0 0 3040b.dat
+1 16 310 -280 30 0 0 -1 0 1 0 1 0 0 3040b.dat
+1 16 310 -280 -70 0 0 -1 0 1 0 1 0 0 3040b.dat
+1 14 140 -264 -20 0 0 -1 0 1 0 1 0 0 4079.dat
+1 14 220 -264 -20 0 0 1 0 1 0 -1 0 0 4079.dat
+1 14 180 -280 10 1 0 0 0 1 0 0 0 1 3004.dat
+1 14 180 -280 -50 1 0 0 0 1 0 0 0 1 3004.dat
+0 STEP
+1 14 180 -288 -20 0 0 -1 0 1 0 1 0 0 3020.dat
+1 16 -260 -336 20 0 0 -1 0 1 0 1 0 0 2580c01.dat
+1 16 50 -400 -70 0 0 -1 0 1 0 1 0 0 2453.dat
+1 16 50 -400 30 0 0 -1 0 1 0 1 0 0 2453.dat
+1 16 310 -400 30 0 0 -1 0 1 0 1 0 0 2453.dat
+1 16 310 -400 -70 0 0 -1 0 1 0 1 0 0 2453.dat
+0 STEP
+1 15 100 -400 -70 1 0 0 0 1 0 0 0 1 6160.dat
+1 15 180 -400 -70 1 0 0 0 1 0 0 0 1 6160.dat
+1 15 260 -400 -70 1 0 0 0 1 0 0 0 1 6160.dat
+1 15 310 -400 -20 0 0 -1 0 1 0 1 0 0 6160.dat
+1 15 50 -400 -20 0 0 1 0 1 0 -1 0 0 6160.dat
+0 STEP
+1 16 50 -424 0 0 0 1 0 1 0 -1 0 0 3010.dat
+1 16 310 -424 0 0 0 1 0 1 0 -1 0 0 3010.dat
+1 16 50 -408 -70 1 0 0 0 1 0 0 0 1 2420.dat
+1 16 310 -408 -70 0 0 -1 0 1 0 1 0 0 2420.dat
+1 16 180 -408 -70 -1 0 0 0 1 0 0 0 -1 4477.dat
+0 STEP
+1 16 160 -416 -70 -1 0 0 0 1 0 0 0 -1 4477.dat
+1 16 280 -416 -70 -1 0 0 0 1 0 0 0 -1 3023.dat
+1 16 310 -416 -60 0 0 -1 0 1 0 1 0 0 3023.dat
+1 16 50 -416 -60 0 0 -1 0 1 0 1 0 0 3023.dat
+1 16 50 -424 -50 0 0 -1 0 1 0 1 0 0 3024.dat
+1 16 310 -424 -50 0 0 -1 0 1 0 1 0 0 3024.dat
+0 STEP
+1 16 -260 -456 20 0 0 -1 0 1 0 1 0 0 2580c01.dat
+1 0 180 -424 -80 -1 0 0 0 1 0 0 0 -1 4282.dat
+1 0 180 -432 -20 -1 0 0 0 1 0 0 0 -1 3027.dat
+1 16 60 -456 20 -1 0 0 0 1 0 0 0 -1 3003.dat
+1 16 300 -456 20 -1 0 0 0 1 0 0 0 -1 3003.dat
+0 STEP
+1 16 -220 -464 20 -1 0 0 0 1 0 0 0 -1 3034.dat
+1 16 20 -464 20 -1 0 0 0 1 0 0 0 -1 4282.dat
+1 16 280 -464 20 -1 0 0 0 1 0 0 0 -1 3832.dat
+0 STEP
+1 7 370 -488 20 0 0 -1 0 1 0 1 0 0 4865a.dat
+1 7 -290 -488 20 0 0 1 0 1 0 -1 0 0 4865a.dat
+1 7 -120 -480 30 -1 0 0 0 1 0 0 0 -1 3228b.dat
+1 7 200 -480 30 -1 0 0 0 1 0 0 0 -1 3228b.dat
+1 7 -120 -480 10 -1 0 0 0 1 0 0 0 -1 3228b.dat
+1 7 200 -480 10 -1 0 0 0 1 0 0 0 -1 3228b.dat
+0 NOFILE
+0 FILE 4555 - gantry.ldr
+0 !LEOCAD MODEL BACKGROUND GRADIENT 0 0 0.74902 1 1 1
+
+
+0 gantry
+0 Name: 4555 - gantry.ldr 
+0 Author: Robert Paciorek [bercik]
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HELP Copyright (c) 2002-2017, Robert Paciorek (http://www.opcode.eu.org/)
+0 !HELP Released under a dual license, you can choise "CCAL version 2.0" or "BSD/MIT-type licence":
+0 !HELP Redistribution and use in source or any others forms, with or without modification, ARE PERMITTED provided save information about author(s).
+0 !HELP This material is distributed WITHOUT any warranty, use at YOUR own risk.
+1 16 -10 16 0 1 0 0 0 1 0 0 0 1 4282.dat
+1 16 -80 16 100 0 0 -1 0 1 0 1 0 0 3460.dat
+1 16 60 16 100 0 0 -1 0 1 0 1 0 0 3460.dat
+1 16 -80 16 260 0 0 -1 0 1 0 1 0 0 3460.dat
+1 16 60 16 260 0 0 -1 0 1 0 1 0 0 3460.dat
+1 16 -80 16 420 0 0 -1 0 1 0 1 0 0 3460.dat
+1 16 60 16 420 0 0 -1 0 1 0 1 0 0 3460.dat
+1 16 -80 16 580 0 0 -1 0 1 0 1 0 0 3460.dat
+1 16 60 16 580 0 0 -1 0 1 0 1 0 0 3460.dat
+1 16 60 16 700 0 0 -1 0 1 0 1 0 0 3710.dat
+1 16 -80 16 700 0 0 -1 0 1 0 1 0 0 3710.dat
+1 16 -10 16 800 -1 0 0 0 1 0 0 0 -1 3036.dat
+0 STEP
+1 16 -10 -8 0 1 0 0 0 1 0 0 0 1 3003.dat
+1 16 -10 -8 840 1 0 0 0 1 0 0 0 1 3003.dat
+1 16 80 -8 0 0 0 -1 0 1 0 1 0 0 3039.dat
+1 16 -100 -8 0 0 0 1 0 1 0 -1 0 0 3039.dat
+1 4 0 0 240 1 0 0 0 1 0 0 0 1 4555 - gantry - lift.ldr
+0 STEP
+1 16 -80 -8 180 0 0 -1 0 1 0 1 0 0 2653.dat
+1 16 -80 -8 260 0 0 -1 0 1 0 1 0 0 2653.dat
+1 16 -80 -8 340 0 0 -1 0 1 0 1 0 0 2653.dat
+1 16 -80 -8 420 0 0 -1 0 1 0 1 0 0 2653.dat
+1 16 -80 -8 500 0 0 -1 0 1 0 1 0 0 2653.dat
+1 16 -80 -8 580 0 0 -1 0 1 0 1 0 0 2653.dat
+1 16 -80 -8 660 0 0 -1 0 1 0 1 0 0 2653.dat
+1 16 -80 -8 740 0 0 -1 0 1 0 1 0 0 2653.dat
+1 16 -80 -8 820 0 0 -1 0 1 0 1 0 0 2653.dat
+1 16 -80 -8 60 0 0 1 0 1 0 -1 0 0 3008.dat
+1 16 60 -8 60 0 0 1 0 1 0 -1 0 0 3008.dat
+0 STEP
+1 16 60 -8 740 0 0 1 0 1 0 -1 0 0 2653.dat
+1 16 60 -8 820 0 0 1 0 1 0 -1 0 0 2653.dat
+1 16 60 -8 660 0 0 1 0 1 0 -1 0 0 2653.dat
+1 16 60 -8 580 0 0 1 0 1 0 -1 0 0 2653.dat
+1 16 60 -8 500 0 0 1 0 1 0 -1 0 0 2653.dat
+1 16 60 -8 420 0 0 1 0 1 0 -1 0 0 2653.dat
+1 16 60 -8 340 0 0 1 0 1 0 -1 0 0 2653.dat
+1 16 60 -8 260 0 0 1 0 1 0 -1 0 0 2653.dat
+1 16 60 -8 180 0 0 1 0 1 0 -1 0 0 2653.dat
+1 16 60 -8 60 0 0 1 0 1 0 -1 0 0 3008.dat
+0 STEP
+1 16 -80 -16 100 0 0 1 0 1 0 -1 0 0 3460.dat
+1 16 -80 -16 260 0 0 1 0 1 0 -1 0 0 3460.dat
+1 16 -80 -16 420 0 0 1 0 1 0 -1 0 0 3460.dat
+1 16 -80 -16 580 0 0 1 0 1 0 -1 0 0 3460.dat
+1 16 -80 -16 740 0 0 1 0 1 0 -1 0 0 3460.dat
+1 16 60 -16 100 0 0 1 0 1 0 -1 0 0 3460.dat
+1 16 60 -16 260 0 0 1 0 1 0 -1 0 0 3460.dat
+1 16 60 -16 420 0 0 1 0 1 0 -1 0 0 3460.dat
+1 16 60 -16 580 0 0 1 0 1 0 -1 0 0 3460.dat
+1 16 60 -16 740 0 0 1 0 1 0 -1 0 0 3460.dat
+0 STEP
+1 16 -10 -16 840 1 0 0 0 1 0 0 0 1 3034.dat
+1 16 -10 24 760 -1 0 0 0 1 0 0 0 -1 2635.dat
+1 16 -10 -16 0 1 0 0 0 1 0 0 0 1 3832.dat
+0 STEP
+1 16 -10 408 800 -1 0 0 0 1 0 0 0 -1 4282.dat
+0 STEP
+1 16 -10 384 790 1 0 0 0 1 0 0 0 1 3937.dat
+1 0 -10 384 790 1 0 0 0 1 0 0 0 1 3938.dat
+1 16 -10 416 800 -1 0 0 0 1 0 0 0 -1 4282.dat
+1 0 143 454 788 1 0 0 0 1 0 0 0 1 2927.dat
+1 0 143 454 812 -1 0 0 0 1 0 0 0 -1 2927.dat
+0 STEP
+1 7 130 424 800 0 0 1 0 1 0 -1 0 0 4870.dat
+1 0 -162 454 813 -1 0 0 0 1 0 0 0 -1 2927.dat
+1 0 -162 454 788.999 1 0 0 0 1 0 0 0 1 2927.dat
+1 7 -149 424 800 0 0 -1 0 1 0 1 0 0 4870.dat
+1 0 -10 376 790 -1 0 0 0 1 0 0 0 -1 3839a.dat
+0 STEP
+1 0 -162 54 13 -1 0 0 0 1 0 0 0 -1 2927.dat
+1 0 -162 54 -11.001 1 0 0 0 1 0 0 0 1 2927.dat
+1 7 -149 24 0 0 0 -1 0 1 0 1 0 0 4870.dat
+1 0 139 54 -13 1 0 0 0 1 0 0 0 1 2927.dat
+1 0 139 54 11.001 -1 0 0 0 1 0 0 0 -1 2927.dat
+1 7 126 24 0 0 0 1 0 1 0 -1 0 0 4870.dat
+1 0 -10 352 790 1 0 0 0 1 0 0 0 1 4865a.dat
+0 NOFILE
+0 FILE 4555 - gantry - lift.ldr
+0 !LEOCAD MODEL BACKGROUND GRADIENT 0 0 0.74902 1 1 1
+
+
+0 gantry - lift
+0 Name: 4555 - gantry - lift.ldr 
+0 Author: Robert Paciorek [bercik]
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HELP Copyright (c) 2002-2017, Robert Paciorek (http://www.opcode.eu.org/)
+0 !HELP Released under a dual license, you can choise "CCAL version 2.0" or "BSD/MIT-type licence":
+0 !HELP Redistribution and use in source or any others forms, with or without modification, ARE PERMITTED provided save information about author(s).
+0 !HELP This material is distributed WITHOUT any warranty, use at YOUR own risk.
+0 STEP
+1 16 40 0 0 0 0 -1 0 1 0 1 0 0 4510.dat
+1 16 -60 0 0 0 0 1 0 1 0 -1 0 0 4510.dat
+0 STEP
+1 16 -10 -8 -60 -1 0 0 0 1 0 0 0 -1 3795.dat
+1 16 -10 -8 60 -1 0 0 0 1 0 0 0 -1 3795.dat
+0 STEP
+1 16 -50 -16 0 0 0 1 0 1 0 -1 0 0 3034.dat
+1 16 30 -16 0 0 0 1 0 1 0 -1 0 0 3034.dat
+1 16 -10 -16 -60 0 0 1 0 1 0 -1 0 0 3022.dat
+1 16 -10 -16 60 1 0 0 0 1 0 0 0 1 3176.dat
+0 STEP
+1 16 20 -40 0 0 0 -1 0 1 0 1 0 0 3039.dat
+1 16 -40 -40 0 0 0 1 0 1 0 -1 0 0 3039.dat
+1 16 -10 -24 70 -1 0 0 0 1 0 0 0 -1 6583.dat
+1 16 -10 -24 -70 1 0 0 0 1 0 0 0 1 6583.dat
+0 STEP
+1 16 -10 -88 0 -1 0 0 0 1 0 0 0 -1 73037.dat
+0 STEP
+1 16 -10 -112 0 -1 0 0 0 1 0 0 0 -1 3299.dat
+0 NOFILE
+0 FILE 4555 - train car.ldr
+0 !LEOCAD MODEL BACKGROUND GRADIENT 0 0 0.74902 1 1 1
+
+
+0 train car
+0 Name: 4555 - train car.ldr 
+0 Author: Robert Paciorek [bercik]
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HELP Copyright (c) 2002-2017, Robert Paciorek (http://www.opcode.eu.org/)
+0 !HELP Released under a dual license, you can choise "CCAL version 2.0" or "BSD/MIT-type licence":
+0 !HELP Redistribution and use in source or any others forms, with or without modification, ARE PERMITTED provided save information about author(s).
+0 !HELP This material is distributed WITHOUT any warranty, use at YOUR own risk.
+1 16 -20 0 10 1 0 0 0 1 0 0 0 1 6584.dat
+0 STEP
+1 7 -150 -8 10 0 0 1 0 1 0 -1 0 0 3023.dat
+1 7 110 -8 10 0 0 1 0 1 0 -1 0 0 3023.dat
+1 7 -60 -8 10 0 0 1 0 1 0 -1 0 0 3022.dat
+1 7 20 -8 10 0 0 1 0 1 0 -1 0 0 3022.dat
+0 STEP
+1 7 -100 -8 40 -1 0 0 0 1 0 0 0 -1 4162.dat
+1 7 60 -8 40 -1 0 0 0 1 0 0 0 -1 4162.dat
+1 7 60 -8 -20 -1 0 0 0 1 0 0 0 -1 4162.dat
+1 7 -100 -8 -20 -1 0 0 0 1 0 0 0 -1 4162.dat
+1 7 -150 -16 10 0 0 1 0 1 0 -1 0 0 3069b.dat
+1 7 -50 -16 10 0 0 1 0 1 0 -1 0 0 3069b.dat
+1 7 10 -16 10 0 0 1 0 1 0 -1 0 0 3069b.dat
+1 7 110 -16 10 0 0 1 0 1 0 -1 0 0 3069b.dat
+0 STEP
+1 7 -50 0 10 0 0 1 0 1 0 -1 0 0 3023.dat
+1 7 10 0 10 0 0 1 0 1 0 -1 0 0 3023.dat
+0 STEP
+1 0 -20 8 10 -1 0 0 0 1 0 0 0 -1 3035.dat
+0 STEP
+1 16 -50 16 50 0 0 1 0 1 0 -1 0 0 3747a.dat
+1 16 -50 16 -30 0 0 1 0 1 0 -1 0 0 3747a.dat
+1 16 10 16 -30 0 0 -1 0 1 0 1 0 0 3747a.dat
+1 16 10 16 50 0 0 -1 0 1 0 1 0 0 3747a.dat
+0 STEP
+1 16 -20 40 10 0 0 -1 0 1 0 1 0 0 3032.dat
+0 STEP
+1 7 -250 -8 10 0 0 1 0 1 0 -1 0 0 6583.dat
+1 7 210 -8 10 0 0 -1 0 1 0 1 0 0 6583.dat
+1 7 180 -24 60 1 0 0 0 1 0 0 0 1 4865d01.dat
+1 7 -130 -24 60 1 0 0 0 1 0 0 0 1 4589.dat
+1 7 -70 -24 60 1 0 0 0 1 0 0 0 1 4589.dat
+1 7 -70 -24 -40 1 0 0 0 1 0 0 0 1 4589.dat
+1 7 -130 -24 -40 1 0 0 0 1 0 0 0 1 4589.dat
+1 7 30 -24 -40 1 0 0 0 1 0 0 0 1 4589.dat
+1 7 30 -24 60 1 0 0 0 1 0 0 0 1 4589.dat
+1 7 90 -24 60 1 0 0 0 1 0 0 0 1 4589.dat
+1 7 90 -24 -40 1 0 0 0 1 0 0 0 1 4589.dat
+1 7 -220 -24 -40 -1 0 0 0 1 0 0 0 -1 4865d01.dat
+1 0 140.001 88 10.005 0 0 1 0 1 0 -1 0 0 4555 - train car - wheels.ldr
+1 0 -179.999 88 10.005 0 0 -1 0 1 0 1 0 0 4555 - train car - wheels.ldr
+0 NOFILE
+0 FILE 4555 - train car - wheels.ldr
+0 !LEOCAD MODEL BACKGROUND GRADIENT 0 0 0.74902 1 1 1
+
+
+0 train car - wheels
+0 Name: 4555 - train car - wheels.ldr 
+0 Author: Robert Paciorek [bercik]
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HELP Copyright (c) 2002-2017, Robert Paciorek (http://www.opcode.eu.org/)
+0 !HELP Released under a dual license, you can choise "CCAL version 2.0" or "BSD/MIT-type licence":
+0 !HELP Redistribution and use in source or any others forms, with or without modification, ARE PERMITTED provided save information about author(s).
+0 !HELP This material is distributed WITHOUT any warranty, use at YOUR own risk.
+1 0 0 -64 30 1 0 0 0 1 0 0 0 1 2878c02.dat
+1 0 0 -64 -30 1 0 0 0 1 0 0 0 1 2878c02.dat
+1 0 0.001 -56 0 0 0 1 0 1 0 -1 0 0 3795.dat
+1 0 0.003 -64 -50 -1 0 0 0 1 0 0 0 -1 3023.dat
+1 0 0 -64 40 -1 0 0 0 1 0 0 0 -1 4022.dat
+1 0 -0.002 -48 70 -1 0 0 0 1 0 0 0 -1 2920.dat
+1 0 -0.004 -44 105 -1 0 0 0 1 0 0 0 -1 2959c01.dat
+1 0 0 -72 0 0 0 1 0 1 0 -1 0 0 4092a.dat
+0 NOFILE
+0 FILE 4555 - car.ldr
+0 !LEOCAD MODEL BACKGROUND GRADIENT 0 0 0.74902 1 1 1
+
+
+0 car
+0 Name: 4555 - car.ldr 
+0 Author: Robert Paciorek [bercik]
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HELP Copyright (c) 2002-2017, Robert Paciorek (http://www.opcode.eu.org/)
+0 !HELP Released under a dual license, you can choise "CCAL version 2.0" or "BSD/MIT-type licence":
+0 !HELP Redistribution and use in source or any others forms, with or without modification, ARE PERMITTED provided save information about author(s).
+0 !HELP This material is distributed WITHOUT any warranty, use at YOUR own risk.
+1 16 20 0 -10 1 0 0 0 1 0 0 0 1 2445.dat
+0 STEP
+1 16 100 -8 -10 1 0 0 0 1 0 0 0 1 3022.dat
+1 16 -60 -8 -10 1 0 0 0 1 0 0 0 1 3034.dat
+0 STEP
+1 0 100 8 -10 0 0 1 0 1 0 -1 0 0 4600.dat
+1 0 -80 8 -10 0 0 1 0 1 0 -1 0 0 4600.dat
+1 0 40 8 -10 0 0 1 0 1 0 -1 0 0 4600.dat
+1 7 -20 8 -10 0 0 1 0 1 0 -1 0 0 3020.dat
+0 STEP
+1 7 -20 0 -40 -1 0 0 0 1 0 0 0 -1 3069b.dat
+1 7 -20 0 20 -1 0 0 0 1 0 0 0 -1 3069b.dat
+1 16 40 -16 -10 -1 0 0 0 1 0 0 0 -1 3795.dat
+1 16 -80 -24 -10 0 0 1 0 1 0 -1 0 0 4211.dat
+1 16 130 -8 -10 0 0 -1 0 1 0 1 0 0 2436a.dat
+0 STEP
+1 16 -30 -24 20 -1 0 0 0 1 0 0 0 -1 2420.dat
+1 16 -30 -24 -40 0 0 -1 0 1 0 1 0 0 2420.dat
+1 15 152 2 -10 0 -1 0 0 0 -1 1 0 0 3069b.dat
+1 36 152 2 20 0 -1 0 0 0 -1 1 0 0 6141.dat
+1 36 152 2 -40 0 -1 0 0 0 -1 1 0 0 6141.dat
+1 16 110 -16 -10 0 0 -1 0 1 0 1 0 0 3023.dat
+0 STEP
+1 15 -110 -40 20 0 0 -1 0 1 0 1 0 0 3005.dat
+1 15 -110 -40 -40 0 0 -1 0 1 0 1 0 0 3005.dat
+1 15 -30 -48 -10 0 0 -1 0 1 0 1 0 0 3010.dat
+1 15 -90 -24 -10 0 0 1 0 1 0 -1 0 0 3829c01.dat
+1 16 130 -16 -10 0 0 -1 0 1 0 1 0 0 4315.dat
+1 16 140 -36 -10 0 1 0 0 0 1 1 0 0 2873.dat
+1 16 -130 -16 -10 0 0 -1 0 1 0 1 0 0 3710.dat
+0 STEP
+1 15 -130 -40 20 0 0 1 0 1 0 -1 0 0 4070.dat
+1 15 -130 -40 -40 0 0 1 0 1 0 -1 0 0 4070.dat
+1 15 -130 -40 -10 0 0 -1 0 1 0 1 0 0 2877.dat
+1 16 60 -24 -10 1 0 0 0 1 0 0 0 1 6576.dat
+0 STEP
+1 46 -144 -28 -40 0 1 0 0 0 1 1 0 0 6141.dat
+1 46 -144 -28 20 0 1 0 0 0 1 1 0 0 6141.dat
+1 15 -120 -48 -10 0 0 1 0 1 0 -1 0 0 3020.dat
+1 7 10 -32 -10 0 0 1 0 1 0 -1 0 0 3069b.dat
+1 7 110 -32 -10 0 0 1 0 1 0 -1 0 0 3069b.dat
+1 15 -90 -48 -40 0 0 1 0 1 0 -1 0 0 3822.dat
+1 15 -90 -48 20 0 0 1 0 1 0 -1 0 0 3821.dat
+0 STEP
+1 16 -30 -96 -10 0 0 1 0 1 0 -1 0 0 4214.dat
+1 16 -60 -104 -10 0 0 1 0 1 0 -1 0 0 4213.dat
+1 15 -70 -128 -10 0 0 -1 0 1 0 1 0 0 4865a.dat
+1 15 -80 13 -42 1 0 0 0 1 0 0 0 1 6014.dat
+1 0 -80 13 -47 1 0 0 0 1 0 0 0 1 6015.dat
+1 15 40 13 -42 1 0 0 0 1 0 0 0 1 6014.dat
+1 0 40 13 -47 1 0 0 0 1 0 0 0 1 6015.dat
+1 15 100 13 -42 1 0 0 0 1 0 0 0 1 6014.dat
+1 0 100 13 -47 1 0 0 0 1 0 0 0 1 6015.dat
+1 15 100 13 23 -1 0 0 0 1 0 0 0 -1 6014.dat
+1 0 100 13 28.001 -1 0 0 0 1 0 0 0 -1 6015.dat
+1 15 40 13 23 -1 0 0 0 1 0 0 0 -1 6014.dat
+1 0 40 13 28.001 -1 0 0 0 1 0 0 0 -1 6015.dat
+1 15 -80 13 23 -1 0 0 0 1 0 0 0 -1 6014.dat
+1 0 -80 13 28.001 -1 0 0 0 1 0 0 0 -1 6015.dat
+1 41 -90 -96 -10 0 0 1 0 1 0 -1 0 0 3823.dat
+0 NOFILE
+0 FILE 4555 - small car.ldr
+0 !LEOCAD MODEL BACKGROUND GRADIENT 0 0 0.74902 1 1 1
+
+
+0 small car
+0 Name: 4555 - small car.ldr 
+0 Author: Robert Paciorek [bercik]
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HELP Copyright (c) 2002-2017, Robert Paciorek (http://www.opcode.eu.org/)
+0 !HELP Released under a dual license, you can choise "CCAL version 2.0" or "BSD/MIT-type licence":
+0 !HELP Redistribution and use in source or any others forms, with or without modification, ARE PERMITTED provided save information about author(s).
+0 !HELP This material is distributed WITHOUT any warranty, use at YOUR own risk.
+1 16 -110 0 -20 1 0 0 0 1 0 0 0 1 2441.dat
+0 STEP
+1 16 -110 -8 20 1 0 0 0 1 0 0 0 1 3023.dat
+1 0 -110 -8 40 1 0 0 0 1 0 0 0 1 3023.dat
+1 0 -110 -8 -60 1 0 0 0 1 0 0 0 1 3023.dat
+0 STEP
+1 16 -140 -16 0 1 0 0 0 1 0 0 0 1 4286.dat
+1 16 -80 -16 0 1 0 0 0 1 0 0 0 1 4286.dat
+1 16 -110 -8 -80 1 0 0 0 1 0 0 0 1 2436a.dat
+0 STEP
+1 16 -110 -24 30 1 0 0 0 1 0 0 0 1 3787.dat
+1 16 -110 -24 -70 1 0 0 0 1 0 0 0 1 3787.dat
+1 16 -110 0 -40 1 0 0 0 1 0 0 0 1 3829c01.dat
+0 STEP
+1 0 -110 -48 20 1 0 0 0 1 0 0 0 1 2432.dat
+1 46 -140 2 -103 0 0 -1 -1 0 0 0 1 0 6141.dat
+1 46 -80 2 -103 0 0 -1 -1 0 0 0 1 0 6141.dat
+1 7 -110 2 -102 1 0 0 0 0 -1 0 1 0 2412b.dat
+1 7 -110 -24 -60 1 0 0 0 1 0 0 0 1 3794a.dat
+1 7 -110 -24 -80 1 0 0 0 1 0 0 0 1 3794a.dat
+1 46 -120 -22.5 37.5 0 0 -1 0 1 0 1 0 0 6141.dat
+1 7 -110 -29.5 37.5 1 0 0 0 1 0 0 0 1 2412b.dat
+1 46 -100 -22.5 37.5 0 0 -1 0 1 0 1 0 0 6141.dat
+0 STEP
+1 7 -110 -32 -60 1 0 0 0 1 0 0 0 1 6141.dat
+1 7 -110 -32 -80 1 0 0 0 1 0 0 0 1 6141.dat
+1 7 -80 5 -70 0 0 -1 0 1 0 1 0 0 4624.dat
+1 0 -80 5 -70 0 0 -1 0 1 0 1 0 0 3641.dat
+1 7 -80 5 30 0 0 -1 0 1 0 1 0 0 4624.dat
+1 0 -80 5 30 0 0 -1 0 1 0 1 0 0 3641.dat
+1 7 -140 5 30 0 0 1 0 1 0 -1 0 0 4624.dat
+1 0 -140 5 30 0 0 1 0 1 0 -1 0 0 3641.dat
+1 7 -140 5 -70 0 0 1 0 1 0 -1 0 0 4624.dat
+1 0 -140 5 -70 0 0 1 0 1 0 -1 0 0 3641.dat
+0 NOFILE
+0 FILE 4555 - container 1.ldr
+0 !LEOCAD MODEL BACKGROUND GRADIENT 0 0 0.74902 1 1 1
+
+
+0 container 1
+0 Name: 4555 - container 1.ldr 
+0 Author: Robert Paciorek [bercik]
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HELP Copyright (c) 2002-2017, Robert Paciorek (http://www.opcode.eu.org/)
+0 !HELP Released under a dual license, you can choise "CCAL version 2.0" or "BSD/MIT-type licence":
+0 !HELP Redistribution and use in source or any others forms, with or without modification, ARE PERMITTED provided save information about author(s).
+0 !HELP This material is distributed WITHOUT any warranty, use at YOUR own risk.
+1 14 -70 -8 -30 1 0 0 0 1 0 0 0 1 2420.dat
+1 14 -70 -8 30 0 0 1 0 1 0 -1 0 0 2420.dat
+1 14 70 -8 30 -1 0 0 0 1 0 0 0 -1 2420.dat
+1 14 70 -8 -30 0 0 -1 0 1 0 1 0 0 2420.dat
+0 STEP
+1 14 0 -16 0 1 0 0 0 1 0 0 0 1 3035.dat
+0 STEP
+1 16 -70 -88 0 0 0 -1 0 1 0 1 0 0 6556.dat
+1 16 70 -88 0 0 0 1 0 1 0 -1 0 0 6556.dat
+0 STEP
+1 16 40 -88 30 1 0 0 0 1 0 0 0 1 2362b.dat
+1 16 -40 -88 -30 -1 0 0 0 1 0 0 0 -1 2362b.dat
+1 16 20 -88 -30 -1 0 0 0 1 0 0 0 -1 4215a.dat
+1 16 -20 -88 30 1 0 0 0 1 0 0 0 1 4215a.dat
+1 14 0 -96 0 1 0 0 0 1 0 0 0 1 6576.dat
+1 16 -76 -84 34 0 0 1 0 1 0 -1 0 0 6546.dat
+1 16 -76 -24 -34 0 0 1 0 -1 0 1 0 0 6546.dat
+1 16 75.998 -84 -34 0 0 -1 0 1 0 1 0 0 6546.dat
+1 16 76.002 -24 34 0 0 -1 0 -1 0 -1 0 0 6546.dat
+0 NOFILE
+0 FILE 4555 - container 2.ldr
+0 !LEOCAD MODEL BACKGROUND GRADIENT 0 0 0.74902 1 1 1
+
+
+0 container 2
+0 Name: 4555 - container 2.ldr 
+0 Author: Robert Paciorek [bercik]
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HELP Copyright (c) 2002-2017, Robert Paciorek (http://www.opcode.eu.org/)
+0 !HELP Released under a dual license, you can choise "CCAL version 2.0" or "BSD/MIT-type licence":
+0 !HELP Redistribution and use in source or any others forms, with or without modification, ARE PERMITTED provided save information about author(s).
+0 !HELP This material is distributed WITHOUT any warranty, use at YOUR own risk.
+1 16 -70 -8 -30 1 0 0 0 1 0 0 0 1 2420.dat
+1 16 -70 -8 30 0 0 1 0 1 0 -1 0 0 2420.dat
+1 16 70 -8 30 -1 0 0 0 1 0 0 0 -1 2420.dat
+1 16 70 -8 -30 0 0 -1 0 1 0 1 0 0 2420.dat
+1 16 0 -16 0 1 0 0 0 1 0 0 0 1 3035.dat
+1 16 -70.001 -88 -0.002 0 0 -1 0 1 0 1 0 0 4215a.dat
+1 16 0 -96 0 1 0 0 0 1 0 0 0 1 6576.dat
+1 16 69.999 -88 -0.002 0 0 1 0 1 0 -1 0 0 4215a.dat
+1 8 39.999 -64 -0.002 0 0 1 0 1 0 -1 0 0 2439.dat
+1 8 39.999 -72 -0.002 0 0 1 0 1 0 -1 0 0 4740.dat
+1 8 -0.001 -64 -0.002 0 0 1 0 1 0 -1 0 0 2439.dat
+1 8 -0.001 -72 -0.002 0 0 1 0 1 0 -1 0 0 4740.dat
+1 8 -40.001 -64 -0.002 0 0 1 0 1 0 -1 0 0 2439.dat
+1 8 -40.001 -72 -0.002 0 0 1 0 1 0 -1 0 0 4740.dat
+0 NOFILE
+0 FILE 4555 - container 3.ldr
+0 !LEOCAD MODEL BACKGROUND GRADIENT 0 0 0.74902 1 1 1
+
+
+0 container 3
+0 Name: 4555 - container 3.ldr 
+0 Author: Robert Paciorek [bercik]
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HELP Copyright (c) 2002-2017, Robert Paciorek (http://www.opcode.eu.org/)
+0 !HELP Released under a dual license, you can choise "CCAL version 2.0" or "BSD/MIT-type licence":
+0 !HELP Redistribution and use in source or any others forms, with or without modification, ARE PERMITTED provided save information about author(s).
+0 !HELP This material is distributed WITHOUT any warranty, use at YOUR own risk.
+1 16 -70 -8 -30 1 0 0 0 1 0 0 0 1 2420.dat
+1 16 -70 -8 30 0 0 1 0 1 0 -1 0 0 2420.dat
+1 16 70 -8 30 -1 0 0 0 1 0 0 0 -1 2420.dat
+1 16 70 -8 -30 0 0 -1 0 1 0 1 0 0 2420.dat
+1 16 0 -16 0 1 0 0 0 1 0 0 0 1 3035.dat
+1 16 -70.001 -88 -0.002 0 0 -1 0 1 0 1 0 0 4215a.dat
+1 16 69.999 -88 -0.002 0 0 1 0 1 0 -1 0 0 4215a.dat
+1 16 70 -96 0 0 0 -1 0 1 0 1 0 0 3069b.dat
+1 16 -70 -96 0 0 0 -1 0 1 0 1 0 0 3069b.dat
+1 16 0 -96 30 1 0 0 0 1 0 0 0 1 4162.dat
+1 16 0 -96 -30 1 0 0 0 1 0 0 0 1 4162.dat
+0 NOFILE
+0 FILE 4555 - minifig 1.ldr
+0 !LEOCAD MODEL BACKGROUND GRADIENT 0 0 0.74902 1 1 1
+
+
+0 minifig 1
+0 Name: 4555 - minifig 1.ldr 
+0 Author: Robert Paciorek [bercik]
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HELP Copyright (c) 2002-2017, Robert Paciorek (http://www.opcode.eu.org/)
+0 !HELP Released under a dual license, you can choise "CCAL version 2.0" or "BSD/MIT-type licence":
+0 !HELP Redistribution and use in source or any others forms, with or without modification, ARE PERMITTED provided save information about author(s).
+0 !HELP This material is distributed WITHOUT any warranty, use at YOUR own risk.
+1 0 -0.008 -28 1.997 1 0 0.002 0 1 0 -0.002 0 1 3816.dat
+1 0 -0.008 -28 1.997 1 0 0.002 0 1 0 -0.002 0 1 3817.dat
+1 14 -23.471 -45.97 -7.88 0.985 -0.12 0.122 0.171 0.694 -0.699 -0.001 0.709 0.705 3820.dat
+1 14 23.524 -45.959 -8.093 0.985 0.121 -0.121 -0.171 0.694 -0.699 -0.001 0.709 0.705 3820.dat
+1 15 -15.357 -63.961 1.984 0.985 -0.171 0.001 0.171 0.985 0 -0.001 0 1 3818.dat
+1 15 15.35 -63.949 2.01 0.985 0.171 0.001 -0.171 0.985 0 -0.001 0 1 3819.dat
+1 0 -0.008 -40 1.997 1 0 0.002 0 1 0 -0.002 0 1 3815.dat
+1 2 -0.008 -72 1.997 1 0 0.002 0 1 0 -0.002 0 1 973p73.dat
+1 14 -0.008 -96 1.997 1 0 0.002 0 1 0 -0.002 0 1 3626bp04.dat
+1 15 -0.008 -96 1.997 1 0 0.002 0 1 0 -0.002 0 1 4485.dat
+0 NOFILE
+0 FILE 4555 - minifig 2.ldr
+0 !LEOCAD MODEL BACKGROUND GRADIENT 0 0 0.74902 1 1 1
+
+
+0 minifig 2
+0 Name: 4555 - minifig 2.ldr 
+0 Author: Robert Paciorek [bercik]
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HELP Copyright (c) 2002-2017, Robert Paciorek (http://www.opcode.eu.org/)
+0 !HELP Released under a dual license, you can choise "CCAL version 2.0" or "BSD/MIT-type licence":
+0 !HELP Redistribution and use in source or any others forms, with or without modification, ARE PERMITTED provided save information about author(s).
+0 !HELP This material is distributed WITHOUT any warranty, use at YOUR own risk.
+1 4 1.209 -10.79 -73.555 1 0 0 0 0.5 0.866 0 -0.866 0.5 2495c01.dat
+1 15 0.879 -96 7.355 1 0 0 0 1 0 0 0 1 3833.dat
+1 14 0.879 -96 7.355 1 0 0 0 1 0 0 0 1 3626bp03.dat
+1 1 0.879 -72 7.355 1 0 0 0 1 0 0 0 1 973p82.dat
+1 1 0.879 -40 7.355 1 0 0 0 1 0 0 0 1 3815.dat
+1 1 16.519 -64.07 7.356 0.986 0.169 0 -0.163 0.952 0.259 0.044 -0.255 0.966 3819.dat
+1 1 -14.76 -64.07 7.356 0.986 -0.169 0 0.163 0.952 0.259 -0.044 -0.255 0.966 3818.dat
+1 14 24.747 -50.047 -4.685 0.986 0.12 -0.12 -0.163 0.856 -0.49 0.044 0.503 0.863 3820.dat
+1 14 -22.989 -50.047 -4.685 0.986 -0.12 0.12 0.163 0.856 -0.49 -0.044 0.503 0.863 3820.dat
+1 1 0.879 -28 7.355 1 0 0 0 1 0 0 0 1 3817.dat
+1 1 0.879 -28 7.355 1 0 0 0 1 0 0 0 1 3816.dat
+0 NOFILE
+0 FILE 4555 - minifig 3.ldr
+0 !LEOCAD MODEL BACKGROUND GRADIENT 0 0 0.74902 1 1 1
+
+
+0 minifig 3
+0 Name: 4555 - minifig 3.ldr 
+0 Author: Robert Paciorek [bercik]
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HELP Copyright (c) 2002-2017, Robert Paciorek (http://www.opcode.eu.org/)
+0 !HELP Released under a dual license, you can choise "CCAL version 2.0" or "BSD/MIT-type licence":
+0 !HELP Redistribution and use in source or any others forms, with or without modification, ARE PERMITTED provided save information about author(s).
+0 !HELP This material is distributed WITHOUT any warranty, use at YOUR own risk.
+1 1 3.542 -28 9.462 1 0 0 0 1 0 0 0 1 3816.dat
+1 1 3.542 -28 9.462 1 0 0 0 1 0 0 0 1 3817.dat
+1 0 -21.306 -39.15 -10.444 0.986 -0.12 0.12 0.17 0.697 -0.697 0 0.707 0.707 3962b.dat
+1 14 -20.118 -46.13 -0.538 0.99 -0.12 0.12 0.17 0.7 -0.7 0 0.71 0.71 3820.dat
+1 14 27.202 -46.13 -0.538 0.99 0.12 -0.12 -0.17 0.7 -0.7 0 0.71 0.71 3820.dat
+1 1 -11.958 -64 9.462 0.99 -0.17 0 0.17 0.99 0 0 0 1 3818.dat
+1 1 19.042 -64 9.462 0.99 0.17 0 -0.17 0.99 0 0 0 1 3819.dat
+1 1 3.542 -40 9.462 1 0 0 0 1 0 0 0 1 3815.dat
+1 1 3.542 -72 9.462 1 0 0 0 1 0 0 0 1 973p84.dat
+1 14 3.542 -96 9.462 1 0 0 0 1 0 0 0 1 3626bp01.dat
+1 4 3.542 -96 9.462 1 0 0 0 1 0 0 0 1 3624.dat
+0 NOFILE

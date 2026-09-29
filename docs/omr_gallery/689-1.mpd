@@ -1,0 +1,134 @@
+0 FILE 689 - Truck and Shovel Main.ldr
+0 Truck and Shovel Main
+0 Name: 689 - Truck and Shovel Main.ldr
+0 Author: Marc Giraudet [Mad_Marc]
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !LDRAW_ORG Model
+0 ROTATION CENTER 0 0 0 1 "Custom"
+0 ROTATION CONFIG 0 0
+1 16 0 0 0 1 0 0 0 1 0 0 0 1 689 - Truck and Shovel.ldr
+
+
+
+
+
+
+0 FILE 689 - Truck and Shovel.ldr
+0 Truck and Shovel
+0 Name: 689 - Truck and Shovel.ldr
+0 Author: Marc Giraudet [Mad_Marc]
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !LDRAW_ORG Model
+0 ROTATION CENTER 0 0 0 1 "Custom"
+0 ROTATION CONFIG 0 0
+1 4 0 0 0 0 0 -1 0 1 0 1 0 0 3029.dat
+1 4 0 0 -160 0 0 -1 0 1 0 1 0 0 3031.dat
+0 STEP
+1 4 0 -8 -180 -1 0 0 0 1 0 0 0 -1 3020.dat
+1 4 -20 -24 -130 0 0 1 0 1 0 -1 0 0 3002.dat
+1 4 20 -24 -130 0 0 1 0 1 0 -1 0 0 3002.dat
+1 0 0 -24 60 0 0 1 0 1 0 -1 0 0 3404cc02.dat
+0 STEP
+1 4 -30 -48 -110 0 0 1 0 1 0 -1 0 0 3005.dat
+1 4 30 -48 -110 0 0 1 0 1 0 -1 0 0 3005.dat
+1 47 -30 -48 -140 0 0 1 0 1 0 -1 0 0 3004.dat
+1 47 30 -48 -140 0 0 1 0 1 0 -1 0 0 3004.dat
+1 47 0 -48 -110 -1 0 0 0 1 0 0 0 -1 3004.dat
+1 47 0 -48 -170 1 0 0 0 1 0 0 0 1 21.dat
+1 14 0 -32 120 0 0 -1 0 1 0 1 0 0 3035.dat
+1 14 0 -48 80 0 0 -1 0 1 0 1 0 0 3020.dat
+1 14 0 -56 80 0 0 -1 0 1 0 1 0 0 3020.dat
+1 4 0 -38 30 1 0 0 0 1 0 0 0 1 689 - Truck and Shovel Hinge 1.ldr
+0 STEP
+1 14 30 -56 120 0 0 -1 0 1 0 1 0 0 3008.dat
+1 14 -30 -56 120 0 0 -1 0 1 0 1 0 0 3008.dat
+1 14 0 -56 160 0 0 -1 0 1 0 1 0 0 3001.dat
+1 4 0 -56 -140 0 0 -1 0 1 0 1 0 0 3031.dat
+1 4 0 -128 28 0 0 -1 -1 0 0 0 1 0 3034.dat
+0 STEP
+1 14 0 -64 60 1 0 0 0 1 0 0 0 1 3020.dat
+1 14 0 -80 90 -1 0 0 0 1 0 0 0 -1 3037.dat
+1 14 0 -104 90 -1 0 0 0 1 0 0 0 -1 3010.dat
+1 4 0 -218 30 1 0 0 0 1 0 0 0 1 689 - Truck and Shovel Hinge 2.ldr
+0 STEP
+1 47 0 -104 70 1 0 0 0 1 0 0 0 1 21.dat
+1 14 0 -112 80 1 0 0 0 1 0 0 0 1 3020.dat
+1 0 -10 -80 170 1 0 0 0 1 0 0 0 1 3062a.dat
+0 STEP
+1 4 0 8 110 1 0 0 0 1 0 0 0 1 3010.dat
+1 4 0 8 -190 1 0 0 0 1 0 0 0 1 3010p0d.dat
+1 4 -30 8 -38 0 0 -1 0 1 0 1 0 0 3009.dat
+1 4 30 8 -38 0 0 -1 0 1 0 1 0 0 3009.dat
+1 0 0 8 42 1 0 0 0 1 0 0 0 1 3137c02.dat
+1 0 0 8 82 1 0 0 0 1 0 0 0 1 3137c02.dat
+1 256 31 30 82 -1 0 0 0 1 0 0 0 -1 451.dat
+1 256 31 30 42 -1 0 0 0 1 0 0 0 -1 451.dat
+1 256 -31 30 42 -1 0 0 0 1 0 0 0 -1 451.dat
+1 256 -31 30 82 -1 0 0 0 1 0 0 0 -1 451.dat
+1 0 0 8 -120 -1 0 0 0 1 0 0 0 -1 3137c01.dat
+1 0 0 8 -160 -1 0 0 0 1 0 0 0 -1 3137c01.dat
+1 256 31 30 -160 -1 0 0 0 1 0 0 0 -1 3139.dat
+1 256 31 30 -120 -1 0 0 0 1 0 0 0 -1 3139.dat
+1 256 -31 30 -120 -1 0 0 0 1 0 0 0 -1 3139.dat
+1 256 -31 30 -160 -1 0 0 0 1 0 0 0 -1 3139.dat
+0 STEP
+1 4 0 -212 -20 0 0 -1 0 1 0 1 0 0 3491.dat
+1 14 0 -138 -72 1 0 0 0 1 0 0 0 1 3492c01.dat
+
+
+
+
+
+
+
+0 FILE 689 - Truck and Shovel Hinge 1.ldr
+0 Truck and Shovel Hinge 1
+0 Name: 689 - Truck and Shovel Hinge 1.ldr
+0 Author: Marc Giraudet [Mad_Marc]
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !LDRAW_ORG Model
+0 ROTATION CENTER 0 0 0 1 "Custom"
+0 ROTATION CONFIG 0 0
+1 4 0 0 0 -1 0 0 0 1 0 0 0 -1 3149e.dat
+1 0 0 0 0 -1 0 0 0 1 0 0 0 -1 313.dat
+1 4 0 0 0 -1 0 0 0 0 1 0 1 0 3148.dat
+
+
+
+
+
+
+
+
+
+
+0 FILE 689 - Truck and Shovel Hinge 2.ldr
+0 Truck and Shovel Hinge 2
+0 Name: 689 - Truck and Shovel Hinge 2.ldr
+0 Author: Marc Giraudet [Mad_Marc]
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !LDRAW_ORG Model
+0 ROTATION CENTER 0 0 0 1 "Custom"
+0 ROTATION CONFIG 0 0
+1 4 0 0 0 1 0 0 0 1 0 0 0 1 3149e.dat
+1 0 0 0 0 -1 0 0 0 1 0 0 0 -1 313.dat
+1 4 0 0 0 1 0 0 0 0 -1 0 1 0 3148.dat
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

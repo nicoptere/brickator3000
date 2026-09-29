@@ -1,0 +1,145 @@
+0 FILE 6532 - main.ldr
+0 main
+0 Name: 6532 - main.ldr
+0 Author: Tomas Kralicek [RabbiT_CZ]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HISTORY 2018-01-06 [bercik] modification of division into sub-files
+
+1 14 0 -38 0 1 0 0 0 1 0 0 0 1 6532 - DUMPER.LDR
+1 16 0 -108 -32 1 0 0 0 1 0 0 0 1 6532 - MINIFIG.LDR
+
+
+
+
+0 FILE 6532 - dumper.ldr
+0 dumper
+0 Name: 6532 - dumper.ldr
+0 Author: Tomas Kralicek [RabbiT_CZ]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HISTORY 2018-01-06 [bercik] modification of division into sub-files
+
+1 16 0 0 0 1 0 0 0 1 0 0 0 1 6532 - DUMPER - BACK.LDR
+1 16 0 0 0 1 0 0 0 1 0 0 0 1 6532 - DUMPER - FRONT.LDR
+
+
+
+
+0 FILE 6532 - dumper - front.ldr
+0 dumper - front
+0 Name: 6532 - dumper - front.ldr
+0 Author: Tomas Kralicek [RabbiT_CZ]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HISTORY 2018-01-06 [bercik] modification of division into sub-files
+
+1 0 0 0 -60 -1 0 0 0 1 0 0 0 -1 3639.DAT
+0 STEP
+1 16 0 -8 -80 0 0 -1 0 1 0 1 0 0 3795.DAT
+0 STEP
+1 0 0 8 -40 -1 0 0 0 1 0 0 0 -1 4600.DAT
+1 16 0 0 -120 1 0 0 0 1 0 0 0 1 4859.DAT
+0 STEP
+1 16 0 -16 -70 1 0 0 0 1 0 0 0 1 3710.DAT
+0 STEP
+1 16 0 -16 -40 1 0 0 0 1 0 0 0 1 4079.DAT
+1 0 -10 -32 -110 1 0 0 0 1 0 0 0 1 3062B.DAT
+1 0 10 -32 -110 1 0 0 0 1 0 0 0 1 3062B.DAT
+1 16 -10 -32 -130 1 0 0 0 1 0 0 0 1 4070.DAT
+1 16 10 -32 -130 1 0 0 0 1 0 0 0 1 4070.DAT
+1 0 0 -32 -90 1 0 0 0 1 0 0 0 1 3004.DAT
+0 STEP
+1 16 0 -24 -70 1 0 0 0 1 0 0 0 1 3829C01.DAT
+1 16 0 -40 -110 0 0 -1 0 1 0 1 0 0 3021.DAT
+1 47 -10 -22 -144 1 0 0 0 0 -1 0 1 0 6141.DAT
+1 47 10 -22 -144 1 0 0 0 0 -1 0 1 0 6141.DAT
+1 16 30 -24 -70 0.755 0 -0.656 0 1 0 0.656 0 0.755 4592.DAT
+1 0 30 -24 -70 0.755 0.246 -0.608 0 0.927 0.375 0.656 -0.283 0.7 4593.DAT
+0 STEP
+1 0 10 -48 -110 1 0 0 0 1 0 0 0 1 6141.DAT
+1 0 10 -56 -110 1 0 0 0 1 0 0 0 1 6141.DAT
+1 16 30 13 -40 0 0 -1 0 1 0 1 0 0 4624.DAT
+1 16 -30 13 -40 0 0 1 0 1 0 -1 0 0 4624.DAT
+1 256 -30 13 -40 0 0 1 0 1 0 -1 0 0 4084.DAT
+1 256 30 13 -40 0 0 -1 0 1 0 1 0 0 4084.DAT
+
+
+
+
+0 FILE 6532 - dumper - back.ldr
+0 dumper - back
+0 Name: 6532 - dumper - back.ldr
+0 Author: Tomas Kralicek [RabbiT_CZ]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HISTORY 2018-01-06 [bercik] modification of division into sub-files
+
+1 0 0 0 60 1 0 0 0 1 0 0 0 1 3640.DAT
+0 STEP
+1 0 0 8 100 -1 0 0 0 1 0 0 0 -1 4600.DAT
+0 STEP
+1 0 0 0 140 0 0 1 0 1 0 -1 0 0 3020.DAT
+0 STEP
+1 7 0 -8 30 1 0 0 0 1 0 0 0 1 3023.DAT
+1 16 0 -8 100 0 0 1 0 1 0 -1 0 0 3022.DAT
+0 STEP
+1 16 -10 -16 140 0 0 -1 0 1 0 1 0 0 4531.DAT
+1 16 10 -16 140 0 0 -1 0 1 0 1 0 0 4531.DAT
+1 16 0 -12 170 1 0 0 0 1 0 0 0 1 6532 - DUMPER - MOVABLE.LDR
+1 7 0 -16 30 1 0 0 0 1 0 0 0 1 3839B.DAT
+0 STEP
+1 0 0 8 160 -1 0 0 0 1 0 0 0 -1 4600.DAT
+0 STEP
+1 0 0 -16 90 1 0 0 0 1 0 0 0 1 3069B.DAT
+0 STEP
+1 16 30 13 100 0 0 -1 0 1 0 1 0 0 4624.DAT
+1 16 30 13 160 0 0 -1 0 1 0 1 0 0 4624.DAT
+1 16 -30 13 160 0 0 1 0 1 0 -1 0 0 4624.DAT
+1 16 -30 13 100 0 0 1 0 1 0 -1 0 0 4624.DAT
+1 256 -30 13 100 0 0 1 0 1 0 -1 0 0 4084.DAT
+1 256 -30 13 160 0 0 1 0 1 0 -1 0 0 4084.DAT
+1 256 30 13 160 0 0 -1 0 1 0 1 0 0 4084.DAT
+1 256 30 13 100 0 0 -1 0 1 0 1 0 0 4084.DAT
+
+
+
+
+0 FILE 6532 - dumper - movable.ldr
+0 dumper - movable
+0 Name: 6532 - dumper - movable.ldr
+0 Author: Tomas Kralicek [RabbiT_CZ]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HISTORY 2018-01-06 [bercik] modification of division into sub-files
+
+1 16 -10 -4 -30 0 0 -1 0 1 0 1 0 0 4275B.DAT
+1 16 10 -4 -30 0 0 -1 0 1 0 1 0 0 4275B.DAT
+0 STEP
+1 16 0 -12 -50 1 0 0 0 1 0 0 0 1 4080.DAT
+0 STEP
+
+
+
+
+0 FILE 6532 - minifig.ldr
+0 minifig
+0 Name: 6532 - minifig.ldr
+0 Author: Tomas Kralicek [RabbiT_CZ]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !HISTORY 2018-01-06 [bercik] modification of division into sub-files
+
+1 4 0 -23.834999 4.744 1 0 0 0 1 0.069757 0 -0.069757 1 3833.DAT
+1 14 0 -23.834999 4.744 1 0 0 0 1 0.069757 0 -0.069757 1 3626BP01.DAT
+1 15 0 0.108 3.069 1 0 0 0 1 0.069757 0 -0.069757 1 973P1B.DAT
+1 15 -15.552 9.087 2.442 1 -0.139 -0.098 0.17 0.765 0.621 0 -0.628 0.778 3818.DAT
+1 15 15.552 9.087 2.442 1 0.139 0.098 -0.17 0.765 0.621 0 -0.628 0.778 3819.DAT
+1 14 -22.280001 16.148001 -17.315001 1 -0.167 0 0.17 1 -0.102 0 0.106 1 3820.DAT
+1 14 22.280001 16.148001 -17.315001 1 0.253 0 -0.254 1 -0.102 0 0.106 1 3820.DAT
+1 1 0 32 0.837 1 0 0 0 1 0.07 0 -0.07 1 3815.DAT
+1 1 0 44 0 1 0 0 0 0 1 0 -1 0 3817.DAT
+1 1 0 44 0 1 0 0 0 0 1 0 -1 0 3816.DAT
+
+
+

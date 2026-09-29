@@ -1,0 +1,224 @@
+0 FILE 6876 - Alienator.ldr
+0 Alienator
+0 Name: 6876 - Alienator.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Blacktron I
+
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 6876 - Vehicle.ldr
+
+0 FILE 6876 - Vehicle.ldr
+0 Vehicle
+0 Name: 6876 - Vehicle.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Blacktron I
+
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 6876 - Vehicle - Feet.ldr
+1 0 0 -8 0 0 0 1 0 1 0 -1 0 0 3035.dat
+1 0 0 -16 20 -1 0 0 0 1 0 0 0 -1 3832.dat
+1 0 10 -16 60 0 0 -1 0 1 0 1 0 0 4275b.dat
+1 0 -10 -16 60 0 0 -1 0 1 0 1 0 0 4275b.dat
+1 0 0 -40 30 -1 0 0 0 1 0 0 0 -1 3039.dat
+1 0 -10 -48 30 1 0 0 0 1 0 0 0 1 4085b.dat
+1 0 10 -48 30 1 0 0 0 1 0 0 0 1 4085b.dat
+1 14 -90 -24 20 0 0 1 0 1 0 -1 0 0 3023.dat
+1 14 90 -24 20 0 0 1 0 1 0 -1 0 0 3023.dat
+1 0 -20 -32 -60 0 0 1 0 1 0 -1 0 0 4730.dat
+1 0 20 -32 -60 0 0 1 0 1 0 -1 0 0 4730.dat
+1 0 90 -40 20 1 0 0 0 1 0 0 0 1 4595.dat
+1 0 -90 -40 20 1 0 0 0 1 0 0 0 1 4595.dat
+1 36 90 -30 -16 1 0 0 0 0 1 0 -1 0 4740.dat
+1 36 -90 -30 -16 1 0 0 0 0 1 0 -1 0 4740.dat
+1 14 10 -56 10 1 0 0 0 1 0 0 0 1 3959.dat
+1 14 -10 -66 14 -1 0 0 0 0 -1 0 -1 0 4735.dat
+1 0 0 16 -160 1 0 0 0 1 0 0 0 1 6876 - Vehicle - Cockpit.ldr
+1 0 -10 -42.001 86 1 0 0 0 0 -1 0 1 0 6876 - Vehicle - Roof.ldr
+
+0 FILE 6876 - Vehicle - Cockpit.ldr
+0 Vehicle - Cockpit
+0 Name: 6876 - Vehicle - Cockpit.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Blacktron I
+
+1 0 0 0 0 0 0 1 0 1 0 -1 0 0 3034.dat
+1 0 0 -8 -70 0 0 1 0 1 0 -1 0 0 3021.dat
+1 0 0 -24 70 -1 0 0 0 1 0 0 0 -1 3004.dat
+1 0 0 -48 70 -1 0 0 0 1 0 0 0 -1 3701.dat
+1 0 0 -24 40 0 0 -1 0 1 0 1 0 0 4871.dat
+1 0 -30 -48 50 1 0 0 0 1 0 0 0 1 3040b.dat
+1 0 30 -48 50 1 0 0 0 1 0 0 0 1 3040b.dat
+1 0 0 -32 -70 -1 0 0 0 1 0 0 0 -1 3937.dat
+1 0 0 -16 -90 1 0 0 0 1 0 0 0 1 3839b.dat
+1 0 0 -56 60 1 0 0 0 1 0 0 0 1 3020.dat
+1 14 10 -8 -30 0.92388 0 0.382683 0 1 0 -0.382683 0 0.92388 4592c01.dat
+1 14 -10 -8 -30 0.92388 0 -0.382683 0 1 0 0.382683 0 0.92388 4592c01.dat
+1 0 0 -64 70 1 0 0 0 1 0 0 0 1 3069b.dat
+1 0 30 -72 60 0 0 -1 0 1 0 1 0 0 4531.dat
+1 0 -30 -72 60 0 0 -1 0 1 0 1 0 0 4531.dat
+1 0 30 -101.893 77.864 0 0 -1 -0.337095 0.941471 0 0.941471 0.337095 0 2433.dat
+1 0 -30 -101.893 77.864 0 0 -1 -0.337095 0.941471 0 0.941471 0.337095 0 2433.dat
+1 0 0 -25.731 -60.719 1 0 0 0 0.372988 0.927836 0 -0.927836 0.372988 6876 - Vehicle - Cockpit - Door.ldr
+1 0 0 -53 8 1 0 0 0 1 0 0 0 1 6876 - Minifig.ldr
+
+0 FILE 6876 - Vehicle - Cockpit - Door.ldr
+0 Vehicle - Cockpit - Door
+0 Name: 6876 - Vehicle - Cockpit - Door.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !THEME Space / Blacktron I
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 3938.dat
+1 46 0 -136 0 1 0 0 0 1 0 0 0 1 2466.dat
+1 0 0 -144 0 -1 0 0 0 1 0 0 0 -1 4590.dat
+1 36 30 -128 -10 -1 0 0 0 1 0 0 0 -1 6141.dat
+1 36 -30 -128 -10 -1 0 0 0 1 0 0 0 -1 6141.dat
+
+0 FILE 6876 - Vehicle - Feet.ldr
+0 Vehicle - Feet
+0 Name: 6876 - Vehicle - Feet.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Blacktron I
+
+1 0 0 0 0 0 0 1 0 1 0 -1 0 0 3795.dat
+1 7 0 8 20 0 0 1 0 1 0 -1 0 0 3679.dat
+1 0 0 8 -40 0 0 1 0 1 0 -1 0 0 3003.dat
+1 7 0 32 -40 0 0 1 0 1 0 -1 0 0 3679.dat
+1 7 55.433 96 42.961 -0.92388 0 0.382683 0 1 0 -0.382683 0 -0.92388 6876 - Vehicle - Feet - Leg 2.ldr
+1 7 55.433 96 -17.039 -0.92388 0 0.382683 0 1 0 -0.382683 0 -0.92388 6876 - Vehicle - Feet - Leg 1.ldr
+1 7 75.432 104 -17.039 1 0 0 0 1 0 0 0 1 6876 - Vehicle - Feet - Foot 1.ldr
+1 7 -75.432 104 -62.961 1 0 0 0 1 0 0 0 1 6876 - Vehicle - Feet - Foot 2.ldr
+
+0 FILE 6876 - Vehicle - Feet - Foot 1.ldr
+0 Vehicle - Feet - Foot 1
+0 Name: 6876 - Vehicle - Feet - Foot 1.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Blacktron I
+
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 3933.dat
+1 14 -20 -8 60 1 0 0 0 1 0 0 0 1 3680.dat
+1 14 -20 -8 0 1 0 0 0 1 0 0 0 1 3680.dat
+
+0 FILE 6876 - Vehicle - Feet - Foot 2.ldr
+0 Vehicle - Feet - Foot 2
+0 Name: 6876 - Vehicle - Feet - Foot 2.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Blacktron I
+
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 3934.dat
+1 14 20 -8 60 1 0 0 0 1 0 0 0 1 3680.dat
+1 14 20 -8 0 1 0 0 0 1 0 0 0 1 3680.dat
+
+0 FILE 6876 - Vehicle - Feet - Leg 1.ldr
+0 Vehicle - Feet - Leg 1
+0 Name: 6876 - Vehicle - Feet - Leg 1.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !THEME Space / Blacktron I
+1 7 0 0 0 1 0 0 0 1 0 0 0 1 3679.dat
+1 7 120 0 0 1 0 0 0 1 0 0 0 1 3679.dat
+1 0 0 -48 0 1 0 0 0 1 0 0 0 1 3940.dat
+1 0 120 -48 0 1 0 0 0 1 0 0 0 1 3940.dat
+1 0 60 -56 0 1 0 0 0 1 0 0 0 1 3034.dat
+1 14 60 -64 0 1 0 0 0 1 0 0 0 1 3680.dat
+
+0 FILE 6876 - Vehicle - Feet - Leg 2.ldr
+0 Vehicle - Feet - Leg 2
+0 Name: 6876 - Vehicle - Feet - Leg 2.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Blacktron I
+
+1 7 0 0 0 1 0 0 0 1 0 0 0 1 3679.dat
+1 7 120 0 0 1 0 0 0 1 0 0 0 1 3679.dat
+1 0 0 -24 0 1 0 0 0 1 0 0 0 1 3941.dat
+1 0 120 -24 0 1 0 0 0 1 0 0 0 1 3941.dat
+1 0 0 -72 0 1 0 0 0 1 0 0 0 1 3940.dat
+1 0 120 -72 0 1 0 0 0 1 0 0 0 1 3940.dat
+1 0 60 -80 0 1 0 0 0 1 0 0 0 1 3034.dat
+1 14 60 -88 0 1 0 0 0 1 0 0 0 1 3680.dat
+
+0 FILE 6876 - Vehicle - Roof.ldr
+0 Vehicle - Roof
+0 Name: 6876 - Vehicle - Roof.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+0 !THEME Space / Blacktron I
+1 0 0 0 0 0 0 1 0 1 0 -1 0 0 4276b.dat
+1 0 20 0 0 0 0 1 0 1 0 -1 0 0 4276b.dat
+1 0 10 8 20 0 0 1 0 1 0 -1 0 0 4032a.dat
+1 0 10 0 30 1 0 0 0 1 0 0 0 1 4590.dat
+1 0 10 -24 30 -1 0 0 0 1 0 0 0 -1 3660.dat
+1 0 -20 -144 10 -1 0 0 0 1 0 0 0 -1 2345.dat
+1 0 40 -144 10 0 0 -1 0 1 0 1 0 0 2345.dat
+1 0 0 -128 30 -1 0 0 0 1 0 0 0 -1 4085b.dat
+1 0 20 -128 30 -1 0 0 0 1 0 0 0 -1 4085b.dat
+1 0 10 -128 10 -1 0 0 0 1 0 0 0 -1 3023.dat
+1 0 10 -128 -10 -1 0 0 0 1 0 0 0 -1 3069b.dat
+1 0 10 -152 10 -1 0 0 0 1 0 0 0 -1 3039.dat
+1 0 -40 -128 -10 -1 0 0 0 1 0 0 0 -1 3024.dat
+1 0 60 -128 -10 -1 0 0 0 1 0 0 0 -1 3024.dat
+1 0 20 -48 50 -1 0 0 0 1 0 0 0 -1 3062b.dat
+1 0 0 -48 50 -1 0 0 0 1 0 0 0 -1 3062b.dat
+1 14 20 -56 50 -1 0 0 0 1 0 0 0 -1 3957a.dat
+1 14 0 -56 50 -1 0 0 0 1 0 0 0 -1 3957a.dat
+1 0 40 16 40 -1 0 0 0 1 0 0 0 -1 4588.dat
+1 14 40 40 40 -1 0 0 0 1 0 0 0 -1 6141.dat
+1 0 -20 16 40 -1 0 0 0 1 0 0 0 -1 4588.dat
+1 14 -20 40 40 -1 0 0 0 1 0 0 0 -1 6141.dat
+
+0 FILE 6876 - Minifig.ldr
+0 Minifig
+0 Name: 6876 - Minifig.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Blacktron I
+
+1 0 0 -27 0 0.939693 0 -0.34202 0 1 0 0.34202 0 0.939693 6876 - Minifig - Helmet.ldr
+1 14 0 -27 0 0.939693 0 -0.34202 0 1 0 0.34202 0 0.939693 3626bp01.dat
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 3838.dat
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 973p52.dat
+1 0 0 32 0 1 0 0 0 1 0 0 0 1 3815.dat
+1 0 -15.552 9 0 0.985 -0.154072 -0.0718451 0.17 0.892713 0.416279 0 -0.422618 0.906308 3818.dat
+1 0 15.552 9 0 0.985 0.17 0 -0.17 0.985 0 0 0 1 3819.dat
+1 0 -22.823 20.5678 -17.2827 0.985 -0.159724 0.0581346 0.17 0.925457 -0.336839 0 0.341968 0.939551 3820.dat
+1 0 23.8634 26.5956 -10.321 0.985 0.12019 -0.12019 -0.17 0.696395 -0.696395 0 0.707 0.707 3820.dat
+1 0 0 44 0 1 0 0 0 0 1 0 -1 0 3817.dat
+1 0 0 44 0 1 0 0 0 0 1 0 -1 0 3816.dat
+
+
+0 FILE 6876 - Minifig - Helmet.ldr
+0 Minifig - Helmet
+0 Name: 6876 - Minifig - Helmet.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Blacktron I
+
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 2446.dat
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 2447.dat
+
+

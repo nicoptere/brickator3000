@@ -1,0 +1,114 @@
+0 FILE 1974 - Star Quest.ldr
+0 Star Quest
+0 Name: 1974 - Star Quest.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Futuron
+
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 1974 - Vehicle.ldr
+1 0 0 -69 28 1 0 0 0 1 0 0 0 1 1974 - Minifig.ldr
+
+
+0 FILE 1974 - Vehicle.ldr
+0 Vehicle
+0 Name: 1974 - Vehicle.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Futuron
+
+1 0 0 0 0 0 0 1 0 1 0 -1 0 0 3034.dat
+1 0 0 -8 -40 1 0 0 0 1 0 0 0 1 4859.dat
+1 0 0 -8 60 1 0 0 0 1 0 0 0 1 4859.dat
+1 0 -10 -8 -70 0 0 1 0 1 0 -1 0 0 4081b.dat
+1 0 10 -8 -70 0 0 -1 0 1 0 1 0 0 4081b.dat
+1 0 10 -8 20 0 0 -1 0 1 0 1 0 0 2452.dat
+1 0 -10 -8 20 0 0 1 0 1 0 -1 0 0 2452.dat
+1 0 30 -4 20 0.996195 -0.087156 0 0.087156 0.996195 0 0 0 1 1974 - Vehicle - Wing 1.ldr
+1 0 -30 -4 20 0.996195 0.087156 0 -0.087156 0.996195 0 0 0 1 1974 - Vehicle - Wing 2.ldr
+1 15 0 -16 -70 1 0 0 0 1 0 0 0 1 2412b.dat
+1 15 0 -16 30 1 0 0 0 1 0 0 0 1 4598.dat
+1 15 0 -32 -10 1 0 0 0 1 0 0 0 1 3298p90.dat
+1 0 0 -40 -10 -1 0 0 0 1 0 0 0 -1 3839b.dat
+1 36 30 -6 -150 -1 0 0 0 0 -1 0 -1 0 3957a.dat
+1 36 -30 -6 -150 -1 0 0 0 0 -1 0 -1 0 3957a.dat
+
+
+0 FILE 1974 - Vehicle - Wing 1.ldr
+0 Vehicle - Wing 1
+0 Name: 1974 - Vehicle - Wing 1.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Futuron
+
+1 0 30 -4 0 -1 0 0 0 1 0 0 0 -1 4276b.dat
+1 0 30 -4 20 -1 0 0 0 1 0 0 0 -1 3023.dat
+1 0 20 4 10 0 0 -1 0 1 0 1 0 0 3023.dat
+1 0 20 -12 20 -1 0 0 0 1 0 0 0 -1 2420.dat
+1 0 40 -12 10 0 0 1 0 1 0 -1 0 0 4590.dat
+1 15 0 -20 20 1 0 0 0 1 0 0 0 1 3070bp06.dat
+1 15 30 -20 10 0 0 -1 0 1 0 1 0 0 4859.dat
+1 33 50 4 40 0 0 -1 0 1 0 1 0 0 4740.dat
+1 33 50 4 -20 0 0 -1 0 1 0 1 0 0 4740.dat
+
+
+0 FILE 1974 - Vehicle - Wing 2.ldr
+0 Vehicle - Wing 2
+0 Name: 1974 - Vehicle - Wing 2.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Futuron
+
+1 0 -30 -4 0 1 0 0 0 1 0 0 0 1 4276b.dat
+1 0 -30 -4 20 1 0 0 0 1 0 0 0 1 3023.dat
+1 0 -20 4 10 0 0 1 0 1 0 -1 0 0 3023.dat
+1 0 -40 -12 10 0 0 -1 0 1 0 1 0 0 4590.dat
+1 0 -20 -12 20 0 0 1 0 1 0 -1 0 0 2420.dat
+1 15 -30 -20 10 0 0 1 0 1 0 -1 0 0 4859.dat
+1 15 0 -20 20 0 0 1 0 1 0 -1 0 0 3070bpc2.dat
+1 33 -50 4 40 0 0 -1 0 1 0 1 0 0 4740.dat
+1 33 -50 4 -20 0 0 -1 0 1 0 1 0 0 4740.dat
+
+
+0 FILE 1974 - Minifig.ldr
+0 Minifig
+0 Name: 1974 - Minifig.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Futuron
+
+1 15 0 -27 0 0.819152 0 0.573576 0 1 0 -0.573576 0 0.819152 1974 - Minifig - Helmet.ldr
+1 14 0 -27 0 0.819152 0 0.573576 0 1 0 -0.573576 0 0.819152 3626bp01.dat
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 3838.dat
+1 15 0 0 0 1 0 0 0 1 0 0 0 1 973p6b.dat
+1 0 0 32 0 1 0 0 0 1 0 0 0 1 3815.dat
+1 0 15.552 9 0 0.985 0.144168 0.0900863 -0.17 0.835327 0.52197 0 -0.529919 0.848048 3819.dat
+1 0 22.449 18.4003 -18.6945 0.985 0.165618 -0.0382359 -0.17 0.95961 -0.221543 0 0.224917 0.974223 3820.dat
+1 0 0 44 0 1 0 0 0 0 1 0 -1 0 3816.dat
+1 0 0 44 0 1 0 0 0 0 1 0 -1 0 3817.dat
+1 0 -15.552 9 0 0.985 -0.133962 -0.104662 0.17 0.776191 0.606427 0 -0.615661 0.788011 3818.dat
+1 0 -22.107 16.4192 -19.6835 0.985 -0.168707 0.0207147 0.17 0.97751 -0.120023 0 0.121851 0.992396 3820.dat
+
+
+0 FILE 1974 - Minifig - Helmet.ldr
+0 Minifig - Helmet
+0 Name: 1974 - Minifig - Helmet.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Futuron
+
+1 15 0 0 0 1 0 0 0 1 0 0 0 1 2446.dat
+1 33 0 2.868 5.389 1 0 0 0 0.559193 0.829038 0 -0.829038 0.559193 2447.dat
+
+

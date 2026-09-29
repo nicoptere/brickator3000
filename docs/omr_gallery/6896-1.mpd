@@ -1,0 +1,255 @@
+0 FILE 6896 - Celestial Forager.ldr
+0 Celestial Forager
+0 Name: 6896 - Celestial Forager.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / M:Tron
+
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 6896 - Vehicle.ldr
+
+
+0 FILE 6896 - Vehicle.ldr
+0 Vehicle
+0 Name: 6896 - Vehicle.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / M:Tron
+
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 6896 - Vehicle - Front + Minifig.ldr
+1 1 -15.307 0 156.955 0.92388 0 -0.382683 0 1 0 0.382683 0 0.92388 6896 - Vehicle - Back + Crane.ldr
+1 0 18.433 -80 35.5 0.887494 0 0.460819 0 1 0 -0.460819 0 0.887494 6896 - Vehicle - Turn Table 1.ldr
+1 0 27.649 -72 53.25 0.923879 0 -0.382684 0 1 0 0.382684 0 0.923879 6896 - Vehicle - Turn Table 2.ldr
+
+0 FILE 6896 - Vehicle - Front.ldr
+0 Vehicle - Front
+0 Name: 6896 - Vehicle - Front.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / M:Tron
+
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 3034.dat
+1 0 0 -8 0 0 0 1 0 1 0 -1 0 0 3034.dat
+1 0 0 -16 60 -1 0 0 0 1 0 0 0 -1 3640.dat
+1 4 0 -24 -100 1 0 0 0 1 0 0 0 1 2336p68.dat
+1 0 0 -24 0 0 0 1 0 1 0 -1 0 0 3034.dat
+1 4 0 -24 90 -1 0 0 0 1 0 0 0 -1 3023.dat
+1 0 30 -24 0 0 0 -1 0 1 0 1 0 0 3004.dat
+1 0 -30 -24 0 0 0 -1 0 1 0 1 0 0 3004.dat
+1 0 0 -32 -40 -1 0 0 0 1 0 0 0 -1 4859.dat
+1 4 -10 -48 0 0 0 1 0 1 0 -1 0 0 3039.dat
+1 4 10 -48 0 0 0 -1 0 1 0 1 0 0 3039.dat
+1 4 0 -56 -30 1 0 0 0 1 0 0 0 1 3039.dat
+1 4 0 -56 0 1 0 0 0 1 0 0 0 1 3022.dat
+1 0 0 -64 -20 -1 0 0 0 1 0 0 0 -1 3022.dat
+1 0 0 -64 10 1 0 0 0 1 0 0 0 1 4590.dat
+1 4 0 -72 0 1 0 0 0 1 0 0 0 1 3680.dat
+1 4 0 -32 90 1 0 0 0 1 0 0 0 1 3069b.dat
+1 0 -40 -21.071 -122.929 0 1 0 0.707107 0 0.707107 0.707107 0 -0.707107 2516.dat
+1 0 40 -21.071 -122.929 0 -1 0 -0.707107 0 0.707107 -0.707107 0 -0.707107 2516.dat
+1 15 32 -40.87 -103.13 1 0 0 0 0.707107 0.707107 0 -0.707107 0.707107 3070bpc2.dat
+1 15 -32 -40.87 -103.13 1 0 0 0 0.707107 0.707107 0 -0.707107 0.707107 3070bp06.dat
+1 4 60 8 0 1 0 0 0 1 0 0 0 1 4730.dat
+1 0 80 18 0 0 0 -1 0 1 0 1 0 0 2593.dat
+1 4 -60 8 0 -1 0 0 0 1 0 0 0 -1 4730.dat
+1 0 -80 18 0 0 0 1 0 1 0 -1 0 0 2593.dat
+
+
+
+0 FILE 6896 - Vehicle - Front + Minifig.ldr
+0 Vehicle - Front + Minifig
+0 Name: 6896 - Vehicle - Front + Minifig.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / M:Tron
+
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 6896 - Vehicle - Front.ldr
+1 0 0 -77 -72 1 0 0 0 1 0 0 0 1 6896 - Minifig.ldr
+
+
+
+0 FILE 6896 - Vehicle - Back.ldr
+0 Vehicle - Back
+0 Name: 6896 - Vehicle - Back.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / M:Tron
+
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 3034.dat
+1 0 0 -8 0 1 0 0 0 1 0 0 0 1 3022.dat
+1 0 0 -16 20 1 0 0 0 1 0 0 0 1 3639.dat
+1 0 0 -24 20 0 0 1 0 1 0 -1 0 0 3020.dat
+1 0 30 -24 0 0 0 1 0 1 0 -1 0 0 3004.dat
+1 0 -30 -24 0 0 0 1 0 1 0 -1 0 0 3004.dat
+1 0 0 -32 40 0 0 1 0 1 0 -1 0 0 3022.dat
+1 0 0 -32 0 -1 0 0 0 1 0 0 0 -1 3020.dat
+1 4 0 -40 0 0 0 -1 0 1 0 1 0 0 3036.dat
+1 0 50 -48 -40 0 0 -1 0 1 0 1 0 0 4623.dat
+1 0 50 -48 60 0 0 -1 0 1 0 1 0 0 4623.dat
+1 0 -50 -48 60 0 0 1 0 1 0 -1 0 0 4623.dat
+1 0 -50 -48 -40 0 0 1 0 1 0 -1 0 0 4623.dat
+1 4 0 -64 -70 -1 0 0 0 1 0 0 0 -1 3700.dat
+1 4 30 -64 -70 1 0 0 0 1 0 0 0 1 3045.dat
+1 4 -30 -64 -70 0 0 1 0 1 0 -1 0 0 3045.dat
+1 4 60 8 0 1 0 0 0 1 0 0 0 1 4730.dat
+1 0 80 18 0 0 0 -1 0 1 0 1 0 0 2593.dat
+1 4 -60 8 0 -1 0 0 0 1 0 0 0 -1 4730.dat
+1 0 -80 18 0 0 0 1 0 1 0 -1 0 0 2593.dat
+1 0 -50 -56 -30 -1 0 0 0 1 0 0 0 -1 4085b.dat
+1 42 -50 -48 -10 -1 0 0 0 1 0 0 0 -1 2569.dat
+1 0 0 -54 -90 0 0 1 0 1 0 -1 0 0 6896 - Vehicle - Back - Axle.ldr
+1 0 10 -64 -30 1 0 0 0 1 0 0 0 1 4070.dat
+1 0 -10 -64 -30 1 0 0 0 1 0 0 0 1 4070.dat
+1 0 0 -64 -10 1 0 0 0 1 0 0 0 1 3004.dat
+1 4 0 -54 -44 1 0 0 0 0 -1 0 1 0 3069b.dat
+1 0 0 -72 -20 1 0 0 0 1 0 0 0 1 2609a.dat
+1 0 0 -78.5 -20 1 0 0 0 0 -1 0 1 0 2959c01.dat
+1 0 0 -72 -70 -1 0 0 0 1 0 0 0 -1 2431.dat
+1 0 0 -48 40 -1 0 0 0 1 0 0 0 -1 3597.dat
+1 0 72 -52 10 0 0 1 0 -1 0 1 0 0 2486.dat
+1 0 -72 -52 10 0 0 1 0 -1 0 1 0 0 2486.dat
+1 42 -72 -100 -40 0 0 1 0 -1 0 1 0 0 4740.dat
+1 42 -72 -100 60 0 0 1 0 -1 0 1 0 0 4740.dat
+1 42 72 -100 -40 0 0 1 0 -1 0 1 0 0 4740.dat
+1 42 72 -100 60 0 0 1 0 -1 0 1 0 0 4740.dat
+
+0 FILE 6896 - Vehicle - Back - Axle.ldr
+0 Vehicle - Back - Axle
+0 Name: 6896 - Vehicle - Back - Axle.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / M:Tron
+
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 3705.dat
+1 7 -35 0 0 0 0 1 0 1 0 -1 0 0 4265a.dat
+
+
+0 FILE 6896 - Vehicle - Back + Crane.ldr
+0 Vehicle - Back + Crane
+0 Name: 6896 - Vehicle - Back + Crane.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / M:Tron
+
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 6896 - Vehicle - Back.ldr
+1 0 0 -102.495 39.466 1 0 0 0 0.5 0.866025 0 -0.866025 0.5 6896 - Vehicle - Crane.ldr
+
+
+
+0 FILE 6896 - Vehicle - Turn Table 1.ldr
+0 Vehicle - Turn Table 1
+0 Name: 6896 - Vehicle - Turn Table 1.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / M:Tron
+
+1 4 0 0 0 0 0 1 0 1 0 -1 0 0 3795.dat
+1 7 0 8 -40 0 0 1 0 1 0 -1 0 0 3679.dat
+1 7 0 8 20 0 0 1 0 1 0 -1 0 0 3679.dat
+1 0 0 -8 -20 0 0 1 0 1 0 -1 0 0 3022.dat
+1 0 0 -16 -20 0 0 1 0 1 0 -1 0 0 4285a.dat
+1 7 0 -40 -20 0 0 1 0 1 0 -1 0 0 3941.dat
+
+0 FILE 6896 - Vehicle - Turn Table 2.ldr
+0 Vehicle - Turn Table 2
+0 Name: 6896 - Vehicle - Turn Table 2.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / M:Tron
+
+1 4 0 0 0 1 0 0 0 1 0 0 0 1 3680.dat
+1 0 0 8 0 0 0 1 0 1 0 -1 0 0 2817.dat
+
+0 FILE 6896 - Vehicle - Crane.ldr
+0 Vehicle - Crane
+0 Name: 6896 - Vehicle - Crane.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / M:Tron
+
+1 0 0 0 0 -1 0 0 0 1 0 0 0 -1 3315.dat
+1 0 0 8 -20 -1 0 0 0 1 0 0 0 -1 2476a.dat
+1 0 0 -120 -40 -1 0 0 0 1 0 0 0 -1 4476.dat
+1 4 0 -144 -40 0 0 -1 0 1 0 1 0 0 4730.dat
+1 4 0 -144 -10 -1 0 0 0 1 0 0 0 -1 2607.dat
+1 4 0 26 -30 1 0 0 0 0 -1 0 1 0 2607.dat
+1 0 0 52.5 -21 1 0 0 0 -0.866025 -0.5 0 0.5 -0.866025 2959c01.dat
+1 0 0 -135 16.5 1 0 0 0 -0.866025 -0.5 0 0.5 -0.866025 2959c01.dat
+1 0 0 -119.748 42.913 1 0 0 0 0.5 -0.866025 0 0.866025 0.5 6896 - Vehicle - Box.ldr
+
+
+
+0 FILE 6896 - Vehicle - Box.ldr
+0 Vehicle - Box
+0 Name: 6896 - Vehicle - Box.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / M:Tron
+
+1 4 0 0 0 1 0 0 0 1 0 0 0 1 4345a.dat
+1 7 0 0 0 1 0 0 0 1 0 0 0 1 4346p68.dat
+1 42 6 32 6 1 0 0 0 1 0 0 0 1 6141.dat
+1 42 -6 32 -10 1 0 0 0 1 0 0 0 1 6141.dat
+1 0 0 -8 0 1 0 0 0 1 0 0 0 1 2609a.dat
+1 0 0 -14.5 0 1 0 0 0 0 -1 0 1 0 2959c01.dat
+
+
+
+0 FILE 6896 - Minifig.ldr
+0 Minifig
+0 Name: 6896 - Minifig.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / M:Tron
+
+1 0 0 -27 0 0.798636 0 0.601815 0 1 0 -0.601815 0 0.798636 6896 - Minifig - Helmet.ldr
+1 14 0 -27 0 0.798636 0 0.601815 0 1 0 -0.601815 0 0.798636 3626bp01.dat
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 3838.dat
+1 4 0 0 0 1 0 0 0 1 0 0 0 1 973p68.dat
+1 0 0 32 0 1 0 0 0 1 0 0 0 1 3815.dat
+1 15 15.552 9 0 0.985 -0.00593291 0.169896 -0.17 -0.034376 0.9844 0 -0.999391 -0.0348995 3819.dat
+1 0 18.8092 -2.68892 -18.3894 0.985 0.115922 0.124311 -0.17 0.671667 0.720275 0 -0.731243 0.681895 3820.dat
+1 0 17.5479 -9.99722 -23.9821 0.0925288 0.142528 -0.985 0.536123 0.825823 0.17 0.838399 -0.544287 0 3962a.dat
+1 15 0 44 0 1 0 0 0 0 1 0 -1 0 3816.dat
+1 15 0 44 0 1 0 0 0 0 1 0 -1 0 3817.dat
+1 15 -15.552 9 0 0.985 -0.132115 -0.106984 0.17 0.765489 0.619881 0 -0.62932 0.777146 3818.dat
+1 0 -22.0484 16.0795 -19.8276 0.992497 -0.117261 0.0177672 0.118506 0.987011 -0.102945 -0.00546977 0.104369 0.994372 3820.dat
+
+
+0 FILE 6896 - Minifig - Helmet.ldr
+0 Minifig - Helmet
+0 Name: 6896 - Minifig - Helmet.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / M:Tron
+
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 2446.dat
+1 42 0 0 0 1 0 0 0 1 0 0 0 1 2447.dat
+
+
+

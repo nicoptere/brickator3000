@@ -1,0 +1,84 @@
+0 FILE 1731 - Ice Planet Scooter.ldr
+0 Ice Planet Scooter
+0 Name: 1731 - Ice Planet Scooter.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Ice Planet 2002
+
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 1731 - Spaceship.ldr
+1 0 0 -53 8 1 0 0 0 1 0 0 0 1 1731 - Minifig.ldr
+
+
+0 FILE 1731 - Spaceship.ldr
+0 Spaceship
+0 Name: 1731 - Spaceship.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Ice Planet 2002
+
+1 1 0 0 0 0 0 1 0 1 0 -1 0 0 3795.dat
+1 15 0 -8 -40 1 0 0 0 1 0 0 0 1 4859.dat
+1 0 10 -8 40 0 0 1 0 1 0 -1 0 0 3475b.dat
+1 0 -10 -8 40 0 0 -1 0 1 0 1 0 0 3475b.dat
+1 1 0 -32 50 1 0 0 0 1 0 0 0 1 3039.dat
+1 15 -10 -40 50 0 0 1 0 1 0 -1 0 0 4085c.dat
+1 15 10 -40 50 0 0 -1 0 1 0 1 0 0 4085c.dat
+1 1 0 -32 -30 -1 0 0 0 1 0 0 0 -1 3937.dat
+1 0 0 -48 50 -1 0 0 0 1 0 0 0 -1 2412b.dat
+1 38 -30 -44 58 -1 0 0 0 0 -1 0 -1 0 6117.dat
+1 0 0 -22 -30 -1 0 0 0 0.9659 -0.2588 0 -0.2588 -0.9659 1731 - Spaceship - Control Panel.ldr
+
+
+0 FILE 1731 - Spaceship - Control Panel.ldr
+0 Spaceship - Control Panel
+0 Name: 1731 - Spaceship - Control Panel.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Ice Planet 2002
+
+1 15 0 -10 0 1 0 0 0 1 0 0 0 1 3938.dat
+1 15 0 -18 0 -1 0 0 0 1 0 0 0 -1 3069bp61.dat
+
+
+0 FILE 1731 - Minifig.ldr
+0 Minifig
+0 Name: 1731 - Minifig.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Ice Planet 2002
+
+1 0 0 -27 0 0.882948 0 0.469472 0 1 0 -0.469472 0 0.882948 1731 - Minifig - Helmet.ldr
+1 14 0 -27 0 0.882948 0 0.469472 0 1 0 -0.469472 0 0.882948 3626bp62.dat
+1 15 0 0 0 1 0 0 0 1 0 0 0 1 3838.dat
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 973p62.dat
+1 1 0 32 0 1 0 0 0 1 0 0 0 1 3815.dat
+1 15 15.552 9 0 0.985 0.0771784 0.151471 -0.17 0.447181 0.877641 0 -0.891007 0.45399 3819.dat
+1 1 20.5586 7.44742 -21.4018 0.985 0.161655 0.052525 -0.17 0.936649 0.304336 0 -0.30897 0.950913 3820.dat
+1 0 17.3736 -11.0068 -28.8467 0.927485 0.169517 0.331869 -0.183051 0.982199 0.00945604 -0.324642 -0.0695803 0.94283 4349.dat
+1 0 0 44 0 1 0 0 0 0 1 0 -1 0 3816.dat
+1 0 0 44 0 1 0 0 0 0 1 0 -1 0 3817.dat
+1 15 -15.552 9 0 0.985 -0.0900863 -0.144168 0.17 0.52197 0.835327 0 -0.848048 0.529919 3818.dat
+1 1 -20.8761 9.28727 -21.3795 0.985 -0.165618 -0.0382359 0.17 0.95961 0.221543 0 -0.224917 0.974223 3820.dat
+
+
+0 FILE 1731 - Minifig - Helmet.ldr
+0 Minifig - Helmet
+0 Name: 1731 - Minifig - Helmet.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Ice Planet 2002
+
+1 15 0 0 0 1 0 0 0 1 0 0 0 1 2446.dat
+1 38 0 1.904 4.596 1 0 0 0 0.707107 0.707107 0 -0.707107 0.707107 6119.dat
+
+

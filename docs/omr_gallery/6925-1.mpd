@@ -1,0 +1,401 @@
+0 FILE 6925 - Interplanetary Rover.ldr
+0 Interplanetary Rover
+0 Name: 6925 - Interplanetary Rover.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Futuron
+
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 6925 - Vehicle.ldr
+1 0 -290 13 280 0.707107 0 -0.707107 0 1 0 0.707107 0 0.707107 6925 - Pod + Minifig.ldr
+1 0 -228 13 73.706 0.382683 0 0.92388 0 1 0 -0.92388 0 0.382683 6925 - Droid 2.ldr
+
+
+0 FILE 6925 - Droid 1.ldr
+0 Droid 1
+0 Name: 6925 - Droid 1.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Futuron
+
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 4740.dat
+1 0 0 -36 10 -1 0 0 0 0 -1 0 -1 0 4595.dat
+1 0 0 -64 0 1 0 0 0 1 0 0 0 1 4081b.dat
+1 46 12 -62 -20 0 -1 0 1 0 0 0 0 1 6141.dat
+1 46 -12 -62 -20 0 1 0 1 0 0 0 0 -1 6141.dat
+1 0 26 -46 0 0 -1 0 0 0 -1 1 0 0 4735.dat
+1 0 -26 -46 0 0 1 0 0 0 -1 -1 0 0 4735.dat
+
+
+0 FILE 6925 - Droid 2.ldr
+0 Droid 2
+0 Name: 6925 - Droid 2.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Futuron
+
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 4740.dat
+1 0 0 -36 10 -1 0 0 0 0 -1 0 -1 0 4595.dat
+1 0 0 -64 0 1 0 0 0 1 0 0 0 1 4081b.dat
+1 46 12 -62 -20 0 -1 0 1 0 0 0 0 1 6141.dat
+1 46 -12 -62 -20 0 1 0 1 0 0 0 0 -1 6141.dat
+1 0 26 -46 0 0 -1 0 0.707107 0 -0.707107 0.707107 0 0.707107 4735.dat
+1 0 -26 -46 0 0 1 0 -0.382683 0 -0.92388 -0.92388 0 0.382683 4735.dat
+
+
+0 FILE 6925 - Vehicle.ldr
+0 Vehicle
+0 Name: 6925 - Vehicle.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Futuron
+
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 6925 - Vehicle - Front + Minifig + Droid.ldr
+1 0 0 0 160 0.92388 0 -0.382683 0 1 0 0.382683 0 0.92388 6925 - Vehicle - Back.ldr
+
+
+0 FILE 6925 - Vehicle - Front.ldr
+0 Vehicle - Front
+0 Name: 6925 - Vehicle - Front.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Futuron
+
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 3795.dat
+1 0 0 -24 0 1 0 0 0 1 0 0 0 1 3003.dat
+1 0 40 -24 0 1 0 0 0 1 0 0 0 1 4730.dat
+1 0 -40 -24 0 -1 0 0 0 1 0 0 0 -1 4730.dat
+1 0 -30 -48 -10 1 0 0 0 1 0 0 0 1 2357.dat
+1 0 30 -48 -10 0 0 -1 0 1 0 1 0 0 2357.dat
+1 0 0 -48 10 -1 0 0 0 1 0 0 0 -1 3660.dat
+1 0 0 -72 0 -1 0 0 0 1 0 0 0 -1 3001.dat
+1 0 0 -72 60 0 0 -1 0 1 0 1 0 0 3001.dat
+1 0 -30 -80 0 0 0 -1 0 1 0 1 0 0 3023.dat
+1 0 30 -80 0 0 0 -1 0 1 0 1 0 0 3023.dat
+1 0 0 -80 100 -1 0 0 0 1 0 0 0 -1 3640.dat
+1 0 0 -80 20 0 0 -1 0 1 0 1 0 0 3020.dat
+1 15 0 -88 20 0 0 -1 0 1 0 1 0 0 3028.dat
+1 15 0 -80 -70 -1 0 0 0 1 0 0 0 -1 3660.dat
+1 15 50 -80 -70 -1 0 0 0 1 0 0 0 -1 4070.dat
+1 15 0 -70 -80 -1 0 0 0 0 -1 0 -1 0 2486.dat
+1 15 -50 -80 -70 -1 0 0 0 1 0 0 0 -1 4070.dat
+1 0 0 -56 -70 1 0 0 0 1 0 0 0 1 3666.dat
+1 15 70 -96 40 0 0 -1 0 1 0 1 0 0 2419.dat
+1 15 -70 -96 40 0 0 1 0 1 0 -1 0 0 2419.dat
+1 15 -10 -112 30 0 0 -1 0 1 0 1 0 0 2357.dat
+1 15 10 -112 30 1 0 0 0 1 0 0 0 1 2357.dat
+1 15 30 -96 -60 0 0 1 0 1 0 -1 0 0 3069bp25.dat
+1 15 -30 -96 -60 0 0 1 0 1 0 -1 0 0 3069bp25.dat
+1 15 30 -120 30 0 0 1 0 1 0 -1 0 0 3024.dat
+1 15 -30 -120 30 0 0 1 0 1 0 -1 0 0 3024.dat
+1 15 90 -104 30 0 0 1 0 1 0 -1 0 0 3024.dat
+1 15 -90 -104 30 0 0 1 0 1 0 -1 0 0 3024.dat
+1 15 90 -120 30 0 0 -1 0 1 0 1 0 0 4735.dat
+1 15 -90 -120 30 0 0 1 0 1 0 -1 0 0 4735.dat
+1 15 60 -120 30 -1 0 0 0 1 0 0 0 -1 3004.dat
+1 15 -60 -120 30 -1 0 0 0 1 0 0 0 -1 3004.dat
+1 15 0 -120 40 -1 0 0 0 1 0 0 0 -1 3956.dat
+1 15 10 -140 76 0 0 -1 1 0 0 0 -1 0 4623.dat
+1 15 -10 -140 76 0 0 1 -1 0 0 0 -1 0 4623.dat
+1 15 0 -140 84 0 0 1 -1 0 0 0 -1 0 3022.dat
+1 15 0 -128 30 -1 0 0 0 1 0 0 0 -1 4477.dat
+1 15 0 -152 30 -1 0 0 0 1 0 0 0 -1 3004.dat
+1 15 0 -160 30 -1 0 0 0 1 0 0 0 -1 3023.dat
+1 15 50 -160 -20 1 0 0 0 1 0 0 0 1 2340.dat
+1 15 -50 -160 -20 1 0 0 0 1 0 0 0 1 2340.dat
+1 15 50 -184 -30 0 0 1 0 1 0 -1 0 0 3665.dat
+1 15 -50 -184 -30 0 0 -1 0 1 0 1 0 0 3665.dat
+1 15 30 -184 10 0 0 -1 0 1 0 1 0 0 2462.dat
+1 15 -30 -184 10 -1 0 0 0 1 0 0 0 -1 2462.dat
+1 15 0 -192 -20 -1 0 0 0 1 0 0 0 -1 3795.dat
+1 0 0 -200 -30 -1 0 0 0 1 0 0 0 -1 3023.dat
+1 15 0 -208 -30 -1 0 0 0 1 0 0 0 -1 3023.dat
+1 15 10 -208 -10 -1 0 0 0 1 0 0 0 -1 4735.dat
+1 15 -10 -208 -10 -1 0 0 0 1 0 0 0 -1 4735.dat
+1 15 0 -216 -20 -1 0 0 0 1 0 0 0 -1 3022.dat
+1 15 30 -216 -30 -1 0 0 0 1 0 0 0 -1 3040b.dat
+1 15 -30 -216 -30 -1 0 0 0 1 0 0 0 -1 3040b.dat
+1 15 50 -200 -30 -1 0 0 0 1 0 0 0 -1 4592.dat
+1 0 50 -200 -30 -1 0 0 0 0.707107 -0.707107 0 -0.707107 -0.707107 4593.dat
+1 15 -50 -200 -30 -1 0 0 0 1 0 0 0 -1 4592.dat
+1 0 -50 -200 -30 -1 0 0 0 0.707107 -0.707107 0 -0.707107 -0.707107 4593.dat
+1 0 10 -192 30 -1 0 0 0 1 0 0 0 -1 3957a.dat
+1 0 -10 -192 30 -1 0 0 0 1 0 0 0 -1 3957a.dat
+1 15 0 -96 -90 1 0 0 0 1 0 0 0 1 4625.dat
+1 33 0 -100 -84 -1 0 0 0 0 1 0 1 0 4474.dat
+1 0 130 -136 30 0 0 -1 0 1 0 1 0 0 6925 - Vehicle - Detector.ldr
+1 0 -130 -136 30 0 0 -1 0 1 0 1 0 0 6925 - Vehicle - Detector.ldr
+1 15 50 -70 -128 -1 0 0 0 0 -1 0 -1 0 3794a.dat
+1 33 60 -70 -136 -1 0 0 0 0 -1 0 -1 0 6141.dat
+1 33 40 -70 -136 -1 0 0 0 0 -1 0 -1 0 6141.dat
+1 15 -50 -70 -128 -1 0 0 0 0 -1 0 -1 0 3794a.dat
+1 33 -40 -70 -136 -1 0 0 0 0 -1 0 -1 0 6141.dat
+1 33 -60 -70 -136 -1 0 0 0 0 -1 0 -1 0 6141.dat
+1 0 70 -14 0 0 0 -1 0 1 0 1 0 0 6925 - Vehicle - Wheels.ldr
+1 0 -70 -14 0 0 0 1 0 1 0 -1 0 0 6925 - Vehicle - Wheels.ldr
+
+
+0 FILE 6925 - Vehicle - Front + Minifig + Droid.ldr
+0 Vehicle - Front + Minifig + Droid
+0 Name: 6925 - Vehicle - Front + Minifig + Droid.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Futuron
+
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 6925 - Vehicle - Front.ldr
+1 0 -32 -114 92 -1 0 0 0 1 0 0 0 -1 6925 - Droid 1.ldr
+1 0 0 -141 -32 1 0 0 0 1 0 0 0 1 6925 - Minifig 1.ldr
+
+
+0 FILE 6925 - Vehicle - Detector.ldr
+0 Vehicle - Detector
+0 Name: 6925 - Vehicle - Detector.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Futuron
+
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 4479.dat
+1 36 36 8 0 0 -1 0 1 0 0 0 0 1 6141.dat
+1 0 -61.456 1.657 0 0.707107 -0.707107 0 0.707107 0.707107 0 0 0 1 6925 - Vehicle - Detector - Dish.ldr
+
+0 FILE 6925 - Vehicle - Detector - Dish.ldr
+0 Vehicle - Detector - Dish
+0 Name: 6925 - Vehicle - Detector - Dish.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Futuron
+
+1 15 0 0 0 1 0 0 0 1 0 0 0 1 3960.dat
+1 0 0 16 0 1 0 0 0 1 0 0 0 1 4740.dat
+
+
+0 FILE 6925 - Vehicle - Wheels.ldr
+0 Vehicle - Wheels
+0 Name: 6925 - Vehicle - Wheels.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Futuron
+
+1 15 0 -10 0 1 0 0 0 1 0 0 0 1 3894.dat
+1 7 40 0 -10 0 0 1 0 1 0 -1 0 0 3749.dat
+1 15 40 0 -20 -1 0 0 0 1 0 0 0 -1 3482.dat
+1 256 40 0 -20 1 0 0 0 1 0 0 0 1 2346.dat
+1 7 -40 0 -10 0 0 1 0 1 0 -1 0 0 3749.dat
+1 15 -40 0 -20 -1 0 0 0 1 0 0 0 -1 3482.dat
+1 256 -40 0 -20 1 0 0 0 1 0 0 0 1 2346.dat
+
+
+0 FILE 6925 - Vehicle - Back.ldr
+0 Vehicle - Back
+0 Name: 6925 - Vehicle - Back.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Futuron
+
+1 0 0 0 160 1 0 0 0 1 0 0 0 1 3795.dat
+1 0 0 -24 160 1 0 0 0 1 0 0 0 1 3003.dat
+1 0 40 -24 160 1 0 0 0 1 0 0 0 1 4730.dat
+1 0 -40 -24 160 -1 0 0 0 1 0 0 0 -1 4730.dat
+1 0 30 -48 170 -1 0 0 0 1 0 0 0 -1 2357.dat
+1 0 -30 -48 170 0 0 1 0 1 0 -1 0 0 2357.dat
+1 0 0 -48 150 1 0 0 0 1 0 0 0 1 3660.dat
+1 0 0 -72 160 1 0 0 0 1 0 0 0 1 3001.dat
+1 0 0 -72 100 0 0 1 0 1 0 -1 0 0 3001.dat
+1 0 -30 -80 160 0 0 1 0 1 0 -1 0 0 3023.dat
+1 0 30 -80 160 0 0 1 0 1 0 -1 0 0 3023.dat
+1 0 0 -80 140 0 0 1 0 1 0 -1 0 0 3020.dat
+1 0 0 -80 60 1 0 0 0 1 0 0 0 1 3639.dat
+1 15 0 -88 140 0 0 1 0 1 0 -1 0 0 3028.dat
+1 15 70 -96 140 0 0 -1 0 1 0 1 0 0 2419.dat
+1 15 -70 -96 140 0 0 1 0 1 0 -1 0 0 2419.dat
+1 15 0 -96 210 1 0 0 0 1 0 0 0 1 3666.dat
+1 15 50 -96 70 1 0 0 0 1 0 0 0 1 3024.dat
+1 15 -50 -96 70 1 0 0 0 1 0 0 0 1 3024.dat
+1 15 90 -104 150 1 0 0 0 1 0 0 0 1 3024.dat
+1 15 -90 -104 150 1 0 0 0 1 0 0 0 1 3024.dat
+1 15 0 -96 230 1 0 0 0 1 0 0 0 1 3023.dat
+1 15 0 -96 90 1 0 0 0 1 0 0 0 1 3023.dat
+1 15 0 -104 90 1 0 0 0 1 0 0 0 1 3023.dat
+1 15 0 -96 160 1 0 0 0 1 0 0 0 1 3068b.dat
+1 15 90 -120 150 0 0 -1 0 1 0 1 0 0 4735.dat
+1 15 -90 -120 150 0 0 1 0 1 0 -1 0 0 4735.dat
+1 15 50 -120 150 0 0 1 0 1 0 -1 0 0 2357.dat
+1 15 -50 -120 150 -1 0 0 0 1 0 0 0 -1 2357.dat
+1 15 50 -120 180 0 0 -1 0 1 0 1 0 0 3004.dat
+1 15 -50 -120 180 0 0 -1 0 1 0 1 0 0 3004.dat
+1 15 0 -120 230 1 0 0 0 1 0 0 0 1 3004.dat
+1 15 0 -120 210 1 0 0 0 1 0 0 0 1 3009.dat
+1 15 50 -120 110 1 0 0 0 1 0 0 0 1 4286.dat
+1 15 -50 -120 110 1 0 0 0 1 0 0 0 1 4286.dat
+1 15 80 -128 150 1 0 0 0 1 0 0 0 1 3023.dat
+1 15 -80 -128 150 1 0 0 0 1 0 0 0 1 3023.dat
+1 15 0 -128 220 1 0 0 0 1 0 0 0 1 3022.dat
+1 15 -30 -144 210 1 0 0 0 1 0 0 0 1 3005.dat
+1 15 30 -144 210 1 0 0 0 1 0 0 0 1 3005.dat
+1 15 50 -144 160 0 0 1 0 1 0 -1 0 0 3009.dat
+1 15 -50 -144 160 0 0 1 0 1 0 -1 0 0 3009.dat
+1 15 0 -136 220 0 0 1 0 1 0 -1 0 0 3022.dat
+1 15 -10 -144 220 0 0 -1 0 1 0 1 0 0 4276b.dat
+1 15 10 -144 220 0 0 -1 0 1 0 1 0 0 4276b.dat
+1 0 0 -140 250 1 0 0 0 0 -1 0 1 0 6925 - Vehicle - Back - Container.ldr
+1 0 70 -14 160 0 0 -1 0 1 0 1 0 0 6925 - Vehicle - Wheels.ldr
+1 0 -70 -14 160 0 0 1 0 1 0 -1 0 0 6925 - Vehicle - Wheels.ldr
+1 0 130 -136 150 0 0 1 0 1 0 -1 0 0 6925 - Vehicle - Detector.ldr
+1 0 -130 -136 150 0 0 1 0 1 0 -1 0 0 6925 - Vehicle - Detector.ldr
+
+0 FILE 6925 - Vehicle - Back - Container.ldr
+0 Vehicle - Back - Container
+0 Name: 6925 - Vehicle - Back - Container.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Futuron
+
+1 15 -10 -4 30 0 0 1 0 1 0 -1 0 0 4275b.dat
+1 15 10 -4 30 0 0 1 0 1 0 -1 0 0 4275b.dat
+1 15 0 4 40 -1 0 0 0 1 0 0 0 -1 2419.dat
+1 15 50 -4 20 -1 0 0 0 1 0 0 0 -1 6141.dat
+1 15 -50 -4 20 -1 0 0 0 1 0 0 0 -1 6141.dat
+1 15 0 -4 60 -1 0 0 0 1 0 0 0 -1 3023.dat
+1 0 0 -28 30 -1 0 0 0 1 0 0 0 -1 3003.dat
+1 0 30 -28 40 0 0 -1 0 1 0 1 0 0 2462.dat
+1 0 -30 -28 40 -1 0 0 0 1 0 0 0 -1 2462.dat
+1 15 0 -52 60 -1 0 0 0 1 0 0 0 -1 3004p03.dat
+1 15 50 -52 20 0 0 -1 0 1 0 1 0 0 3665.dat
+1 15 -50 -52 20 0 0 1 0 1 0 -1 0 0 3665.dat
+1 15 30 -172 40 0 0 -1 0 1 0 1 0 0 2345.dat
+1 15 -30 -172 40 -1 0 0 0 1 0 0 0 -1 2345.dat
+1 15 0 -172 40 -1 0 0 0 1 0 0 0 -1 3039.dat
+1 15 0 -156 20 -1 0 0 0 1 0 0 0 -1 3666.dat
+1 33 70 -60 20 -1 0 0 0 1 0 0 0 -1 3024.dat
+1 33 -70 -60 20 -1 0 0 0 1 0 0 0 -1 3024.dat
+1 15 0 -164 0 1 0 0 0 1 0 0 0 1 2419.dat
+1 15 0 -172 20 1 0 0 0 1 0 0 0 1 3023.dat
+1 0 0 -180 30 1 0 0 0 1 0 0 0 1 4032a.dat
+
+
+0 FILE 6925 - Pod.ldr
+0 Pod
+0 Name: 6925 - Pod.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Futuron
+
+1 15 0 0 0 0 0 1 0 1 0 -1 0 0 3020.dat
+1 0 0 -8 -30 1 0 0 0 1 0 0 0 1 3839b.dat
+1 0 0 -8 10 1 0 0 0 1 0 0 0 1 4598.dat
+1 15 30 -14 30 0 -1 0 1 0 0 0 0 1 4349.dat
+1 36 30 -14 8 0 0 -1 1 0 0 0 -1 0 6141.dat
+1 15 -30 -14 30 0 1 0 -1 0 0 0 0 1 4349.dat
+1 36 -30 -14 8 0 0 1 -1 0 0 0 -1 0 6141.dat
+1 15 10 -16 -30 0.92388 0 0.382683 0 1 0 -0.382683 0 0.92388 4592.dat
+1 15 10 -16 -30 0.92388 -0.0664523 0.37687 0 0.984808 0.173648 -0.382683 -0.16043 0.909844 4593.dat
+1 15 -10 -16 -30 0.92388 0 -0.382683 0 1 0 0.382683 0 0.92388 4592.dat
+1 15 -10 -16 -30 0.92388 0.0664523 -0.37687 0 0.984808 0.173648 0.382683 -0.16043 0.909844 4593.dat
+
+
+0 FILE 6925 - Pod + Minifig.ldr
+0 Pod + Minifig
+0 Name: 6925 - Pod + Minifig.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Futuron
+
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 6925 - Pod.ldr
+1 0 0 -61 8 1 0 0 0 1 0 0 0 1 6925 - Minifig 2.ldr
+
+
+0 FILE 6925 - Minifig 1.ldr
+0 Minifig 1
+0 Name: 6925 - Minifig 1.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Futuron
+
+1 0 0 -27 0 0.866025 0 0.5 0 1 0 -0.5 0 0.866025 6925 - Minifig 1 - Helmet.ldr
+1 14 0 -27 0 0.866025 0 0.5 0 1 0 -0.5 0 0.866025 3626bp01.dat
+1 14 0 0 0 1 0 0 0 1 0 0 0 1 3838.dat
+1 15 0 0 0 1 0 0 0 1 0 0 0 1 973p6e.dat
+1 14 0 32 0 1 0 0 0 1 0 0 0 1 3815.dat
+1 14 -15.552 9 0 0.985 -0.17 0 0.17 0.985 0 0 0 1 3818.dat
+1 14 15.552 9 0 0.985 -0.0177698 0.169069 -0.17 -0.102961 0.979604 0 -0.994522 -0.104528 3819.dat
+1 14 -23.8634 26.5956 -10.321 0.985 -0.12019 0.12019 0.17 0.696395 -0.696395 0 0.707 0.707 3820.dat
+1 14 18.5957 -3.92614 -17.5794 0.985 0.106968 0.132095 -0.17 0.619787 0.765373 0 -0.777029 0.629225 3820.dat
+1 14 0 44 0 1 0 0 0 0 1 0 -1 0 3816.dat
+1 14 0 44 0 1 0 0 0 0 1 0 -1 0 3817.dat
+
+
+0 FILE 6925 - Minifig 1 - Helmet.ldr
+0 Minifig 1 - Helmet
+0 Name: 6925 - Minifig 1 - Helmet.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Futuron
+
+1 14 0 0 0 1 0 0 0 1 0 0 0 1 2446.dat
+1 33 0 1.904 4.596 1 0 0 0 0.707107 0.707107 0 -0.707107 0.707107 2447.dat
+
+
+0 FILE 6925 - Minifig 2.ldr
+0 Minifig 2
+0 Name: 6925 - Minifig 2.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Futuron
+
+1 0 0 -27 0 0.694658 0 0.71934 0 1 0 -0.71934 0 0.694658 6925 - Minifig 2 - Helmet.ldr
+1 14 0 -27 0 0.694658 0 0.71934 0 1 0 -0.71934 0 0.694658 3626bp01.dat
+1 14 0 0 0 1 0 0 0 1 0 0 0 1 3838.dat
+1 15 0 0 0 1 0 0 0 1 0 0 0 1 973p6e.dat
+1 14 0 32 0 1 0 0 0 1 0 0 0 1 3815.dat
+1 14 15.552 9 0 0.985 0.0468584 0.163414 -0.17 0.271503 0.946843 0 -0.961262 0.275637 3819.dat
+1 14 19.8665 3.4373 -20.8791 0.985 0.148663 0.0824052 -0.17 0.86137 0.477465 0 -0.484736 0.874488 3820.dat
+1 14 0 44 0 1 0 0 0 0 1 0 -1 0 3816.dat
+1 14 0 44 0 1 0 0 0 0 1 0 -1 0 3817.dat
+1 14 -15.552 9 0 0.985 -0.156486 -0.0664243 0.17 0.906697 0.38487 0 -0.390731 0.920505 3818.dat
+1 14 -22.9243 21.1543 -16.831 0.985 -0.157597 0.0636735 0.17 0.913138 -0.368932 0 0.37455 0.927044 3820.dat
+
+
+0 FILE 6925 - Minifig 2 - Helmet.ldr
+0 Minifig 2 - Helmet
+0 Name: 6925 - Minifig 2 - Helmet.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Futuron
+
+1 14 0 0 0 1 0 0 0 1 0 0 0 1 2446.dat
+1 33 0 0 0 1 0 0 0 1 0 0 0 1 2447.dat
+
+

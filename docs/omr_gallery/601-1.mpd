@@ -1,0 +1,73 @@
+0 FILE 601 - main.ldr
+0 main
+0 Name: 601 - main.ldr
+0 Author: Takeshi Takahashi [RainbowDolphin]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Town
+0 !KEYWORDS service station, shell
+
+0 !HISTORY 2020-04-19 [RainbowDolphin] Initial creation
+
+0 ROTATION CENTER 0 0 0 1 "Custom"
+0 ROTATION CONFIG 0 0
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 601 - Building.ldr
+1 0 -80 -96 10 1 0 0 0 1 0 0 0 1 601 - Minifig.ldr
+
+
+
+0 FILE 601 - Building.ldr
+0 Building
+0 Name: 601 - Building.ldr
+0 Author: Takeshi Takahashi [RainbowDolphin]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 ROTATION CENTER 0 0 0 1 "Custom"
+0 ROTATION CONFIG 0 0
+1 7 0 0 0 1 0 0 0 1 0 0 0 1 3030.dat
+1 14 -20 -24 -10 1 0 0 0 1 0 0 0 1 3317.dat
+0 STEP
+1 4 -20 -32 -10 1 0 0 0 1 0 0 0 1 3023.dat
+1 15 -40 -56 0 -1 0 0 0 1 0 0 0 -1 3831d01.dat
+0 STEP
+1 47 -20 -80 -10 1 0 0 0 1 0 0 0 1 3002.dat
+1 15 -20 -88 -10 1 0 0 0 1 0 0 0 1 3021.dat
+1 15 60 0 0 1 0 0 0 1 0 0 0 1 764.dat
+
+
+
+
+
+
+
+0 FILE 601 - Minifig.ldr
+0 Minifig
+0 Name: 601 - Minifig.ldr
+0 Author: Takeshi Takahashi [RainbowDolphin]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 ROTATION CENTER 0 0 0 1 "Custom"
+0 ROTATION CONFIG 0 0
+1 4 0 0 0 1 0 0 0 1 0 0 0 1 3624.dat
+1 14 0 0 0 1 0 0 0 1 0 0 0 1 3626bp01.dat
+1 15 0 24 0 1 0 0 0 1 0 0 0 1 973d04.dat
+1 1 0 56 0 1 0 0 0 1 0 0 0 1 3815.dat
+1 15 -15.552 33 0 0.985 -0.17 0 0.17 0.985 0 0 0 1 3818.dat
+1 15 15.552 33 0 0.985 0.17 0 -0.17 0.985 0 0 0 1 3819.dat
+1 14 -23.863 50.596 -10.321 0.985 -0.12019 0.12019 0.17 0.696395 -0.696395 0 0.707 0.707 3820.dat
+1 14 23.863 50.596 -10.321 0.985 0.12019 -0.12019 -0.17 0.696395 -0.696395 0 0.707 0.707 3820.dat
+1 1 0 68 0 1 0 0 0 1 0 0 0 1 3816.dat
+1 1 0 68 0 1 0 0 0 1 0 0 0 1 3817.dat
+
+
+
+
+
+
+
+
+
+

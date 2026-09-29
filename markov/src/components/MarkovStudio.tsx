@@ -42,16 +42,15 @@ const MODEL_PRESETS: Record<
 };
 
 const PHASE_LABELS: Record<string, { title: string; color: string }> = {
-  VOLUME_FILL: { title: '1. VOLUME FILL (1x1 PLATES)', color: '#38bdf8' },
-  SURFACE_REPLACE: { title: '2. EXTERIOR SLOPES/TILES', color: '#a855f7' },
-  OPTIMIZE_MERGE: { title: '3. BACKWARDS BRICK MERGE', color: '#f59e0b' },
-  TILE_FINISH: { title: '4. STUDLESS FINISH', color: '#10b981' },
-  DONE: { title: '5. BUILD COMPLETE', color: '#34d399' }
+  VOLUME_FILL: { title: '1. SOLID BASE (RUNNING BOND)', color: '#38bdf8' },
+  SURFACE_REPLACE: { title: '2. EXTERIOR SLOPES & CURVES', color: '#a855f7' },
+  TILE_FINISH: { title: '3. STUDLESS TOP FINISH', color: '#10b981' },
+  DONE: { title: '4. BUILD COMPLETE', color: '#34d399' }
 };
 
 export const MarkovStudio: React.FC = () => {
   const [modelType, setModelType] = useState<string>('duck');
-  const [targetHeightPlates, setTargetHeightPlates] = useState<number>(24);
+  const [targetHeightPlates, setTargetHeightPlates] = useState<number>(48); // Start with 16 bricks (48 plates)
   const [viewportMode, setViewportMode] = useState<ViewportMode>('GROWING_CORE');
   const [sourceMeshMode, setSourceMeshMode] = useState<SourceMeshMode>('ghost');
   const [autoRotate, setAutoRotate] = useState<boolean>(false);

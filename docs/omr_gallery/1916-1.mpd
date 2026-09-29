@@ -1,0 +1,88 @@
+0 FILE 1916 - Starion Patrol.ldr
+0 Starion Patrol
+0 Name: 1916 - Starion Patrol.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Space Police II
+
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 1916 - Spaceship.ldr
+1 0 0 -61 88 1 0 0 0 1 0 0 0 1 1916 - Minifig.ldr
+
+
+0 FILE 1916 - Spaceship.ldr
+0 Spaceship
+0 Name: 1916 - Spaceship.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Space Police II
+
+1 7 0 0 0 1 0 0 0 1 0 0 0 1 4032a.dat
+1 4 0 -8 40 0 0 -1 0 1 0 1 0 0 3795.dat
+1 7 0 0 70 1 0 0 0 1 0 0 0 1 2419.dat
+1 0 0 -16 10 1 0 0 0 1 0 0 0 1 3023.dat
+1 0 -10 -16 40 0 0 1 0 1 0 -1 0 0 2540.dat
+1 0 10 -16 40 0 0 -1 0 1 0 1 0 0 2540.dat
+1 7 0 -16 -20 1 0 0 0 1 0 0 0 1 4859.dat
+1 7 0 -24 50 1 0 0 0 1 0 0 0 1 2412b.dat
+1 0 -30 -14 52 0.7071 0 -0.7071 -0.7071 0 -0.7071 0 1 0 1916 - Spaceship - Rocket.ldr
+1 0 30 -14 52 0.7071 0 0.7071 0.7071 0 -0.7071 0 1 0 1916 - Spaceship - Rocket.ldr
+1 0 0 -24 0 1 0 0 0 1 0 0 0 1 3068bp69.dat
+1 7 -10 -24 30 0.866 0.25 -0.433 0 0.866 0.5 0.5 -0.433 0.75 4593.dat
+1 7 10 -24 30 0.9659 -0.1294 0.2241 0 0.866 0.5 -0.2588 -0.483 0.8365 4593.dat
+1 7 -10 -24 30 0.866 0 -0.5 0 1 0 0.5 0 0.866 4592.dat
+1 7 10 -24 30 0.9659 0 0.2588 0 1 0 -0.2588 0 0.9659 4592.dat
+
+
+0 FILE 1916 - Spaceship - Rocket.ldr
+0 Spaceship - Rocket
+0 Name: 1916 - Spaceship - Rocket.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Space Police II
+
+1 7 0 0 40 1 0 0 0 1 0 0 0 1 4588.dat
+1 0 0 -16 40 1 0 0 0 1 0 0 0 1 4735.dat
+1 4 0 -40 40 1 0 0 0 1 0 0 0 1 4589.dat
+
+
+0 FILE 1916 - Minifig.ldr
+0 Minifig
+0 Name: 1916 - Minifig.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Space Police II
+
+1 0 0 -27 0 0.798636 0 0.601815 0 1 0 -0.601815 0 0.798636 1916 - Minifig - Helmet.ldr
+1 14 0 -27 0 0.798636 0 0.601815 0 1 0 -0.601815 0 0.798636 3626bp69.dat
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 3838.dat
+1 15 0 0 0 1 0 0 0 1 0 0 0 1 973p69.dat
+1 15 0 32 0 1 0 0 0 1 0 0 0 1 3815.dat
+1 2 -15.552 9 0 0.985 -0.160738 -0.0553466 0.17 0.931336 0.320685 0 -0.325568 0.945519 3818.dat
+1 2 15.552 9 0 0.985 0.0265939 0.167907 -0.17 0.154088 0.972873 0 -0.987688 0.156434 3819.dat
+1 0 -23.1184 22.279 -15.8667 0.985 -0.152772 0.0745118 0.17 0.885178 -0.43173 0 0.438305 0.898658 3820.dat
+1 0 19.44 0.965822 -20.1446 0.985 0.137512 0.0999084 -0.17 0.796761 0.578881 0 -0.587696 0.808895 3820.dat
+1 2 0 44 0 1 0 0 0 0 1 0 -1 0 3816.dat
+1 2 0 44 0 1 0 0 0 0 1 0 -1 0 3817.dat
+
+
+0 FILE 1916 - Minifig - Helmet.ldr
+0 Minifig - Helmet
+0 Name: 1916 - Minifig - Helmet.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Space Police II
+
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 2446.dat
+1 34 0 0 0 1 0 0 0 1 0 0 0 1 2447.dat
+
+

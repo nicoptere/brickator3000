@@ -1,0 +1,123 @@
+0 FILE 1620 - Astro Dart.ldr
+0 Astro Dart
+0 Name: 1620 - Astro Dart.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Futuron
+
+1 0 0 0 0 1 0 0 0 1 0 0 0 1 1620 - Spaceship.ldr
+1 0 0 -69 -12 1 0 0 0 1 0 0 0 1 1620 - Minifig.ldr
+
+0 FILE 1620 - Spaceship.ldr
+0 Spaceship
+0 Name: 1620 - Spaceship.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Futuron
+
+1 0 0 0 0 0 0 1 0 1 0 -1 0 0 3020.dat
+1 0 0 -8 -10 1 0 0 0 1 0 0 0 1 4590.dat
+1 0 0 -8 -30 1 0 0 0 1 0 0 0 1 3839b.dat
+1 0 10 -8 20 0 0 -1 0 1 0 1 0 0 2452.dat
+1 0 -10 -8 20 0 0 1 0 1 0 -1 0 0 2452.dat
+1 0 30 -4 20 0.976296 0.21644 0 -0.21644 0.976296 0 0 0 1 1620 - Spaceship - Wing 1.ldr
+1 0 -30 -4 20 0.976296 -0.21644 0 0.21644 0.976296 0 0 0 1 1620 - Spaceship - Wing 2.ldr
+1 15 0 -16 -10 1 0 0 0 1 0 0 0 1 4598.dat
+1 15 0 -46 28 1 0 0 0 0 -1 0 1 0 3938.dat
+1 0 0 -46 38 1 0 0 0 0.382683 -0.92388 0 0.92388 0.382683 1620 - Spaceship - Hinge.ldr
+1 15 30 -16 0 0.996195 0 0.0871557 0 1 0 -0.0871557 0 0.996195 4592.dat
+1 15 -30 -16 0 0.996195 0 -0.0871557 0 1 0 0.0871557 0 0.996195 4592.dat
+1 0 30 -16 0 0.996195 0.0805214 0.0333531 0 0.382683 -0.92388 -0.0871557 0.920364 0.381227 4593.dat
+1 0 -30 -16 0 0.996195 -0.0805214 -0.0333531 0 0.382683 -0.92388 0.0871557 0.920364 0.381227 4593.dat
+
+
+0 FILE 1620 - Spaceship - Wing 1.ldr
+0 Spaceship - Wing 1
+0 Name: 1620 - Spaceship - Wing 1.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Futuron
+
+1 15 30 -4 0 -1 0 0 0 1 0 0 0 -1 4276b.dat
+1 15 40 -12 20 0 0 -1 0 1 0 1 0 0 2450.dat
+1 33 60 -4 0 0 0 -1 0 1 0 1 0 0 3024.dat
+1 0 20 -20 30 0 0 -1 0 1 0 1 0 0 2412b.dat
+1 15 20 -20 0 0 0 -1 0 1 0 1 0 0 3070bpc2.dat
+
+
+
+0 FILE 1620 - Spaceship - Wing 2.ldr
+0 Spaceship - Wing 2
+0 Name: 1620 - Spaceship - Wing 2.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Futuron
+
+1 15 -30 -4 0 1 0 0 0 1 0 0 0 1 4276b.dat
+1 15 -40 -12 20 -1 0 0 0 1 0 0 0 -1 2450.dat
+1 33 -60 -4 0 -1 0 0 0 1 0 0 0 -1 3024.dat
+1 0 -20 -20 30 0 0 -1 0 1 0 1 0 0 2412b.dat
+1 15 -20 -20 0 0 0 -1 0 1 0 1 0 0 3070bpc2.dat
+
+
+
+0 FILE 1620 - Spaceship - Hinge.ldr
+0 Spaceship - Hinge
+0 Name: 1620 - Spaceship - Hinge.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Futuron
+
+1 0 0 -10 0 1 0 0 0 1 0 0 0 1 3937.dat
+1 0 0 14 0 1 0 0 0 1 0 0 0 1 4590.dat
+1 36 30 -10 10 1 0 0 0 1 0 0 0 1 4589.dat
+1 36 -30 -10 10 1 0 0 0 1 0 0 0 1 4589.dat
+
+
+
+0 FILE 1620 - Minifig.ldr
+0 Minifig
+0 Name: 1620 - Minifig.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Futuron
+
+1 0 0 -27 0 0.87462 0 -0.48481 0 1 0 0.48481 0 0.87462 1620 - Minifig - Helmet.ldr
+1 14 0 -27 0 0.87462 0 -0.48481 0 1 0 0.48481 0 0.87462 3626bp01.dat
+1 14 0 0 0 1 0 0 0 1 0 0 0 1 3838.dat
+1 15 0 0 0 1 0 0 0 1 0 0 0 1 973p6e.dat
+1 14 0 32 0 1 0 0 0 1 0 0 0 1 3815.dat
+1 14 -15.552 9 0 0.985 0.00889711 -0.169767 0.17 -0.0515509 0.98365 0 -0.99863 -0.052336 3818.dat
+1 14 15.552 9 0 0.985 0.102309 0.135768 -0.17 0.592788 0.786656 0 -0.798636 0.601815 3819.dat
+1 14 -18.7549 -3.0034 -18.1951 0.985 -0.113735 -0.126316 0.17 0.658994 0.731887 0 -0.743033 0.66903 3820.dat
+1 14 21.1921 11.1182 -21.1945 0.985 0.16832 0.0236559 -0.17 0.975267 0.137065 0 -0.139152 0.990119 3820.dat
+1 0 -17.4772 -10.4067 -23.6576 -0.0950022 -0.140891 -0.985 0.550454 0.816341 -0.17 0.828773 -0.558836 0 3962b.dat
+1 14 0 44 0 1 0 0 0 0 1 0 -1 0 3816.dat
+1 14 0 44 0 1 0 0 0 0 1 0 -1 0 3817.dat
+
+
+
+0 FILE 1620 - Minifig - Helmet.ldr
+0 Minifig - Helmet
+0 Name: 1620 - Minifig - Helmet.ldr
+0 Author: Damien Roux [Darats]
+0 !LDRAW_ORG Model
+0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt
+
+0 !THEME Space / Futuron
+
+1 14 0 0 0 1 0 0 0 1 0 0 0 1 2446.dat
+1 33 0 2.238 4.906 1 0 0 0 0.656059 0.75471 0 -0.75471 0.656059 2447.dat
+
