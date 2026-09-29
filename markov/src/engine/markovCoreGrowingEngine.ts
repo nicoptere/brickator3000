@@ -551,24 +551,24 @@ export class MarkovCoreGrowingEngine {
 
       const candidatePartIds: string[] = [];
 
-      // 1. Curved Slopes (Convex outer surfaces)
+      // 1. Curved Slopes (Convex outer surfaces) - LARGEST & LONGEST FIRST!
       if (cell.slopeClass === 'slope_curved' || cell.curvatureClass === 'cylindrical_convex') {
-        candidatePartIds.push('15068', '11477', '88930', '60477', '85984', '3039', '3040');
+        candidatePartIds.push('88930', '61678', '15068', '11477', '85984', '3039', '3040');
       }
 
-      // 2. Inverted Slopes (Underhangs)
+      // 2. Inverted Slopes (Underhangs) - LARGEST & LONGEST FIRST!
       if (cell.slopeClass === 'slope_inverted') {
-        candidatePartIds.push('24201', '3665', '3660');
+        candidatePartIds.push('93273', '24201', '3665', '3660');
       }
 
-      // 3. Cheese Slopes & 33° Slopes
+      // 3. Cheese Slopes & 33° Slopes - LARGEST FIRST!
       if (cell.slopeClass === 'slope_33') {
-        candidatePartIds.push('85984', '3298', '54200');
+        candidatePartIds.push('3298', '85984', '54200');
       }
 
-      // 4. 45° Slopes
+      // 4. 45° Slopes - LARGEST FIRST!
       if (cell.slopeClass === 'slope_45') {
-        candidatePartIds.push('3040', '3039', '3038');
+        candidatePartIds.push('3038', '3039', '3040');
       }
 
       // 5. Macaroni & Round Corners
@@ -583,7 +583,7 @@ export class MarkovCoreGrowingEngine {
 
       // Fallback boundary slopes
       if (candidatePartIds.length === 0) {
-        candidatePartIds.push('15068', '11477', '3039', '3040');
+        candidatePartIds.push('88930', '61678', '15068', '11477', '3039', '3040');
       }
 
       for (const candidatePartId of candidatePartIds) {

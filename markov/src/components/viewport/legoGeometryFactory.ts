@@ -54,17 +54,31 @@ export class LegoGeometryFactory {
         const d = depthLDU;
         const h = heightLDU;
         const w = widthLDU;
+        const lipH = Math.min(h * 0.33, 8);
+        const topFlat = Math.min(6, d * 0.2);
 
         shape.moveTo(-d / 2, -h / 2);
         shape.lineTo(d / 2, -h / 2);
-        shape.lineTo(d / 2, -h / 2 + Math.min(h * 0.33, 8));
-        shape.quadraticCurveTo(0, h / 2, -d / 2 + Math.min(20, d * 0.5), h / 2);
+        shape.lineTo(d / 2, -h / 2 + lipH);
+
+        // Smooth authentic convex quarter-cylinder curve with horizontal top tangent & vertical front tangent
+        const startX = d / 2;
+        const startY = -h / 2 + lipH;
+        const endX = -d / 2 + topFlat;
+        const endY = h / 2;
+        const cp1X = startX;
+        const cp1Y = startY + (endY - startY) * 0.55;
+        const cp2X = endX + (startX - endX) * 0.55;
+        const cp2Y = endY;
+
+        shape.bezierCurveTo(cp1X, cp1Y, cp2X, cp2Y, endX, endY);
         shape.lineTo(-d / 2, h / 2);
         shape.closePath();
 
-        const ext = new THREE.ExtrudeGeometry(shape, { depth: w, bevelEnabled: false });
+        const ext = new THREE.ExtrudeGeometry(shape, { depth: w, bevelEnabled: false, curveSegments: 20 });
         ext.center();
         ext.rotateY(-Math.PI / 2);
+        ext.computeVertexNormals();
         geom = ext;
         break;
       }
@@ -74,16 +88,31 @@ export class LegoGeometryFactory {
         const d = depthLDU;
         const h = heightLDU;
         const w = widthLDU;
+        const lipH = Math.min(h * 0.33, 8);
+        const bottomFlat = Math.min(6, d * 0.2);
 
         shape.moveTo(-d / 2, -h / 2);
-        shape.lineTo(-d / 2 + Math.min(20, d * 0.5), -h / 2);
-        shape.quadraticCurveTo(0, -h / 2, d / 2, h / 2);
+        shape.lineTo(-d / 2 + bottomFlat, -h / 2);
+
+        // Smooth concave inverted curve
+        const startX = -d / 2 + bottomFlat;
+        const startY = -h / 2;
+        const endX = d / 2;
+        const endY = h / 2 - lipH;
+        const cp1X = startX + (endX - startX) * 0.55;
+        const cp1Y = startY;
+        const cp2X = endX;
+        const cp2Y = endY - (endY - startY) * 0.55;
+
+        shape.bezierCurveTo(cp1X, cp1Y, cp2X, cp2Y, endX, endY);
+        shape.lineTo(d / 2, h / 2);
         shape.lineTo(-d / 2, h / 2);
         shape.closePath();
 
-        const ext = new THREE.ExtrudeGeometry(shape, { depth: w, bevelEnabled: false });
+        const ext = new THREE.ExtrudeGeometry(shape, { depth: w, bevelEnabled: false, curveSegments: 20 });
         ext.center();
         ext.rotateY(-Math.PI / 2);
+        ext.computeVertexNormals();
         geom = ext;
         break;
       }
