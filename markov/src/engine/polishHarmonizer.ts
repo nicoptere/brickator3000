@@ -108,8 +108,12 @@ export class PolishHarmonizer {
           }
 
           if (maxCount >= 2 && dominantHeading !== brick.rotation) {
-            brick.rotation = dominantHeading;
-            harmonizedSlopesCount++;
+            const isSquare = brick.size[0] === brick.size[1];
+            const isAxisFlip = Math.abs(dominantHeading - brick.rotation) === 180;
+            if (isSquare || isAxisFlip) {
+              brick.rotation = dominantHeading as any;
+              harmonizedSlopesCount++;
+            }
           }
         }
       }
@@ -286,6 +290,63 @@ export class PolishHarmonizer {
               break;
             }
           }
+        }
+      }
+    }
+
+    // 4. Flatten Isolated 1*1*X Bricks Between Slopes
+    // If a 1x1 full brick (3005) is exposed on the exterior surface adjacent to slopes,
+    // flatten it into a 1x1 flat tile (3070b) or 1x1 cheese slope (54200) to eliminate vertical blocky chimneys
+    for (const brick of Array.from(placedBricks.values())) {
+      if (brick.partId === '3005' && brick.size[0] === 1 && brick.size[1] === 1) {
+        const [bx, bz, by] = brick.gridPos;
+
+        // Check if on exterior surface (no brick directly above)
+        const aboveId = occupiedCellToBrickId.get(this.cellKey(bx, bz, by + 1));
+        if (aboveId) continue; // In the interior core, leave as 3005 brick
+
+        // Check horizontal neighbors for slopes
+        const horizontalNeighbors = [
+          [bx + 1, bz, by],
+          [bx - 1, bz, by],
+          [bx, bz + 1, by],
+          [bx, bz - 1, by]
+        ];
+
+        let slopeNeighbor: PlacedBrick | null = null;
+        for (const [nx, nz, ny] of horizontalNeighbors) {
+          const nId = occupiedCellToBrickId.get(this.cellKey(nx, nz, ny));
+          if (nId && nId !== brick.id) {
+            const nb = placedBricks.get(nId);
+            if (
+              nb &&
+              (nb.profile === 'slope_curved' ||
+               nb.profile === 'slope_45' ||
+               nb.profile === 'slope_33' ||
+               nb.profile === 'cheese' ||
+               nb.profile === 'wedge')
+            ) {
+              slopeNeighbor = nb;
+              break;
+            }
+          }
+        }
+
+        if (slopeNeighbor) {
+          // Replace 3005 with 3070b flat tile so it sits flush/flat with slope lips
+          brick.partId = '3070b';
+          brick.name = 'Tile 1 x 1 Flat';
+          brick.profile = 'tile_flat';
+          brick.category = 'EDGE';
+          brick.baseSize = [1, 1, 1];
+          brick.size = [1, 1, 1];
+
+          const ldrawX = (bx + 0.5 - numStudsX / 2.0) * LDU_STUD_PITCH;
+          const ldrawZ = -((bz + 0.5 - numStudsZ / 2.0) * LDU_STUD_PITCH);
+          const ldrawY = -(by + 1) * LDU_BRICK_HEIGHT;
+          brick.ldrawPos = [ldrawX, ldrawY, ldrawZ];
+
+          smoothedTilesCount++;
         }
       }
     }

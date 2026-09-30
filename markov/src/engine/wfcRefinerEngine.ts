@@ -232,14 +232,16 @@ export class WFCRefinerEngine {
     };
 
     // Active WFC Substitution Pass:
-    // Replace discordant pieces (e.g. erroneous dome dishes, low-compatibility parts) with high-ranked category pieces
+    // Replace surface anomalies (e.g. erroneous dome dishes, 1x1 blocky bricks between slopes, rigid 45° slopes in vehicles)
     for (const brick of bricks) {
       const isDomeOnSurface = brick.profile === 'dish';
+      const isBlocky1x1OnSurface = brick.partId === '3005' && brick.size[0] === 1 && brick.size[1] === 1;
+      const isRigidSlopeInVehicles = this.currentCategory === 'vehicles' && brick.profile === 'slope_45';
       const currentProb = evalNeighborProb(brick, brick.partId);
-      const isLowProb = currentProb < 0.06;
-      const isNotCategory = !this.isCategoryPart(brick.partId);
+      const isLowProb = currentProb < 0.04;
 
-      if (isDomeOnSurface || isLowProb || isNotCategory) {
+      // Only substitute pieces where there is a clear geometric or thematic improvement
+      if (isDomeOnSurface || isBlocky1x1OnSurface || isRigidSlopeInVehicles || isLowProb) {
         const isQuarterTurn = brick.rotation === 90 || brick.rotation === 270;
         const [wX, wZ, hY] = brick.baseSize || [
           isQuarterTurn ? brick.size[1] : brick.size[0],
@@ -247,43 +249,47 @@ export class WFCRefinerEngine {
           brick.size[2]
         ];
 
-        // Find alternative connectors with exact same canonical footprint
         const candidates: string[] = [];
 
+        // 1. Flatten 1x1 bricks between slopes into flat tiles or cheese slopes
+        if (isBlocky1x1OnSurface) {
+          candidates.push('3070b', '98138', '54200');
+        }
+
+        // 2. Replace erroneous dome dishes on surfaces
         if (isDomeOnSurface) {
-          // Replace erroneous dome dish with flat tile or curved slope
           if (wX === 2 && wZ === 2) {
-            candidates.push('15068', '3068b', '3003', '3039');
-          } else if (wX === 4 && wZ === 4) {
-            candidates.push('88930', '3001', '87079', '2419');
+            candidates.push('15068', '3068b', '3003');
+          } else if (wX >= 3) {
+            candidates.push('88930', '87079', '2419');
           }
         }
 
-        // Category-informed substitutions
-        if (this.currentCategory === 'vehicles') {
-          if (brick.profile === 'slope_45') candidates.push('88930', '15068', '11477', '85984');
-          if (brick.profile === 'brick' && hY === 1) candidates.push('3068b', '3069b', '2431', '87079', '2412b');
-        } else if (this.currentCategory === 'space') {
-          if (brick.profile === 'slope_45') candidates.push('30382', '2419', '43712', '88930', '11477');
-          if (brick.profile === 'slope_inverted') candidates.push('93273', '24201', '4854', '43713');
-        } else if (this.currentCategory === 'architecture') {
-          if (brick.profile === 'slope_curved') candidates.push('60477', '4286', '3298', '3040b');
-          if (brick.profile === 'brick') candidates.push('87079', '4162', '3068b', '3001', '3004');
+        // 3. Category-informed slope substitutions (curved slopes over 45° slopes in vehicles)
+        if (isRigidSlopeInVehicles) {
+          if (wX === 2 && wZ === 2) candidates.push('15068');
+          else if (wX === 2 && wZ === 4) candidates.push('88930');
+          else if (wX === 1 && wZ === 2) candidates.push('11477');
         }
 
-        // Add standard dimension matches
-        const matches = CONNECTOR_DATABASE.connectors;
-        for (const [pid, conn] of matches) {
-          if (conn.footprint[0] === wX && conn.footprint[1] === wZ && conn.footprint[2] === hY) {
-            if (this.isCategoryPart(pid) && !candidates.includes(pid)) {
-              candidates.push(pid);
-              if (candidates.length >= 10) break;
+        // 4. Safe same-profile, same-height candidate lookup
+        if (candidates.length === 0 && isLowProb) {
+          const matches = CONNECTOR_DATABASE.connectors;
+          for (const [pid, conn] of matches) {
+            // Must strictly match profile type to avoid corrupting geometry
+            if (conn.profile === brick.profile && conn.category === brick.category) {
+              if (conn.footprint[0] === wX && conn.footprint[1] === wZ) {
+                if (this.isCategoryPart(pid) && !candidates.includes(pid)) {
+                  candidates.push(pid);
+                  if (candidates.length >= 6) break;
+                }
+              }
             }
           }
         }
 
         let bestCandidate: string | null = null;
-        let bestScore = currentProb + (isNotCategory ? 0.0 : 0.05);
+        let bestScore = currentProb;
 
         for (const cid of candidates) {
           const cConn = CONNECTOR_DATABASE.getConnector(cid);
@@ -293,7 +299,7 @@ export class WFCRefinerEngine {
           const candFreq = Math.min(1.0, this.getPartFrequency(cid) / 400.0);
           const score = candProb + candFreq * 0.15;
 
-          if (score > bestScore + 0.04) {
+          if (score > bestScore + 0.03) {
             bestScore = score;
             bestCandidate = cid;
           }
@@ -307,9 +313,10 @@ export class WFCRefinerEngine {
             brick.profile = repl.profile;
             brick.category = repl.category;
 
+            // Recalculate 3D center in exact LDraw coordinates with grid centering offsets
             const [startX, startZ, startY] = brick.gridPos;
-            const ldrawX = (startX + brick.size[0] / 2.0) * LDU_STUD_PITCH;
-            const ldrawZ = (startZ + brick.size[1] / 2.0) * LDU_STUD_PITCH;
+            const ldrawX = (startX + brick.size[0] / 2.0 - grid.numStudsX / 2.0) * LDU_STUD_PITCH + (repl.ldrawOffset ? repl.ldrawOffset[0] : 0);
+            const ldrawZ = -((startZ + brick.size[1] / 2.0 - grid.numStudsZ / 2.0) * LDU_STUD_PITCH + (repl.ldrawOffset ? repl.ldrawOffset[1] : 0));
             const ldrawY = -(startY + brick.size[2]) * LDU_BRICK_HEIGHT;
             brick.ldrawPos = [ldrawX, ldrawY, ldrawZ];
 

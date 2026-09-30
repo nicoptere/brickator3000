@@ -567,13 +567,13 @@ export class MarkovCoreGrowingEngine {
       // 7. General Boundary / Wing Surface Fallback
       if (candidatePartIds.length === 0) {
         if (this.omrCategory === 'space') {
-          candidatePartIds.push('30382', '2419', '42060', '42061', '88930', '15068', '87079', '2431', '3068b', '3069b', '3020', '3795', '3034');
+          candidatePartIds.push('30382', '2419', '42060', '42061', '88930', '15068', '87079', '2431', '3068b', '3069b', '3020', '3795', '3034', '3070b', '54200');
         } else if (this.omrCategory === 'vehicles') {
-          candidatePartIds.push('88930', '61678', '15068', '11477', '85984', '87079', '2431', '3068b', '3069b', '2412b', '3020', '3023');
+          candidatePartIds.push('88930', '61678', '15068', '11477', '85984', '87079', '2431', '3068b', '3069b', '2412b', '3020', '3023', '3070b', '54200');
         } else if (this.omrCategory === 'architecture') {
-          candidatePartIds.push('87079', '4162', '2431', '3068b', '3069b', '60477', '4286', '3001', '3004', '3020');
+          candidatePartIds.push('87079', '4162', '2431', '3068b', '3069b', '60477', '4286', '3001', '3004', '3020', '3070b', '54200');
         } else {
-          candidatePartIds.push('88930', '15068', '11477', '87079', '2431', '3068b', '3069b', '3020', '3795', '3001', '3004', '3005');
+          candidatePartIds.push('88930', '15068', '11477', '87079', '2431', '3068b', '3069b', '3020', '3795', '3001', '3004', '3070b', '54200');
         }
       }
 
@@ -632,7 +632,8 @@ export class MarkovCoreGrowingEngine {
           connector.profile === 'cheese';
 
         const rotationsToTry: Array<0 | 90 | 180 | 270> = [baseRot];
-        if (!isDirectionalSlope && (cell.curvatureClass === 'spherical_dome' || cell.slopeClass === 'flat')) {
+        const isOneByOne = connector.footprint[0] === 1 && connector.footprint[1] === 1;
+        if (isOneByOne || (!isDirectionalSlope && (cell.curvatureClass === 'spherical_dome' || cell.slopeClass === 'flat'))) {
           rotationsToTry.push(
             ((baseRot + 90) % 360) as any,
             ((baseRot + 180) % 360) as any,
@@ -849,15 +850,53 @@ export class MarkovCoreGrowingEngine {
           }
         }
 
-        // 3. Fallback to Unit 1*1*1 Brick (Scale N = 1: 3005, 3062b)
+        // 3. Fallback to Unit 1*1*1: Flat Tile, Cheese Slope, or Core Brick
         if (!placed) {
-          for (const spec of UNIT_DETAIL_BRICKS) {
+          // Check if this cell is on the exterior surface or adjacent to slopes
+          const isTopExposed = y + 1 >= numPlatesY || !this.grid.grid[x]?.[z]?.[y + 1]?.occupied;
+          const isBoundary = cell.isBoundary || isTopExposed;
+
+          let hasSlopeNeighbor = false;
+          let neighborSlopeRot: 0 | 90 | 180 | 270 = 0;
+          const neighborOffsets = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+          for (const [dx, dz] of neighborOffsets) {
+            const nId = this.occupiedCellToBrickId.get(this.cellKey(x + dx, z + dz, y));
+            if (nId) {
+              const nb = this.placedBricks.get(nId);
+              if (nb && (
+                nb.profile === 'slope_curved' ||
+                nb.profile === 'slope_45' ||
+                nb.profile === 'slope_33' ||
+                nb.profile === 'cheese' ||
+                nb.profile === 'wedge'
+              )) {
+                hasSlopeNeighbor = true;
+                neighborSlopeRot = (nb.rotation || 0) as any;
+                break;
+              }
+            }
+          }
+
+          // If on surface or flanked by slopes, prioritize 1x1 flat tile (3070b) or 1x1 cheese slope (54200) to keep it flush/flat!
+          // Strictly avoid placing tall 1x1 brick chimneys (3005) between slopes.
+          const fallbackCandidates = (isBoundary || hasSlopeNeighbor)
+            ? [
+                { partId: '3070b', rot: 0 as const, phase: 'SURFACE_EDGE' as const, scaleN: 1 as const },
+                { partId: '54200', rot: neighborSlopeRot, phase: 'SURFACE_EDGE' as const, scaleN: 1 as const },
+                { partId: '3005', rot: 0 as const, phase: 'CORE_EXPANSION' as const, scaleN: 1 as const }
+              ]
+            : [
+                { partId: '3005', rot: 0 as const, phase: 'CORE_EXPANSION' as const, scaleN: 1 as const },
+                { partId: '3062b', rot: 0 as const, phase: 'CORE_EXPANSION' as const, scaleN: 1 as const }
+              ];
+
+          for (const cand of fallbackCandidates) {
             if (this.canFitSolidBlock(x, z, y, 1, 1, 1, islandId)) {
-              const connector = CONNECTOR_DATABASE.getConnector(spec.partId);
+              const connector = CONNECTOR_DATABASE.getConnector(cand.partId);
               if (connector) {
-                const variant = connector.fingerprint.variants.get(0)!;
+                const variant = connector.fingerprint.variants.get(cand.rot) || connector.fingerprint.variants.get(0)!;
                 const headId = (x + z + y) % this.heads.length;
-                const b = this.commitBrick(x, z, y, connector, variant, 'CORE_EXPANSION', headId, undefined, spec.scaleN);
+                const b = this.commitBrick(x, z, y, connector, variant, cand.phase, headId, undefined, cand.scaleN);
                 newBricks.push(b);
                 placed = true;
                 break;
@@ -895,6 +934,7 @@ export class MarkovCoreGrowingEngine {
       { partId: '2431',  w: 1, d: 4, name: 'Tile 1 x 4 Flat' },
       { partId: '6636',  w: 1, d: 6, name: 'Tile 1 x 6 Flat' },
       { partId: '3069b', w: 1, d: 2, name: 'Tile 1 x 2 Flat' },
+      { partId: '3070b', w: 1, d: 1, name: 'Tile 1 x 1 Flat' },
       { partId: '98138', w: 1, d: 1, name: 'Tile 1 x 1 Round Flat' }
     ];
     const { numStudsX, numStudsZ, numPlatesY } = this.grid;
