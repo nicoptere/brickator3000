@@ -174,6 +174,25 @@ export class LegoGeometryFactory {
         break;
       }
 
+      case 'wedge': {
+        const shape = new THREE.Shape();
+        const d = depthLDU;
+        const w = widthLDU;
+        const h = heightLDU;
+
+        shape.moveTo(-w / 2, -d / 2);
+        shape.lineTo(w / 2, -d / 2);
+        shape.lineTo(-w / 2 + Math.max(LDU_STUD_PITCH, w * 0.25), d / 2);
+        shape.lineTo(-w / 2, d / 2);
+        shape.closePath();
+
+        const ext = new THREE.ExtrudeGeometry(shape, { depth: h, bevelEnabled: false });
+        ext.center();
+        ext.rotateX(-Math.PI / 2);
+        geom = ext;
+        break;
+      }
+
       case 'tile_flat':
       case 'brick':
       case 'plate':

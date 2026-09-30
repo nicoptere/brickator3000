@@ -145,6 +145,7 @@ export const MarkovStudio: React.FC = () => {
         });
 
         const newEngine = new MarkovCoreGrowingEngine(newGrid, opts);
+        newEngine.setOmrCategory(omrCategory);
 
         setSourceModel(modelObj);
         setGrid(newGrid);
@@ -273,6 +274,21 @@ export const MarkovStudio: React.FC = () => {
   const handleChangeOmrCategory = async (cat: OMRCategory) => {
     setOmrCategory(cat);
     await WFC_REFINER.switchCategory(cat);
+    if (engine) {
+      engine.setOmrCategory(cat);
+    }
+    if (grid && bricks.length > 0) {
+      const metrics = WFC_REFINER.refineModel(bricks, grid);
+      const updated = [...bricks];
+      setBricks(updated);
+      if (engine) {
+        engine.syncBricksFromWfc(updated);
+      }
+      setStats((prev) => ({
+        ...prev,
+        uniqueParts: new Set(updated.map((b) => b.partId)).size
+      }));
+    }
   };
 
   // Calculate analytical surface distance to ground truth mesh
@@ -353,7 +369,15 @@ export const MarkovStudio: React.FC = () => {
     } else {
       WFC_REFINER.refineModel(bricks, grid);
     }
-    setBricks([...bricks]);
+    const updated = [...bricks];
+    setBricks(updated);
+    if (engine) {
+      engine.syncBricksFromWfc(updated);
+    }
+    setStats((prev) => ({
+      ...prev,
+      uniqueParts: new Set(updated.map((b) => b.partId)).size
+    }));
   };
 
   // Re-roll random colors for all islands

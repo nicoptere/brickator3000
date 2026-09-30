@@ -42,7 +42,7 @@ import {
 import { CONNECTOR_DATABASE, LDrawConnectorMeta } from './connectorDatabase';
 import { RotatedPieceVariant } from './pieceFingerprint';
 import { LDU_STUD_PITCH, LDU_BRICK_HEIGHT } from './connectivityDictionary';
-import { WFC_REFINER } from './wfcRefinerEngine';
+import { WFC_REFINER, OMRCategory } from './wfcRefinerEngine';
 import { PolishHarmonizer, HarmonizationResult, BuildabilityReport } from './polishHarmonizer';
 
 export interface GrowthHead {
@@ -128,11 +128,13 @@ export class MarkovCoreGrowingEngine {
 
   public harmonizationResult: HarmonizationResult | null = null;
   public buildabilityReport: BuildabilityReport | null = null;
+  public omrCategory: OMRCategory = 'vehicles';
 
   private rng: () => number;
 
   constructor(grid: VoxelGrid, options: MarkovEngineOptions = {}) {
     this.grid = grid;
+    this.omrCategory = WFC_REFINER.getCategory() || 'vehicles';
     const numHeads = Math.max(1, Math.min(16, options.numHeads ?? 4));
 
     this.options = {
@@ -170,6 +172,42 @@ export class MarkovCoreGrowingEngine {
     this.initSurfaceCandidates();
     this.currentPhase = this.options.enableModernWeirdParts ? 'SURFACE_SHELL' : 'CORE_INFILL';
     this.baseTilingLayerCursor = 0;
+  }
+
+  public setOmrCategory(cat: OMRCategory): void {
+    this.omrCategory = cat;
+  }
+
+  public getOmrCategory(): OMRCategory {
+    return this.omrCategory;
+  }
+
+  public syncBricksFromWfc(bricks: PlacedBrick[]): void {
+    this.placedBricks.clear();
+    this.occupiedCellToBrickId.clear();
+    this.bomStats.uniqueParts.clear();
+    this.bomStats.leafCount = 0;
+    this.bomStats.edgeCount = 0;
+    this.bomStats.fillCount = 0;
+
+    for (const b of bricks) {
+      this.placedBricks.set(b.id, b);
+      this.brickIdToPartId.set(b.id, b.partId);
+      this.bomStats.uniqueParts.add(b.partId);
+      if (b.category === 'LEAF') this.bomStats.leafCount++;
+      else if (b.category === 'EDGE') this.bomStats.edgeCount++;
+      else if (b.category === 'FILL') this.bomStats.fillCount++;
+
+      const [bx, bz, by] = b.gridPos;
+      const [bw, bd, bh] = b.size;
+      for (let dx = 0; dx < bw; dx++) {
+        for (let dz = 0; dz < bd; dz++) {
+          for (let dy = 0; dy < bh; dy++) {
+            this.occupiedCellToBrickId.set(this.cellKey(bx + dx, bz + dz, by + dy), b.id);
+          }
+        }
+      }
+    }
   }
 
   private cellKey(x: number, z: number, y: number): string {
@@ -476,27 +514,44 @@ export class MarkovCoreGrowingEngine {
         baseRot = nx >= 0 ? 270 : 90;
       }
 
-      // Candidate parts for this surface feature - LARGEST & LONGEST FIRST!
+      // Candidate parts for this surface feature - category, slope, and contour informed
       const candidatePartIds: string[] = [];
 
-      // 1. Curved Slopes (Convex outer surfaces) - ONLY curved profiles, never flat 45° slopes
+      // 1. Curved Slopes (Convex outer surfaces & aerodynamic contours)
       if (cell.slopeClass === 'slope_curved' || cell.curvatureClass === 'cylindrical_convex') {
-        candidatePartIds.push('88930', '61678', '15068', '11477', '85984');
+        if (this.omrCategory === 'vehicles') {
+          candidatePartIds.push('88930', '61678', '15068', '11477', '85984', '32803', '60477', '54200');
+        } else if (this.omrCategory === 'space') {
+          candidatePartIds.push('42060', '42061', '50955', '50956', '30382', '2419', '88930', '15068', '11477', '85984', '43712', '6564', '6565');
+        } else if (this.omrCategory === 'architecture') {
+          candidatePartIds.push('60477', '4286', '3298', '11477', '15068', '88930', '85984', '54200');
+        } else {
+          candidatePartIds.push('88930', '61678', '15068', '11477', '85984', '30382', '2419', '60477', '54200');
+        }
       }
 
-      // 2. Inverted Slopes (Underhangs)
+      // 2. Inverted Slopes (Underhangs & aerodynamic tapers)
       if (cell.slopeClass === 'slope_inverted') {
-        candidatePartIds.push('93273', '24201', '3665', '3660');
+        candidatePartIds.push('93273', '24201', '4854', '43713');
       }
 
-      // 3. Cheese Slopes & 33° Slopes
+      // 3. Cheese Slopes & 33° / 18° Slopes
       if (cell.slopeClass === 'slope_33') {
-        candidatePartIds.push('3298', '85984', '54200');
+        if (this.omrCategory === 'architecture') {
+          candidatePartIds.push('60477', '4286', '3298', '3297', '85984', '54200');
+        } else {
+          candidatePartIds.push('3298', '4286', '60477', '85984', '54200');
+        }
       }
 
       // 4. 45° Slopes
       if (cell.slopeClass === 'slope_45') {
-        candidatePartIds.push('3038', '3039', '3040');
+        if (this.omrCategory === 'vehicles') {
+          // In vehicles, modern curved slopes are strongly preferred over rigid 45° slopes
+          candidatePartIds.push('88930', '15068', '11477', '3038', '3039', '3040b');
+        } else {
+          candidatePartIds.push('3038', '3039', '3040b', '3048', '2357');
+        }
       }
 
       // 5. Macaroni & Round Corners
@@ -504,21 +559,21 @@ export class MarkovCoreGrowingEngine {
         candidatePartIds.push('27925', '25269', '2357');
       }
 
-      // 6. Spherical Dome Apex
-      if (cell.curvatureClass === 'spherical_dome' && ny > 0.6) {
+      // 6. Spherical Dome Apex - STRICTLY RESTRICTED to genuine isolated 3D peaks (never flat wings/slopes!)
+      if (cell.curvatureClass === 'spherical_dome' && ny > 0.88 && cell.slopeClass === 'flat') {
         candidatePartIds.push('4740', '43898', '3960');
       }
 
-      // 7. General Boundary Fallback
+      // 7. General Boundary / Wing Surface Fallback
       if (candidatePartIds.length === 0) {
-        if (cell.slopeClass === 'slope_curved') {
-          candidatePartIds.push('88930', '61678', '15068', '11477', '85984');
-        } else if (cell.slopeClass === 'slope_45') {
-          candidatePartIds.push('3038', '3039', '3040');
-        } else if (cell.slopeClass === 'slope_33') {
-          candidatePartIds.push('3298', '85984');
+        if (this.omrCategory === 'space') {
+          candidatePartIds.push('30382', '2419', '42060', '42061', '88930', '15068', '87079', '2431', '3068b', '3069b', '3020', '3795', '3034');
+        } else if (this.omrCategory === 'vehicles') {
+          candidatePartIds.push('88930', '61678', '15068', '11477', '85984', '87079', '2431', '3068b', '3069b', '2412b', '3020', '3023');
+        } else if (this.omrCategory === 'architecture') {
+          candidatePartIds.push('87079', '4162', '2431', '3068b', '3069b', '60477', '4286', '3001', '3004', '3020');
         } else {
-          candidatePartIds.push('3068b', '3069b', '2431', '3010', '3004', '3005');
+          candidatePartIds.push('88930', '15068', '11477', '87079', '2431', '3068b', '3069b', '3020', '3795', '3001', '3004', '3005');
         }
       }
 
@@ -532,7 +587,7 @@ export class MarkovCoreGrowingEngine {
         { dx: 0, dz: 0, dy: -1, dir: '-Y' as const }
       ];
 
-      // Score candidates: base priority (larger first) + WFC OMR transition boost
+      // Score candidates: base size priority + OMR category frequency + WFC transition boost
       const scoredCandidates = candidatePartIds.map((partId, idx) => {
         let maxProb = 0;
         for (const n of neighbors) {
@@ -546,7 +601,10 @@ export class MarkovCoreGrowingEngine {
             }
           }
         }
-        const score = (candidatePartIds.length - idx) * 10 + maxProb * 50;
+        const freq = WFC_REFINER.getPartFrequency(partId);
+        const normFreq = Math.min(1.0, freq / 400.0);
+        const isCatNative = WFC_REFINER.isCategoryPart(partId) ? 1.0 : 0.0;
+        const score = (candidatePartIds.length - idx) * 10 + maxProb * 80 + normFreq * 60 + isCatNative * 40;
         return { partId, score };
       });
 

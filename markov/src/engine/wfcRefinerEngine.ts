@@ -18,6 +18,8 @@
 
 import { VoxelGrid, PlacedBrick, WFC_SCALE_COLORS } from './types';
 import omrTensor from './omrAdjacencyTensor.json';
+import { CONNECTOR_DATABASE } from './connectorDatabase';
+import { LDU_STUD_PITCH, LDU_BRICK_HEIGHT } from './connectivityDictionary';
 
 export type OMRCategory = 'universal' | 'vehicles' | 'architecture' | 'space';
 
@@ -34,6 +36,7 @@ export class WFCRefinerEngine {
   private tensorCache: Map<string, any> = new Map();
   private tensor: Record<string, Record<string, Array<{ partId: string; count: number; prob: number }>>>;
   private probCache: Map<string, number> = new Map();
+  private frequencyCache: Map<string, number> = new Map();
 
   constructor() {
     this.tensor = omrTensor as any;
@@ -49,6 +52,7 @@ export class WFCRefinerEngine {
     this.currentCategory = category;
     this.tensor = tensorData;
     this.probCache.clear();
+    this.frequencyCache.clear();
   }
 
   /**
@@ -61,6 +65,7 @@ export class WFCRefinerEngine {
       this.currentCategory = category;
       this.tensor = this.tensorCache.get(category);
       this.probCache.clear();
+      this.frequencyCache.clear();
       return;
     }
 
@@ -80,12 +85,40 @@ export class WFCRefinerEngine {
       this.currentCategory = category;
       this.tensor = loaded;
       this.probCache.clear();
+      this.frequencyCache.clear();
     } catch (err) {
       console.warn(`Could not dynamically load OMR category tensor for ${category}, falling back to universal:`, err);
       this.currentCategory = 'universal';
       this.tensor = this.tensorCache.get('universal') || (omrTensor as any);
       this.probCache.clear();
+      this.frequencyCache.clear();
     }
+  }
+
+  /**
+   * Returns total frequency of part in the active category tensor.
+   */
+  public getPartFrequency(partId: string): number {
+    const cached = this.frequencyCache.get(partId);
+    if (cached !== undefined) return cached;
+    let freq = 0;
+    const dirs = this.tensor[partId];
+    if (dirs) {
+      for (const d of Object.keys(dirs)) {
+        for (const t of dirs[d]) {
+          freq += t.count;
+        }
+      }
+    }
+    this.frequencyCache.set(partId, freq);
+    return freq;
+  }
+
+  /**
+   * Checks whether the part is present in the active OMR category.
+   */
+  public isCategoryPart(partId: string): boolean {
+    return Boolean(this.tensor[partId]);
   }
 
   /**
@@ -112,11 +145,10 @@ export class WFCRefinerEngine {
 
   /**
    * Refines a set of placed bricks using WFC constraint propagation and active category knowledge.
+   * Actively substitutes discordant or low-probability pieces with high-ranking category pieces.
    */
   public refineModel(bricks: PlacedBrick[], grid: VoxelGrid): WFCSolutionMetrics {
     let transitionsApplied = 0;
-    let totalScore = 0;
-    let comparisons = 0;
 
     const brickMap = new Map<string, PlacedBrick>();
     const posToBrick = new Map<string, string>();
@@ -134,43 +166,166 @@ export class WFCRefinerEngine {
       }
     }
 
-    // Measure overall OMR compatibility score across all adjacent neighbors
-    for (const brick of bricks) {
+    // Helper: evaluate average transition compatibility for a candidate part at brick position
+    const evalNeighborProb = (brick: PlacedBrick, candidatePartId: string): number => {
       const [bx, bz, by] = brick.gridPos;
       const [bw, bd, bh] = brick.size;
+      let pSum = 0;
+      let count = 0;
 
-      // Check +Y (top neighbor)
+      // +Y
       const topId = posToBrick.get(`${bx},${bz},${by + bh}`);
       if (topId && topId !== brick.id) {
         const topBrick = brickMap.get(topId);
         if (topBrick) {
-          const p = this.getTransitionProbability(brick.partId, '+Y', topBrick.partId);
-          totalScore += p;
-          comparisons++;
+          pSum += this.getTransitionProbability(candidatePartId, '+Y', topBrick.partId);
+          count++;
         }
       }
-
-      // Check +X (right neighbor)
+      // -Y
+      const botId = posToBrick.get(`${bx},${bz},${by - 1}`);
+      if (botId && botId !== brick.id) {
+        const botBrick = brickMap.get(botId);
+        if (botBrick) {
+          pSum += this.getTransitionProbability(candidatePartId, '-Y', botBrick.partId);
+          count++;
+        }
+      }
+      // +X
       const rightId = posToBrick.get(`${bx + bw},${bz},${by}`);
       if (rightId && rightId !== brick.id) {
         const rightBrick = brickMap.get(rightId);
         if (rightBrick) {
-          const p = this.getTransitionProbability(brick.partId, '+X', rightBrick.partId);
-          totalScore += p;
-          comparisons++;
+          pSum += this.getTransitionProbability(candidatePartId, '+X', rightBrick.partId);
+          count++;
         }
       }
-
-      // Check +Z (front neighbor)
+      // -X
+      const leftId = posToBrick.get(`${bx - 1},${bz},${by}`);
+      if (leftId && leftId !== brick.id) {
+        const leftBrick = brickMap.get(leftId);
+        if (leftBrick) {
+          pSum += this.getTransitionProbability(candidatePartId, '-X', leftBrick.partId);
+          count++;
+        }
+      }
+      // +Z
       const frontId = posToBrick.get(`${bx},${bz + bd},${by}`);
       if (frontId && frontId !== brick.id) {
         const frontBrick = brickMap.get(frontId);
         if (frontBrick) {
-          const p = this.getTransitionProbability(brick.partId, '+Z', frontBrick.partId);
-          totalScore += p;
-          comparisons++;
+          pSum += this.getTransitionProbability(candidatePartId, '+Z', frontBrick.partId);
+          count++;
         }
       }
+      // -Z
+      const backId = posToBrick.get(`${bx},${bz - 1},${by}`);
+      if (backId && backId !== brick.id) {
+        const backBrick = brickMap.get(backId);
+        if (backBrick) {
+          pSum += this.getTransitionProbability(candidatePartId, '-Z', backBrick.partId);
+          count++;
+        }
+      }
+
+      return count > 0 ? pSum / count : 0.05;
+    };
+
+    // Active WFC Substitution Pass:
+    // Replace discordant pieces (e.g. erroneous dome dishes, low-compatibility parts) with high-ranked category pieces
+    for (const brick of bricks) {
+      const isDomeOnSurface = brick.profile === 'dish';
+      const currentProb = evalNeighborProb(brick, brick.partId);
+      const isLowProb = currentProb < 0.06;
+      const isNotCategory = !this.isCategoryPart(brick.partId);
+
+      if (isDomeOnSurface || isLowProb || isNotCategory) {
+        const isQuarterTurn = brick.rotation === 90 || brick.rotation === 270;
+        const [wX, wZ, hY] = brick.baseSize || [
+          isQuarterTurn ? brick.size[1] : brick.size[0],
+          isQuarterTurn ? brick.size[0] : brick.size[1],
+          brick.size[2]
+        ];
+
+        // Find alternative connectors with exact same canonical footprint
+        const candidates: string[] = [];
+
+        if (isDomeOnSurface) {
+          // Replace erroneous dome dish with flat tile or curved slope
+          if (wX === 2 && wZ === 2) {
+            candidates.push('15068', '3068b', '3003', '3039');
+          } else if (wX === 4 && wZ === 4) {
+            candidates.push('88930', '3001', '87079', '2419');
+          }
+        }
+
+        // Category-informed substitutions
+        if (this.currentCategory === 'vehicles') {
+          if (brick.profile === 'slope_45') candidates.push('88930', '15068', '11477', '85984');
+          if (brick.profile === 'brick' && hY === 1) candidates.push('3068b', '3069b', '2431', '87079', '2412b');
+        } else if (this.currentCategory === 'space') {
+          if (brick.profile === 'slope_45') candidates.push('30382', '2419', '43712', '88930', '11477');
+          if (brick.profile === 'slope_inverted') candidates.push('93273', '24201', '4854', '43713');
+        } else if (this.currentCategory === 'architecture') {
+          if (brick.profile === 'slope_curved') candidates.push('60477', '4286', '3298', '3040b');
+          if (brick.profile === 'brick') candidates.push('87079', '4162', '3068b', '3001', '3004');
+        }
+
+        // Add standard dimension matches
+        const matches = CONNECTOR_DATABASE.connectors;
+        for (const [pid, conn] of matches) {
+          if (conn.footprint[0] === wX && conn.footprint[1] === wZ && conn.footprint[2] === hY) {
+            if (this.isCategoryPart(pid) && !candidates.includes(pid)) {
+              candidates.push(pid);
+              if (candidates.length >= 10) break;
+            }
+          }
+        }
+
+        let bestCandidate: string | null = null;
+        let bestScore = currentProb + (isNotCategory ? 0.0 : 0.05);
+
+        for (const cid of candidates) {
+          const cConn = CONNECTOR_DATABASE.getConnector(cid);
+          if (!cConn || cConn.profile === 'dish') continue;
+
+          const candProb = evalNeighborProb(brick, cid);
+          const candFreq = Math.min(1.0, this.getPartFrequency(cid) / 400.0);
+          const score = candProb + candFreq * 0.15;
+
+          if (score > bestScore + 0.04) {
+            bestScore = score;
+            bestCandidate = cid;
+          }
+        }
+
+        if (bestCandidate && bestCandidate !== brick.partId) {
+          const repl = CONNECTOR_DATABASE.getConnector(bestCandidate);
+          if (repl) {
+            brick.partId = repl.partId;
+            brick.name = repl.name;
+            brick.profile = repl.profile;
+            brick.category = repl.category;
+
+            const [startX, startZ, startY] = brick.gridPos;
+            const ldrawX = (startX + brick.size[0] / 2.0) * LDU_STUD_PITCH;
+            const ldrawZ = (startZ + brick.size[1] / 2.0) * LDU_STUD_PITCH;
+            const ldrawY = -(startY + brick.size[2]) * LDU_BRICK_HEIGHT;
+            brick.ldrawPos = [ldrawX, ldrawY, ldrawZ];
+
+            transitionsApplied++;
+          }
+        }
+      }
+    }
+
+    // Final evaluation score
+    let totalScore = 0;
+    let comparisons = 0;
+    for (const b of bricks) {
+      const p = evalNeighborProb(b, b.partId);
+      totalScore += p;
+      comparisons++;
     }
 
     const avgCompatibility = comparisons > 0 ? totalScore / comparisons : 1.0;

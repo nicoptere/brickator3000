@@ -238,7 +238,45 @@ export class MultiResolutionLattice {
       return grid.grid[cx][cz][cy].occupied ? 1 : 0;
     };
 
-    // Central difference approximations of 2nd derivatives
+    // Continuous height field for curvature and apex detection
+    const getColumnMaxY = (cx: number, cz: number): number => {
+      if (cx < 0 || cx >= numStudsX || cz < 0 || cz >= numStudsZ) return -1;
+      for (let cy = numPlatesY - 1; cy >= 0; cy--) {
+        if (grid.grid[cx][cz][cy].occupied) return cy;
+      }
+      return -1;
+    };
+
+    const cell = grid.grid[x]?.[z]?.[y];
+    const [nx, ny, nz] = cell?.normal || [0, 1, 0];
+
+    // Check apex dome: strictly requires localized 3D heightfield apex pointing upward
+    const isColTop = y === getColumnMaxY(x, z);
+    const hasDirectionalSlope = Math.abs(nx) > 0.15 || Math.abs(nz) > 0.15;
+
+    if (isColTop && !hasDirectionalSlope && ny > 0.88) {
+      const hE = getColumnMaxY(x + 1, z);
+      const hW = getColumnMaxY(x - 1, z);
+      const hN = getColumnMaxY(x, z + 1);
+      const hS = getColumnMaxY(x, z - 1);
+
+      // True spherical dome apex must be higher than or drop off in all 4 horizontal cardinal directions
+      const dropsE = hE < y;
+      const dropsW = hW < y;
+      const dropsN = hN < y;
+      const dropsS = hS < y;
+      const dropCount = (dropsE ? 1 : 0) + (dropsW ? 1 : 0) + (dropsN ? 1 : 0) + (dropsS ? 1 : 0);
+
+      // If it has continuous flat plateau in X or Z (ridge/wing), it is NOT a dome
+      const isRidgeX = hE === y && hW === y;
+      const isRidgeZ = hN === y && hS === y;
+
+      if (dropCount >= 3 && !isRidgeX && !isRidgeZ) {
+        return { curvatureClass: 'spherical_dome', k1: -1.0, k2: -1.0 };
+      }
+    }
+
+    // Central difference approximations of 2nd derivatives for cylindrical curvature
     const fC = isSolid(x, z, y);
     const fE = isSolid(x + 1, z, y);
     const fW = isSolid(x - 1, z, y);
@@ -261,12 +299,6 @@ export class MultiResolutionLattice {
 
     const k1 = tr / 2.0 + sqrtDisc;
     const k2 = tr / 2.0 - sqrtDisc;
-
-    // Check apex dome: convex in both directions at top layer
-    const isTopApex = y === numPlatesY - 1 || !isSolid(x, z, y + 1);
-    if (isTopApex && k1 < -0.3 && k2 < -0.3) {
-      return { curvatureClass: 'spherical_dome', k1, k2 };
-    }
 
     // Check sharp cusp / extremity
     const solidNeighbors = fE + fW + fN + fS + isSolid(x, z, y + 1) + isSolid(x, z, y - 1);
