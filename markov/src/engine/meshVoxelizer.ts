@@ -1004,16 +1004,16 @@ export class MeshVoxelizer {
                 const topEnter = Math.max(hits[i].point.y, hits[i + 1].point.y);
                 const bottomExit = Math.min(hits[i].point.y, hits[i + 1].point.y);
 
-                const topBrick = Math.min(
+                const topPlate = Math.min(
                   numPlatesY - 1,
-                  Math.floor(((topEnter - minGeom.y) * scaleFactor) / brickHeightLDU)
+                  Math.floor(((topEnter - minGeom.y) * scaleFactor) / plateHeightLDU)
                 );
-                const bottomBrick = Math.max(
+                const bottomPlate = Math.max(
                   0,
-                  Math.floor(((bottomExit - minGeom.y) * scaleFactor) / brickHeightLDU)
+                  Math.floor(((bottomExit - minGeom.y) * scaleFactor) / plateHeightLDU)
                 );
 
-                for (let y = bottomBrick; y <= topBrick; y++) {
+                for (let y = bottomPlate; y <= topPlate; y++) {
                   const cell = grid[x][z][y];
                   if (!cell.occupied) {
                     cell.occupied = true;

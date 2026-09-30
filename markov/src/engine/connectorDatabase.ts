@@ -29,8 +29,42 @@ export interface LDrawConnectorMeta {
   preferredDepth: [number, number];
   fingerprint: PieceFingerprint;
   ldrawOffset: [number, number]; // X, Z center offset in LDU
+  ldrawPartCenter: [number, number]; // [cx, cz] local centroid in LDraw part space
   yOffsetPlates: number; // Vertical offset in plates
 }
+
+export const LDRAW_PART_CENTROIDS: Record<string, [number, number]> = {
+  // 45° Slopes (local center in Z is at -10 LDU)
+  '3040': [0, -10],
+  '3040b': [0, -10],
+  '3040a': [0, -10],
+  '3039': [0, -10],
+  '3038': [0, -20],
+  '3048': [0, -10],
+  '60477': [0, -40],
+  '3298': [0, -10],
+
+  // Inverted Slopes
+  '24201': [0, 10],
+  '3665': [0, -10],
+  '3665a': [0, -10],
+  '3665b': [0, -10],
+  '3747': [0, -20],
+  '3747a': [0, -20],
+  '3747b': [0, -20],
+  '4287': [0, -20],
+  '4287a': [0, -20],
+  '4287b': [0, -20],
+  '4287c': [0, -20],
+  '3049': [0, 10],
+  '3049b': [0, 10],
+
+  // Macaroni & Curved Corners
+  '27925': [10, -10],
+  '3063': [10, -10],
+  '3063a': [10, -10],
+  '3063b': [10, -10],
+};
 
 export class ConnectorDatabase {
   private static instance: ConnectorDatabase | null = null;
@@ -121,6 +155,7 @@ export class ConnectorDatabase {
         preferredDepth: descriptor.preferredDepth,
         fingerprint: fp,
         ldrawOffset: [0, 0],
+        ldrawPartCenter: LDRAW_PART_CENTROIDS[descriptor.partId] || [0, 0],
         yOffsetPlates
       };
 

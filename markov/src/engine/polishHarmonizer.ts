@@ -382,7 +382,8 @@ export class PolishHarmonizer {
       };
     }
 
-    // Step 1: Build bidirectional adjacency graph (stud contacts)
+    // Step 1: Build bidirectional adjacency graph (strict vertical stud/tube clutch connections)
+    // In physical LEGO, lateral side-by-side touching provides zero vertical support against gravity!
     const adjacency = new Map<string, Set<string>>();
     const underMap = new Map<string, Set<string>>(); // brickId -> set of bricks underneath it
 
@@ -390,6 +391,14 @@ export class PolishHarmonizer {
       adjacency.set(brick.id, new Set());
       underMap.set(brick.id, new Set());
     }
+
+    const studlessProfiles = new Set<string>([
+      'tile_flat',
+      'cheese',
+      'slope_curved',
+      'dish',
+      'macaroni'
+    ]);
 
     for (const brick of placedBricks.values()) {
       const [bx, bz, by] = brick.gridPos;
@@ -402,9 +411,13 @@ export class PolishHarmonizer {
             const underKey = this.cellKey(bx + dx, bz + dz, by - 1);
             const underId = occupiedCellToBrickId.get(underKey);
             if (underId && underId !== brick.id) {
-              adjacency.get(brick.id)?.add(underId);
-              adjacency.get(underId)?.add(brick.id);
-              underMap.get(brick.id)?.add(underId);
+              const underBrick = placedBricks.get(underId);
+              // Connection is valid ONLY if the lower brick has top studs to clutch into!
+              if (underBrick && !studlessProfiles.has(underBrick.profile)) {
+                adjacency.get(brick.id)?.add(underId);
+                adjacency.get(underId)?.add(brick.id);
+                underMap.get(brick.id)?.add(underId);
+              }
             }
           }
 
@@ -412,17 +425,10 @@ export class PolishHarmonizer {
           const aboveKey = this.cellKey(bx + dx, bz + dz, by + bh);
           const aboveId = occupiedCellToBrickId.get(aboveKey);
           if (aboveId && aboveId !== brick.id) {
-            adjacency.get(brick.id)?.add(aboveId);
-            adjacency.get(aboveId)?.add(brick.id);
-          }
-
-          // Check lateral contacts
-          for (const [lx, lz] of [[dx + 1, dz], [dx - 1, dz], [dx, dz + 1], [dx, dz - 1]]) {
-            const latKey = this.cellKey(bx + lx, bz + lz, by);
-            const latId = occupiedCellToBrickId.get(latKey);
-            if (latId && latId !== brick.id) {
-              adjacency.get(brick.id)?.add(latId);
-              adjacency.get(latId)?.add(brick.id);
+            // Connection is valid ONLY if this brick has top studs to clutch the brick above!
+            if (!studlessProfiles.has(brick.profile)) {
+              adjacency.get(brick.id)?.add(aboveId);
+              adjacency.get(aboveId)?.add(brick.id);
             }
           }
         }
@@ -570,13 +576,28 @@ export class PolishHarmonizer {
         }
 
         if (pillarSuccess && pillarBricks.length > 0) {
-          for (const sb of pillarBricks) {
+          for (let pi = 0; pi < pillarBricks.length; pi++) {
+            const sb = pillarBricks[pi];
             placedBricks.set(sb.id, sb);
             occupiedCellToBrickId.set(this.cellKey(sb.gridPos[0], sb.gridPos[1], sb.gridPos[2]), sb.id);
             groundedBricks.add(sb.id);
-            adjacency.set(sb.id, new Set());
-            underMap.set(sb.id, new Set());
+            if (!adjacency.has(sb.id)) adjacency.set(sb.id, new Set());
+            if (!underMap.has(sb.id)) underMap.set(sb.id, new Set());
+
+            if (pi > 0) {
+              const lowerSb = pillarBricks[pi - 1];
+              adjacency.get(sb.id)?.add(lowerSb.id);
+              adjacency.get(lowerSb.id)?.add(sb.id);
+              underMap.get(sb.id)?.add(lowerSb.id);
+            }
           }
+
+          // Connect top pillar brick to floating brick above
+          const topSb = pillarBricks[pillarBricks.length - 1];
+          adjacency.get(topSb.id)?.add(brick.id);
+          adjacency.get(brick.id)?.add(topSb.id);
+          underMap.get(brick.id)?.add(topSb.id);
+
           // Propagate grounding through adjacency to the floating brick and its sub-assembly
           groundedBricks.add(brick.id);
           const subQueue = [brick.id];
@@ -597,13 +618,34 @@ export class PolishHarmonizer {
       }
     }
 
-    // Recount remaining ungrounded bricks honestly
-    const remainingFloatingIds: string[] = [];
+    // Step 3b: Prune any remaining isolated ungrounded bricks that could not be supported
+    // Ensures the final exported model has zero floating pieces in LDraw and Three.js
+    const ungroundedToPrune: string[] = [];
     for (const b of placedBricks.values()) {
       if (!groundedBricks.has(b.id)) {
-        remainingFloatingIds.push(b.id);
+        ungroundedToPrune.push(b.id);
       }
     }
+
+    for (const fid of ungroundedToPrune) {
+      const b = placedBricks.get(fid);
+      if (b) {
+        placedBricks.delete(fid);
+        const [bx, bz, by] = b.gridPos;
+        for (let dx = 0; dx < b.size[0]; dx++) {
+          for (let dz = 0; dz < b.size[1]; dz++) {
+            for (let dy = 0; dy < b.size[2]; dy++) {
+              const k = this.cellKey(bx + dx, bz + dz, by + dy);
+              if (occupiedCellToBrickId.get(k) === fid) {
+                occupiedCellToBrickId.delete(k);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    const remainingFloatingIds: string[] = [];
 
     // Step 4: Running Bond Interlocking Check
     let multiStudCount = 0;

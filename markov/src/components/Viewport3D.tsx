@@ -299,10 +299,13 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
 
       const cacheKey = `${brick.partId}_${brick.profile}_${baseWX}x${baseDZ}x${baseHY}`;
 
-      const [lx, , lz] = brick.ldrawPos;
+      const numStudsX = grid ? grid.numStudsX : 0;
+      const numStudsZ = grid ? grid.numStudsZ : 0;
+      const centerX = (brick.gridPos[0] + brick.size[0] / 2.0 - numStudsX / 2.0) * LDU_STUD_PITCH;
+      const centerZ = (brick.gridPos[1] + brick.size[1] / 2.0 - numStudsZ / 2.0) * LDU_STUD_PITCH;
       const brickPosY = (brick.gridPos[2] + brick.size[2] / 2.0) * LDU_PLATE_HEIGHT;
       const brickRotY = -(brick.rotation * Math.PI) / 180.0;
-      const brickPos = new THREE.Vector3(lx, brickPosY, -lz);
+      const brickPos = new THREE.Vector3(centerX, brickPosY, centerZ);
       quat.setFromAxisAngle(yAxis, brickRotY);
 
       const brickMatrix = new THREE.Matrix4().compose(brickPos, quat, scaleOne);

@@ -308,9 +308,18 @@ export class MarkovCoreGrowingEngine {
     }
 
     // Authentic LDraw coordinates: 20 LDU stud pitch in X/Z, 8 LDU plate height in Y
-    const ldrawX = (startX + variant.widthX / 2.0 - numStudsX / 2.0) * LDU_STUD_PITCH + connector.ldrawOffset[0];
-    const ldrawZ = -((startZ + variant.depthZ / 2.0 - numStudsZ / 2.0) * LDU_STUD_PITCH + connector.ldrawOffset[1]);
+    const centerX = (startX + variant.widthX / 2.0 - numStudsX / 2.0) * LDU_STUD_PITCH;
+    const centerZ = -((startZ + variant.depthZ / 2.0 - numStudsZ / 2.0) * LDU_STUD_PITCH);
     const ldrawY = -(startY + variant.heightY) * LDU_PLATE_HEIGHT + (connector.yOffsetPlates || 0) * LDU_PLATE_HEIGHT;
+
+    // Rotate part local centroid by variant matrix in X-Z plane to guarantee exact LDraw grid alignment
+    const [pcx, pcz] = connector.ldrawPartCenter || [0, 0];
+    const m = variant.matrix;
+    const rotatedCx = m[0] * pcx + m[2] * pcz;
+    const rotatedCz = m[6] * pcx + m[8] * pcz;
+
+    const ldrawX = centerX - rotatedCx;
+    const ldrawZ = centerZ - rotatedCz;
 
     const scaleColorHex = phase === 'TILE_FINISH' ? WFC_SCALE_COLORS[0] : (WFC_SCALE_COLORS[scaleN] || WFC_SCALE_COLORS[4]);
 
@@ -453,7 +462,22 @@ export class MarkovCoreGrowingEngine {
             cell.isBoundary &&
             (this.targetIslandId == null || cell.islandId === this.targetIslandId)
           ) {
-            this.surfaceCandidates.push({ x, z, y });
+            // Check if cell is an exterior surface candidate:
+            // Standard slopes / domes require open air ABOVE (y + 1 is not occupied).
+            // Inverted slopes require open air BELOW (y - 1 is not occupied) and solid ceiling above (y + 1 is occupied).
+            const isTopOpen = y + 1 >= numPlatesY || !this.grid.grid[x]?.[z]?.[y + 1]?.occupied;
+            const isBottomOpen = y - 1 < 0 || !this.grid.grid[x]?.[z]?.[y - 1]?.occupied;
+
+            // If solid both above AND below, this cell is part of an interior vertical column, strut, or wall.
+            // It MUST NOT receive a slope or decorative tile, because it is load-bearing!
+            if (!isTopOpen && !isBottomOpen) continue;
+
+            // Only consider cells with actual geometric slope or curvature features.
+            // Flat horizontal surfaces (wings, floors, roofs) should be built with structural plates and bricks in CORE_INFILL!
+            const hasGeometryFeature = cell.slopeClass !== 'flat' || cell.curvatureClass !== 'flat';
+            if (hasGeometryFeature) {
+              this.surfaceCandidates.push({ x, z, y });
+            }
           }
         }
       }
@@ -532,13 +556,13 @@ export class MarkovCoreGrowingEngine {
       // 1. Curved Slopes (Convex outer surfaces & aerodynamic contours)
       if (cell.slopeClass === 'slope_curved' || cell.curvatureClass === 'cylindrical_convex') {
         if (this.omrCategory === 'vehicles') {
-          candidatePartIds.push('88930', '61678', '15068', '11477', '85984', '32803', '60477', '54200');
+          candidatePartIds.push('88930', '61678', '15068', '11477', '85984', '32803', '60477');
         } else if (this.omrCategory === 'space') {
           candidatePartIds.push('42060', '42061', '50955', '50956', '30382', '2419', '88930', '15068', '11477', '85984', '43712', '6564', '6565');
         } else if (this.omrCategory === 'architecture') {
-          candidatePartIds.push('60477', '4286', '3298', '11477', '15068', '88930', '85984', '54200');
+          candidatePartIds.push('60477', '4286', '3298', '11477', '15068', '88930', '85984');
         } else {
-          candidatePartIds.push('88930', '61678', '15068', '11477', '85984', '30382', '2419', '60477', '54200');
+          candidatePartIds.push('88930', '61678', '15068', '11477', '85984', '30382', '2419', '60477');
         }
       }
 
@@ -576,17 +600,9 @@ export class MarkovCoreGrowingEngine {
         candidatePartIds.push('4740', '43898', '3960');
       }
 
-      // 7. General Boundary / Wing Surface Fallback
+      // 7. If no geometric feature matches, skip this cell so CORE_INFILL builds solid structural bricks/plates
       if (candidatePartIds.length === 0) {
-        if (this.omrCategory === 'space') {
-          candidatePartIds.push('30382', '2419', '42060', '42061', '88930', '15068', '87079', '2431', '3068b', '3069b', '3020', '3795', '3034', '3070b', '54200');
-        } else if (this.omrCategory === 'vehicles') {
-          candidatePartIds.push('88930', '61678', '15068', '11477', '85984', '87079', '2431', '3068b', '3069b', '2412b', '3020', '3023', '3070b', '54200');
-        } else if (this.omrCategory === 'architecture') {
-          candidatePartIds.push('87079', '4162', '2431', '3068b', '3069b', '60477', '4286', '3001', '3004', '3020', '3070b', '54200');
-        } else {
-          candidatePartIds.push('88930', '15068', '11477', '87079', '2431', '3068b', '3069b', '3020', '3795', '3001', '3004', '3070b', '54200');
-        }
+        continue;
       }
 
       // Neighbor directions for WFC OMR transition probability
@@ -693,6 +709,59 @@ export class MarkovCoreGrowingEngine {
               if (islandId !== undefined && cCell.islandId !== undefined && cCell.islandId !== islandId) {
                 fits = false;
                 break;
+              }
+            }
+
+            // LOAD-BEARING INVARIANT:
+            // A studless piece (curved slope, cheese slope, flat slope, macaroni, dish)
+            // CANNOT have any solid voxels directly above it, because the voxel above needs top studs to clutch to!
+            if (fits) {
+              const isStudless =
+                connector.profile === 'slope_curved' ||
+                connector.profile === 'cheese' ||
+                connector.profile === 'slope_33' ||
+                connector.profile === 'slope_45' ||
+                connector.profile === 'tile_flat' ||
+                connector.profile === 'macaroni' ||
+                connector.profile === 'dish';
+
+              if (isStudless) {
+                for (let dx = 0; dx < wX; dx++) {
+                  for (let dz = 0; dz < dZ; dz++) {
+                    const topY = startY + hY;
+                    if (topY < numPlatesY && this.grid.grid[startX + dx]?.[startZ + dz]?.[topY]?.occupied) {
+                      fits = false;
+                      break;
+                    }
+                  }
+                  if (!fits) break;
+                }
+
+                // Invariant 3: 1x1 studless piece (cheese slope, etc.) cannot float over air:
+                // If startY > 0, it MUST have a solid voxel directly below it to rest on!
+                if (wX === 1 && dZ === 1 && startY > 0) {
+                  if (!this.grid.grid[startX]?.[startZ]?.[startY - 1]?.occupied) {
+                    fits = false;
+                  }
+                }
+              }
+
+              // Inverted slopes require solid ceiling directly above
+              if (connector.profile === 'slope_inverted') {
+                let hasCeiling = false;
+                for (let dx = 0; dx < wX; dx++) {
+                  for (let dz = 0; dz < dZ; dz++) {
+                    const topY = startY + hY;
+                    if (topY < numPlatesY && this.grid.grid[startX + dx]?.[startZ + dz]?.[topY]?.occupied) {
+                      hasCeiling = true;
+                      break;
+                    }
+                  }
+                  if (hasCeiling) break;
+                }
+                if (!hasCeiling) {
+                  fits = false;
+                }
               }
             }
 
@@ -931,18 +1000,11 @@ export class MarkovCoreGrowingEngine {
             }
           }
 
-          // If on surface or flanked by slopes, prioritize 1x1 flat tile (3070b) or 1x1 cheese slope (54200) to keep it flush/flat!
-          // Strictly avoid placing tall 1x1 brick chimneys (3005) between slopes.
-          const fallbackCandidates = (isBoundary || hasSlopeNeighbor)
-            ? [
-                { partId: '3070b', rot: 0 as const, phase: 'SURFACE_EDGE' as const, scaleN: 1 as const },
-                { partId: '54200', rot: neighborSlopeRot, phase: 'SURFACE_EDGE' as const, scaleN: 1 as const },
-                { partId: '3024', rot: 0 as const, phase: 'CORE_EXPANSION' as const, scaleN: 1 as const }
-              ]
-            : [
-                { partId: '3024', rot: 0 as const, phase: 'CORE_EXPANSION' as const, scaleN: 1 as const },
-                { partId: '3070b', rot: 0 as const, phase: 'CORE_EXPANSION' as const, scaleN: 1 as const }
-              ];
+          // Fallback to authentic structural 1x1 plate (3024) to guarantee vertical stud clutch!
+          // Strictly avoid placing studless tiles or cheese slopes in core infill.
+          const fallbackCandidates = [
+            { partId: '3024', rot: 0 as const, phase: 'CORE_EXPANSION' as const, scaleN: 1 as const }
+          ];
 
           for (const cand of fallbackCandidates) {
             if (this.canFitSolidBlock(x, z, y, 1, 1, 1, islandId)) {
