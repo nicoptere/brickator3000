@@ -13,7 +13,7 @@
 
 import { PieceCategory, PieceProfile, CurvatureClass, SlopeClass } from './types';
 import { PieceFingerprint, PieceDescriptor } from './pieceFingerprint';
-import rawCatalog from './generatedConnectorCatalog.json';
+import rawCatalog from './generatedConnectorCatalog';
 
 export interface LDrawConnectorMeta {
   partId: string;
