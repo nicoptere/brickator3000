@@ -146,6 +146,11 @@ export class MultiResolutionLattice {
     const { numStudsX, numStudsZ, numPlatesY } = grid;
     const cell = grid.grid[x]?.[z]?.[y];
 
+    const isSolid = (cx: number, cz: number, cy: number): boolean => {
+      if (cx < 0 || cx >= numStudsX || cz < 0 || cz >= numStudsZ || cy < 0 || cy >= numPlatesY) return false;
+      return grid.grid[cx][cz][cy].occupied;
+    };
+
     // 1. Primary: Use authentic surface normal from mesh raycast
     if (cell && cell.normal && (cell.normal[0] !== 0 || cell.normal[1] !== 0 || cell.normal[2] !== 0)) {
       const [nx, ny, nz] = cell.normal;
@@ -164,7 +169,13 @@ export class MultiResolutionLattice {
       }
 
       if (ny < -0.3) {
-        return { slopeClass: 'slope_inverted', heading, angle: -30 };
+        // Inverted slope: strictly requires a solid body / ceiling directly ABOVE it!
+        // On thin surfaces (like airplane wings or plates), a downward-facing normal is simply the bottom surface of the slab.
+        if (isSolid(x, z, y + 1)) {
+          return { slopeClass: 'slope_inverted', heading, angle: -30 };
+        } else {
+          return { slopeClass: 'flat', heading, angle: 0 };
+        }
       }
       if (ny > 0.8) {
         return { slopeClass: 'flat', heading, angle: 0 };
@@ -177,11 +188,6 @@ export class MultiResolutionLattice {
         }
       }
     }
-
-    const isSolid = (cx: number, cz: number, cy: number): boolean => {
-      if (cx < 0 || cx >= numStudsX || cz < 0 || cz >= numStudsZ || cy < 0 || cy >= numPlatesY) return false;
-      return grid.grid[cx][cz][cy].occupied;
-    };
 
     // Evaluate vertical plate differences in 4 cardinal horizontal directions
     const checkDir = (dx: number, dz: number): number => {
@@ -208,8 +214,8 @@ export class MultiResolutionLattice {
     if (diffXNeg > maxDiff) { maxDiff = diffXNeg; heading = 90; }
     if (diffXPos > maxDiff) { maxDiff = diffXPos; heading = 270; }
 
-    // Check if inverted slope (air below, solid above and to the sides)
-    const isUnderhang = !isSolid(x, z, y - 1) && (isSolid(x + 1, z, y) || isSolid(x - 1, z, y) || isSolid(x, z + 1, y) || isSolid(x, z - 1, y));
+    // Check if inverted slope (air below, solid ceiling directly above, and solid to the sides)
+    const isUnderhang = isSolid(x, z, y + 1) && !isSolid(x, z, y - 1) && (isSolid(x + 1, z, y) || isSolid(x - 1, z, y) || isSolid(x, z + 1, y) || isSolid(x, z - 1, y));
     if (isUnderhang && y > 1) {
       return { slopeClass: 'slope_inverted', heading, angle: -33 };
     }

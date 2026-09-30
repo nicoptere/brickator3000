@@ -14,7 +14,7 @@
 
 import * as THREE from 'three';
 import { PlacedBrick } from '../../engine/types';
-import { LDU_STUD_PITCH, LDU_BRICK_HEIGHT } from '../../engine/connectivityDictionary';
+import { LDU_STUD_PITCH, LDU_BRICK_HEIGHT, LDU_PLATE_HEIGHT } from '../../engine/connectivityDictionary';
 
 export class LegoGeometryFactory {
   private static cache = new Map<string, THREE.BufferGeometry>();
@@ -42,7 +42,7 @@ export class LegoGeometryFactory {
 
     const widthLDU = baseWX * LDU_STUD_PITCH;
     const depthLDU = baseDZ * LDU_STUD_PITCH;
-    const heightLDU = baseHY * LDU_BRICK_HEIGHT;
+    const heightLDU = baseHY * LDU_PLATE_HEIGHT;
 
     const cacheKey = `${brick.partId}_${brick.profile}_${baseWX}x${baseDZ}x${baseHY}`;
     let geom = this.cache.get(cacheKey);

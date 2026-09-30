@@ -58,6 +58,12 @@ export class ConnectorDatabase {
 
   private registerCatalog(): void {
     for (const item of rawCatalog) {
+      let baseHeightY = item.heightY;
+      // In authentic LDraw, 2x1, 2x2, and 2x4 curved slopes (11477, 15068, 88930, 61678) are 2 plates tall (16 LDU), not 3!
+      if ((item.profile === 'slope_curved' || item.profile === 'cheese') && baseHeightY === 3) {
+        baseHeightY = 2;
+      }
+
       const descriptor: PieceDescriptor = {
         partId: item.partId,
         name: item.name,
@@ -65,7 +71,7 @@ export class ConnectorDatabase {
         profile: item.profile as PieceProfile,
         baseWidthX: item.widthX,
         baseDepthZ: item.depthZ,
-        baseHeightY: Math.max(1, Math.round(item.heightY / 3)), // 1*1*1 Brick Units
+        baseHeightY,
         slopeClass: item.slopeClass as SlopeClass,
         slopeAngle: item.slopeAngle,
         baseHeading: 0,
@@ -77,7 +83,7 @@ export class ConnectorDatabase {
 
       // Custom offsets for special parts
       if (item.partId === '2357') {
-        // Corner brick 2x2 L-shape (1 brick tall)
+        // Corner brick 2x2 L-shape (3 plates = 1 brick tall)
         descriptor.customOccupiedCells = [
           { dx: 0, dz: 0, dy: 0 },
           { dx: 1, dz: 0, dy: 0 },
@@ -94,6 +100,12 @@ export class ConnectorDatabase {
         descriptor.customBottomTubes = [{ dx: 0, dz: 0 }];
       }
 
+      // LDraw Part Origin Invariant:
+      // Bricks, plates, and flat tiles have origin (Y=0) at their TOP face.
+      // Slopes with curved or cheese profile (15068, 11477, 88930, 54200) have origin (Y=0) at their BOTTOM face.
+      const isBottomOrigin = descriptor.profile === 'slope_curved' || descriptor.profile === 'cheese';
+      const yOffsetPlates = isBottomOrigin ? descriptor.baseHeightY : 0;
+
       const fp = new PieceFingerprint(descriptor);
       const meta: LDrawConnectorMeta = {
         partId: descriptor.partId,
@@ -109,7 +121,7 @@ export class ConnectorDatabase {
         preferredDepth: descriptor.preferredDepth,
         fingerprint: fp,
         ldrawOffset: [0, 0],
-        yOffsetPlates: 0
+        yOffsetPlates
       };
 
       this.connectors.set(descriptor.partId, meta);

@@ -15,7 +15,7 @@ import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { PlacedBrick, VoxelGrid } from '../engine/types';
-import { LDU_STUD_PITCH, LDU_BRICK_HEIGHT } from '../engine/connectivityDictionary';
+import { LDU_STUD_PITCH, LDU_BRICK_HEIGHT, LDU_PLATE_HEIGHT } from '../engine/connectivityDictionary';
 import { LegoGeometryFactory } from './viewport/legoGeometryFactory';
 
 export type ViewportMode = 'FINAL_MODEL' | 'GROWING_CORE' | 'CORE_HEATMAP' | 'SLOPE_CURVATURE';
@@ -207,7 +207,7 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
 
     const maxDim = Math.max(size.x, size.y, size.z);
     if (maxDim > 0) {
-      const targetHeightLDU = grid.numPlatesY * LDU_BRICK_HEIGHT;
+      const targetHeightLDU = grid.numPlatesY * LDU_PLATE_HEIGHT;
       const scaleFactor = targetHeightLDU / Math.max(size.y, 0.001);
       cloned.scale.setScalar(scaleFactor);
 
@@ -299,8 +299,8 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
 
       const cacheKey = `${brick.partId}_${brick.profile}_${baseWX}x${baseDZ}x${baseHY}`;
 
-      const [lx, ly, lz] = brick.ldrawPos;
-      const brickPosY = -ly - (brick.size[2] * LDU_BRICK_HEIGHT) / 2.0;
+      const [lx, , lz] = brick.ldrawPos;
+      const brickPosY = (brick.gridPos[1] + brick.size[2] / 2.0) * LDU_PLATE_HEIGHT;
       const brickRotY = -(brick.rotation * Math.PI) / 180.0;
       const brickPos = new THREE.Vector3(lx, brickPosY, -lz);
       quat.setFromAxisAngle(yAxis, brickRotY);
@@ -334,7 +334,7 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
       if (hasStuds) {
         const halfW = (baseWX * LDU_STUD_PITCH) / 2.0;
         const halfD = (baseDZ * LDU_STUD_PITCH) / 2.0;
-        const topY = (baseHY * LDU_BRICK_HEIGHT) / 2.0;
+        const topY = (baseHY * LDU_PLATE_HEIGHT) / 2.0;
 
         for (let sx = 0; sx < baseWX; sx++) {
           for (let sz = 0; sz < baseDZ; sz++) {
@@ -413,7 +413,7 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
     group.visible = true;
 
     const { numStudsX, numStudsZ, numPlatesY, maxCoreDepth } = grid;
-    const boxGeo = new THREE.BoxGeometry(LDU_STUD_PITCH * 0.9, LDU_BRICK_HEIGHT * 0.9, LDU_STUD_PITCH * 0.9);
+    const boxGeo = new THREE.BoxGeometry(LDU_STUD_PITCH * 0.9, LDU_PLATE_HEIGHT * 0.9, LDU_STUD_PITCH * 0.9);
 
     interface HeatmapCellData {
       matrix: THREE.Matrix4;
@@ -442,7 +442,7 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
 
           const posX = (x + 0.5 - numStudsX / 2.0) * LDU_STUD_PITCH;
           const posZ = (z + 0.5 - numStudsZ / 2.0) * LDU_STUD_PITCH;
-          const posY = (y + 0.5) * LDU_BRICK_HEIGHT;
+          const posY = (y + 0.5) * LDU_PLATE_HEIGHT;
 
           const matrix = new THREE.Matrix4().compose(new THREE.Vector3(posX, posY, posZ), identityQuat, scaleOne);
           heatmapCells.push({ matrix, color });
@@ -489,7 +489,7 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
 
           const posX = (x + 0.5 - numStudsX / 2.0) * LDU_STUD_PITCH;
           const posZ = (z + 0.5 - numStudsZ / 2.0) * LDU_STUD_PITCH;
-          const posY = (y + 0.5) * LDU_BRICK_HEIGHT;
+          const posY = (y + 0.5) * LDU_PLATE_HEIGHT;
 
           const origin = new THREE.Vector3(posX, posY, posZ);
           const dir = new THREE.Vector3(...cell.normal).normalize();

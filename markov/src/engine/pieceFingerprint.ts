@@ -36,9 +36,9 @@ export const CARDINAL_ROTATIONS: Record<
   [number, number, number, number, number, number, number, number, number]
 > = {
   0: [1, 0, 0, 0, 1, 0, 0, 0, 1],
-  90: [0, 0, -1, 0, 1, 0, 1, 0, 0],
+  90: [0, 0, 1, 0, 1, 0, -1, 0, 0],
   180: [-1, 0, 0, 0, 1, 0, 0, 0, -1],
-  270: [0, 0, 1, 0, 1, 0, -1, 0, 0]
+  270: [0, 0, -1, 0, 1, 0, 1, 0, 0]
 };
 
 export interface RotatedPieceVariant {

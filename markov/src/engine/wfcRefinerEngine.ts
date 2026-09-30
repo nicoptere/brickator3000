@@ -19,7 +19,7 @@
 import { VoxelGrid, PlacedBrick, WFC_SCALE_COLORS } from './types';
 import omrTensor from './omrAdjacencyTensor.json';
 import { CONNECTOR_DATABASE } from './connectorDatabase';
-import { LDU_STUD_PITCH, LDU_BRICK_HEIGHT } from './connectivityDictionary';
+import { LDU_STUD_PITCH, LDU_BRICK_HEIGHT, LDU_PLATE_HEIGHT } from './connectivityDictionary';
 
 export type OMRCategory = 'universal' | 'vehicles' | 'architecture' | 'space';
 
@@ -317,7 +317,7 @@ export class WFCRefinerEngine {
             const [startX, startZ, startY] = brick.gridPos;
             const ldrawX = (startX + brick.size[0] / 2.0 - grid.numStudsX / 2.0) * LDU_STUD_PITCH + (repl.ldrawOffset ? repl.ldrawOffset[0] : 0);
             const ldrawZ = -((startZ + brick.size[1] / 2.0 - grid.numStudsZ / 2.0) * LDU_STUD_PITCH + (repl.ldrawOffset ? repl.ldrawOffset[1] : 0));
-            const ldrawY = -(startY + brick.size[2]) * LDU_BRICK_HEIGHT;
+            const ldrawY = -(startY + brick.size[2]) * LDU_PLATE_HEIGHT + (repl.yOffsetPlates || 0) * LDU_PLATE_HEIGHT;
             brick.ldrawPos = [ldrawX, ldrawY, ldrawZ];
 
             transitionsApplied++;

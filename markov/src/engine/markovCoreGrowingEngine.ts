@@ -41,7 +41,7 @@ import {
 } from './types';
 import { CONNECTOR_DATABASE, LDrawConnectorMeta } from './connectorDatabase';
 import { RotatedPieceVariant } from './pieceFingerprint';
-import { LDU_STUD_PITCH, LDU_BRICK_HEIGHT } from './connectivityDictionary';
+import { LDU_STUD_PITCH, LDU_BRICK_HEIGHT, LDU_PLATE_HEIGHT } from './connectivityDictionary';
 import { WFC_REFINER, OMRCategory } from './wfcRefinerEngine';
 import { PolishHarmonizer, HarmonizationResult, BuildabilityReport } from './polishHarmonizer';
 
@@ -75,28 +75,40 @@ export interface StructuralPieceSpec {
   scaleN: 16 | 8 | 4 | 2 | 1;
 }
 
-// Scale N = 8: Macro Core Structural Bricks
+// Scale N = 8: Macro Core Structural Bricks (3 plates tall = 24 LDU)
 export const MACRO_CORE_BRICKS: StructuralPieceSpec[] = [
-  { partId: '3007', name: 'Brick 2 x 8', category: 'FILL', profile: 'brick', w: 2, d: 8, h: 1, scaleN: 8 },
-  { partId: '2456', name: 'Brick 2 x 6', category: 'FILL', profile: 'brick', w: 2, d: 6, h: 1, scaleN: 8 },
-  { partId: '3001', name: 'Brick 2 x 4', category: 'FILL', profile: 'brick', w: 2, d: 4, h: 1, scaleN: 8 },
-  { partId: '3008', name: 'Brick 1 x 8', category: 'FILL', profile: 'brick', w: 1, d: 8, h: 1, scaleN: 8 },
-  { partId: '3009', name: 'Brick 1 x 6', category: 'FILL', profile: 'brick', w: 1, d: 6, h: 1, scaleN: 8 },
+  { partId: '3007', name: 'Brick 2 x 8', category: 'FILL', profile: 'brick', w: 2, d: 8, h: 3, scaleN: 8 },
+  { partId: '2456', name: 'Brick 2 x 6', category: 'FILL', profile: 'brick', w: 2, d: 6, h: 3, scaleN: 8 },
+  { partId: '3001', name: 'Brick 2 x 4', category: 'FILL', profile: 'brick', w: 2, d: 4, h: 3, scaleN: 8 },
+  { partId: '3008', name: 'Brick 1 x 8', category: 'FILL', profile: 'brick', w: 1, d: 8, h: 3, scaleN: 8 },
+  { partId: '3009', name: 'Brick 1 x 6', category: 'FILL', profile: 'brick', w: 1, d: 6, h: 3, scaleN: 8 },
 ];
 
-// Scale N = 4: Mid Running Bond Bricks
+// Scale N = 4: Mid Running Bond Bricks (3 plates tall = 24 LDU)
 export const MID_RUNNING_BOND_BRICKS: StructuralPieceSpec[] = [
-  { partId: '3002', name: 'Brick 2 x 3', category: 'FILL', profile: 'brick', w: 2, d: 3, h: 1, scaleN: 4 },
-  { partId: '3003', name: 'Brick 2 x 2', category: 'FILL', profile: 'brick', w: 2, d: 2, h: 1, scaleN: 4 },
-  { partId: '3010', name: 'Brick 1 x 4', category: 'FILL', profile: 'brick', w: 1, d: 4, h: 1, scaleN: 4 },
-  { partId: '3622', name: 'Brick 1 x 3', category: 'FILL', profile: 'brick', w: 1, d: 3, h: 1, scaleN: 4 },
-  { partId: '3004', name: 'Brick 1 x 2', category: 'FILL', profile: 'brick', w: 1, d: 2, h: 1, scaleN: 4 },
+  { partId: '3002', name: 'Brick 2 x 3', category: 'FILL', profile: 'brick', w: 2, d: 3, h: 3, scaleN: 4 },
+  { partId: '3003', name: 'Brick 2 x 2', category: 'FILL', profile: 'brick', w: 2, d: 2, h: 3, scaleN: 4 },
+  { partId: '3010', name: 'Brick 1 x 4', category: 'FILL', profile: 'brick', w: 1, d: 4, h: 3, scaleN: 4 },
+  { partId: '3622', name: 'Brick 1 x 3', category: 'FILL', profile: 'brick', w: 1, d: 3, h: 3, scaleN: 4 },
+  { partId: '3004', name: 'Brick 1 x 2', category: 'FILL', profile: 'brick', w: 1, d: 2, h: 3, scaleN: 4 },
 ];
 
-// Scale N = 1: Unit Detail 1*1*1 Bricks
+// Scale N = 2: Unit Detail 1*1*3 Bricks (3 plates tall = 24 LDU)
 export const UNIT_DETAIL_BRICKS: StructuralPieceSpec[] = [
-  { partId: '3005', name: 'Brick 1 x 1', category: 'FILL', profile: 'brick', w: 1, d: 1, h: 1, scaleN: 1 },
-  { partId: '3062b', name: 'Brick 1 x 1 Round', category: 'FILL', profile: 'brick', w: 1, d: 1, h: 1, scaleN: 1 }
+  { partId: '3005', name: 'Brick 1 x 1', category: 'FILL', profile: 'brick', w: 1, d: 1, h: 3, scaleN: 2 },
+  { partId: '3062b', name: 'Brick 1 x 1 Round', category: 'FILL', profile: 'brick', w: 1, d: 1, h: 3, scaleN: 2 }
+];
+
+// Scale N = 1: Plate Infill for 1-plate and 2-plate layers (1 plate tall = 8 LDU)
+export const PLATE_INFILL_BRICKS: StructuralPieceSpec[] = [
+  { partId: '3795', name: 'Plate 2 x 6', category: 'FILL', profile: 'plate', w: 2, d: 6, h: 1, scaleN: 1 },
+  { partId: '3020', name: 'Plate 2 x 4', category: 'FILL', profile: 'plate', w: 2, d: 4, h: 1, scaleN: 1 },
+  { partId: '3021', name: 'Plate 2 x 3', category: 'FILL', profile: 'plate', w: 2, d: 3, h: 1, scaleN: 1 },
+  { partId: '3022', name: 'Plate 2 x 2', category: 'FILL', profile: 'plate', w: 2, d: 2, h: 1, scaleN: 1 },
+  { partId: '3710', name: 'Plate 1 x 4', category: 'FILL', profile: 'plate', w: 1, d: 4, h: 1, scaleN: 1 },
+  { partId: '3623', name: 'Plate 1 x 3', category: 'FILL', profile: 'plate', w: 1, d: 3, h: 1, scaleN: 1 },
+  { partId: '3023', name: 'Plate 1 x 2', category: 'FILL', profile: 'plate', w: 1, d: 2, h: 1, scaleN: 1 },
+  { partId: '3024', name: 'Plate 1 x 1', category: 'FILL', profile: 'plate', w: 1, d: 1, h: 1, scaleN: 1 },
 ];
 
 export class MarkovCoreGrowingEngine {
@@ -295,10 +307,10 @@ export class MarkovCoreGrowingEngine {
       colorHex = islandColorHex;
     }
 
-    // 1*1*1 Brick coordinates in LDraw: 20 LDU in X/Z, 24 LDU in Y
+    // Authentic LDraw coordinates: 20 LDU stud pitch in X/Z, 8 LDU plate height in Y
     const ldrawX = (startX + variant.widthX / 2.0 - numStudsX / 2.0) * LDU_STUD_PITCH + connector.ldrawOffset[0];
     const ldrawZ = -((startZ + variant.depthZ / 2.0 - numStudsZ / 2.0) * LDU_STUD_PITCH + connector.ldrawOffset[1]);
-    const ldrawY = -(startY + variant.heightY) * LDU_BRICK_HEIGHT;
+    const ldrawY = -(startY + variant.heightY) * LDU_PLATE_HEIGHT + (connector.yOffsetPlates || 0) * LDU_PLATE_HEIGHT;
 
     const scaleColorHex = phase === 'TILE_FINISH' ? WFC_SCALE_COLORS[0] : (WFC_SCALE_COLORS[scaleN] || WFC_SCALE_COLORS[4]);
 
@@ -804,14 +816,14 @@ export class MarkovCoreGrowingEngine {
         const islandId = cell.islandId;
         let placed = false;
 
-        // 1. Try Macro Core Bricks (Scale N = 8: 2x8, 2x6, 2x4, 1x8, 1x6)
+        // 1. Try Macro Core Bricks (Scale N = 8: 2x8, 2x6, 2x4, 1x8, 1x6 - 3 plates tall)
         for (const spec of MACRO_CORE_BRICKS) {
           for (const isRot of orientations) {
             const bw = isRot ? spec.d : spec.w;
             const bd = isRot ? spec.w : spec.d;
             const rot: 0 | 90 = isRot ? 90 : 0;
 
-            if (this.canFitSolidBlock(x, z, y, bw, bd, 1, islandId)) {
+            if (this.canFitSolidBlock(x, z, y, bw, bd, spec.h, islandId)) {
               const connector = CONNECTOR_DATABASE.getConnector(spec.partId);
               if (connector) {
                 const variant = connector.fingerprint.variants.get(rot)!;
@@ -826,7 +838,7 @@ export class MarkovCoreGrowingEngine {
           if (placed) break;
         }
 
-        // 2. Try Mid Running Bond Bricks (Scale N = 4: 2x3, 2x2, 1x4, 1x3, 1x2)
+        // 2. Try Mid Running Bond Bricks (Scale N = 4: 2x3, 2x2, 1x4, 1x3, 1x2 - 3 plates tall)
         if (!placed) {
           for (const spec of MID_RUNNING_BOND_BRICKS) {
             for (const isRot of orientations) {
@@ -834,7 +846,7 @@ export class MarkovCoreGrowingEngine {
               const bd = isRot ? spec.w : spec.d;
               const rot: 0 | 90 = isRot ? 90 : 0;
 
-              if (this.canFitSolidBlock(x, z, y, bw, bd, 1, islandId)) {
+              if (this.canFitSolidBlock(x, z, y, bw, bd, spec.h, islandId)) {
                 const connector = CONNECTOR_DATABASE.getConnector(spec.partId);
                 if (connector) {
                   const variant = connector.fingerprint.variants.get(rot)!;
@@ -850,7 +862,49 @@ export class MarkovCoreGrowingEngine {
           }
         }
 
-        // 3. Fallback to Unit 1*1*1: Flat Tile, Cheese Slope, or Core Brick
+        // 3. Try Unit Detail Bricks (Scale N = 2: 1x1x3 Brick 3005)
+        if (!placed) {
+          for (const spec of UNIT_DETAIL_BRICKS) {
+            if (this.canFitSolidBlock(x, z, y, spec.w, spec.d, spec.h, islandId)) {
+              const connector = CONNECTOR_DATABASE.getConnector(spec.partId);
+              if (connector) {
+                const variant = connector.fingerprint.variants.get(0)!;
+                const headId = (x + z + y) % this.heads.length;
+                const b = this.commitBrick(x, z, y, connector, variant, 'CORE_EXPANSION', headId, undefined, spec.scaleN);
+                newBricks.push(b);
+                placed = true;
+                break;
+              }
+            }
+          }
+        }
+
+        // 4. Try Plate Infill Bricks (Scale N = 1: 1 plate tall = 8 LDU)
+        // Fills thin structures, wings, and odd vertical layers where full 3-plate bricks cannot fit
+        if (!placed) {
+          for (const spec of PLATE_INFILL_BRICKS) {
+            for (const isRot of orientations) {
+              const bw = isRot ? spec.d : spec.w;
+              const bd = isRot ? spec.w : spec.d;
+              const rot: 0 | 90 = isRot ? 90 : 0;
+
+              if (this.canFitSolidBlock(x, z, y, bw, bd, spec.h, islandId)) {
+                const connector = CONNECTOR_DATABASE.getConnector(spec.partId);
+                if (connector) {
+                  const variant = connector.fingerprint.variants.get(rot)!;
+                  const headId = (x + z + y) % this.heads.length;
+                  const b = this.commitBrick(x, z, y, connector, variant, 'CORE_EXPANSION', headId, undefined, spec.scaleN);
+                  newBricks.push(b);
+                  placed = true;
+                  break;
+                }
+              }
+            }
+            if (placed) break;
+          }
+        }
+
+        // 5. Fallback to Unit 1*1*1: Flat Tile, Cheese Slope, or Plate
         if (!placed) {
           // Check if this cell is on the exterior surface or adjacent to slopes
           const isTopExposed = y + 1 >= numPlatesY || !this.grid.grid[x]?.[z]?.[y + 1]?.occupied;
@@ -883,11 +937,11 @@ export class MarkovCoreGrowingEngine {
             ? [
                 { partId: '3070b', rot: 0 as const, phase: 'SURFACE_EDGE' as const, scaleN: 1 as const },
                 { partId: '54200', rot: neighborSlopeRot, phase: 'SURFACE_EDGE' as const, scaleN: 1 as const },
-                { partId: '3005', rot: 0 as const, phase: 'CORE_EXPANSION' as const, scaleN: 1 as const }
+                { partId: '3024', rot: 0 as const, phase: 'CORE_EXPANSION' as const, scaleN: 1 as const }
               ]
             : [
-                { partId: '3005', rot: 0 as const, phase: 'CORE_EXPANSION' as const, scaleN: 1 as const },
-                { partId: '3062b', rot: 0 as const, phase: 'CORE_EXPANSION' as const, scaleN: 1 as const }
+                { partId: '3024', rot: 0 as const, phase: 'CORE_EXPANSION' as const, scaleN: 1 as const },
+                { partId: '3070b', rot: 0 as const, phase: 'CORE_EXPANSION' as const, scaleN: 1 as const }
               ];
 
           for (const cand of fallbackCandidates) {
@@ -952,8 +1006,10 @@ export class MarkovCoreGrowingEngine {
           if (!placed) break;
           if (this.targetIslandId != null && placed.islandId !== this.targetIslandId) break;
 
-          // Only standard uncapped bricks/plates are candidates for studless finishing
+          // Only standard 1-plate uncapped plates/tiles are candidates for studless finishing
+          // NEVER shrink a 3-plate brick into an 8 LDU tile!
           if (
+            placed.size[2] !== 1 ||
             placed.profile === 'tile_flat' ||
             placed.profile === 'slope_curved' ||
             placed.profile === 'slope_inverted' ||

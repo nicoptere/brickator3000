@@ -19,7 +19,7 @@
  */
 
 import { PlacedBrick, VoxelGrid, WFC_SCALE_COLORS } from './types';
-import { LDU_STUD_PITCH, LDU_BRICK_HEIGHT } from './connectivityDictionary';
+import { LDU_STUD_PITCH, LDU_BRICK_HEIGHT, LDU_PLATE_HEIGHT } from './connectivityDictionary';
 import { WFC_REFINER } from './wfcRefinerEngine';
 
 export interface HarmonizationResult {
@@ -162,7 +162,7 @@ export class PolishHarmonizer {
             // Recalculate 3D center in LDraw coordinates
             const ldrawX = (minX + brick.size[0] / 2.0 - numStudsX / 2.0) * LDU_STUD_PITCH;
             const ldrawZ = -((minZ + brick.size[1] / 2.0 - numStudsZ / 2.0) * LDU_STUD_PITCH);
-            const ldrawY = -(minY + brick.size[2]) * LDU_BRICK_HEIGHT;
+            const ldrawY = -(minY + brick.size[2]) * LDU_PLATE_HEIGHT + 2 * LDU_PLATE_HEIGHT;
             brick.ldrawPos = [ldrawX, ldrawY, ldrawZ];
 
             // Re-map occupied cells of candidate to brick
@@ -218,7 +218,7 @@ export class PolishHarmonizer {
 
             const ldrawX = (minX + brick.size[0] / 2.0 - numStudsX / 2.0) * LDU_STUD_PITCH;
             const ldrawZ = -((minZ + brick.size[1] / 2.0 - numStudsZ / 2.0) * LDU_STUD_PITCH);
-            const ldrawY = -(minY + brick.size[2]) * LDU_BRICK_HEIGHT;
+            const ldrawY = -(minY + brick.size[2]) * LDU_PLATE_HEIGHT + 2 * LDU_PLATE_HEIGHT;
             brick.ldrawPos = [ldrawX, ldrawY, ldrawZ];
 
             const [cx, cz, cy] = candidate.gridPos;
@@ -280,7 +280,7 @@ export class PolishHarmonizer {
 
               const ldrawX = (bx + dir.newSize[0] / 2.0 - numStudsX / 2.0) * LDU_STUD_PITCH;
               const ldrawZ = -((bz + dir.newSize[1] / 2.0 - numStudsZ / 2.0) * LDU_STUD_PITCH);
-              const ldrawY = -(by + dir.newSize[2]) * LDU_BRICK_HEIGHT;
+              const ldrawY = -(by + dir.newSize[2]) * LDU_PLATE_HEIGHT;
               brick.ldrawPos = [ldrawX, ldrawY, ldrawZ];
 
               placedBricks.delete(nextBrick.id);
@@ -343,7 +343,7 @@ export class PolishHarmonizer {
 
           const ldrawX = (bx + 0.5 - numStudsX / 2.0) * LDU_STUD_PITCH;
           const ldrawZ = -((bz + 0.5 - numStudsZ / 2.0) * LDU_STUD_PITCH);
-          const ldrawY = -(by + 1) * LDU_BRICK_HEIGHT;
+          const ldrawY = -(by + 1) * LDU_PLATE_HEIGHT;
           brick.ldrawPos = [ldrawX, ldrawY, ldrawZ];
 
           smoothedTilesCount++;
@@ -542,7 +542,7 @@ export class PolishHarmonizer {
           const supportId = `b_support_3005_${bestAnchorX}_${bestAnchorZ}_${py}`;
           const ldrawX = (bestAnchorX + 0.5 - grid.numStudsX / 2.0) * LDU_STUD_PITCH;
           const ldrawZ = -((bestAnchorZ + 0.5 - grid.numStudsZ / 2.0) * LDU_STUD_PITCH);
-          const ldrawY = -(py + 1) * LDU_BRICK_HEIGHT;
+          const ldrawY = -(py + 1) * LDU_PLATE_HEIGHT;
 
           const supportBrick: PlacedBrick = {
             id: supportId,

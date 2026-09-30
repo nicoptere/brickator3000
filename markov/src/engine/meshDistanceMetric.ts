@@ -12,7 +12,7 @@
 
 import * as THREE from 'three';
 import { PlacedBrick, VoxelGrid } from './types';
-import { LDU_STUD_PITCH, LDU_BRICK_HEIGHT } from './connectivityDictionary';
+import { LDU_STUD_PITCH, LDU_BRICK_HEIGHT, LDU_PLATE_HEIGHT } from './connectivityDictionary';
 
 export interface MeshDistanceResult {
   meanDistanceLDU: number; // Chamfer L1 mean distance in LDU
@@ -166,7 +166,7 @@ export class MeshDistanceEvaluator {
     const size = new THREE.Vector3();
     bbox.getSize(size);
 
-    const targetHeightLDU = grid.numPlatesY * LDU_BRICK_HEIGHT;
+    const targetHeightLDU = grid.numPlatesY * LDU_PLATE_HEIGHT;
     const scaleFactor = size.y > 0 ? targetHeightLDU / size.y : 1.0;
     const minGeom = bbox.min;
     const centerX = minGeom.x + 0.5 * size.x;
@@ -427,8 +427,8 @@ export class MeshDistanceEvaluator {
       const maxX = (gx + bw - halfStudX) * LDU_STUD_PITCH;
       const minZ = (gz - halfStudZ) * LDU_STUD_PITCH;
       const maxZ = (gz + bd - halfStudZ) * LDU_STUD_PITCH;
-      const minY = gy * LDU_BRICK_HEIGHT;
-      const maxY = (gy + bh) * LDU_BRICK_HEIGHT;
+      const minY = gy * LDU_PLATE_HEIGHT;
+      const maxY = (gy + bh) * LDU_PLATE_HEIGHT;
 
       // Check exposure of faces to skip deep internal infill
       let topExposed = false;
@@ -516,8 +516,8 @@ export class MeshDistanceEvaluator {
         brickBoxes.push({
           minX: (gx - halfStudX) * LDU_STUD_PITCH,
           maxX: (gx + bw - halfStudX) * LDU_STUD_PITCH,
-          minY: gy * LDU_BRICK_HEIGHT,
-          maxY: (gy + bh) * LDU_BRICK_HEIGHT,
+          minY: gy * LDU_PLATE_HEIGHT,
+          maxY: (gy + bh) * LDU_PLATE_HEIGHT,
           minZ: (gz - halfStudZ) * LDU_STUD_PITCH,
           maxZ: (gz + bd - halfStudZ) * LDU_STUD_PITCH
         });

@@ -787,10 +787,11 @@ export class MeshVoxelizer {
     bbox.getSize(size);
 
     const targetHeightBricks = options.targetHeightBricks || (options.targetHeightPlates ? Math.max(1, Math.round(options.targetHeightPlates / 3)) : 16);
+    const plateHeightLDU = options.plateHeightLDU || 8.0;
     const brickHeightLDU = options.brickHeightLDU || 24.0;
     const studPitchLDU = options.pitchLDU || 20.0;
 
-    // Aspect ratio in LDU: 1 stud = 20 LDU, 1 brick = 24 LDU (1*1*1 Bricks)
+    // Aspect ratio in LDU: 1 stud = 20 LDU, 1 plate = 8 LDU (3 plates = 1 brick = 24 LDU)
     const targetHeightLDU = targetHeightBricks * brickHeightLDU;
     const scaleFactor = size.y > 0 ? targetHeightLDU / size.y : 1.0;
 
@@ -799,7 +800,7 @@ export class MeshVoxelizer {
 
     const numStudsX = Math.max(3, Math.ceil(scaledWidthLDU / studPitchLDU));
     const numStudsZ = Math.max(3, Math.ceil(scaledDepthLDU / studPitchLDU));
-    const numPlatesY = Math.max(2, targetHeightBricks); // 1 unit in Y = 1*1*1 brick!
+    const numPlatesY = Math.max(3, Math.round(targetHeightLDU / plateHeightLDU)); // 1 unit in Y = 1*1*1 plate (8 LDU)!
 
     // Initialize 3D grid
     const grid: VoxelCell[][][] = [];
@@ -922,7 +923,7 @@ export class MeshVoxelizer {
 
               const gridX = Math.floor(((sampleP.x - centerX) / (studPitchLDU * invScale)) + numStudsX * 0.5);
               const gridZ = Math.floor(((sampleP.z - centerZ) / (studPitchLDU * invScale)) + numStudsZ * 0.5);
-              const gridY = Math.floor(((sampleP.y - minGeom.y) * scaleFactor) / brickHeightLDU);
+              const gridY = Math.floor(((sampleP.y - minGeom.y) * scaleFactor) / plateHeightLDU);
 
               if (gridX >= 0 && gridX < numStudsX && gridZ >= 0 && gridZ < numStudsZ && gridY >= 0 && gridY < numPlatesY) {
                 const cell = grid[gridX][gridZ][gridY];
@@ -1072,11 +1073,11 @@ export class MeshVoxelizer {
 
               const topBrick = Math.min(
                 numPlatesY - 1,
-                Math.floor(((topEnter - minGeom.y) * scaleFactor) / brickHeightLDU)
+                Math.floor(((topEnter - minGeom.y) * scaleFactor) / plateHeightLDU)
               );
               const bottomBrick = Math.max(
                 0,
-                Math.floor(((bottomExit - minGeom.y) * scaleFactor) / brickHeightLDU)
+                Math.floor(((bottomExit - minGeom.y) * scaleFactor) / plateHeightLDU)
               );
 
               for (let y = bottomBrick; y <= topBrick; y++) {
@@ -1085,7 +1086,7 @@ export class MeshVoxelizer {
                   cell.occupied = true;
                   occupiedCount++;
 
-                  const brickWorldY = minGeom.y + (y + 0.5) * (brickHeightLDU * invScale);
+                  const brickWorldY = minGeom.y + (y + 0.5) * (plateHeightLDU * invScale);
                   let nearestHit = hits[0];
                   let minDist = Math.abs(nearestHit.point.y - brickWorldY);
                   for (let k = 1; k < hits.length; k++) {
