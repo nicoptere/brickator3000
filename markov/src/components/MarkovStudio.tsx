@@ -61,7 +61,7 @@ export const MarkovStudio: React.FC = () => {
   const [modelUrl, setModelUrl] = useState<string | undefined>(undefined);
   const [targetHeightBricks, setTargetHeightBricks] = useState<number>(16); // Default 16 bricks (1*1*1 brick grid)
   const [viewportMode, setViewportMode] = useState<ViewportMode>('FINAL_MODEL');
-  const [sourceMeshMode, setSourceMeshMode] = useState<SourceMeshMode>('none');
+  const [sourceMeshMode, setSourceMeshMode] = useState<SourceMeshMode>('ghost');
   const [colorMode, setColorMode] = useState<'island_components' | 'wfc_hierarchy' | 'actual'>('island_components');
   const [selectedIslandId, setSelectedIslandId] = useState<number | null>(null);
 
@@ -95,6 +95,8 @@ export const MarkovStudio: React.FC = () => {
     staggerRunningBond: true,
     enableModernWeirdParts: true,
     enableStudlessTopFinish: false, // Default to false so authentic LEGO cylindrical studs appear on exposed brick tops
+    enablePolishPass: true,
+    enableBuildabilityVerify: true,
     directRGBSampling: true,
     batchStepSize: 16,
     colorMode: 'island_components',
@@ -198,6 +200,21 @@ export const MarkovStudio: React.FC = () => {
   const handleChangeOptions = (newOpts: Partial<MarkovEngineOptions>) => {
     const merged = { ...options, ...newOpts };
     setOptions(merged);
+
+    // If only polish or buildability was toggled on an existing solved model, execute immediately
+    const onlyPolishOrBuildToggled =
+      Object.keys(newOpts).every((k) => k === 'enablePolishPass' || k === 'enableBuildabilityVerify');
+    if (onlyPolishOrBuildToggled && engine && bricks.length > 0) {
+      engine.options = { ...engine.options, ...newOpts };
+      if (newOpts.enablePolishPass && !options.enablePolishPass) {
+        handleHarmonizeNeighborhoods();
+      }
+      if (newOpts.enableBuildabilityVerify && !options.enableBuildabilityVerify) {
+        handleVerifyBuildability();
+      }
+      return;
+    }
+
     initializeModel(modelType, targetHeightBricks, merged, undefined, modelUrl);
   };
 

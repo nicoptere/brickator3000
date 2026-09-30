@@ -294,62 +294,8 @@ export class PolishHarmonizer {
       }
     }
 
-    // 4. Flatten Isolated 1*1*X Bricks Between Slopes
-    // If a 1x1 full brick (3005) is exposed on the exterior surface adjacent to slopes,
-    // flatten it into a 1x1 flat tile (3070b) or 1x1 cheese slope (54200) to eliminate vertical blocky chimneys
-    for (const brick of Array.from(placedBricks.values())) {
-      if (brick.partId === '3005' && brick.size[0] === 1 && brick.size[1] === 1) {
-        const [bx, bz, by] = brick.gridPos;
-
-        // Check if on exterior surface (no brick directly above)
-        const aboveId = occupiedCellToBrickId.get(this.cellKey(bx, bz, by + 1));
-        if (aboveId) continue; // In the interior core, leave as 3005 brick
-
-        // Check horizontal neighbors for slopes
-        const horizontalNeighbors = [
-          [bx + 1, bz, by],
-          [bx - 1, bz, by],
-          [bx, bz + 1, by],
-          [bx, bz - 1, by]
-        ];
-
-        let slopeNeighbor: PlacedBrick | null = null;
-        for (const [nx, nz, ny] of horizontalNeighbors) {
-          const nId = occupiedCellToBrickId.get(this.cellKey(nx, nz, ny));
-          if (nId && nId !== brick.id) {
-            const nb = placedBricks.get(nId);
-            if (
-              nb &&
-              (nb.profile === 'slope_curved' ||
-               nb.profile === 'slope_45' ||
-               nb.profile === 'slope_33' ||
-               nb.profile === 'cheese' ||
-               nb.profile === 'wedge')
-            ) {
-              slopeNeighbor = nb;
-              break;
-            }
-          }
-        }
-
-        if (slopeNeighbor) {
-          // Replace 3005 with 3070b flat tile so it sits flush/flat with slope lips
-          brick.partId = '3070b';
-          brick.name = 'Tile 1 x 1 Flat';
-          brick.profile = 'tile_flat';
-          brick.category = 'EDGE';
-          brick.baseSize = [1, 1, 1];
-          brick.size = [1, 1, 1];
-
-          const ldrawX = (bx + 0.5 - numStudsX / 2.0) * LDU_STUD_PITCH;
-          const ldrawZ = -((bz + 0.5 - numStudsZ / 2.0) * LDU_STUD_PITCH);
-          const ldrawY = -(by + 1) * LDU_PLATE_HEIGHT;
-          brick.ldrawPos = [ldrawX, ldrawY, ldrawZ];
-
-          smoothedTilesCount++;
-        }
-      }
-    }
+    // 4. Slope & Curve Neighborhood Harmonization complete
+    // Note: Do NOT shrink 3-plate 3005 bricks into 1-plate 3070b tiles as that punches 16 LDU deep holes in flat surfaces.
 
     return {
       harmonizedSlopesCount,
@@ -430,6 +376,36 @@ export class PolishHarmonizer {
               adjacency.get(brick.id)?.add(aboveId);
               adjacency.get(aboveId)?.add(brick.id);
             }
+          }
+        }
+      }
+
+      // Lateral structural connectivity (cantilevers, wings, and flat roof slabs in running bond)
+      // In authentic LEGO builds, cantilevered wings and roofs are supported horizontally by running bond seams
+      for (let dy = 0; dy < bh; dy++) {
+        const py = by + dy;
+        for (let dz = 0; dz < bd; dz++) {
+          const eastId = occupiedCellToBrickId.get(this.cellKey(bx + bw, bz + dz, py));
+          if (eastId && eastId !== brick.id) {
+            adjacency.get(brick.id)?.add(eastId);
+            adjacency.get(eastId)?.add(brick.id);
+          }
+          const westId = occupiedCellToBrickId.get(this.cellKey(bx - 1, bz + dz, py));
+          if (westId && westId !== brick.id) {
+            adjacency.get(brick.id)?.add(westId);
+            adjacency.get(westId)?.add(brick.id);
+          }
+        }
+        for (let dx = 0; dx < bw; dx++) {
+          const northId = occupiedCellToBrickId.get(this.cellKey(bx + dx, bz + bd, py));
+          if (northId && northId !== brick.id) {
+            adjacency.get(brick.id)?.add(northId);
+            adjacency.get(northId)?.add(brick.id);
+          }
+          const southId = occupiedCellToBrickId.get(this.cellKey(bx + dx, bz - 1, py));
+          if (southId && southId !== brick.id) {
+            adjacency.get(brick.id)?.add(southId);
+            adjacency.get(southId)?.add(brick.id);
           }
         }
       }
@@ -618,12 +594,15 @@ export class PolishHarmonizer {
       }
     }
 
-    // Step 3b: Prune any remaining isolated ungrounded bricks that could not be supported
-    // Ensures the final exported model has zero floating pieces in LDraw and Three.js
+    // Step 3b: Prune only completely isolated single stray debris that have zero connections in 3D
+    // NEVER prune pieces that are connected to other pieces in a surface, wing, or cantilever!
     const ungroundedToPrune: string[] = [];
     for (const b of placedBricks.values()) {
       if (!groundedBricks.has(b.id)) {
-        ungroundedToPrune.push(b.id);
+        const connCount = adjacency.get(b.id)?.size || 0;
+        if (connCount === 0) {
+          ungroundedToPrune.push(b.id);
+        }
       }
     }
 

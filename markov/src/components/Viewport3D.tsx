@@ -17,6 +17,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { PlacedBrick, VoxelGrid } from '../engine/types';
 import { LDU_STUD_PITCH, LDU_BRICK_HEIGHT, LDU_PLATE_HEIGHT } from '../engine/connectivityDictionary';
 import { LegoGeometryFactory } from './viewport/legoGeometryFactory';
+import { FocusIcon } from './common/Icons';
 
 export type ViewportMode = 'FINAL_MODEL' | 'GROWING_CORE' | 'CORE_HEATMAP' | 'SLOPE_CURVATURE';
 export type SourceMeshMode = 'ghost' | 'wireframe' | 'none';
@@ -185,6 +186,45 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
       controlsRef.current.autoRotate = autoRotate;
     }
   }, [autoRotate]);
+
+  // Auto Zoom to Fit Model whenever grid dimensions change
+  const lastFittedKeyRef = useRef<string>('');
+
+  const zoomToFit = React.useCallback(() => {
+    if (!cameraRef.current || !controlsRef.current || !grid) return;
+
+    const camera = cameraRef.current;
+    const controls = controlsRef.current;
+
+    const widthX = grid.numStudsX * LDU_STUD_PITCH;
+    const depthZ = grid.numStudsZ * LDU_STUD_PITCH;
+    const heightY = grid.numPlatesY * LDU_PLATE_HEIGHT;
+
+    const centerY = heightY / 2;
+    controls.target.set(0, centerY, 0);
+
+    const maxDim = Math.max(widthX, depthZ, heightY, 80);
+    const fov = (camera.fov * Math.PI) / 180;
+    const distance = (maxDim / (2 * Math.tan(fov / 2))) * 1.45;
+
+    const angle = Math.PI / 4;
+    const elevation = Math.PI / 6;
+    const camX = distance * Math.cos(elevation) * Math.sin(angle);
+    const camY = centerY + distance * Math.sin(elevation);
+    const camZ = distance * Math.cos(elevation) * Math.cos(angle);
+
+    camera.position.set(camX, camY, camZ);
+    camera.lookAt(0, centerY, 0);
+    controls.update();
+  }, [grid]);
+
+  useEffect(() => {
+    if (!grid) return;
+    const gridKey = `${grid.numStudsX}x${grid.numStudsZ}x${grid.numPlatesY}`;
+    if (lastFittedKeyRef.current === gridKey) return;
+    lastFittedKeyRef.current = gridKey;
+    zoomToFit();
+  }, [grid, zoomToFit]);
 
   // Update Source 3D Mesh Overlay Group
   useEffect(() => {
@@ -545,6 +585,51 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
             Step {currentStepIndex} ({bricks.length} bricks)
           </div>
         )}
+      </div>
+
+      {/* Floating Control Buttons */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 16,
+          right: 16,
+          display: 'flex',
+          gap: 6,
+          zIndex: 10
+        }}
+      >
+        <button
+          onClick={zoomToFit}
+          title="Zoom to Fit Model"
+          style={{
+            height: 32,
+            padding: '0 10px',
+            borderRadius: 6,
+            backgroundColor: 'rgba(15, 23, 42, 0.85)',
+            backdropFilter: 'blur(8px)',
+            border: '1px solid rgba(148, 163, 184, 0.2)',
+            color: '#f8fafc',
+            fontSize: 11,
+            fontWeight: 600,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.3)',
+            transition: 'all 0.15s ease'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = 'rgba(30, 41, 59, 0.95)';
+            e.currentTarget.style.borderColor = '#38bdf8';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'rgba(15, 23, 42, 0.85)';
+            e.currentTarget.style.borderColor = 'rgba(148, 163, 184, 0.2)';
+          }}
+        >
+          <FocusIcon size={14} color="#38bdf8" />
+          <span>Fit Model</span>
+        </button>
       </div>
     </div>
   );

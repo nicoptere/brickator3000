@@ -287,53 +287,118 @@ export const RightDrawer: React.FC<RightDrawerProps> = ({
 
         {/* 4. Polish & Structural Buildability */}
         <div>
-          <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 6 }}>
+          <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>
             Polish & Structural Buildability
           </label>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-              <button
-                onClick={onHarmonizeNeighborhoods}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {/* Toggle 1: Run Polish Pass */}
+            <div
+              onClick={() => onChangeOptions({ enablePolishPass: options.enablePolishPass === false ? true : false })}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '8px 10px',
+                borderRadius: 6,
+                backgroundColor: '#0f172a',
+                border: (options.enablePolishPass !== false) ? '1px solid rgba(168, 85, 247, 0.4)' : '1px solid #1e293b',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <SparklesIcon size={14} color={options.enablePolishPass !== false ? '#c084fc' : '#64748b'} />
+                <div>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: options.enablePolishPass !== false ? '#f8fafc' : '#94a3b8' }}>
+                    Run Polish Pass
+                  </div>
+                  <div style={{ fontSize: 9, color: '#64748b' }}>
+                    Harmonize slopes & merge continuous curves
+                  </div>
+                </div>
+              </div>
+
+              {/* Modern Switch Pill */}
+              <div
                 style={{
-                  height: 30,
-                  borderRadius: 6,
-                  border: '1px solid rgba(168, 85, 247, 0.4)',
-                  backgroundColor: 'rgba(168, 85, 247, 0.12)',
-                  color: '#c084fc',
-                  fontSize: 11,
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 5
+                  width: 34,
+                  height: 18,
+                  borderRadius: 9,
+                  backgroundColor: options.enablePolishPass !== false ? '#9333ea' : '#334155',
+                  position: 'relative',
+                  transition: 'background-color 0.2s',
+                  flexShrink: 0
                 }}
-                title="Detect isolated slope mismatches and merge adjacent continuous curves"
               >
-                <SparklesIcon size={13} />
-                <span>Run Polish Pass</span>
-              </button>
-              <button
-                onClick={onVerifyBuildability}
+                <div
+                  style={{
+                    width: 14,
+                    height: 14,
+                    borderRadius: 7,
+                    backgroundColor: '#ffffff',
+                    position: 'absolute',
+                    top: 2,
+                    left: options.enablePolishPass !== false ? 18 : 2,
+                    transition: 'left 0.2s',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Toggle 2: Verify Buildability */}
+            <div
+              onClick={() => onChangeOptions({ enableBuildabilityVerify: options.enableBuildabilityVerify === false ? true : false })}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '8px 10px',
+                borderRadius: 6,
+                backgroundColor: '#0f172a',
+                border: (options.enableBuildabilityVerify !== false) ? '1px solid rgba(245, 158, 11, 0.4)' : '1px solid #1e293b',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <CheckCircleIcon size={14} color={options.enableBuildabilityVerify !== false ? '#fbbf24' : '#64748b'} />
+                <div>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: options.enableBuildabilityVerify !== false ? '#f8fafc' : '#94a3b8' }}>
+                    Verify Buildability
+                  </div>
+                  <div style={{ fontSize: 9, color: '#64748b' }}>
+                    BFS physical grounding & running bond interlock
+                  </div>
+                </div>
+              </div>
+
+              {/* Modern Switch Pill */}
+              <div
                 style={{
-                  height: 30,
-                  borderRadius: 6,
-                  border: '1px solid rgba(245, 158, 11, 0.4)',
-                  backgroundColor: 'rgba(245, 158, 11, 0.12)',
-                  color: '#fbbf24',
-                  fontSize: 11,
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 5
+                  width: 34,
+                  height: 18,
+                  borderRadius: 9,
+                  backgroundColor: options.enableBuildabilityVerify !== false ? '#d97706' : '#334155',
+                  position: 'relative',
+                  transition: 'background-color 0.2s',
+                  flexShrink: 0
                 }}
-                title="BFS Grounding Check from y=0 build plate & running bond interlocking verification"
               >
-                <CheckCircleIcon size={13} />
-                <span>Verify Buildability</span>
-              </button>
+                <div
+                  style={{
+                    width: 14,
+                    height: 14,
+                    borderRadius: 7,
+                    backgroundColor: '#ffffff',
+                    position: 'absolute',
+                    top: 2,
+                    left: options.enableBuildabilityVerify !== false ? 18 : 2,
+                    transition: 'left 0.2s',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
+                  }}
+                />
+              </div>
             </div>
 
             {/* Harmonization & Buildability Status Badge */}

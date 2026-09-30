@@ -474,7 +474,8 @@ export class MarkovCoreGrowingEngine {
 
             // Only consider cells with actual geometric slope or curvature features.
             // Flat horizontal surfaces (wings, floors, roofs) should be built with structural plates and bricks in CORE_INFILL!
-            const hasGeometryFeature = cell.slopeClass !== 'flat' || cell.curvatureClass !== 'flat';
+            const isMostlyFlat = cell.slopeClass === 'flat' && Math.abs(cell.normal[1]) >= 0.75;
+            const hasGeometryFeature = !isMostlyFlat && (cell.slopeClass !== 'flat' || cell.curvatureClass !== 'flat');
             if (hasGeometryFeature) {
               this.surfaceCandidates.push({ x, z, y });
             }
@@ -590,8 +591,8 @@ export class MarkovCoreGrowingEngine {
         }
       }
 
-      // 5. Macaroni & Round Corners
-      if (cell.curvatureClass === 'corner_macaroni') {
+      // 5. Macaroni & Round Corners - strictly on genuine 3D corners with non-flat slope
+      if (cell.curvatureClass === 'corner_macaroni' && cell.slopeClass !== 'flat') {
         candidatePartIds.push('27925', '25269', '2357');
       }
 
@@ -862,6 +863,10 @@ export class MarkovCoreGrowingEngine {
       if (this.options.enableStudlessTopFinish) {
         this.currentPhase = 'TILE_FINISH';
         this.tileFinishCursor = 0;
+      } else if (this.options.enablePolishPass !== false) {
+        this.currentPhase = 'POLISH_HARMONIZATION';
+      } else if (this.options.enableBuildabilityVerify !== false) {
+        this.currentPhase = 'BUILDABILITY_VERIFY';
       } else {
         this.currentPhase = 'DONE';
       }
@@ -1029,6 +1034,10 @@ export class MarkovCoreGrowingEngine {
       if (this.options.enableStudlessTopFinish) {
         this.currentPhase = 'TILE_FINISH';
         this.tileFinishCursor = 0;
+      } else if (this.options.enablePolishPass !== false) {
+        this.currentPhase = 'POLISH_HARMONIZATION';
+      } else if (this.options.enableBuildabilityVerify !== false) {
+        this.currentPhase = 'BUILDABILITY_VERIFY';
       } else {
         this.currentPhase = 'DONE';
       }
@@ -1119,7 +1128,13 @@ export class MarkovCoreGrowingEngine {
     }
 
     if (tilesPlaced === 0) {
-      this.currentPhase = 'POLISH_HARMONIZATION';
+      if (this.options.enablePolishPass !== false) {
+        this.currentPhase = 'POLISH_HARMONIZATION';
+      } else if (this.options.enableBuildabilityVerify !== false) {
+        this.currentPhase = 'BUILDABILITY_VERIFY';
+      } else {
+        this.currentPhase = 'DONE';
+      }
     }
 
     return newBricks;
@@ -1134,7 +1149,11 @@ export class MarkovCoreGrowingEngine {
       this.occupiedCellToBrickId,
       this.grid
     );
-    this.currentPhase = 'BUILDABILITY_VERIFY';
+    if (this.options.enableBuildabilityVerify !== false) {
+      this.currentPhase = 'BUILDABILITY_VERIFY';
+    } else {
+      this.currentPhase = 'DONE';
+    }
     return [];
   }
 

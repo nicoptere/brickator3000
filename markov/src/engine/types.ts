@@ -185,6 +185,8 @@ export interface MarkovEngineOptions {
   staggerRunningBond?: boolean;
   enableModernWeirdParts?: boolean; // Bionicle, curved slopes, macaroni tiles
   enableStudlessTopFinish?: boolean;
+  enablePolishPass?: boolean; // Harmonizes adjacent slopes, curves, and OMR transitions
+  enableBuildabilityVerify?: boolean; // BFS grounding and interlocking verification
   directRGBSampling?: boolean; // Cheat mode: 24-bit 0x2RRGGBB
   randomSeed?: number;
   maxSteps?: number;

@@ -312,9 +312,11 @@ export class MultiResolutionLattice {
       return { curvatureClass: 'sharp_cusp', k1, k2 };
     }
 
-    // Check corner / macaroni
+    // Check corner / macaroni - strictly on authentic exterior 90° lateral corners (NEVER on flat planes)
     const isCorner = (fE !== fW) && (fN !== fS);
-    if (isCorner && Math.abs(d2fdxdz) > 0.2) {
+    const hasLateralAir = (fE === 0 || fW === 0) && (fN === 0 || fS === 0);
+    const isMostlyVertical = Math.abs(ny) >= 0.75;
+    if (isCorner && hasLateralAir && !isMostlyVertical && !isSolid(x, z, y + 1) && Math.abs(d2fdxdz) > 0.2) {
       return { curvatureClass: 'corner_macaroni', k1, k2 };
     }
 
