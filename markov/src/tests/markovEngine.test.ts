@@ -417,11 +417,14 @@ export async function runTests(): Promise<void> {
     poleCells.set(`5,5,${y}`, pId);
   }
 
-  // B. Square pillar at (10, 10) spanning y=0..17 (18 plates) with cardinal normals
+  // B. Square wall pillar at (10, 10) spanning y=0..17 (18 plates) attached to a wall (avgLateralAir < 2.5)
   for (let y = 0; y <= 17; y++) {
     poleGrid.grid[10][10][y].occupied = true;
     poleGrid.grid[10][10][y].curvatureClass = 'flat';
     poleGrid.grid[10][10][y].normal = [1, 0, 0]; // strictly cardinal normal
+    // Wall attachment at (10, 11) and (10, 9)
+    poleGrid.grid[10][11][y].occupied = true;
+    poleGrid.grid[10][9][y].occupied = true;
     const pId = `sq_plate_${y}`;
     poleBricks.set(pId, {
       id: pId, partId: '3024', name: 'Plate 1 x 1', profile: 'plate',
@@ -444,6 +447,22 @@ export async function runTests(): Promise<void> {
           colorHex: '#237841', colorCode: 2, islandId: 3, stepIndex: 3
         });
         poleCells.set(`${15 + dx},${15 + dz},${y}`, pId);
+      }
+    }
+  }
+
+  // D. 4x4 round column at (20..23, 20..23) spanning y=0..6 (7 plates)
+  for (let dx = 0; dx < 4; dx++) {
+    for (let dz = 0; dz < 4; dz++) {
+      for (let y = 0; y <= 6; y++) {
+        poleGrid.grid[20 + dx][20 + dz][y].occupied = true;
+        const pId = `cyl4_plate_${dx}_${dz}_${y}`;
+        poleBricks.set(pId, {
+          id: pId, partId: '3024', name: 'Plate 1 x 1', profile: 'plate',
+          gridPos: [20 + dx, 20 + dz, y], ldrawPos: [0, -y * 8, 0], rotation: 0, size: [1, 1, 1], baseSize: [1, 1, 1],
+          colorHex: '#e4cd9e', colorCode: 19, islandId: 4, stepIndex: 4
+        });
+        poleCells.set(`${20 + dx},${20 + dz},${y}`, pId);
       }
     }
   }
@@ -479,6 +498,15 @@ export async function runTests(): Promise<void> {
   console.log(`    2x2 Cylinders at (15,15): total=${cyl2Pieces.length}, 3941=${cyl2Bricks3941.length}, 4032a=${cyl2Plates4032a.length}`);
   if (cyl2Bricks3941.length !== 2 || cyl2Plates4032a.length !== 1) {
     throw new Error(`Expected 2 round bricks (3941) and 1 round plate (4032a), got ${cyl2Bricks3941.length} and ${cyl2Plates4032a.length}`);
+  }
+
+  // Verify 4x4 Round Column: 7 plates should become TWO 4x4 round bricks (6222) and ONE 4x4 round plate (60474)
+  const cyl4Pieces = Array.from(poleBricks.values()).filter(b => b.gridPos[0] === 20 && b.gridPos[1] === 20);
+  const cyl4Bricks6222 = cyl4Pieces.filter(b => b.partId === '6222');
+  const cyl4Plates60474 = cyl4Pieces.filter(b => b.partId === '60474');
+  console.log(`    4x4 Cylinders at (20,20): total=${cyl4Pieces.length}, 6222=${cyl4Bricks6222.length}, 60474=${cyl4Plates60474.length}`);
+  if (cyl4Bricks6222.length !== 2 || cyl4Plates60474.length !== 1) {
+    throw new Error(`Expected 2 round bricks (6222) and 1 round plate (60474), got ${cyl4Bricks6222.length} and ${cyl4Plates60474.length}`);
   }
 
   console.log('  Pole & cylinder harmonization verified -> PASS\n');

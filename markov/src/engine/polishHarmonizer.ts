@@ -374,112 +374,136 @@ export class PolishHarmonizer {
       return occupiedCellToBrickId.has(this.cellKey(x, z, y));
     };
 
-    // 1. Scan for 1x1 vertical poles/struts
-    for (let x = 0; x < numStudsX; x++) {
-      for (let z = 0; z < numStudsZ; z++) {
+    const numStudsXZ = numStudsX * numStudsZ;
+    const totalCells = numStudsXZ * numPlatesY;
+    const processedCells = new Uint8Array(totalCells);
+    const getCellIdx = (cx: number, cz: number, cy: number): number => cx + cz * numStudsX + cy * numStudsXZ;
+
+    // 1. Scan for 4x4 round cylinders (Brick 4x4 Round 6222, Plate 4x4 Round 60474)
+    for (let x = 0; x <= numStudsX - 4; x++) {
+      for (let z = 0; z <= numStudsZ - 4; z++) {
         let y = 0;
         while (y < numPlatesY) {
-          if (!isOccupied(x, z, y)) {
+          let layerOk = true;
+          for (let dx = 0; dx < 4; dx++) {
+            for (let dz = 0; dz < 4; dz++) {
+              const idx = getCellIdx(x + dx, z + dz, y);
+              if (!isOccupied(x + dx, z + dz, y) || processedCells[idx] === 1) {
+                layerOk = false;
+                break;
+              }
+            }
+            if (!layerOk) break;
+          }
+
+          if (!layerOk) {
             y++;
             continue;
           }
 
           const yStart = y;
-          while (y < numPlatesY && isOccupied(x, z, y)) {
+          while (y < numPlatesY) {
+            let ok = true;
+            for (let dx = 0; dx < 4; dx++) {
+              for (let dz = 0; dz < 4; dz++) {
+                const idx = getCellIdx(x + dx, z + dz, y);
+                if (!isOccupied(x + dx, z + dz, y) || processedCells[idx] === 1) {
+                  ok = false;
+                  break;
+                }
+              }
+              if (!ok) break;
+            }
+            if (!ok) break;
             y++;
           }
           const yEnd = y - 1;
           const H = yEnd - yStart + 1;
-
           if (H < 2) continue;
 
-          const oldBrickIds = new Set<string>();
-          let isSolely1x1 = true;
-          let lateralAirSum = 0;
-
+          let perimeterAirSum = 0;
           for (let cy = yStart; cy <= yEnd; cy++) {
-            const bId = occupiedCellToBrickId.get(this.cellKey(x, z, cy));
-            if (bId) {
-              const b = placedBricks.get(bId);
-              if (b) {
-                if (b.size[0] > 1 || b.size[1] > 1) {
-                  isSolely1x1 = false;
-                  break;
+            for (let px = -1; px <= 4; px++) {
+              for (let pz = -1; pz <= 4; pz++) {
+                if (px >= 0 && px < 4 && pz >= 0 && pz < 4) continue;
+                if (!isOccupied(x + px, z + pz, cy)) perimeterAirSum++;
+              }
+            }
+          }
+          const avgPerimeterAir = perimeterAirSum / (H * 20);
+
+          let isRound = avgPerimeterAir >= 0.35;
+          if (!isRound) {
+            for (let cy = yStart; cy <= yEnd; cy++) {
+              for (let dx = 0; dx < 4; dx++) {
+                for (let dz = 0; dz < 4; dz++) {
+                  const c = grid.grid?.[x + dx]?.[z + dz]?.[cy];
+                  if (c && (c.curvatureClass === 'cylindrical_convex' || c.curvatureClass === 'spherical_dome')) {
+                    isRound = true;
+                    break;
+                  }
                 }
-                oldBrickIds.add(bId);
+                if (isRound) break;
+              }
+              if (isRound) break;
+            }
+          }
+
+          if (isRound) {
+            const oldBrickIds = new Set<string>();
+            let fits4x4 = true;
+            for (let cy = yStart; cy <= yEnd; cy++) {
+              for (let dx = 0; dx < 4; dx++) {
+                for (let dz = 0; dz < 4; dz++) {
+                  const bId = occupiedCellToBrickId.get(this.cellKey(x + dx, z + dz, cy));
+                  if (bId) {
+                    const b = placedBricks.get(bId);
+                    if (
+                      b &&
+                      (b.gridPos[0] < x ||
+                        b.gridPos[0] + b.size[0] > x + 4 ||
+                        b.gridPos[1] < z ||
+                        b.gridPos[1] + b.size[1] > z + 4)
+                    ) {
+                      fits4x4 = false;
+                    }
+                    oldBrickIds.add(bId);
+                  }
+                }
               }
             }
 
-            let air = 0;
-            if (!isOccupied(x + 1, z, cy)) air++;
-            if (!isOccupied(x - 1, z, cy)) air++;
-            if (!isOccupied(x, z + 1, cy)) air++;
-            if (!isOccupied(x, z - 1, cy)) air++;
-            lateralAirSum += air;
-          }
-
-          if (!isSolely1x1 || oldBrickIds.size === 0) continue;
-
-          const avgLateralAir = lateralAirSum / H;
-          if (avgLateralAir < 2.25) continue;
-
-          const oldBricksList = Array.from(oldBrickIds)
-            .map(id => placedBricks.get(id))
-            .filter(Boolean) as PlacedBrick[];
-          if (oldBricksList.length === 0) continue;
-          if (
-            oldBricksList.length === 1 &&
-            (oldBricksList[0].partId === '2453b' || (oldBricksList[0].partId === '3062b' && H === 3))
-          ) {
-            continue;
-          }
-
-          let hasCylindricalCurvature = false;
-          let nonCardinalNormals = 0;
-          let totalNormals = 0;
-
-          for (let cy = yStart; cy <= yEnd; cy++) {
-            const cell = grid.grid?.[x]?.[z]?.[cy];
-            if (!cell) continue;
-            if (cell.curvatureClass === 'cylindrical_convex' || cell.curvatureClass === 'corner_macaroni') {
-              hasCylindricalCurvature = true;
-            }
-            const [nx, ny, nz] = cell.normal || [0, 0, 0];
-            const horizLen = Math.sqrt(nx * nx + nz * nz);
-            if (horizLen > 0.3) {
-              totalNormals++;
-              const deg = Math.atan2(nz, nx) * (180 / Math.PI);
-              const mod90 = Math.abs((deg + 360) % 90);
-              const distTo90 = Math.min(mod90, 90 - mod90);
-              if (distTo90 > 12.0) {
-                nonCardinalNormals++;
+            if (!fits4x4 || oldBrickIds.size === 0) continue;
+            for (let cy = yStart; cy <= yEnd; cy++) {
+              for (let dx = 0; dx < 4; dx++) {
+                for (let dz = 0; dz < 4; dz++) {
+                  processedCells[getCellIdx(x + dx, z + dz, cy)] = 1;
+                }
               }
             }
-          }
+            const oldBricksList = Array.from(oldBrickIds)
+              .map((id) => placedBricks.get(id))
+              .filter(Boolean) as PlacedBrick[];
+            if (oldBricksList.length === 0) continue;
+            const firstOld = oldBricksList[0];
 
-          const isRoundStrut =
-            hasCylindricalCurvature || nonCardinalNormals > 0 || (totalNormals === 0 && avgLateralAir >= 3.0);
+            for (const bId of oldBrickIds) {
+              placedBricks.delete(bId);
+              seenIds.add(bId);
+            }
 
-          const firstOld = oldBricksList[0];
-          for (const bId of oldBrickIds) {
-            placedBricks.delete(bId);
-            seenIds.add(bId);
-          }
-
-          if (isRoundStrut) {
-            // Replace with canisters (3062b, 3 plates) and round plates (6141, 1 plate)
             let currY = yStart;
             while (currY <= yEnd) {
               const rem = yEnd - currY + 1;
               const useBrick = rem >= 3;
               const brickH = useBrick ? 3 : 1;
-              const partId = useBrick ? '3062b' : '6141';
-              const name = useBrick ? 'Brick 1 x 1 Round' : 'Plate 1 x 1 Round';
+              const partId = useBrick ? '6222' : '60474';
+              const name = useBrick ? 'Brick 4 x 4 Round' : 'Plate 4 x 4 Round';
               const profile: PieceProfile = useBrick ? 'round_cylinder' : 'round_plate';
 
-              const newId = `canister_${x}_${z}_${currY}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
-              const ldrawX = (x + 0.5 - numStudsX / 2.0) * LDU_STUD_PITCH;
-              const ldrawZ = -((z + 0.5 - numStudsZ / 2.0) * LDU_STUD_PITCH);
+              const newId = `cyl4x4_${x}_${z}_${currY}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+              const ldrawX = (x + 2.0 - numStudsX / 2.0) * LDU_STUD_PITCH;
+              const ldrawZ = -((z + 2.0 - numStudsZ / 2.0) * LDU_STUD_PITCH);
               const ldrawY = -(currY + brickH) * LDU_PLATE_HEIGHT;
 
               const newBrick: PlacedBrick = {
@@ -495,14 +519,14 @@ export class PolishHarmonizer {
                 ldrawPos: [ldrawX, ldrawY, ldrawZ],
                 rotation: 0,
                 matrix: CARDINAL_ROTATIONS[0],
-                size: [1, 1, brickH],
-                baseSize: [1, 1, brickH],
+                size: [4, 4, brickH],
+                baseSize: [4, 4, brickH],
                 stepIndex: firstOld.stepIndex,
                 growthPhase: firstOld.growthPhase,
                 clutchScore: 1.0,
                 parentBrickIds: [],
                 headId: firstOld.headId,
-                scaleN: 2,
+                scaleN: 8,
                 scaleColorHex: firstOld.scaleColorHex,
                 islandId: firstOld.islandId,
                 islandColorHex: firstOld.islandColorHex
@@ -510,71 +534,14 @@ export class PolishHarmonizer {
 
               placedBricks.set(newId, newBrick);
               seenIds.add(newId);
-              for (let dy = 0; dy < brickH; dy++) {
-                occupiedCellToBrickId.set(this.cellKey(x, z, currY + dy), newId);
+              for (let dx = 0; dx < 4; dx++) {
+                for (let dz = 0; dz < 4; dz++) {
+                  for (let dy = 0; dy < brickH; dy++) {
+                    occupiedCellToBrickId.set(this.cellKey(x + dx, z + dz, currY + dy), newId);
+                  }
+                }
               }
-              replacedCanistersCount++;
-              currY += brickH;
-            }
-          } else {
-            // Square pillar: merge into unbroken tall bricks (2453b 1x1x5, then 3005)
-            let currY = yStart;
-            while (currY <= yEnd) {
-              const rem = yEnd - currY + 1;
-              let brickH = 1;
-              let partId = '3024';
-              let name = 'Plate 1 x 1';
-              let profile: PieceProfile = 'plate';
-
-              if (rem >= 15) {
-                brickH = 15;
-                partId = '2453b';
-                name = 'Brick 1 x 1 x 5';
-                profile = 'brick';
-              } else if (rem >= 3) {
-                brickH = 3;
-                partId = '3005';
-                name = 'Brick 1 x 1';
-                profile = 'brick';
-              }
-
-              const newId = `tallpole_${x}_${z}_${currY}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
-              const ldrawX = (x + 0.5 - numStudsX / 2.0) * LDU_STUD_PITCH;
-              const ldrawZ = -((z + 0.5 - numStudsZ / 2.0) * LDU_STUD_PITCH);
-              const ldrawY = -(currY + brickH) * LDU_PLATE_HEIGHT;
-
-              const newBrick: PlacedBrick = {
-                id: newId,
-                partId,
-                name,
-                category: 'FILL',
-                profile,
-                colorCode: firstOld.colorCode,
-                colorHex: firstOld.colorHex,
-                colorName: firstOld.colorName,
-                gridPos: [x, z, currY],
-                ldrawPos: [ldrawX, ldrawY, ldrawZ],
-                rotation: 0,
-                matrix: CARDINAL_ROTATIONS[0],
-                size: [1, 1, brickH],
-                baseSize: [1, 1, brickH],
-                stepIndex: firstOld.stepIndex,
-                growthPhase: firstOld.growthPhase,
-                clutchScore: 1.0,
-                parentBrickIds: [],
-                headId: firstOld.headId,
-                scaleN: brickH >= 15 ? 8 : (brickH >= 3 ? 4 : 1),
-                scaleColorHex: firstOld.scaleColorHex,
-                islandId: firstOld.islandId,
-                islandColorHex: firstOld.islandColorHex
-              };
-
-              placedBricks.set(newId, newBrick);
-              seenIds.add(newId);
-              for (let dy = 0; dy < brickH; dy++) {
-                occupiedCellToBrickId.set(this.cellKey(x, z, currY + dy), newId);
-              }
-              mergedPolesCount++;
+              replacedCylindersCount++;
               currY += brickH;
             }
           }
@@ -582,36 +549,42 @@ export class PolishHarmonizer {
       }
     }
 
-    const processed2x2 = new Set<string>();
-    // 2. Scan for 2x2 round cylinders
-    for (let x = 0; x < numStudsX - 1; x++) {
-      for (let z = 0; z < numStudsZ - 1; z++) {
+    // 2. Scan for 2x2 round cylinders (Brick 2x2 Round 3941, Plate 2x2 Round 4032a)
+    for (let x = 0; x <= numStudsX - 2; x++) {
+      for (let z = 0; z <= numStudsZ - 2; z++) {
         let y = 0;
         while (y < numPlatesY) {
-          if (processed2x2.has(`${x},${z},${y}`)) {
-            y++;
-            continue;
+          let layerOk = true;
+          for (let dx = 0; dx < 2; dx++) {
+            for (let dz = 0; dz < 2; dz++) {
+              const idx = getCellIdx(x + dx, z + dz, y);
+              if (!isOccupied(x + dx, z + dz, y) || processedCells[idx] === 1) {
+                layerOk = false;
+                break;
+              }
+            }
+            if (!layerOk) break;
           }
 
-          const all4Occupied =
-            isOccupied(x, z, y) &&
-            isOccupied(x + 1, z, y) &&
-            isOccupied(x, z + 1, y) &&
-            isOccupied(x + 1, z + 1, y);
-
-          if (!all4Occupied) {
+          if (!layerOk) {
             y++;
             continue;
           }
 
           const yStart = y;
-          while (
-            y < numPlatesY &&
-            isOccupied(x, z, y) &&
-            isOccupied(x + 1, z, y) &&
-            isOccupied(x, z + 1, y) &&
-            isOccupied(x + 1, z + 1, y)
-          ) {
+          while (y < numPlatesY) {
+            let ok = true;
+            for (let dx = 0; dx < 2; dx++) {
+              for (let dz = 0; dz < 2; dz++) {
+                const idx = getCellIdx(x + dx, z + dz, y);
+                if (!isOccupied(x + dx, z + dz, y) || processedCells[idx] === 1) {
+                  ok = false;
+                  break;
+                }
+              }
+              if (!ok) break;
+            }
+            if (!ok) break;
             y++;
           }
           const yEnd = y - 1;
@@ -619,29 +592,7 @@ export class PolishHarmonizer {
           if (H < 2) continue;
 
           let perimeterAirSum = 0;
-          const oldBrickIds = new Set<string>();
-          let fitsWithin2x2 = true;
-
           for (let cy = yStart; cy <= yEnd; cy++) {
-            for (let dx = 0; dx < 2; dx++) {
-              for (let dz = 0; dz < 2; dz++) {
-                const bId = occupiedCellToBrickId.get(this.cellKey(x + dx, z + dz, cy));
-                if (bId) {
-                  const b = placedBricks.get(bId);
-                  if (
-                    b &&
-                    (b.gridPos[0] < x ||
-                      b.gridPos[0] + b.size[0] > x + 2 ||
-                      b.gridPos[1] < z ||
-                      b.gridPos[1] + b.size[1] > z + 2)
-                  ) {
-                    fitsWithin2x2 = false;
-                  }
-                  oldBrickIds.add(bId);
-                }
-              }
-            }
-
             for (let px = -1; px <= 2; px++) {
               for (let pz = -1; pz <= 2; pz++) {
                 if (px >= 0 && px < 2 && pz >= 0 && pz < 2) continue;
@@ -649,34 +600,59 @@ export class PolishHarmonizer {
               }
             }
           }
-
-          if (!fitsWithin2x2 || oldBrickIds.size === 0) continue;
           const avgPerimeterAir = perimeterAirSum / (H * 8);
 
-          let isRound = false;
-          for (let cy = yStart; cy <= yEnd; cy++) {
-            for (let dx = 0; dx < 2; dx++) {
-              for (let dz = 0; dz < 2; dz++) {
-                const c = grid.grid?.[x + dx]?.[z + dz]?.[cy];
-                if (c && (c.curvatureClass === 'cylindrical_convex' || c.curvatureClass === 'corner_macaroni')) {
-                  isRound = true;
-                  break;
-                }
-              }
-            }
-          }
-
-          if (isRound && avgPerimeterAir >= 0.5) {
+          let isRound = avgPerimeterAir >= 0.35;
+          if (!isRound) {
             for (let cy = yStart; cy <= yEnd; cy++) {
               for (let dx = 0; dx < 2; dx++) {
                 for (let dz = 0; dz < 2; dz++) {
-                  processed2x2.add(`${x + dx},${z + dz},${cy}`);
+                  const c = grid.grid?.[x + dx]?.[z + dz]?.[cy];
+                  if (c && (c.curvatureClass === 'cylindrical_convex' || c.curvatureClass === 'corner_macaroni')) {
+                    isRound = true;
+                    break;
+                  }
+                }
+                if (isRound) break;
+              }
+              if (isRound) break;
+            }
+          }
+
+          if (isRound) {
+            const oldBrickIds = new Set<string>();
+            let fitsWithin2x2 = true;
+            for (let cy = yStart; cy <= yEnd; cy++) {
+              for (let dx = 0; dx < 2; dx++) {
+                for (let dz = 0; dz < 2; dz++) {
+                  const bId = occupiedCellToBrickId.get(this.cellKey(x + dx, z + dz, cy));
+                  if (bId) {
+                    const b = placedBricks.get(bId);
+                    if (
+                      b &&
+                      (b.gridPos[0] < x ||
+                        b.gridPos[0] + b.size[0] > x + 2 ||
+                        b.gridPos[1] < z ||
+                        b.gridPos[1] + b.size[1] > z + 2)
+                    ) {
+                      fitsWithin2x2 = false;
+                    }
+                    oldBrickIds.add(bId);
+                  }
                 }
               }
             }
 
+            if (!fitsWithin2x2 || oldBrickIds.size === 0) continue;
+            for (let cy = yStart; cy <= yEnd; cy++) {
+              for (let dx = 0; dx < 2; dx++) {
+                for (let dz = 0; dz < 2; dz++) {
+                  processedCells[getCellIdx(x + dx, z + dz, cy)] = 1;
+                }
+              }
+            }
             const oldBricksList = Array.from(oldBrickIds)
-              .map(id => placedBricks.get(id))
+              .map((id) => placedBricks.get(id))
               .filter(Boolean) as PlacedBrick[];
             if (oldBricksList.length === 0) continue;
             const firstOld = oldBricksList[0];
@@ -743,117 +719,102 @@ export class PolishHarmonizer {
       }
     }
 
-    const processed4x4 = new Set<string>();
-    // 3. Scan for 4x4 round cylinders
-    for (let x = 0; x <= numStudsX - 4; x++) {
-      for (let z = 0; z <= numStudsZ - 4; z++) {
+    // 3. Scan for 1x1 vertical masts, struts, and poles
+    const getAir = (cx: number, cz: number, cy: number): number => {
+      let air = 0;
+      if (!isOccupied(cx + 1, cz, cy)) air++;
+      if (!isOccupied(cx - 1, cz, cy)) air++;
+      if (!isOccupied(cx, cz + 1, cy)) air++;
+      if (!isOccupied(cx, cz - 1, cy)) air++;
+      return air;
+    };
+
+    const isThinLayer = (cx: number, cz: number, cy: number): boolean => {
+      if (!isOccupied(cx, cz, cy) || processedCells[getCellIdx(cx, cz, cy)] === 1) return false;
+      const air = getAir(cx, cz, cy);
+      if (air >= 2) return true;
+      const bId = occupiedCellToBrickId.get(this.cellKey(cx, cz, cy));
+      const b = bId ? placedBricks.get(bId) : undefined;
+      return !!b && b.size[0] === 1 && b.size[1] === 1;
+    };
+
+    for (let x = 0; x < numStudsX; x++) {
+      for (let z = 0; z < numStudsZ; z++) {
         let y = 0;
         while (y < numPlatesY) {
-          if (processed4x4.has(`${x},${z},${y}`)) {
-            y++;
-            continue;
-          }
-
-          let all16Occupied = true;
-          for (let dx = 0; dx < 4 && all16Occupied; dx++) {
-            for (let dz = 0; dz < 4; dz++) {
-              if (!isOccupied(x + dx, z + dz, y)) {
-                all16Occupied = false;
-                break;
-              }
-            }
-          }
-
-          if (!all16Occupied) {
+          if (!isThinLayer(x, z, y)) {
             y++;
             continue;
           }
 
           const yStart = y;
-          let layerAllOccupied = true;
-          while (y < numPlatesY && layerAllOccupied) {
-            for (let dx = 0; dx < 4 && layerAllOccupied; dx++) {
-              for (let dz = 0; dz < 4; dz++) {
-                if (!isOccupied(x + dx, z + dz, y)) {
-                  layerAllOccupied = false;
-                  break;
-                }
-              }
-            }
-            if (layerAllOccupied) y++;
+          while (y < numPlatesY && isThinLayer(x, z, y)) {
+            y++;
           }
           const yEnd = y - 1;
           const H = yEnd - yStart + 1;
           if (H < 2) continue;
 
-          let isRound = false;
+          let lateralAirSum = 0;
+          const oldBrickIds = new Set<string>();
+          let fitsWithin1x1 = true;
+
           for (let cy = yStart; cy <= yEnd; cy++) {
-            for (let dx = 0; dx < 4; dx++) {
-              for (let dz = 0; dz < 4; dz++) {
-                const c = grid.grid?.[x + dx]?.[z + dz]?.[cy];
-                if (c && (c.curvatureClass === 'cylindrical_convex' || c.curvatureClass === 'spherical_dome')) {
-                  isRound = true;
-                  break;
-                }
+            lateralAirSum += getAir(x, z, cy);
+            const bId = occupiedCellToBrickId.get(this.cellKey(x, z, cy));
+            if (bId) {
+              const b = placedBricks.get(bId);
+              if (b && (b.size[0] > 1 || b.size[1] > 1)) {
+                fitsWithin1x1 = false;
               }
+              oldBrickIds.add(bId);
             }
           }
 
-          if (isRound) {
-            const oldBrickIds = new Set<string>();
-            let fits4x4 = true;
-            for (let cy = yStart; cy <= yEnd; cy++) {
-              for (let dx = 0; dx < 4; dx++) {
-                for (let dz = 0; dz < 4; dz++) {
-                  const bId = occupiedCellToBrickId.get(this.cellKey(x + dx, z + dz, cy));
-                  if (bId) {
-                    const b = placedBricks.get(bId);
-                    if (
-                      b &&
-                      (b.gridPos[0] < x ||
-                        b.gridPos[0] + b.size[0] > x + 4 ||
-                        b.gridPos[1] < z ||
-                        b.gridPos[1] + b.size[1] > z + 4)
-                    ) {
-                      fits4x4 = false;
-                    }
-                    oldBrickIds.add(bId);
-                  }
-                }
-              }
-            }
+          if (!fitsWithin1x1 || oldBrickIds.size === 0) continue;
+          const avgLateralAir = lateralAirSum / H;
 
-            if (!fits4x4 || oldBrickIds.size === 0) continue;
-            for (let cy = yStart; cy <= yEnd; cy++) {
-              for (let dx = 0; dx < 4; dx++) {
-                for (let dz = 0; dz < 4; dz++) {
-                  processed4x4.add(`${x + dx},${z + dz},${cy}`);
-                }
-              }
-            }
-            const oldBricksList = Array.from(oldBrickIds)
-              .map(id => placedBricks.get(id))
-              .filter(Boolean) as PlacedBrick[];
-            if (oldBricksList.length === 0) continue;
-            const firstOld = oldBricksList[0];
+          const oldBricksList = Array.from(oldBrickIds)
+            .map((id) => placedBricks.get(id))
+            .filter(Boolean) as PlacedBrick[];
+          if (oldBricksList.length === 0) continue;
 
-            for (const bId of oldBrickIds) {
-              placedBricks.delete(bId);
-              seenIds.add(bId);
-            }
+          // If already optimal canister/round plate stack, skip
+          if (
+            oldBricksList.length === 1 &&
+            (oldBricksList[0].partId === '3062b' && H === 3)
+          ) {
+            continue;
+          }
 
+          for (let cy = yStart; cy <= yEnd; cy++) {
+            processedCells[getCellIdx(x, z, cy)] = 1;
+          }
+          const firstOld = oldBricksList[0];
+
+          for (const bId of oldBrickIds) {
+            placedBricks.delete(bId);
+            seenIds.add(bId);
+          }
+
+          const isMastOrPole =
+            avgLateralAir >= 2.5 ||
+            oldBricksList.some((b) => b.partId === '3062b' || b.partId === '6141');
+
+          if (isMastOrPole) {
+            // Replace with Canisters (3062b, 3 plates) & Round Plates (6141, 1 plate)
             let currY = yStart;
             while (currY <= yEnd) {
               const rem = yEnd - currY + 1;
               const useBrick = rem >= 3;
               const brickH = useBrick ? 3 : 1;
-              const partId = useBrick ? '6222' : '60474';
-              const name = useBrick ? 'Brick 4 x 4 Round' : 'Plate 4 x 4 Round';
+              const partId = useBrick ? '3062b' : '6141';
+              const name = useBrick ? 'Brick 1 x 1 Round' : 'Plate 1 x 1 Round';
               const profile: PieceProfile = useBrick ? 'round_cylinder' : 'round_plate';
 
-              const newId = `cyl4x4_${x}_${z}_${currY}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
-              const ldrawX = (x + 2.0 - numStudsX / 2.0) * LDU_STUD_PITCH;
-              const ldrawZ = -((z + 2.0 - numStudsZ / 2.0) * LDU_STUD_PITCH);
+              const newId = `canister_${x}_${z}_${currY}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+              const ldrawX = (x + 0.5 - numStudsX / 2.0) * LDU_STUD_PITCH;
+              const ldrawZ = -((z + 0.5 - numStudsZ / 2.0) * LDU_STUD_PITCH);
               const ldrawY = -(currY + brickH) * LDU_PLATE_HEIGHT;
 
               const newBrick: PlacedBrick = {
@@ -869,14 +830,14 @@ export class PolishHarmonizer {
                 ldrawPos: [ldrawX, ldrawY, ldrawZ],
                 rotation: 0,
                 matrix: CARDINAL_ROTATIONS[0],
-                size: [4, 4, brickH],
-                baseSize: [4, 4, brickH],
+                size: [1, 1, brickH],
+                baseSize: [1, 1, brickH],
                 stepIndex: firstOld.stepIndex,
                 growthPhase: firstOld.growthPhase,
                 clutchScore: 1.0,
                 parentBrickIds: [],
                 headId: firstOld.headId,
-                scaleN: 8,
+                scaleN: 2,
                 scaleColorHex: firstOld.scaleColorHex,
                 islandId: firstOld.islandId,
                 islandColorHex: firstOld.islandColorHex
@@ -884,14 +845,71 @@ export class PolishHarmonizer {
 
               placedBricks.set(newId, newBrick);
               seenIds.add(newId);
-              for (let dx = 0; dx < 4; dx++) {
-                for (let dz = 0; dz < 4; dz++) {
-                  for (let dy = 0; dy < brickH; dy++) {
-                    occupiedCellToBrickId.set(this.cellKey(x + dx, z + dz, currY + dy), newId);
-                  }
-                }
+              for (let dy = 0; dy < brickH; dy++) {
+                occupiedCellToBrickId.set(this.cellKey(x, z, currY + dy), newId);
               }
-              replacedCylindersCount++;
+              replacedCanistersCount++;
+              currY += brickH;
+            }
+          } else {
+            // Square wall pillar (avgLateralAir < 2.5): merge into unbroken tall bricks (2453b 1x1x5, 3005 1x1)
+            let currY = yStart;
+            while (currY <= yEnd) {
+              const rem = yEnd - currY + 1;
+              let brickH = 1;
+              let partId = '3024';
+              let name = 'Plate 1 x 1';
+              let profile: PieceProfile = 'plate';
+
+              if (rem >= 15) {
+                brickH = 15;
+                partId = '2453b';
+                name = 'Brick 1 x 1 x 5';
+                profile = 'brick';
+              } else if (rem >= 3) {
+                brickH = 3;
+                partId = '3005';
+                name = 'Brick 1 x 1';
+                profile = 'brick';
+              }
+
+              const newId = `tallpole_${x}_${z}_${currY}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+              const ldrawX = (x + 0.5 - numStudsX / 2.0) * LDU_STUD_PITCH;
+              const ldrawZ = -((z + 0.5 - numStudsZ / 2.0) * LDU_STUD_PITCH);
+              const ldrawY = -(currY + brickH) * LDU_PLATE_HEIGHT;
+
+              const newBrick: PlacedBrick = {
+                id: newId,
+                partId,
+                name,
+                category: 'FILL',
+                profile,
+                colorCode: firstOld.colorCode,
+                colorHex: firstOld.colorHex,
+                colorName: firstOld.colorName,
+                gridPos: [x, z, currY],
+                ldrawPos: [ldrawX, ldrawY, ldrawZ],
+                rotation: 0,
+                matrix: CARDINAL_ROTATIONS[0],
+                size: [1, 1, brickH],
+                baseSize: [1, 1, brickH],
+                stepIndex: firstOld.stepIndex,
+                growthPhase: firstOld.growthPhase,
+                clutchScore: 1.0,
+                parentBrickIds: [],
+                headId: firstOld.headId,
+                scaleN: brickH >= 15 ? 8 : brickH >= 3 ? 4 : 1,
+                scaleColorHex: firstOld.scaleColorHex,
+                islandId: firstOld.islandId,
+                islandColorHex: firstOld.islandColorHex
+              };
+
+              placedBricks.set(newId, newBrick);
+              seenIds.add(newId);
+              for (let dy = 0; dy < brickH; dy++) {
+                occupiedCellToBrickId.set(this.cellKey(x, z, currY + dy), newId);
+              }
+              mergedPolesCount++;
               currY += brickH;
             }
           }
