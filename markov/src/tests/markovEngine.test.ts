@@ -293,7 +293,7 @@ export async function runTests(): Promise<void> {
   // 3. Ground base brick at y=0 and floating brick at y=3
   const groundBase: any = {
     id: 'g0', partId: '3001', name: 'Brick 2 x 4', profile: 'brick',
-    gridPos: [10, 10, 0], ldrawPos: [0, 0, 0], rotation: 0, size: [2, 4, 1], baseSize: [2, 4, 1],
+    gridPos: [10, 10, 0], ldrawPos: [0, 0, 0], rotation: 0, size: [4, 2, 1], baseSize: [4, 2, 1],
     colorHex: '#f4f4f4', colorCode: 15, islandId: 1, stepIndex: 5
   };
   const floatingBrick: any = {
@@ -367,6 +367,121 @@ export async function runTests(): Promise<void> {
     throw new Error('Failed to switch to universal category');
   }
   console.log('  Category OMR tensor switching verified -> PASS\n');
+
+  // Test 12: Vertical Pole, Strut, and Cylinder Harmonization
+  console.log('Test 12: Testing Vertical Pole, Strut, and Cylinder Harmonization...');
+  const poleGrid: any = {
+    numStudsX: 25,
+    numStudsZ: 25,
+    numPlatesY: 20,
+    grid: []
+  };
+  for (let x = 0; x < 25; x++) {
+    poleGrid.grid[x] = [];
+    for (let z = 0; z < 25; z++) {
+      poleGrid.grid[x][z] = [];
+      for (let y = 0; y < 20; y++) {
+        poleGrid.grid[x][z][y] = {
+          x, z, y,
+          occupied: false,
+          colorCode: 15,
+          colorHex: '#f4f4f4',
+          colorName: 'White',
+          normal: [0, 1, 0],
+          depth: 0,
+          isBoundary: false,
+          isCore: false,
+          slopeClass: 'flat',
+          slopeHeading: 0,
+          curvatureClass: 'flat'
+        };
+      }
+    }
+  }
+
+  const poleBricks = new Map<string, any>();
+  const poleCells = new Map<string, string>();
+
+  // A. Thin round strut at (5, 5) spanning y=0..9 (10 plates) with cylindrical curvature
+  for (let y = 0; y <= 9; y++) {
+    poleGrid.grid[5][5][y].occupied = true;
+    poleGrid.grid[5][5][y].curvatureClass = 'cylindrical_convex';
+    poleGrid.grid[5][5][y].normal = [0.707, 0, 0.707];
+    // Start with fragmented 1x1 plates (3024)
+    const pId = `chop_plate_${y}`;
+    poleBricks.set(pId, {
+      id: pId, partId: '3024', name: 'Plate 1 x 1', profile: 'plate',
+      gridPos: [5, 5, y], ldrawPos: [0, -y * 8, 0], rotation: 0, size: [1, 1, 1], baseSize: [1, 1, 1],
+      colorHex: '#0055bf', colorCode: 1, islandId: 1, stepIndex: 1
+    });
+    poleCells.set(`5,5,${y}`, pId);
+  }
+
+  // B. Square pillar at (10, 10) spanning y=0..17 (18 plates) with cardinal normals
+  for (let y = 0; y <= 17; y++) {
+    poleGrid.grid[10][10][y].occupied = true;
+    poleGrid.grid[10][10][y].curvatureClass = 'flat';
+    poleGrid.grid[10][10][y].normal = [1, 0, 0]; // strictly cardinal normal
+    const pId = `sq_plate_${y}`;
+    poleBricks.set(pId, {
+      id: pId, partId: '3024', name: 'Plate 1 x 1', profile: 'plate',
+      gridPos: [10, 10, y], ldrawPos: [0, -y * 8, 0], rotation: 0, size: [1, 1, 1], baseSize: [1, 1, 1],
+      colorHex: '#c91a09', colorCode: 4, islandId: 2, stepIndex: 2
+    });
+    poleCells.set(`10,10,${y}`, pId);
+  }
+
+  // C. 2x2 round column at (15..16, 15..16) spanning y=0..6 (7 plates) with cylindrical curvature
+  for (let dx = 0; dx < 2; dx++) {
+    for (let dz = 0; dz < 2; dz++) {
+      for (let y = 0; y <= 6; y++) {
+        poleGrid.grid[15 + dx][15 + dz][y].occupied = true;
+        poleGrid.grid[15 + dx][15 + dz][y].curvatureClass = 'cylindrical_convex';
+        const pId = `cyl2_plate_${dx}_${dz}_${y}`;
+        poleBricks.set(pId, {
+          id: pId, partId: '3024', name: 'Plate 1 x 1', profile: 'plate',
+          gridPos: [15 + dx, 15 + dz, y], ldrawPos: [0, -y * 8, 0], rotation: 0, size: [1, 1, 1], baseSize: [1, 1, 1],
+          colorHex: '#237841', colorCode: 2, islandId: 3, stepIndex: 3
+        });
+        poleCells.set(`${15 + dx},${15 + dz},${y}`, pId);
+      }
+    }
+  }
+
+  const poleHarm = PolishHarmonizer.harmonizeNeighborhoods(poleBricks, poleCells, poleGrid);
+  console.log(`  Pole Harmonization results:
+    Replaced Canisters: ${poleHarm.replacedCanistersCount}
+    Merged Tall Poles: ${poleHarm.mergedPolesCount}
+    Replaced Cylinders: ${poleHarm.replacedCylindersCount}`);
+
+  // Verify Thin Strut: 10 plates should become 3 canisters (3062b) and 1 round plate (6141)
+  const strutPieces = Array.from(poleBricks.values()).filter(b => b.gridPos[0] === 5 && b.gridPos[1] === 5);
+  const canister3062b = strutPieces.filter(b => b.partId === '3062b');
+  const roundPlate6141 = strutPieces.filter(b => b.partId === '6141');
+  console.log(`    Strut pieces at (5,5): total=${strutPieces.length}, 3062b=${canister3062b.length}, 6141=${roundPlate6141.length}`);
+  if (canister3062b.length !== 3 || roundPlate6141.length !== 1) {
+    throw new Error(`Expected 3 canisters (3062b) and 1 round plate (6141), got ${canister3062b.length} and ${roundPlate6141.length}`);
+  }
+
+  // Verify Square Pillar: 18 plates should become ONE unbroken 1x1x5 (2453b, 15 plates) and ONE 1x1 (3005, 3 plates)
+  const squarePieces = Array.from(poleBricks.values()).filter(b => b.gridPos[0] === 10 && b.gridPos[1] === 10);
+  const tallBrick2453b = squarePieces.filter(b => b.partId === '2453b');
+  const standardBrick3005 = squarePieces.filter(b => b.partId === '3005');
+  console.log(`    Square pieces at (10,10): total=${squarePieces.length}, 2453b=${tallBrick2453b.length}, 3005=${standardBrick3005.length}`);
+  if (tallBrick2453b.length !== 1 || standardBrick3005.length !== 1) {
+    throw new Error(`Expected 1 unbroken 1x1x5 (2453b) and 1 1x1 (3005), got ${tallBrick2453b.length} and ${standardBrick3005.length}`);
+  }
+
+  // Verify 2x2 Round Column: 7 plates should become TWO 2x2 round bricks (3941) and ONE 2x2 round plate (4032a)
+  const cyl2Pieces = Array.from(poleBricks.values()).filter(b => b.gridPos[0] === 15 && b.gridPos[1] === 15);
+  const cyl2Bricks3941 = cyl2Pieces.filter(b => b.partId === '3941');
+  const cyl2Plates4032a = cyl2Pieces.filter(b => b.partId === '4032a');
+  console.log(`    2x2 Cylinders at (15,15): total=${cyl2Pieces.length}, 3941=${cyl2Bricks3941.length}, 4032a=${cyl2Plates4032a.length}`);
+  if (cyl2Bricks3941.length !== 2 || cyl2Plates4032a.length !== 1) {
+    throw new Error(`Expected 2 round bricks (3941) and 1 round plate (4032a), got ${cyl2Bricks3941.length} and ${cyl2Plates4032a.length}`);
+  }
+
+  console.log('  Pole & cylinder harmonization verified -> PASS\n');
 
   console.log('=== ALL TESTS PASSED SUCCESSFULLY! ===');
 }

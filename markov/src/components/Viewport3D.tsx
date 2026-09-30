@@ -378,12 +378,22 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
         const halfW = (baseWX * LDU_STUD_PITCH) / 2.0;
         const halfD = (baseDZ * LDU_STUD_PITCH) / 2.0;
         const topY = (baseHY * LDU_PLATE_HEIGHT) / 2.0;
+        const isRound =
+          brick.profile === 'round_cylinder' ||
+          brick.profile === 'round_plate' ||
+          ['3062b', '6141', '3941', '4032', '4032a', '6222', '60474'].includes(brick.partId);
+        const radiusLDU = (baseWX * LDU_STUD_PITCH) / 2.0;
 
         for (let sx = 0; sx < baseWX; sx++) {
           for (let sz = 0; sz < baseDZ; sz++) {
             const localX = (sx + 0.5) * LDU_STUD_PITCH - halfW;
             const localY = topY + 2.0;
             const localZ = (sz + 0.5) * LDU_STUD_PITCH - halfD;
+
+            // Skip corner studs that stick outside round circular cylinders (e.g. 4x4 round brick)
+            if (isRound && (localX * localX + localZ * localZ) > (radiusLDU - 2) * (radiusLDU - 2)) {
+              continue;
+            }
 
             const studPos = new THREE.Vector3(localX, localY, localZ).applyAxisAngle(yAxis, brickRotY).add(brickPos);
             const studMatrix = new THREE.Matrix4().compose(studPos, identityQuat, scaleOne);

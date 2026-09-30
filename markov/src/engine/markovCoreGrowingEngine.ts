@@ -77,20 +77,20 @@ export interface StructuralPieceSpec {
 
 // Scale N = 8: Macro Core Structural Bricks (3 plates tall = 24 LDU)
 export const MACRO_CORE_BRICKS: StructuralPieceSpec[] = [
-  { partId: '3007', name: 'Brick 2 x 8', category: 'FILL', profile: 'brick', w: 2, d: 8, h: 3, scaleN: 8 },
-  { partId: '2456', name: 'Brick 2 x 6', category: 'FILL', profile: 'brick', w: 2, d: 6, h: 3, scaleN: 8 },
-  { partId: '3001', name: 'Brick 2 x 4', category: 'FILL', profile: 'brick', w: 2, d: 4, h: 3, scaleN: 8 },
-  { partId: '3008', name: 'Brick 1 x 8', category: 'FILL', profile: 'brick', w: 1, d: 8, h: 3, scaleN: 8 },
-  { partId: '3009', name: 'Brick 1 x 6', category: 'FILL', profile: 'brick', w: 1, d: 6, h: 3, scaleN: 8 },
+  { partId: '3007', name: 'Brick 2 x 8', category: 'FILL', profile: 'brick', w: 8, d: 2, h: 3, scaleN: 8 },
+  { partId: '2456', name: 'Brick 2 x 6', category: 'FILL', profile: 'brick', w: 6, d: 2, h: 3, scaleN: 8 },
+  { partId: '3001', name: 'Brick 2 x 4', category: 'FILL', profile: 'brick', w: 4, d: 2, h: 3, scaleN: 8 },
+  { partId: '3008', name: 'Brick 1 x 8', category: 'FILL', profile: 'brick', w: 8, d: 1, h: 3, scaleN: 8 },
+  { partId: '3009', name: 'Brick 1 x 6', category: 'FILL', profile: 'brick', w: 6, d: 1, h: 3, scaleN: 8 },
 ];
 
 // Scale N = 4: Mid Running Bond Bricks (3 plates tall = 24 LDU)
 export const MID_RUNNING_BOND_BRICKS: StructuralPieceSpec[] = [
-  { partId: '3002', name: 'Brick 2 x 3', category: 'FILL', profile: 'brick', w: 2, d: 3, h: 3, scaleN: 4 },
+  { partId: '3002', name: 'Brick 2 x 3', category: 'FILL', profile: 'brick', w: 3, d: 2, h: 3, scaleN: 4 },
   { partId: '3003', name: 'Brick 2 x 2', category: 'FILL', profile: 'brick', w: 2, d: 2, h: 3, scaleN: 4 },
-  { partId: '3010', name: 'Brick 1 x 4', category: 'FILL', profile: 'brick', w: 1, d: 4, h: 3, scaleN: 4 },
-  { partId: '3622', name: 'Brick 1 x 3', category: 'FILL', profile: 'brick', w: 1, d: 3, h: 3, scaleN: 4 },
-  { partId: '3004', name: 'Brick 1 x 2', category: 'FILL', profile: 'brick', w: 1, d: 2, h: 3, scaleN: 4 },
+  { partId: '3010', name: 'Brick 1 x 4', category: 'FILL', profile: 'brick', w: 4, d: 1, h: 3, scaleN: 4 },
+  { partId: '3622', name: 'Brick 1 x 3', category: 'FILL', profile: 'brick', w: 3, d: 1, h: 3, scaleN: 4 },
+  { partId: '3004', name: 'Brick 1 x 2', category: 'FILL', profile: 'brick', w: 2, d: 1, h: 3, scaleN: 4 },
 ];
 
 // Scale N = 2: Unit Detail 1*1*3 Bricks (3 plates tall = 24 LDU)
@@ -101,13 +101,13 @@ export const UNIT_DETAIL_BRICKS: StructuralPieceSpec[] = [
 
 // Scale N = 1: Plate Infill for 1-plate and 2-plate layers (1 plate tall = 8 LDU)
 export const PLATE_INFILL_BRICKS: StructuralPieceSpec[] = [
-  { partId: '3795', name: 'Plate 2 x 6', category: 'FILL', profile: 'plate', w: 2, d: 6, h: 1, scaleN: 1 },
-  { partId: '3020', name: 'Plate 2 x 4', category: 'FILL', profile: 'plate', w: 2, d: 4, h: 1, scaleN: 1 },
-  { partId: '3021', name: 'Plate 2 x 3', category: 'FILL', profile: 'plate', w: 2, d: 3, h: 1, scaleN: 1 },
+  { partId: '3795', name: 'Plate 2 x 6', category: 'FILL', profile: 'plate', w: 6, d: 2, h: 1, scaleN: 1 },
+  { partId: '3020', name: 'Plate 2 x 4', category: 'FILL', profile: 'plate', w: 4, d: 2, h: 1, scaleN: 1 },
+  { partId: '3021', name: 'Plate 2 x 3', category: 'FILL', profile: 'plate', w: 3, d: 2, h: 1, scaleN: 1 },
   { partId: '3022', name: 'Plate 2 x 2', category: 'FILL', profile: 'plate', w: 2, d: 2, h: 1, scaleN: 1 },
-  { partId: '3710', name: 'Plate 1 x 4', category: 'FILL', profile: 'plate', w: 1, d: 4, h: 1, scaleN: 1 },
-  { partId: '3623', name: 'Plate 1 x 3', category: 'FILL', profile: 'plate', w: 1, d: 3, h: 1, scaleN: 1 },
-  { partId: '3023', name: 'Plate 1 x 2', category: 'FILL', profile: 'plate', w: 1, d: 2, h: 1, scaleN: 1 },
+  { partId: '3710', name: 'Plate 1 x 4', category: 'FILL', profile: 'plate', w: 4, d: 1, h: 1, scaleN: 1 },
+  { partId: '3623', name: 'Plate 1 x 3', category: 'FILL', profile: 'plate', w: 3, d: 1, h: 1, scaleN: 1 },
+  { partId: '3023', name: 'Plate 1 x 2', category: 'FILL', profile: 'plate', w: 2, d: 1, h: 1, scaleN: 1 },
   { partId: '3024', name: 'Plate 1 x 1', category: 'FILL', profile: 'plate', w: 1, d: 1, h: 1, scaleN: 1 },
 ];
 
@@ -1054,11 +1054,11 @@ export class MarkovCoreGrowingEngine {
   private stepTileFinish(): PlacedBrick[] {
     const newBricks: PlacedBrick[] = [];
     const tileCatalog = [
-      { partId: '87079', w: 2, d: 4, name: 'Tile 2 x 4' },
+      { partId: '87079', w: 4, d: 2, name: 'Tile 2 x 4' },
       { partId: '3068b', w: 2, d: 2, name: 'Tile 2 x 2 Flat' },
-      { partId: '2431',  w: 1, d: 4, name: 'Tile 1 x 4 Flat' },
-      { partId: '6636',  w: 1, d: 6, name: 'Tile 1 x 6 Flat' },
-      { partId: '3069b', w: 1, d: 2, name: 'Tile 1 x 2 Flat' },
+      { partId: '2431',  w: 4, d: 1, name: 'Tile 1 x 4 Flat' },
+      { partId: '6636',  w: 6, d: 1, name: 'Tile 1 x 6 Flat' },
+      { partId: '3069b', w: 2, d: 1, name: 'Tile 1 x 2 Flat' },
       { partId: '3070b', w: 1, d: 1, name: 'Tile 1 x 1 Flat' },
       { partId: '98138', w: 1, d: 1, name: 'Tile 1 x 1 Round Flat' }
     ];
@@ -1117,6 +1117,7 @@ export class MarkovCoreGrowingEngine {
             placed.profile = 'tile_flat';
             placed.partId = matchingTile.partId;
             placed.name = matchingTile.name;
+            placed.baseSize = [matchingTile.w, matchingTile.d, 1];
             placed.growthPhase = 'TILE_FINISH';
             placed.scaleN = 1;
             placed.scaleColorHex = WFC_SCALE_COLORS[0]; // Cyan tile finish

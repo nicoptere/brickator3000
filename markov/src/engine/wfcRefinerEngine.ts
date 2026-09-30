@@ -268,8 +268,8 @@ export class WFCRefinerEngine {
         // 3. Category-informed slope substitutions (curved slopes over 45° slopes in vehicles)
         if (isRigidSlopeInVehicles) {
           if (wX === 2 && wZ === 2) candidates.push('15068');
-          else if (wX === 2 && wZ === 4) candidates.push('88930');
-          else if (wX === 1 && wZ === 2) candidates.push('11477');
+          else if ((wX === 4 && wZ === 2) || (wX === 2 && wZ === 4)) candidates.push('88930');
+          else if ((wX === 1 && wZ === 2) || (wX === 2 && wZ === 1)) candidates.push('11477');
         }
 
         // 4. Safe same-profile, same-height candidate lookup
@@ -278,7 +278,10 @@ export class WFCRefinerEngine {
           for (const [pid, conn] of matches) {
             // Must strictly match profile type to avoid corrupting geometry
             if (conn.profile === brick.profile && conn.category === brick.category) {
-              if (conn.footprint[0] === wX && conn.footprint[1] === wZ) {
+              if (
+                (conn.footprint[0] === wX && conn.footprint[1] === wZ) ||
+                (conn.footprint[0] === wZ && conn.footprint[1] === wX)
+              ) {
                 if (this.isCategoryPart(pid) && !candidates.includes(pid)) {
                   candidates.push(pid);
                   if (candidates.length >= 6) break;

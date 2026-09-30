@@ -27,6 +27,8 @@ export type PieceProfile =
   | 'tile_flat'
   | 'wedge'
   | 'technic'
+  | 'round_cylinder'
+  | 'round_plate'
   | 'empty_void';
 
 export type CurvatureClass =

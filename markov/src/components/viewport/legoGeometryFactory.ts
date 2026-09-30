@@ -156,8 +156,26 @@ export class LegoGeometryFactory {
       }
 
       case 'macaroni': {
-        geom = new THREE.CylinderGeometry(widthLDU, widthLDU, heightLDU, 16, 1, false, 0, Math.PI / 2);
-        geom.center();
+        const shape = new THREE.Shape();
+        const r = widthLDU;
+        shape.moveTo(-r / 2, -r / 2);
+        shape.lineTo(r / 2, -r / 2);
+        shape.absarc(-r / 2, -r / 2, r, 0, Math.PI / 2, false);
+        shape.lineTo(-r / 2, r / 2);
+        shape.closePath();
+
+        const ext = new THREE.ExtrudeGeometry(shape, { depth: heightLDU, bevelEnabled: false, curveSegments: 20 });
+        ext.center();
+        ext.rotateX(-Math.PI / 2);
+        ext.computeVertexNormals();
+        geom = ext;
+        break;
+      }
+
+      case 'round_cylinder':
+      case 'round_plate': {
+        const radius = widthLDU / 2.0;
+        geom = new THREE.CylinderGeometry(radius, radius, heightLDU, 24);
         break;
       }
 
@@ -197,7 +215,12 @@ export class LegoGeometryFactory {
       case 'brick':
       case 'plate':
       default: {
-        geom = new THREE.BoxGeometry(widthLDU, heightLDU, depthLDU);
+        if (['3062b', '6141', '3941', '4032', '4032a', '6222', '60474'].includes(brick.partId)) {
+          const radius = widthLDU / 2.0;
+          geom = new THREE.CylinderGeometry(radius, radius, heightLDU, 24);
+        } else {
+          geom = new THREE.BoxGeometry(widthLDU, heightLDU, depthLDU);
+        }
         break;
       }
     }

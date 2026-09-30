@@ -20,6 +20,60 @@ from collections import defaultdict
 PARTS_DIR = "/mnt/storage/projects/brickator3000/generator/public/ldraw/parts"
 OUTPUT_JSON = "/mnt/storage/projects/brickator3000/markov/src/engine/generatedConnectorCatalog.json"
 
+def get_bbox(part_file, visited=None):
+    if visited is None: visited = set()
+    if part_file in visited: return None
+    visited.add(part_file)
+    path = os.path.join(PARTS_DIR, part_file)
+    if not os.path.exists(path):
+        p_path = os.path.join(PARTS_DIR, '..', 'p', part_file)
+        if os.path.exists(p_path): path = p_path
+        else: return None
+    min_x, max_x = float('inf'), float('-inf')
+    min_y, max_y = float('inf'), float('-inf')
+    min_z, max_z = float('inf'), float('-inf')
+    try:
+        with open(path, 'r', errors='ignore') as f:
+            for line in f:
+                tokens = line.strip().split()
+                if not tokens: continue
+                if tokens[0] == '1' and len(tokens) >= 15:
+                    sub = tokens[14].replace('\\\\', '/')
+                    sub_bb = get_bbox(sub, visited)
+                    if sub_bb:
+                        tx, ty, tz = float(tokens[2]), float(tokens[3]), float(tokens[4])
+                        m = [float(tokens[k]) for k in range(5, 14)]
+                        corners = [
+                            (sub_bb[0], sub_bb[2], sub_bb[4]),
+                            (sub_bb[1], sub_bb[2], sub_bb[4]),
+                            (sub_bb[0], sub_bb[3], sub_bb[4]),
+                            (sub_bb[1], sub_bb[3], sub_bb[4]),
+                            (sub_bb[0], sub_bb[2], sub_bb[5]),
+                            (sub_bb[1], sub_bb[2], sub_bb[5]),
+                            (sub_bb[0], sub_bb[3], sub_bb[5]),
+                            (sub_bb[1], sub_bb[3], sub_bb[5]),
+                        ]
+                        for cx, cy, cz in corners:
+                            rx = m[0]*cx + m[1]*cy + m[2]*cz + tx
+                            ry = m[3]*cx + m[4]*cy + m[5]*cz + ty
+                            rz = m[6]*cx + m[7]*cy + m[8]*cz + tz
+                            min_x = min(min_x, rx); max_x = max(max_x, rx)
+                            min_y = min(min_y, ry); max_y = max(max_y, ry)
+                            min_z = min(min_z, rz); max_z = max(max_z, rz)
+                elif tokens[0] in ('3', '4'):
+                    n = 4 if tokens[0] == '4' else 3
+                    for i in range(n):
+                        x = float(tokens[2 + i*3])
+                        y = float(tokens[3 + i*3])
+                        z = float(tokens[4 + i*3])
+                        min_x = min(min_x, x); max_x = max(max_x, x)
+                        min_y = min(min_y, y); max_y = max(max_y, y)
+                        min_z = min(min_z, z); max_z = max(max_z, z)
+    except Exception:
+        pass
+    if min_x == float('inf'): return None
+    return (min_x, max_x, min_y, max_y, min_z, max_z)
+
 print(f"Scanning LDraw LEGO SYSTEM parts from: {PARTS_DIR}")
 
 # Strict ban list: zero bionicle / constraction / creature / weapon / minifig body parts
@@ -36,54 +90,64 @@ MUST_HAVE_PARTS = {
     '11477': ('Slope Brick Curved 2 x 1', 'EDGE', 'slope_curved', 1, 2, 3, 30, 'cylindrical_convex', True),
     '15068': ('Slope Brick Curved 2 x 2', 'EDGE', 'slope_curved', 2, 2, 3, 30, 'cylindrical_convex', True),
     '61678': ('Slope Brick Curved 4 x 1', 'EDGE', 'slope_curved', 1, 4, 3, 25, 'cylindrical_convex', True),
-    '88930': ('Slope Brick Curved 4 x 2', 'EDGE', 'slope_curved', 2, 4, 3, 25, 'cylindrical_convex', True),
+    '88930': ('Slope Brick Curved 4 x 2', 'EDGE', 'slope_curved', 4, 2, 3, 25, 'cylindrical_convex', True),
     '93273': ('Slope Brick Curved 4 x 1 Inverted', 'EDGE', 'slope_inverted', 1, 4, 3, -25, 'cylindrical_concave', True),
     '24201': ('Slope Brick Curved 2 x 1 Inverted', 'EDGE', 'slope_inverted', 1, 2, 3, -30, 'cylindrical_concave', True),
-    # Macaroni & round corner tiles
+    # Macaroni & round corner tiles/bricks
     '27925': ('Tile 2 x 2 Macaroni Curved Round', 'EDGE', 'macaroni', 2, 2, 1, 0, 'corner_macaroni', True),
+    '3063b': ('Brick 2 x 2 Corner Round', 'EDGE', 'macaroni', 2, 2, 3, 0, 'corner_macaroni', True),
     '25269': ('Tile 1 x 1 Quarter Round', 'EDGE', 'macaroni', 1, 1, 1, 0, 'corner_macaroni', True),
+    # Authentic System Round Cylinders & Canisters
+    '3062b': ('Brick 1 x 1 Round', 'EDGE', 'round_cylinder', 1, 1, 3, 0, 'cylindrical_convex', True),
+    '6141': ('Plate 1 x 1 Round', 'EDGE', 'round_plate', 1, 1, 1, 0, 'cylindrical_convex', True),
+    '3941': ('Brick 2 x 2 Round', 'EDGE', 'round_cylinder', 2, 2, 3, 0, 'cylindrical_convex', True),
+    '4032a': ('Plate 2 x 2 Round with Axlehole', 'EDGE', 'round_plate', 2, 2, 1, 0, 'cylindrical_convex', True),
+    '6222': ('Brick 4 x 4 Round', 'EDGE', 'round_cylinder', 4, 4, 3, 0, 'cylindrical_convex', True),
+    '60474': ('Plate 4 x 4 Round', 'EDGE', 'round_plate', 4, 4, 1, 0, 'cylindrical_convex', True),
+    # High Unbroken Structural Bricks (for poles, struts, pillars)
+    '2453b': ('Brick 1 x 1 x 5', 'FILL', 'brick', 1, 1, 15, 0, 'flat', True),
     '3068b': ('Tile 2 x 2 Flat', 'EDGE', 'tile_flat', 2, 2, 1, 0, 'flat', True),
-    '3069b': ('Tile 1 x 2 Flat', 'EDGE', 'tile_flat', 1, 2, 1, 0, 'flat', True),
-    '2431': ('Tile 1 x 4 Flat', 'EDGE', 'tile_flat', 1, 4, 1, 0, 'flat', True),
-    '6636': ('Tile 1 x 6 Flat', 'EDGE', 'tile_flat', 1, 6, 1, 0, 'flat', True),
+    '3069b': ('Tile 1 x 2 Flat', 'EDGE', 'tile_flat', 2, 1, 1, 0, 'flat', True),
+    '2431': ('Tile 1 x 4 Flat', 'EDGE', 'tile_flat', 4, 1, 1, 0, 'flat', True),
+    '6636': ('Tile 1 x 6 Flat', 'EDGE', 'tile_flat', 6, 1, 1, 0, 'flat', True),
     '98138': ('Tile 1 x 1 Round Flat', 'EDGE', 'tile_flat', 1, 1, 1, 0, 'flat', True),
     # Authentic System Radar dishes & domes
     '4740': ('Dish 2 x 2 Inverted Radar', 'LEAF', 'dish', 2, 2, 2, 0, 'spherical_dome', True),
     '43898': ('Dish 3 x 3 Inverted Radar', 'LEAF', 'dish', 3, 3, 3, 0, 'spherical_dome', True),
     '3960': ('Dish 4 x 4 Inverted Radar', 'LEAF', 'dish', 4, 4, 3, 0, 'spherical_dome', True),
-    # Classic Structural Bricks
-    '3007': ('Brick 2 x 8', 'FILL', 'brick', 2, 8, 3, 0, 'flat', False),
-    '2456': ('Brick 2 x 6', 'FILL', 'brick', 2, 6, 3, 0, 'flat', False),
-    '3001': ('Brick 2 x 4', 'FILL', 'brick', 2, 4, 3, 0, 'flat', False),
-    '3002': ('Brick 2 x 3', 'FILL', 'brick', 2, 3, 3, 0, 'flat', False),
+    # Classic Structural Bricks (Canonical LDraw has length along X axis)
+    '3007': ('Brick 2 x 8', 'FILL', 'brick', 8, 2, 3, 0, 'flat', False),
+    '2456': ('Brick 2 x 6', 'FILL', 'brick', 6, 2, 3, 0, 'flat', False),
+    '3001': ('Brick 2 x 4', 'FILL', 'brick', 4, 2, 3, 0, 'flat', False),
+    '3002': ('Brick 2 x 3', 'FILL', 'brick', 3, 2, 3, 0, 'flat', False),
     '3003': ('Brick 2 x 2', 'FILL', 'brick', 2, 2, 3, 0, 'flat', False),
-    '3008': ('Brick 1 x 8', 'FILL', 'brick', 1, 8, 3, 0, 'flat', False),
-    '3009': ('Brick 1 x 6', 'FILL', 'brick', 1, 6, 3, 0, 'flat', False),
-    '3010': ('Brick 1 x 4', 'FILL', 'brick', 1, 4, 3, 0, 'flat', False),
-    '3622': ('Brick 1 x 3', 'FILL', 'brick', 1, 3, 3, 0, 'flat', False),
-    '3004': ('Brick 1 x 2', 'FILL', 'brick', 1, 2, 3, 0, 'flat', False),
+    '3008': ('Brick 1 x 8', 'FILL', 'brick', 8, 1, 3, 0, 'flat', False),
+    '3009': ('Brick 1 x 6', 'FILL', 'brick', 6, 1, 3, 0, 'flat', False),
+    '3010': ('Brick 1 x 4', 'FILL', 'brick', 4, 1, 3, 0, 'flat', False),
+    '3622': ('Brick 1 x 3', 'FILL', 'brick', 3, 1, 3, 0, 'flat', False),
+    '3004': ('Brick 1 x 2', 'FILL', 'brick', 2, 1, 3, 0, 'flat', False),
     '3005': ('Brick 1 x 1', 'FILL', 'brick', 1, 1, 3, 0, 'flat', False),
     '2357': ('Brick 2 x 2 Corner', 'FILL', 'brick', 2, 2, 3, 0, 'corner_macaroni', False),
-    '3794b': ('Plate 1 x 2 with Center Stud', 'FILL', 'plate', 1, 2, 1, 0, 'flat', True),
-    # Classic Plates
-    '3034': ('Plate 2 x 8', 'FILL', 'plate', 2, 8, 1, 0, 'flat', False),
-    '3795': ('Plate 2 x 6', 'FILL', 'plate', 2, 6, 1, 0, 'flat', False),
-    '3020': ('Plate 2 x 4', 'FILL', 'plate', 2, 4, 1, 0, 'flat', False),
-    '3021': ('Plate 2 x 3', 'FILL', 'plate', 2, 3, 1, 0, 'flat', False),
+    '3794b': ('Plate 1 x 2 with Center Stud', 'FILL', 'plate', 2, 1, 1, 0, 'flat', True),
+    # Classic Plates (Canonical LDraw has length along X axis)
+    '3034': ('Plate 2 x 8', 'FILL', 'plate', 8, 2, 1, 0, 'flat', False),
+    '3795': ('Plate 2 x 6', 'FILL', 'plate', 6, 2, 1, 0, 'flat', False),
+    '3020': ('Plate 2 x 4', 'FILL', 'plate', 4, 2, 1, 0, 'flat', False),
+    '3021': ('Plate 2 x 3', 'FILL', 'plate', 3, 2, 1, 0, 'flat', False),
     '3022': ('Plate 2 x 2', 'FILL', 'plate', 2, 2, 1, 0, 'flat', False),
-    '3460': ('Plate 1 x 8', 'FILL', 'plate', 1, 8, 1, 0, 'flat', False),
-    '3666': ('Plate 1 x 6', 'FILL', 'plate', 1, 6, 1, 0, 'flat', False),
-    '3710': ('Plate 1 x 4', 'FILL', 'plate', 1, 4, 1, 0, 'flat', False),
-    '3623': ('Plate 1 x 3', 'FILL', 'plate', 1, 3, 1, 0, 'flat', False),
-    '3023': ('Plate 1 x 2', 'FILL', 'plate', 1, 2, 1, 0, 'flat', False),
+    '3460': ('Plate 1 x 8', 'FILL', 'plate', 8, 1, 1, 0, 'flat', False),
+    '3666': ('Plate 1 x 6', 'FILL', 'plate', 6, 1, 1, 0, 'flat', False),
+    '3710': ('Plate 1 x 4', 'FILL', 'plate', 4, 1, 1, 0, 'flat', False),
+    '3623': ('Plate 1 x 3', 'FILL', 'plate', 3, 1, 1, 0, 'flat', False),
+    '3023': ('Plate 1 x 2', 'FILL', 'plate', 2, 1, 1, 0, 'flat', False),
     '3024': ('Plate 1 x 1', 'FILL', 'plate', 1, 1, 1, 0, 'flat', False),
     # Standard Slopes & Cheese
     '3040': ('Slope Brick 45 2 x 1', 'EDGE', 'slope_45', 1, 2, 3, 45, 'flat', False),
     '3039': ('Slope Brick 45 2 x 2', 'EDGE', 'slope_45', 2, 2, 3, 45, 'flat', False),
-    '3038': ('Slope Brick 45 2 x 3', 'EDGE', 'slope_45', 2, 3, 3, 45, 'flat', False),
+    '3038': ('Slope Brick 45 2 x 3', 'EDGE', 'slope_45', 3, 2, 3, 45, 'flat', False),
     '3298': ('Slope Brick 33 3 x 2', 'EDGE', 'slope_33', 2, 3, 3, 33, 'flat', False),
     '54200': ('Slope Brick 31 1 x 1 x 0.667 (Cheese)', 'LEAF', 'cheese', 1, 1, 2, 31, 'flat', True),
-    '85984': ('Slope Brick 31 1 x 2 x 0.667 (Double Cheese)', 'LEAF', 'cheese', 1, 2, 2, 31, 'flat', True),
+    '85984': ('Slope Brick 31 1 x 2 x 0.667 (Double Cheese)', 'LEAF', 'cheese', 2, 1, 2, 31, 'flat', True),
 }
 
 catalog = []
@@ -98,8 +162,8 @@ for pid, info in MUST_HAVE_PARTS.items():
         "name": name,
         "category": cat,
         "profile": prof,
-        "widthX": min(wx, wz),
-        "depthZ": max(wx, wz),
+        "widthX": wx,
+        "depthZ": wz,
         "heightY": hy,
         "slopeClass": "slope_inverted" if angle < 0 else ("slope_curved" if prof == "slope_curved" else ("slope_45" if angle == 45 else ("slope_33" if angle in (31, 33) else "flat"))),
         "slopeAngle": angle,
@@ -152,8 +216,11 @@ for fname in sorted(os.listdir(PARTS_DIR)):
             if m_brick:
                 cat = "FILL"
                 prof = "brick"
-                wx = int(float(m_brick.group(1)))
-                wz = int(float(m_brick.group(2)))
+                d1 = int(float(m_brick.group(1)))
+                d2 = int(float(m_brick.group(2)))
+                # Canonical LDraw bricks always have their long dimension along the X axis
+                wx = max(d1, d2)
+                wz = min(d1, d2)
                 if m_brick.group(3):
                     hy = max(1, round(float(m_brick.group(3)) * 3))
                 else:
@@ -169,8 +236,11 @@ for fname in sorted(os.listdir(PARTS_DIR)):
             if not cat and m_plate:
                 cat = "FILL"
                 prof = "plate"
-                wx = int(float(m_plate.group(1)))
-                wz = int(float(m_plate.group(2)))
+                d1 = int(float(m_plate.group(1)))
+                d2 = int(float(m_plate.group(2)))
+                # Canonical LDraw plates always have their long dimension along the X axis
+                wx = max(d1, d2)
+                wz = min(d1, d2)
                 hy = 1
                 if "Round" in desc:
                     curv_class = "cylindrical_convex"
@@ -236,8 +306,11 @@ for fname in sorted(os.listdir(PARTS_DIR)):
                 cat = "EDGE"
                 nums = re.findall(r"\b(\d+)\s*x\s*(\d+)\b", desc)
                 if nums:
-                    wx = int(nums[0][0])
-                    wz = int(nums[0][1])
+                    d1 = int(nums[0][0])
+                    d2 = int(nums[0][1])
+                    # Canonical LDraw tiles have their long dimension along X
+                    wx = max(d1, d2)
+                    wz = min(d1, d2)
                 else:
                     wx, wz = 1, 1
                 hy = 1
@@ -294,8 +367,19 @@ for fname in sorted(os.listdir(PARTS_DIR)):
 
             # If matched and reasonable dimensions
             if cat and 1 <= wx <= 16 and 1 <= wz <= 16 and 1 <= hy <= 15:
-                c_wx = min(wx, wz)
-                c_wz = max(wx, wz)
+                bb = get_bbox(fname)
+                if bb:
+                    ldraw_wX = max(1, round((bb[1] - bb[0]) / 20.0))
+                    ldraw_dZ = max(1, round((bb[5] - bb[4]) / 20.0))
+                    if sorted([ldraw_wX, ldraw_dZ]) == sorted([wx, wz]):
+                        c_wx, c_wz = ldraw_wX, ldraw_dZ
+                    else:
+                        c_wx = max(wx, wz) if (cat == 'FILL' or prof in ('brick', 'plate', 'tile_flat')) else wx
+                        c_wz = min(wx, wz) if (cat == 'FILL' or prof in ('brick', 'plate', 'tile_flat')) else wz
+                else:
+                    c_wx = max(wx, wz) if (cat == 'FILL' or prof in ('brick', 'plate', 'tile_flat')) else wx
+                    c_wz = min(wx, wz) if (cat == 'FILL' or prof in ('brick', 'plate', 'tile_flat')) else wz
+
                 seen_part_ids.add(part_id)
                 catalog.append({
                     "partId": part_id,

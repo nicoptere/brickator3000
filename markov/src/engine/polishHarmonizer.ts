@@ -18,15 +18,20 @@
  *      underlying bricks, ensuring physical clutch stability without vertical fault lines.
  */
 
-import { PlacedBrick, VoxelGrid, WFC_SCALE_COLORS } from './types';
+import { PlacedBrick, VoxelGrid, WFC_SCALE_COLORS, PieceProfile } from './types';
 import { LDU_STUD_PITCH, LDU_BRICK_HEIGHT, LDU_PLATE_HEIGHT } from './connectivityDictionary';
 import { WFC_REFINER } from './wfcRefinerEngine';
+import { CARDINAL_ROTATIONS } from './pieceFingerprint';
 
 export interface HarmonizationResult {
   harmonizedSlopesCount: number;
   mergedContinuousCurvesCount: number;
   swappedTransitionsCount: number;
   smoothedTilesCount: number;
+  mergedPolesCount: number;
+  replacedCanistersCount: number;
+  replacedCylindersCount: number;
+  replacedMacaroniCount: number;
   totalModifications: number;
 }
 
@@ -250,12 +255,12 @@ export class PolishHarmonizer {
         const mergeDirections: Array<{
           stepX: number;
           stepZ: number;
-          newRot: number;
+          newRot: 0 | 90 | 180 | 270;
           baseSize: [number, number, number];
           newSize: [number, number, number];
         }> = [
-          { stepX: 1, stepZ: 0, newRot: 90, baseSize: [1, 2, brick.baseSize ? brick.baseSize[2] : brick.size[2]], newSize: [2, 1, brick.size[2]] },
-          { stepX: 0, stepZ: 1, newRot: 0, baseSize: [1, 2, brick.baseSize ? brick.baseSize[2] : brick.size[2]], newSize: [1, 2, brick.size[2]] }
+          { stepX: 1, stepZ: 0, newRot: 0, baseSize: [2, 1, brick.baseSize ? brick.baseSize[2] : brick.size[2]], newSize: [2, 1, brick.size[2]] },
+          { stepX: 0, stepZ: 1, newRot: 90, baseSize: [2, 1, brick.baseSize ? brick.baseSize[2] : brick.size[2]], newSize: [1, 2, brick.size[2]] }
         ];
 
         for (const dir of mergeDirections) {
@@ -273,6 +278,7 @@ export class PolishHarmonizer {
               brick.partId = '3069b';
               brick.name = 'Tile 1 x 2 Flat';
               brick.rotation = dir.newRot;
+              brick.matrix = CARDINAL_ROTATIONS[dir.newRot];
               brick.baseSize = dir.baseSize;
               brick.size = dir.newSize;
 
@@ -294,15 +300,648 @@ export class PolishHarmonizer {
       }
     }
 
-    // 4. Slope & Curve Neighborhood Harmonization complete
-    // Note: Do NOT shrink 3-plate 3005 bricks into 1-plate 3070b tiles as that punches 16 LDU deep holes in flat surfaces.
+    // 4. Pole & Cylinder Harmonization
+    // - Thin poles / struts: replaced with canisters (3062b) and round plates (6141)
+    // - Square poles / pillars: merged into unbroken tall bricks (2453b 1x1x5, 3005 1x1x3)
+    // - Larger 2x2 round columns: replaced with 2x2 round cylinders (3941) and round plates (4032a)
+    // - Large 4x4 round columns: replaced with 4x4 round cylinders (6222) and round plates (60474)
+    // - Beyond 4x4 round perimeters: perimeter corners replaced with macaroni quadrants (3063b / 27925)
+    const poleHarmonization = this.harmonizePolesAndCylinders(
+      placedBricks,
+      occupiedCellToBrickId,
+      grid,
+      processedIds
+    );
+
+    const totalModifications =
+      harmonizedSlopesCount +
+      mergedContinuousCurvesCount +
+      swappedTransitionsCount +
+      smoothedTilesCount +
+      poleHarmonization.mergedPolesCount +
+      poleHarmonization.replacedCanistersCount +
+      poleHarmonization.replacedCylindersCount +
+      poleHarmonization.replacedMacaroniCount;
 
     return {
       harmonizedSlopesCount,
       mergedContinuousCurvesCount,
       swappedTransitionsCount,
       smoothedTilesCount,
-      totalModifications: harmonizedSlopesCount + mergedContinuousCurvesCount + swappedTransitionsCount + smoothedTilesCount
+      mergedPolesCount: poleHarmonization.mergedPolesCount,
+      replacedCanistersCount: poleHarmonization.replacedCanistersCount,
+      replacedCylindersCount: poleHarmonization.replacedCylindersCount,
+      replacedMacaroniCount: poleHarmonization.replacedMacaroniCount,
+      totalModifications
+    };
+  }
+
+  /**
+   * Harmonizes vertical poles, struts, and cylinders:
+   * - 1x1 poles:
+   *   - If roughly square in 3D model: merged into unbroken tall bricks (2453b 1x1x5, 3005 1x1x3)
+   *   - If thin / round (biplane struts, masts, cylinders): replaced with canisters (3062b 1x1x3) & round plates (6141)
+   * - 2x2 columns: replaced with 2x2 round cylinders (3941) & round plates (4032a) if round
+   * - 4x4 columns: replaced with 4x4 round cylinders (6222) & round plates (60474) if round
+   * - >4x4 circular perimeters: perimeter corners replaced with macaroni quadrants (3063b / 27925)
+   */
+  public static harmonizePolesAndCylinders(
+    placedBricks: Map<string, PlacedBrick>,
+    occupiedCellToBrickId: Map<string, string>,
+    grid: VoxelGrid,
+    processedIds?: Set<string>
+  ): {
+    mergedPolesCount: number;
+    replacedCanistersCount: number;
+    replacedCylindersCount: number;
+    replacedMacaroniCount: number;
+  } {
+    let mergedPolesCount = 0;
+    let replacedCanistersCount = 0;
+    let replacedCylindersCount = 0;
+    let replacedMacaroniCount = 0;
+
+    const seenIds = processedIds || new Set<string>();
+    const numStudsX = grid.numStudsX;
+    const numStudsZ = grid.numStudsZ;
+    const numPlatesY = grid.numPlatesY;
+
+    const isOccupied = (x: number, z: number, y: number): boolean => {
+      if (x < 0 || x >= numStudsX || z < 0 || z >= numStudsZ || y < 0 || y >= numPlatesY) return false;
+      if (grid.grid && grid.grid[x] && grid.grid[x][z] && grid.grid[x][z][y]) {
+        return !!grid.grid[x][z][y].occupied;
+      }
+      return occupiedCellToBrickId.has(this.cellKey(x, z, y));
+    };
+
+    // 1. Scan for 1x1 vertical poles/struts
+    for (let x = 0; x < numStudsX; x++) {
+      for (let z = 0; z < numStudsZ; z++) {
+        let y = 0;
+        while (y < numPlatesY) {
+          if (!isOccupied(x, z, y)) {
+            y++;
+            continue;
+          }
+
+          const yStart = y;
+          while (y < numPlatesY && isOccupied(x, z, y)) {
+            y++;
+          }
+          const yEnd = y - 1;
+          const H = yEnd - yStart + 1;
+
+          if (H < 2) continue;
+
+          const oldBrickIds = new Set<string>();
+          let isSolely1x1 = true;
+          let lateralAirSum = 0;
+
+          for (let cy = yStart; cy <= yEnd; cy++) {
+            const bId = occupiedCellToBrickId.get(this.cellKey(x, z, cy));
+            if (bId) {
+              const b = placedBricks.get(bId);
+              if (b) {
+                if (b.size[0] > 1 || b.size[1] > 1) {
+                  isSolely1x1 = false;
+                  break;
+                }
+                oldBrickIds.add(bId);
+              }
+            }
+
+            let air = 0;
+            if (!isOccupied(x + 1, z, cy)) air++;
+            if (!isOccupied(x - 1, z, cy)) air++;
+            if (!isOccupied(x, z + 1, cy)) air++;
+            if (!isOccupied(x, z - 1, cy)) air++;
+            lateralAirSum += air;
+          }
+
+          if (!isSolely1x1 || oldBrickIds.size === 0) continue;
+
+          const avgLateralAir = lateralAirSum / H;
+          if (avgLateralAir < 2.25) continue;
+
+          const oldBricksList = Array.from(oldBrickIds)
+            .map(id => placedBricks.get(id))
+            .filter(Boolean) as PlacedBrick[];
+          if (oldBricksList.length === 0) continue;
+          if (
+            oldBricksList.length === 1 &&
+            (oldBricksList[0].partId === '2453b' || (oldBricksList[0].partId === '3062b' && H === 3))
+          ) {
+            continue;
+          }
+
+          let hasCylindricalCurvature = false;
+          let nonCardinalNormals = 0;
+          let totalNormals = 0;
+
+          for (let cy = yStart; cy <= yEnd; cy++) {
+            const cell = grid.grid?.[x]?.[z]?.[cy];
+            if (!cell) continue;
+            if (cell.curvatureClass === 'cylindrical_convex' || cell.curvatureClass === 'corner_macaroni') {
+              hasCylindricalCurvature = true;
+            }
+            const [nx, ny, nz] = cell.normal || [0, 0, 0];
+            const horizLen = Math.sqrt(nx * nx + nz * nz);
+            if (horizLen > 0.3) {
+              totalNormals++;
+              const deg = Math.atan2(nz, nx) * (180 / Math.PI);
+              const mod90 = Math.abs((deg + 360) % 90);
+              const distTo90 = Math.min(mod90, 90 - mod90);
+              if (distTo90 > 12.0) {
+                nonCardinalNormals++;
+              }
+            }
+          }
+
+          const isRoundStrut =
+            hasCylindricalCurvature || nonCardinalNormals > 0 || (totalNormals === 0 && avgLateralAir >= 3.0);
+
+          const firstOld = oldBricksList[0];
+          for (const bId of oldBrickIds) {
+            placedBricks.delete(bId);
+            seenIds.add(bId);
+          }
+
+          if (isRoundStrut) {
+            // Replace with canisters (3062b, 3 plates) and round plates (6141, 1 plate)
+            let currY = yStart;
+            while (currY <= yEnd) {
+              const rem = yEnd - currY + 1;
+              const useBrick = rem >= 3;
+              const brickH = useBrick ? 3 : 1;
+              const partId = useBrick ? '3062b' : '6141';
+              const name = useBrick ? 'Brick 1 x 1 Round' : 'Plate 1 x 1 Round';
+              const profile: PieceProfile = useBrick ? 'round_cylinder' : 'round_plate';
+
+              const newId = `canister_${x}_${z}_${currY}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+              const ldrawX = (x + 0.5 - numStudsX / 2.0) * LDU_STUD_PITCH;
+              const ldrawZ = -((z + 0.5 - numStudsZ / 2.0) * LDU_STUD_PITCH);
+              const ldrawY = -(currY + brickH) * LDU_PLATE_HEIGHT;
+
+              const newBrick: PlacedBrick = {
+                id: newId,
+                partId,
+                name,
+                category: 'EDGE',
+                profile,
+                colorCode: firstOld.colorCode,
+                colorHex: firstOld.colorHex,
+                colorName: firstOld.colorName,
+                gridPos: [x, z, currY],
+                ldrawPos: [ldrawX, ldrawY, ldrawZ],
+                rotation: 0,
+                matrix: CARDINAL_ROTATIONS[0],
+                size: [1, 1, brickH],
+                baseSize: [1, 1, brickH],
+                stepIndex: firstOld.stepIndex,
+                growthPhase: firstOld.growthPhase,
+                clutchScore: 1.0,
+                parentBrickIds: [],
+                headId: firstOld.headId,
+                scaleN: 2,
+                scaleColorHex: firstOld.scaleColorHex,
+                islandId: firstOld.islandId,
+                islandColorHex: firstOld.islandColorHex
+              };
+
+              placedBricks.set(newId, newBrick);
+              seenIds.add(newId);
+              for (let dy = 0; dy < brickH; dy++) {
+                occupiedCellToBrickId.set(this.cellKey(x, z, currY + dy), newId);
+              }
+              replacedCanistersCount++;
+              currY += brickH;
+            }
+          } else {
+            // Square pillar: merge into unbroken tall bricks (2453b 1x1x5, then 3005)
+            let currY = yStart;
+            while (currY <= yEnd) {
+              const rem = yEnd - currY + 1;
+              let brickH = 1;
+              let partId = '3024';
+              let name = 'Plate 1 x 1';
+              let profile: PieceProfile = 'plate';
+
+              if (rem >= 15) {
+                brickH = 15;
+                partId = '2453b';
+                name = 'Brick 1 x 1 x 5';
+                profile = 'brick';
+              } else if (rem >= 3) {
+                brickH = 3;
+                partId = '3005';
+                name = 'Brick 1 x 1';
+                profile = 'brick';
+              }
+
+              const newId = `tallpole_${x}_${z}_${currY}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+              const ldrawX = (x + 0.5 - numStudsX / 2.0) * LDU_STUD_PITCH;
+              const ldrawZ = -((z + 0.5 - numStudsZ / 2.0) * LDU_STUD_PITCH);
+              const ldrawY = -(currY + brickH) * LDU_PLATE_HEIGHT;
+
+              const newBrick: PlacedBrick = {
+                id: newId,
+                partId,
+                name,
+                category: 'FILL',
+                profile,
+                colorCode: firstOld.colorCode,
+                colorHex: firstOld.colorHex,
+                colorName: firstOld.colorName,
+                gridPos: [x, z, currY],
+                ldrawPos: [ldrawX, ldrawY, ldrawZ],
+                rotation: 0,
+                matrix: CARDINAL_ROTATIONS[0],
+                size: [1, 1, brickH],
+                baseSize: [1, 1, brickH],
+                stepIndex: firstOld.stepIndex,
+                growthPhase: firstOld.growthPhase,
+                clutchScore: 1.0,
+                parentBrickIds: [],
+                headId: firstOld.headId,
+                scaleN: brickH >= 15 ? 8 : (brickH >= 3 ? 4 : 1),
+                scaleColorHex: firstOld.scaleColorHex,
+                islandId: firstOld.islandId,
+                islandColorHex: firstOld.islandColorHex
+              };
+
+              placedBricks.set(newId, newBrick);
+              seenIds.add(newId);
+              for (let dy = 0; dy < brickH; dy++) {
+                occupiedCellToBrickId.set(this.cellKey(x, z, currY + dy), newId);
+              }
+              mergedPolesCount++;
+              currY += brickH;
+            }
+          }
+        }
+      }
+    }
+
+    const processed2x2 = new Set<string>();
+    // 2. Scan for 2x2 round cylinders
+    for (let x = 0; x < numStudsX - 1; x++) {
+      for (let z = 0; z < numStudsZ - 1; z++) {
+        let y = 0;
+        while (y < numPlatesY) {
+          if (processed2x2.has(`${x},${z},${y}`)) {
+            y++;
+            continue;
+          }
+
+          const all4Occupied =
+            isOccupied(x, z, y) &&
+            isOccupied(x + 1, z, y) &&
+            isOccupied(x, z + 1, y) &&
+            isOccupied(x + 1, z + 1, y);
+
+          if (!all4Occupied) {
+            y++;
+            continue;
+          }
+
+          const yStart = y;
+          while (
+            y < numPlatesY &&
+            isOccupied(x, z, y) &&
+            isOccupied(x + 1, z, y) &&
+            isOccupied(x, z + 1, y) &&
+            isOccupied(x + 1, z + 1, y)
+          ) {
+            y++;
+          }
+          const yEnd = y - 1;
+          const H = yEnd - yStart + 1;
+          if (H < 2) continue;
+
+          let perimeterAirSum = 0;
+          const oldBrickIds = new Set<string>();
+          let fitsWithin2x2 = true;
+
+          for (let cy = yStart; cy <= yEnd; cy++) {
+            for (let dx = 0; dx < 2; dx++) {
+              for (let dz = 0; dz < 2; dz++) {
+                const bId = occupiedCellToBrickId.get(this.cellKey(x + dx, z + dz, cy));
+                if (bId) {
+                  const b = placedBricks.get(bId);
+                  if (
+                    b &&
+                    (b.gridPos[0] < x ||
+                      b.gridPos[0] + b.size[0] > x + 2 ||
+                      b.gridPos[1] < z ||
+                      b.gridPos[1] + b.size[1] > z + 2)
+                  ) {
+                    fitsWithin2x2 = false;
+                  }
+                  oldBrickIds.add(bId);
+                }
+              }
+            }
+
+            for (let px = -1; px <= 2; px++) {
+              for (let pz = -1; pz <= 2; pz++) {
+                if (px >= 0 && px < 2 && pz >= 0 && pz < 2) continue;
+                if (!isOccupied(x + px, z + pz, cy)) perimeterAirSum++;
+              }
+            }
+          }
+
+          if (!fitsWithin2x2 || oldBrickIds.size === 0) continue;
+          const avgPerimeterAir = perimeterAirSum / (H * 8);
+
+          let isRound = false;
+          for (let cy = yStart; cy <= yEnd; cy++) {
+            for (let dx = 0; dx < 2; dx++) {
+              for (let dz = 0; dz < 2; dz++) {
+                const c = grid.grid?.[x + dx]?.[z + dz]?.[cy];
+                if (c && (c.curvatureClass === 'cylindrical_convex' || c.curvatureClass === 'corner_macaroni')) {
+                  isRound = true;
+                  break;
+                }
+              }
+            }
+          }
+
+          if (isRound && avgPerimeterAir >= 0.5) {
+            for (let cy = yStart; cy <= yEnd; cy++) {
+              for (let dx = 0; dx < 2; dx++) {
+                for (let dz = 0; dz < 2; dz++) {
+                  processed2x2.add(`${x + dx},${z + dz},${cy}`);
+                }
+              }
+            }
+
+            const oldBricksList = Array.from(oldBrickIds)
+              .map(id => placedBricks.get(id))
+              .filter(Boolean) as PlacedBrick[];
+            if (oldBricksList.length === 0) continue;
+            const firstOld = oldBricksList[0];
+
+            for (const bId of oldBrickIds) {
+              placedBricks.delete(bId);
+              seenIds.add(bId);
+            }
+
+            let currY = yStart;
+            while (currY <= yEnd) {
+              const rem = yEnd - currY + 1;
+              const useBrick = rem >= 3;
+              const brickH = useBrick ? 3 : 1;
+              const partId = useBrick ? '3941' : '4032a';
+              const name = useBrick ? 'Brick 2 x 2 Round' : 'Plate 2 x 2 Round with Axlehole';
+              const profile: PieceProfile = useBrick ? 'round_cylinder' : 'round_plate';
+
+              const newId = `cyl2x2_${x}_${z}_${currY}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+              const ldrawX = (x + 1.0 - numStudsX / 2.0) * LDU_STUD_PITCH;
+              const ldrawZ = -((z + 1.0 - numStudsZ / 2.0) * LDU_STUD_PITCH);
+              const ldrawY = -(currY + brickH) * LDU_PLATE_HEIGHT;
+
+              const newBrick: PlacedBrick = {
+                id: newId,
+                partId,
+                name,
+                category: 'EDGE',
+                profile,
+                colorCode: firstOld.colorCode,
+                colorHex: firstOld.colorHex,
+                colorName: firstOld.colorName,
+                gridPos: [x, z, currY],
+                ldrawPos: [ldrawX, ldrawY, ldrawZ],
+                rotation: 0,
+                matrix: CARDINAL_ROTATIONS[0],
+                size: [2, 2, brickH],
+                baseSize: [2, 2, brickH],
+                stepIndex: firstOld.stepIndex,
+                growthPhase: firstOld.growthPhase,
+                clutchScore: 1.0,
+                parentBrickIds: [],
+                headId: firstOld.headId,
+                scaleN: 4,
+                scaleColorHex: firstOld.scaleColorHex,
+                islandId: firstOld.islandId,
+                islandColorHex: firstOld.islandColorHex
+              };
+
+              placedBricks.set(newId, newBrick);
+              seenIds.add(newId);
+              for (let dx = 0; dx < 2; dx++) {
+                for (let dz = 0; dz < 2; dz++) {
+                  for (let dy = 0; dy < brickH; dy++) {
+                    occupiedCellToBrickId.set(this.cellKey(x + dx, z + dz, currY + dy), newId);
+                  }
+                }
+              }
+              replacedCylindersCount++;
+              currY += brickH;
+            }
+          }
+        }
+      }
+    }
+
+    const processed4x4 = new Set<string>();
+    // 3. Scan for 4x4 round cylinders
+    for (let x = 0; x <= numStudsX - 4; x++) {
+      for (let z = 0; z <= numStudsZ - 4; z++) {
+        let y = 0;
+        while (y < numPlatesY) {
+          if (processed4x4.has(`${x},${z},${y}`)) {
+            y++;
+            continue;
+          }
+
+          let all16Occupied = true;
+          for (let dx = 0; dx < 4 && all16Occupied; dx++) {
+            for (let dz = 0; dz < 4; dz++) {
+              if (!isOccupied(x + dx, z + dz, y)) {
+                all16Occupied = false;
+                break;
+              }
+            }
+          }
+
+          if (!all16Occupied) {
+            y++;
+            continue;
+          }
+
+          const yStart = y;
+          let layerAllOccupied = true;
+          while (y < numPlatesY && layerAllOccupied) {
+            for (let dx = 0; dx < 4 && layerAllOccupied; dx++) {
+              for (let dz = 0; dz < 4; dz++) {
+                if (!isOccupied(x + dx, z + dz, y)) {
+                  layerAllOccupied = false;
+                  break;
+                }
+              }
+            }
+            if (layerAllOccupied) y++;
+          }
+          const yEnd = y - 1;
+          const H = yEnd - yStart + 1;
+          if (H < 2) continue;
+
+          let isRound = false;
+          for (let cy = yStart; cy <= yEnd; cy++) {
+            for (let dx = 0; dx < 4; dx++) {
+              for (let dz = 0; dz < 4; dz++) {
+                const c = grid.grid?.[x + dx]?.[z + dz]?.[cy];
+                if (c && (c.curvatureClass === 'cylindrical_convex' || c.curvatureClass === 'spherical_dome')) {
+                  isRound = true;
+                  break;
+                }
+              }
+            }
+          }
+
+          if (isRound) {
+            const oldBrickIds = new Set<string>();
+            let fits4x4 = true;
+            for (let cy = yStart; cy <= yEnd; cy++) {
+              for (let dx = 0; dx < 4; dx++) {
+                for (let dz = 0; dz < 4; dz++) {
+                  const bId = occupiedCellToBrickId.get(this.cellKey(x + dx, z + dz, cy));
+                  if (bId) {
+                    const b = placedBricks.get(bId);
+                    if (
+                      b &&
+                      (b.gridPos[0] < x ||
+                        b.gridPos[0] + b.size[0] > x + 4 ||
+                        b.gridPos[1] < z ||
+                        b.gridPos[1] + b.size[1] > z + 4)
+                    ) {
+                      fits4x4 = false;
+                    }
+                    oldBrickIds.add(bId);
+                  }
+                }
+              }
+            }
+
+            if (!fits4x4 || oldBrickIds.size === 0) continue;
+            for (let cy = yStart; cy <= yEnd; cy++) {
+              for (let dx = 0; dx < 4; dx++) {
+                for (let dz = 0; dz < 4; dz++) {
+                  processed4x4.add(`${x + dx},${z + dz},${cy}`);
+                }
+              }
+            }
+            const oldBricksList = Array.from(oldBrickIds)
+              .map(id => placedBricks.get(id))
+              .filter(Boolean) as PlacedBrick[];
+            if (oldBricksList.length === 0) continue;
+            const firstOld = oldBricksList[0];
+
+            for (const bId of oldBrickIds) {
+              placedBricks.delete(bId);
+              seenIds.add(bId);
+            }
+
+            let currY = yStart;
+            while (currY <= yEnd) {
+              const rem = yEnd - currY + 1;
+              const useBrick = rem >= 3;
+              const brickH = useBrick ? 3 : 1;
+              const partId = useBrick ? '6222' : '60474';
+              const name = useBrick ? 'Brick 4 x 4 Round' : 'Plate 4 x 4 Round';
+              const profile: PieceProfile = useBrick ? 'round_cylinder' : 'round_plate';
+
+              const newId = `cyl4x4_${x}_${z}_${currY}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+              const ldrawX = (x + 2.0 - numStudsX / 2.0) * LDU_STUD_PITCH;
+              const ldrawZ = -((z + 2.0 - numStudsZ / 2.0) * LDU_STUD_PITCH);
+              const ldrawY = -(currY + brickH) * LDU_PLATE_HEIGHT;
+
+              const newBrick: PlacedBrick = {
+                id: newId,
+                partId,
+                name,
+                category: 'EDGE',
+                profile,
+                colorCode: firstOld.colorCode,
+                colorHex: firstOld.colorHex,
+                colorName: firstOld.colorName,
+                gridPos: [x, z, currY],
+                ldrawPos: [ldrawX, ldrawY, ldrawZ],
+                rotation: 0,
+                matrix: CARDINAL_ROTATIONS[0],
+                size: [4, 4, brickH],
+                baseSize: [4, 4, brickH],
+                stepIndex: firstOld.stepIndex,
+                growthPhase: firstOld.growthPhase,
+                clutchScore: 1.0,
+                parentBrickIds: [],
+                headId: firstOld.headId,
+                scaleN: 8,
+                scaleColorHex: firstOld.scaleColorHex,
+                islandId: firstOld.islandId,
+                islandColorHex: firstOld.islandColorHex
+              };
+
+              placedBricks.set(newId, newBrick);
+              seenIds.add(newId);
+              for (let dx = 0; dx < 4; dx++) {
+                for (let dz = 0; dz < 4; dz++) {
+                  for (let dy = 0; dy < brickH; dy++) {
+                    occupiedCellToBrickId.set(this.cellKey(x + dx, z + dz, currY + dy), newId);
+                  }
+                }
+              }
+              replacedCylindersCount++;
+              currY += brickH;
+            }
+          }
+        }
+      }
+    }
+
+    // 4. Scan for circular perimeters beyond 4x4: use quarter circle macaroni pieces (3063b / 27925)
+    for (const brick of Array.from(placedBricks.values())) {
+      if (seenIds.has(brick.id)) continue;
+      if (brick.profile !== 'brick' && brick.profile !== 'plate') continue;
+
+      const [bx, bz, by] = brick.gridPos;
+      const cell = grid.grid?.[bx]?.[bz]?.[by];
+      if (cell && cell.curvatureClass === 'corner_macaroni') {
+        const rot: 0 | 90 | 180 | 270 = (cell.slopeHeading || 0) as any;
+        const useBrick = brick.size[2] >= 3;
+        const partId = useBrick ? '3063b' : '27925';
+        const name = useBrick ? 'Brick 2 x 2 Corner Round' : 'Tile 2 x 2 Macaroni Curved Round';
+
+        brick.partId = partId;
+        brick.name = name;
+        brick.profile = 'macaroni';
+        brick.category = 'EDGE';
+        brick.rotation = rot;
+        brick.matrix = CARDINAL_ROTATIONS[rot];
+        brick.baseSize = [2, 2, useBrick ? 3 : 1];
+        brick.size = [2, 2, useBrick ? 3 : 1];
+
+        const pcx = 10;
+        const pcz = -10;
+        const m = CARDINAL_ROTATIONS[rot];
+        const rotatedCx = m[0] * pcx + m[2] * pcz;
+        const rotatedCz = m[6] * pcx + m[8] * pcz;
+
+        const ldrawX = (bx + 1.0 - numStudsX / 2.0) * LDU_STUD_PITCH - rotatedCx;
+        const ldrawZ = -((bz + 1.0 - numStudsZ / 2.0) * LDU_STUD_PITCH) - rotatedCz;
+        const ldrawY = -(by + brick.size[2]) * LDU_PLATE_HEIGHT;
+        brick.ldrawPos = [ldrawX, ldrawY, ldrawZ];
+
+        seenIds.add(brick.id);
+        replacedMacaroniCount++;
+      }
+    }
+
+    return {
+      mergedPolesCount,
+      replacedCanistersCount,
+      replacedCylindersCount,
+      replacedMacaroniCount
     };
   }
 
