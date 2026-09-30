@@ -158,20 +158,38 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
     };
     animate();
 
-    const handleResize = () => {
-      if (!containerRef.current || !rendererRef.current || !cameraRef.current) return;
-      const w = containerRef.current.clientWidth;
-      const h = containerRef.current.clientHeight;
+    const applyResize = (w: number, h: number) => {
+      if (!rendererRef.current || !cameraRef.current || w <= 0 || h <= 0) return;
       cameraRef.current.aspect = w / h;
       cameraRef.current.updateProjectionMatrix();
       rendererRef.current.setSize(w, h);
+      rendererRef.current.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      if (sceneRef.current && cameraRef.current) {
+        rendererRef.current.render(sceneRef.current, cameraRef.current);
+      }
     };
 
-    window.addEventListener('resize', handleResize);
+    const handleWindowResize = () => {
+      if (!containerRef.current) return;
+      applyResize(containerRef.current.clientWidth, containerRef.current.clientHeight);
+    };
+
+    // ResizeObserver continuously watches container dimensions for immediate layout and drawer changes
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        if (width > 0 && height > 0) {
+          applyResize(width, height);
+        }
+      }
+    });
+    resizeObserver.observe(container);
+    window.addEventListener('resize', handleWindowResize);
 
     return () => {
       cancelAnimationFrame(animId);
-      window.removeEventListener('resize', handleResize);
+      resizeObserver.disconnect();
+      window.removeEventListener('resize', handleWindowResize);
       if (rendererRef.current && rendererRef.current.domElement) {
         container.removeChild(rendererRef.current.domElement);
         rendererRef.current.dispose();

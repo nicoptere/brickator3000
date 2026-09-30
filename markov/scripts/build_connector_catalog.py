@@ -412,7 +412,9 @@ for c in catalog:
 print("Summary by category:", dict(cat_summary))
 
 os.makedirs(os.path.dirname(OUTPUT_JSON), exist_ok=True)
-with open(OUTPUT_JSON, "w", encoding="utf-8") as f:
+tmp_file = OUTPUT_JSON + ".tmp"
+with open(tmp_file, "w", encoding="utf-8") as f:
     json.dump(catalog, f, indent=2)
+os.replace(tmp_file, OUTPUT_JSON)
 
 print(f"Saved catalog to: {OUTPUT_JSON}")

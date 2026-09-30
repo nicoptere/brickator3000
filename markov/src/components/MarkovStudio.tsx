@@ -23,6 +23,7 @@ import { RightDrawer } from './RightDrawer';
 import { ConnectorDatabaseInspector } from './ConnectorDatabaseInspector';
 import { OMRGalleryInspector } from './OMRGalleryInspector';
 import { PanelLeftIcon, PanelRightIcon } from './common/Icons';
+import { ModelStatsOverlay } from './controls/ModelStatsOverlay';
 
 import { VoxelGrid, PlacedBrick, MarkovEngineOptions, GrowthStepResult } from '../engine/types';
 import { MeshVoxelizer } from '../engine/meshVoxelizer';
@@ -185,6 +186,14 @@ export const MarkovStudio: React.FC = () => {
   useEffect(() => {
     initializeModel(modelType, targetHeightBricks, options);
   }, []);
+
+  // Resize WebGL canvas whenever drawers are shown or hidden
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      window.dispatchEvent(new Event('resize'));
+    }, 40);
+    return () => clearTimeout(timer);
+  }, [isLeftDrawerOpen, isRightDrawerOpen]);
 
   const handleSelectModel = (type: string, url?: string) => {
     setModelType(type);
@@ -620,6 +629,16 @@ export const MarkovStudio: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Tiny Bottom-Left Built Model Stats Panel */}
+        <ModelStatsOverlay
+          bricks={bricks}
+          grid={grid}
+          buildabilityReport={buildabilityReport}
+          harmonizationResult={harmonizationResult}
+          distanceMetric={distanceMetric}
+          phase={phase}
+        />
       </div>
 
       {/* 3. Right Drawer Panel: Generation Settings, Scale, OMR, WFC, Polish */}
