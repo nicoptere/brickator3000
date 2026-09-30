@@ -300,7 +300,7 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
       const cacheKey = `${brick.partId}_${brick.profile}_${baseWX}x${baseDZ}x${baseHY}`;
 
       const [lx, , lz] = brick.ldrawPos;
-      const brickPosY = (brick.gridPos[1] + brick.size[2] / 2.0) * LDU_PLATE_HEIGHT;
+      const brickPosY = (brick.gridPos[2] + brick.size[2] / 2.0) * LDU_PLATE_HEIGHT;
       const brickRotY = -(brick.rotation * Math.PI) / 180.0;
       const brickPos = new THREE.Vector3(lx, brickPosY, -lz);
       quat.setFromAxisAngle(yAxis, brickRotY);
@@ -539,7 +539,7 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
         )}
         {mode === 'GROWING_CORE' && (
           <div style={{ color: '#fbbf24', fontSize: 11 }}>
-            Step {currentStepIndex} of {bricks.length}
+            Step {currentStepIndex} ({bricks.length} bricks)
           </div>
         )}
       </div>

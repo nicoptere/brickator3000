@@ -60,7 +60,7 @@ export const MarkovStudio: React.FC = () => {
   const [modelType, setModelType] = useState<string>('beetle'); // Default to VW Beetle
   const [modelUrl, setModelUrl] = useState<string | undefined>(undefined);
   const [targetHeightBricks, setTargetHeightBricks] = useState<number>(16); // Default 16 bricks (1*1*1 brick grid)
-  const [viewportMode, setViewportMode] = useState<ViewportMode>('GROWING_CORE');
+  const [viewportMode, setViewportMode] = useState<ViewportMode>('FINAL_MODEL');
   const [sourceMeshMode, setSourceMeshMode] = useState<SourceMeshMode>('none');
   const [colorMode, setColorMode] = useState<'island_components' | 'wfc_hierarchy' | 'actual'>('island_components');
   const [selectedIslandId, setSelectedIslandId] = useState<number | null>(null);
@@ -227,6 +227,7 @@ export const MarkovStudio: React.FC = () => {
 
     if (res.phase === 'DONE') {
       setIsPlaying(false);
+      setViewportMode('FINAL_MODEL');
       return false;
     }
 
@@ -306,6 +307,7 @@ export const MarkovStudio: React.FC = () => {
     const solvedBricks = Array.from(engine.placedBricks.values());
     setBricks(solvedBricks);
     setCurrentStepIndex(engine.stepIndex);
+    setViewportMode('FINAL_MODEL');
     setPhase(engine.currentPhase);
     setStats({
       totalPlaced: res.totalPlacedBricks,
@@ -330,6 +332,7 @@ export const MarkovStudio: React.FC = () => {
     const res = engine.solveSingleIsland(islandId, 1500);
     setBricks(Array.from(engine.placedBricks.values()));
     setCurrentStepIndex(engine.stepIndex);
+    setViewportMode('FINAL_MODEL');
     setPhase(engine.currentPhase);
     setStats({
       totalPlaced: res.totalPlacedBricks,
@@ -613,8 +616,14 @@ export const MarkovStudio: React.FC = () => {
         viewportMode={viewportMode}
         onChangeViewportMode={setViewportMode}
         isPlaying={isPlaying}
-        onTogglePlay={() => setIsPlaying(!isPlaying)}
-        onStep={executeStep}
+        onTogglePlay={() => {
+          if (!isPlaying) setViewportMode('GROWING_CORE');
+          setIsPlaying(!isPlaying);
+        }}
+        onStep={() => {
+          setViewportMode('GROWING_CORE');
+          executeStep();
+        }}
         onSolveAll={handleSolveAll}
         onReset={handleReset}
         onExportLDR={handleExportLDR}
