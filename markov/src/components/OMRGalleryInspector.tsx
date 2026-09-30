@@ -169,17 +169,18 @@ export const OMRGalleryInspector: React.FC<OMRGalleryInspectorProps> = ({ isOpen
           </div>
           <button
             onClick={onClose}
+            aria-label="Close"
             style={{
               background: 'transparent',
               border: 'none',
               color: '#94a3b8',
-              fontSize: 22,
+              fontSize: 16,
               cursor: 'pointer',
-              padding: '4px 8px',
+              padding: '6px 10px',
               borderRadius: 6
             }}
           >
-            ✕
+            Close
           </button>
         </div>
 

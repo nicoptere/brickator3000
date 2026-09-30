@@ -1,5 +1,5 @@
 /**
- * ColorModeSelector - Decoupled Color Scheme Control Component.
+ * ColorModeSelector - Color Scheme Control Component (Zero Emojis).
  */
 
 import React from 'react';
@@ -16,9 +16,9 @@ export const ColorModeSelector: React.FC<ColorModeSelectorProps> = ({
   onChangeColorMode
 }) => {
   const modes: Array<{ id: ColorMode; label: string; desc: string }> = [
-    { id: 'island_components', label: '🏝️ Mesh Islands', desc: 'Each component has its own random color material' },
-    { id: 'wfc_hierarchy', label: '🎨 WFC Scale N=', desc: 'Hierarchical scale levels (N=8..0)' },
-    { id: 'actual', label: '🌈 Source RGB', desc: 'Direct 24-bit RGB texture sampling' }
+    { id: 'island_components', label: 'Mesh Islands', desc: 'Each component has its own random color material' },
+    { id: 'wfc_hierarchy', label: 'WFC Scale N=', desc: 'Hierarchical scale levels (N=8..0)' },
+    { id: 'actual', label: 'Source RGB', desc: 'Direct 24-bit RGB texture sampling' }
   ];
 
   return (
@@ -40,27 +40,31 @@ export const ColorModeSelector: React.FC<ColorModeSelectorProps> = ({
         </span>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
-        {modes.map((cm) => (
-          <button
-            key={cm.id}
-            onClick={() => onChangeColorMode(cm.id)}
-            style={{
-              padding: '7px 4px',
-              borderRadius: 6,
-              border: 'none',
-              fontSize: 10,
-              fontWeight: 600,
-              cursor: 'pointer',
-              backgroundColor: colorMode === cm.id ? '#8b5cf6' : '#1e293b',
-              color: colorMode === cm.id ? '#ffffff' : '#94a3b8',
-              transition: 'all 0.15s ease'
-            }}
-            title={cm.desc}
-          >
-            {cm.label}
-          </button>
-        ))}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 5 }}>
+        {modes.map((cm) => {
+          const isSelected = colorMode === cm.id;
+          return (
+            <button
+              key={cm.id}
+              onClick={() => onChangeColorMode(cm.id)}
+              style={{
+                height: 30,
+                padding: '0 4px',
+                borderRadius: 6,
+                border: isSelected ? '1px solid #8b5cf6' : '1px solid #334155',
+                fontSize: 10,
+                fontWeight: 600,
+                cursor: 'pointer',
+                backgroundColor: isSelected ? '#8b5cf6' : '#1e293b',
+                color: isSelected ? '#ffffff' : '#cbd5e1',
+                transition: 'all 0.15s ease'
+              }}
+              title={cm.desc}
+            >
+              {cm.label}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

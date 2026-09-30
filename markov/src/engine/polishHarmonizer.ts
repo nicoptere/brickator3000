@@ -180,6 +180,60 @@ export class PolishHarmonizer {
           }
         }
       }
+
+      // Merge two adjacent 2x2 curved slopes (15068) into 4x2 curved slope (88930)
+      if (brick.partId === '15068' && brick.profile === 'slope_curved') {
+        const [bx, bz, by] = brick.gridPos;
+        const rot = brick.rotation;
+        const stepX = (rot === 0 || rot === 180) ? 2 : 0;
+        const stepZ = (rot === 90 || rot === 270) ? 2 : 0;
+
+        const candidatePos = [bx + stepX, bz + stepZ, by];
+        const candidateId = occupiedCellToBrickId.get(this.cellKey(candidatePos[0], candidatePos[1], candidatePos[2]));
+
+        if (candidateId && candidateId !== brick.id && !processedIds.has(candidateId)) {
+          const candidate = placedBricks.get(candidateId);
+          if (
+            candidate &&
+            candidate.partId === '15068' &&
+            candidate.rotation === rot &&
+            candidate.colorHex === brick.colorHex &&
+            candidate.islandId === brick.islandId
+          ) {
+            const minX = Math.min(bx, candidate.gridPos[0]);
+            const minZ = Math.min(bz, candidate.gridPos[1]);
+            const minY = by;
+
+            brick.partId = '88930';
+            brick.name = 'Slope Brick Curved 4 x 2';
+            brick.gridPos = [minX, minZ, minY];
+            const newWx = (rot === 0 || rot === 180) ? 4 : 2;
+            const newDz = (rot === 0 || rot === 180) ? 2 : 4;
+            brick.size = [newWx, newDz, brick.size[2]];
+            brick.baseSize = [4, 2, brick.baseSize ? brick.baseSize[2] : brick.size[2]];
+
+            const ldrawX = (minX + brick.size[0] / 2.0 - numStudsX / 2.0) * LDU_STUD_PITCH;
+            const ldrawZ = -((minZ + brick.size[1] / 2.0 - numStudsZ / 2.0) * LDU_STUD_PITCH);
+            const ldrawY = -(minY + brick.size[2]) * LDU_BRICK_HEIGHT;
+            brick.ldrawPos = [ldrawX, ldrawY, ldrawZ];
+
+            const [cx, cz, cy] = candidate.gridPos;
+            const [cw, cd, ch] = candidate.size;
+            for (let dx = 0; dx < cw; dx++) {
+              for (let dz = 0; dz < cd; dz++) {
+                for (let dy = 0; dy < ch; dy++) {
+                  occupiedCellToBrickId.set(this.cellKey(cx + dx, cz + dz, cy + dy), brick.id);
+                }
+              }
+            }
+
+            placedBricks.delete(candidate.id);
+            processedIds.add(brick.id);
+            processedIds.add(candidate.id);
+            mergedContinuousCurvesCount++;
+          }
+        }
+      }
     }
 
     // 3. Tile Smoothing: Merge isolated adjacent 1x1 flat tiles into 1x2 flat tiles (3069b)

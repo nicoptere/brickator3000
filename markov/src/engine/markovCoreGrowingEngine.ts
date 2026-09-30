@@ -139,7 +139,7 @@ export class MarkovCoreGrowingEngine {
       seedMode: options.seedMode ?? 'DEEPEST_CORE',
       staggerRunningBond: options.staggerRunningBond ?? true,
       enableModernWeirdParts: options.enableModernWeirdParts ?? true,
-      enableStudlessTopFinish: options.enableStudlessTopFinish ?? true,
+      enableStudlessTopFinish: options.enableStudlessTopFinish ?? false,
       directRGBSampling: options.directRGBSampling ?? true,
       randomSeed: options.randomSeed ?? 42,
       maxSteps: options.maxSteps ?? 5000,
@@ -412,6 +412,7 @@ export class MarkovCoreGrowingEngine {
     // Sort surface candidates:
     // 1. Prioritize cells with curved / angled slopes (slope_curved, slope_inverted, slope_33, slope_45, corner_macaroni, spherical_dome)
     // 2. Sort top-down (higher Y first) to lay sweeps (hood, roof, trunk) naturally
+    // 3. For cells at the same layer and slope class, sort along the lateral sweep direction for contiguous slope chaining
     this.surfaceCandidates.sort((a, b) => {
       const cellA = this.grid.grid[a.x][a.z][a.y];
       const cellB = this.grid.grid[b.x][b.z][b.y];
@@ -419,7 +420,26 @@ export class MarkovCoreGrowingEngine {
       const hasSlopeB = cellB.slopeClass !== 'flat' || cellB.curvatureClass !== 'flat';
       if (hasSlopeA && !hasSlopeB) return -1;
       if (!hasSlopeA && hasSlopeB) return 1;
-      return b.y - a.y;
+
+      if (b.y !== a.y) return b.y - a.y;
+
+      // Group by primary outward heading (Z-facing vs X-facing) to sweep each flank contiguously
+      const [nxA, , nzA] = cellA.normal;
+      const [nxB, , nzB] = cellB.normal;
+      const isZHeadingA = Math.abs(nzA) >= Math.abs(nxA);
+      const isZHeadingB = Math.abs(nzB) >= Math.abs(nxB);
+      if (isZHeadingA !== isZHeadingB) {
+        return isZHeadingA ? -1 : 1;
+      }
+
+      // Sweep along lateral run axis
+      if (isZHeadingA) {
+        if (a.z !== b.z) return a.z - b.z;
+        return a.x - b.x;
+      } else {
+        if (a.x !== b.x) return a.x - b.x;
+        return a.z - b.z;
+      }
     });
 
     this.surfaceCandidateCursor = 0;
@@ -532,7 +552,13 @@ export class MarkovCoreGrowingEngine {
 
       scoredCandidates.sort((a, b) => b.score - a.score);
 
-      let placed = false;
+      // Global best placement across all candidate parts, rotations, and anchor offsets
+      let bestPlacement: {
+        connector: any;
+        variant: RotatedPieceVariant;
+        anchor: { startX: number; startZ: number; startY: number };
+        score: number;
+      } | null = null;
 
       for (const item of scoredCandidates) {
         const candidatePartId = item.partId;
@@ -565,8 +591,6 @@ export class MarkovCoreGrowingEngine {
           const hY = variant.heightY;
 
           // Test multi-stud anchor offsets so the piece can contain (x, z, y) at any position
-          let bestAnchor: { startX: number; startZ: number; startY: number } | null = null;
-
           for (let ci = 0; ci < variant.occupiedCells.length; ci++) {
             const cellOffset: { dx: number; dz: number; dy: number } = variant.occupiedCells[ci];
             const startX: number = x - cellOffset.dx;
@@ -602,31 +626,75 @@ export class MarkovCoreGrowingEngine {
             }
 
             if (fits) {
-              bestAnchor = { startX, startZ, startY };
-              break;
+              // Base score combines candidate ranking and larger piece footprint
+              let anchorScore = item.score + variant.occupiedCells.length * 20;
+
+              // Lateral slope continuity bonus: check if adjacent in lateral run has matching slope & heading
+              const isZHeading = rot === 0 || rot === 180;
+              if (isZHeading) {
+                const leftId = this.occupiedCellToBrickId.get(this.cellKey(startX - 1, startZ, startY));
+                const rightId = this.occupiedCellToBrickId.get(this.cellKey(startX + wX, startZ, startY));
+                if (leftId) {
+                  const nb = this.placedBricks.get(leftId);
+                  if (nb && nb.profile === connector.profile && nb.rotation === rot) {
+                    anchorScore += 120;
+                    if (nb.partId === candidatePartId) anchorScore += 60;
+                  }
+                }
+                if (rightId) {
+                  const nb = this.placedBricks.get(rightId);
+                  if (nb && nb.profile === connector.profile && nb.rotation === rot) {
+                    anchorScore += 120;
+                    if (nb.partId === candidatePartId) anchorScore += 60;
+                  }
+                }
+              } else {
+                const frontId = this.occupiedCellToBrickId.get(this.cellKey(startX, startZ - 1, startY));
+                const backId = this.occupiedCellToBrickId.get(this.cellKey(startX, startZ + dZ, startY));
+                if (frontId) {
+                  const nb = this.placedBricks.get(frontId);
+                  if (nb && nb.profile === connector.profile && nb.rotation === rot) {
+                    anchorScore += 120;
+                    if (nb.partId === candidatePartId) anchorScore += 60;
+                  }
+                }
+                if (backId) {
+                  const nb = this.placedBricks.get(backId);
+                  if (nb && nb.profile === connector.profile && nb.rotation === rot) {
+                    anchorScore += 120;
+                    if (nb.partId === candidatePartId) anchorScore += 60;
+                  }
+                }
+              }
+
+              if (!bestPlacement || anchorScore > bestPlacement.score) {
+                bestPlacement = {
+                  connector,
+                  variant,
+                  anchor: { startX, startZ, startY },
+                  score: anchorScore
+                };
+              }
             }
           }
-
-          if (bestAnchor) {
-            const headId = (bestAnchor.startX + bestAnchor.startZ + bestAnchor.startY) % this.heads.length;
-            const b = this.commitBrick(
-              bestAnchor.startX,
-              bestAnchor.startZ,
-              bestAnchor.startY,
-              connector,
-              variant,
-              'SURFACE_EDGE',
-              headId,
-              undefined,
-              2
-            );
-            newBricks.push(b);
-            placedInTick++;
-            placed = true;
-            break;
-          }
         }
-        if (placed) break;
+      }
+
+      if (bestPlacement) {
+        const headId = (bestPlacement.anchor.startX + bestPlacement.anchor.startZ + bestPlacement.anchor.startY) % this.heads.length;
+        const b = this.commitBrick(
+          bestPlacement.anchor.startX,
+          bestPlacement.anchor.startZ,
+          bestPlacement.anchor.startY,
+          bestPlacement.connector,
+          bestPlacement.variant,
+          'SURFACE_EDGE',
+          headId,
+          undefined,
+          2
+        );
+        newBricks.push(b);
+        placedInTick++;
       }
     }
 
@@ -763,11 +831,13 @@ export class MarkovCoreGrowingEngine {
    */
   private stepTileFinish(): PlacedBrick[] {
     const newBricks: PlacedBrick[] = [];
-    const tileParts = [
-      { partId: '3068b', w: 2, d: 2 }, // Tile 2 x 2 Flat
-      { partId: '3069b', w: 1, d: 2 }, // Tile 1 x 2 Flat
-      { partId: '2431',  w: 1, d: 4 }, // Tile 1 x 4 Flat
-      { partId: '98138', w: 1, d: 1 }  // Tile 1 x 1 Round Flat
+    const tileCatalog = [
+      { partId: '87079', w: 2, d: 4, name: 'Tile 2 x 4' },
+      { partId: '3068b', w: 2, d: 2, name: 'Tile 2 x 2 Flat' },
+      { partId: '2431',  w: 1, d: 4, name: 'Tile 1 x 4 Flat' },
+      { partId: '6636',  w: 1, d: 6, name: 'Tile 1 x 6 Flat' },
+      { partId: '3069b', w: 1, d: 2, name: 'Tile 1 x 2 Flat' },
+      { partId: '98138', w: 1, d: 1, name: 'Tile 1 x 1 Round Flat' }
     ];
     const { numStudsX, numStudsZ, numPlatesY } = this.grid;
     let tilesPlaced = 0;
@@ -784,56 +854,48 @@ export class MarkovCoreGrowingEngine {
           if (!placed) break;
           if (this.targetIslandId != null && placed.islandId !== this.targetIslandId) break;
 
+          // Only standard uncapped bricks/plates are candidates for studless finishing
           if (
             placed.profile === 'tile_flat' ||
             placed.profile === 'slope_curved' ||
+            placed.profile === 'slope_inverted' ||
             placed.profile === 'cheese' ||
             placed.profile === 'macaroni' ||
+            placed.profile === 'dish' ||
             placed.growthPhase === 'TILE_FINISH'
           ) {
             break;
           }
 
+          // Verify that the top face of the brick is fully exposed to the outside
           const topFaceY = placed.gridPos[2] + placed.size[2];
-          const isTopExposed = topFaceY >= numPlatesY || !this.occupiedCellToBrickId.has(this.cellKey(x, z, topFaceY));
-          if (!isTopExposed) break;
-
-          for (const tp of tileParts) {
-            for (const isRot of [false, true]) {
-              const tw = isRot ? tp.d : tp.w;
-              const td = isRot ? tp.w : tp.d;
-              const rot: 0 | 90 = isRot ? 90 : 0;
-
-              if (x + tw <= numStudsX && z + td <= numStudsZ) {
-                let canCap = true;
-                for (let dx = 0; dx < tw && canCap; dx++) {
-                  for (let dz = 0; dz < td && canCap; dz++) {
-                    const cKey = this.cellKey(x + dx, z + dz, y);
-                    const bId = this.occupiedCellToBrickId.get(cKey);
-                    if (!bId) { canCap = false; break; }
-                    const b = this.placedBricks.get(bId);
-                    if (!b || b.profile === 'tile_flat') { canCap = false; break; }
-                    if (y + 1 < numPlatesY && this.occupiedCellToBrickId.has(this.cellKey(x + dx, z + dz, y + 1))) {
-                      canCap = false;
-                      break;
-                    }
-                  }
-                }
-
-                if (canCap) {
-                  const b = this.placedBricks.get(brickId);
-                  if (b) {
-                    b.profile = 'tile_flat';
-                    b.growthPhase = 'TILE_FINISH';
-                    b.scaleN = 1;
-                    b.scaleColorHex = WFC_SCALE_COLORS[0]; // Cyan tile finish
-                    tilesPlaced++;
-                  }
-                  break;
-                }
+          let isFullyExposed = true;
+          for (let bx = 0; bx < placed.size[0] && isFullyExposed; bx++) {
+            for (let bz = 0; bz < placed.size[1] && isFullyExposed; bz++) {
+              const gx = placed.gridPos[0] + bx;
+              const gz = placed.gridPos[1] + bz;
+              if (topFaceY < numPlatesY && this.occupiedCellToBrickId.has(this.cellKey(gx, gz, topFaceY))) {
+                isFullyExposed = false;
               }
             }
-            if (tilesPlaced >= maxTilesPerTick) break;
+          }
+          if (!isFullyExposed) break;
+
+          // Find exact matching authentic tile by footprint
+          const bw = placed.size[0];
+          const bd = placed.size[1];
+          const matchingTile = tileCatalog.find(
+            (tp) => (tp.w === bw && tp.d === bd) || (tp.w === bd && tp.d === bw)
+          );
+
+          if (matchingTile) {
+            placed.profile = 'tile_flat';
+            placed.partId = matchingTile.partId;
+            placed.name = matchingTile.name;
+            placed.growthPhase = 'TILE_FINISH';
+            placed.scaleN = 1;
+            placed.scaleColorHex = WFC_SCALE_COLORS[0]; // Cyan tile finish
+            tilesPlaced++;
           }
           break;
         }

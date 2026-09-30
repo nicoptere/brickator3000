@@ -3,40 +3,41 @@
  *
  * Coordinates:
  * - 3D Viewport with authentic LEGO rendering & Source 3D Mesh Overlay
- * - Control panel with model selection (Duck, Dolphin, Mini, Beetle, Concorde, Delacroix, Castle)
+ * - Two-Drawer Layout:
+ *   - Left Drawer: SEC 1 Model Selector (Clean tree + Presets), SEC 2 Model Params & Islands
+ *   - Right Drawer: Generation Settings, Scale, OMR Tensor, Polish & BFS Buildability, Action Controls
  * - 4-Phase Discretization Pipeline:
  *   1. Forward Volume Fill (1x1 Plates with direct RGB sampled colors)
  *   2. Backwards Agglomerative Brick Merging (Interlocking running bond)
  *   3. Exterior Surface Replacement (Curved slopes, inverted slopes, macaroni, horns)
  *   4. Studless Top Finish (Smooth flat tiles)
- * - Interactive step scrubbing timeline
- * - Real-time BOM & graph statistics HUD
- * - Connector Database and OMR Gallery modal inspectors
+ * - Authentic LDraw piece IDs (3001.dat, 88930.dat, etc.) and exact 20x20x24 LDU dimensions
+ * - Zero Emojis, Zero Fireworks, Zero Sounds, Zero Timeline Slider
  */
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import * as THREE from 'three';
-import confetti from 'canvas-confetti';
 import { Viewport3D, ViewportMode, SourceMeshMode } from './Viewport3D';
-import { ControlPanel } from './ControlPanel';
+import { LeftDrawer } from './LeftDrawer';
+import { RightDrawer } from './RightDrawer';
 import { ConnectorDatabaseInspector } from './ConnectorDatabaseInspector';
 import { OMRGalleryInspector } from './OMRGalleryInspector';
+import { PanelLeftIcon, PanelRightIcon } from './common/Icons';
 
 import { VoxelGrid, PlacedBrick, MarkovEngineOptions, GrowthStepResult } from '../engine/types';
 import { MeshVoxelizer } from '../engine/meshVoxelizer';
 import { MarkovCoreGrowingEngine } from '../engine/markovCoreGrowingEngine';
 import { LDrawExporter } from '../engine/ldrawExporter';
-import { brickAudio } from '../engine/brickAudio';
 import { MeshIslandSegmenter } from '../engine/meshIslandSegmenter';
 import { WFC_REFINER, OMRCategory } from '../engine/wfcRefinerEngine';
 import { MeshDistanceEvaluator, MeshDistanceResult } from '../engine/meshDistanceMetric';
-import { PolishHarmonizer, BuildabilityReport, HarmonizationResult } from '../engine/polishHarmonizer';
+import { BuildabilityReport, HarmonizationResult } from '../engine/polishHarmonizer';
 
 const MODEL_PRESETS: Record<
   string,
   { label: string; url: string; fallbackType: 'duck' | 'car' | 'dolphin' | 'airplane' | 'dome_creature' }
 > = {
-  spearman: { label: '⚔️ Spearman', url: '/models/spearman.glb', fallbackType: 'dome_creature' },
+  spearman: { label: 'Spearman', url: '/models/spearman.glb', fallbackType: 'dome_creature' },
   beetle: { label: 'VW Beetle', url: '/models/clean/cars/vwbeetle.glb', fallbackType: 'car' },
   mini: { label: 'Mini Cooper', url: '/models/clean/cars/mini.glb', fallbackType: 'car' },
   concorde: { label: 'Concorde', url: '/models/clean/airplanes/concord.glb', fallbackType: 'airplane' },
@@ -47,25 +48,29 @@ const MODEL_PRESETS: Record<
 };
 
 const PHASE_LABELS: Record<string, { title: string; color: string }> = {
-  SURFACE_SHELL: { title: '1. WFC EXTERIOR SKIN (N = 2)', color: '#ec4899' },
-  CORE_INFILL: { title: '2. MACRO STRUCTURAL CORE (N = 8, 4)', color: '#38bdf8' },
-  TILE_FINISH: { title: '3. STUDLESS TOP FINISH (N = 0)', color: '#06b6d4' },
-  POLISH_HARMONIZATION: { title: '4. POLISH & HARMONIZATION', color: '#c084fc' },
-  BUILDABILITY_VERIFY: { title: '5. BUILDABILITY BFS CHECK', color: '#f59e0b' },
-  DONE: { title: '6. BUILD COMPLETE', color: '#34d399' }
+  SURFACE_SHELL: { title: '1. WFC Exterior Skin (N = 2)', color: '#ec4899' },
+  CORE_INFILL: { title: '2. Macro Structural Core (N = 8, 4)', color: '#38bdf8' },
+  TILE_FINISH: { title: '3. Studless Top Finish (N = 0)', color: '#06b6d4' },
+  POLISH_HARMONIZATION: { title: '4. Polish & Harmonization', color: '#c084fc' },
+  BUILDABILITY_VERIFY: { title: '5. Buildability BFS Check', color: '#f59e0b' },
+  DONE: { title: '6. Build Complete', color: '#34d399' }
 };
 
 export const MarkovStudio: React.FC = () => {
   const [modelType, setModelType] = useState<string>('beetle'); // Default to VW Beetle
+  const [modelUrl, setModelUrl] = useState<string | undefined>(undefined);
   const [targetHeightBricks, setTargetHeightBricks] = useState<number>(16); // Default 16 bricks (1*1*1 brick grid)
   const [viewportMode, setViewportMode] = useState<ViewportMode>('GROWING_CORE');
-  const [sourceMeshMode, setSourceMeshMode] = useState<SourceMeshMode>('none'); // Default: zero ghost mesh overlay
-  const [colorMode, setColorMode] = useState<'island_components' | 'wfc_hierarchy' | 'actual'>('island_components'); // Color code each part with distinct color
+  const [sourceMeshMode, setSourceMeshMode] = useState<SourceMeshMode>('none');
+  const [colorMode, setColorMode] = useState<'island_components' | 'wfc_hierarchy' | 'actual'>('island_components');
   const [selectedIslandId, setSelectedIslandId] = useState<number | null>(null);
-  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true);
+
+  // Two Drawer visibility states
+  const [isLeftDrawerOpen, setIsLeftDrawerOpen] = useState<boolean>(true);
+  const [isRightDrawerOpen, setIsRightDrawerOpen] = useState<boolean>(true);
+
   const [colorSeed, setColorSeed] = useState<number>(1);
   const [autoRotate, setAutoRotate] = useState<boolean>(false);
-  const [isMuted, setIsMuted] = useState<boolean>(false);
   const [speed, setSpeed] = useState<number>(6);
 
   // Modals
@@ -89,7 +94,7 @@ export const MarkovStudio: React.FC = () => {
     seedMode: 'DEEPEST_CORE',
     staggerRunningBond: true,
     enableModernWeirdParts: true,
-    enableStudlessTopFinish: true,
+    enableStudlessTopFinish: false, // Default to false so authentic LEGO cylindrical studs appear on exposed brick tops
     directRGBSampling: true,
     batchStepSize: 16,
     colorMode: 'island_components',
@@ -112,7 +117,7 @@ export const MarkovStudio: React.FC = () => {
 
   // Re-build Voxel Grid from authentic 3D model or custom upload
   const initializeModel = useCallback(
-    async (type: string, heightBricks: number, opts: MarkovEngineOptions, customFile?: File) => {
+    async (type: string, heightBricks: number, opts: MarkovEngineOptions, customFile?: File, customUrl?: string) => {
       setIsPlaying(false);
       setIsLoading(true);
       setLoadingMessage('Loading authentic 3D model & extracting half-edge islands...');
@@ -121,6 +126,8 @@ export const MarkovStudio: React.FC = () => {
         let modelObj: THREE.Object3D;
         if (customFile) {
           modelObj = await MeshVoxelizer.loadModel(customFile);
+        } else if (customUrl) {
+          modelObj = await MeshVoxelizer.loadModel(customUrl);
         } else {
           const preset = MODEL_PRESETS[type] || MODEL_PRESETS['beetle'];
           try {
@@ -176,20 +183,21 @@ export const MarkovStudio: React.FC = () => {
     initializeModel(modelType, targetHeightBricks, options);
   }, []);
 
-  const handleSelectModel = (type: string) => {
+  const handleSelectModel = (type: string, url?: string) => {
     setModelType(type);
-    initializeModel(type, targetHeightBricks, options);
+    setModelUrl(url);
+    initializeModel(type, targetHeightBricks, options, undefined, url);
   };
 
   const handleChangeHeight = (h: number) => {
     setTargetHeightBricks(h);
-    initializeModel(modelType, h, options);
+    initializeModel(modelType, h, options, undefined, modelUrl);
   };
 
   const handleChangeOptions = (newOpts: Partial<MarkovEngineOptions>) => {
     const merged = { ...options, ...newOpts };
     setOptions(merged);
-    initializeModel(modelType, targetHeightBricks, merged);
+    initializeModel(modelType, targetHeightBricks, merged, undefined, modelUrl);
   };
 
   // Perform single step
@@ -207,11 +215,6 @@ export const MarkovStudio: React.FC = () => {
     setBricks(Array.from(engine.placedBricks.values()));
     setCurrentStepIndex(engine.stepIndex);
 
-    if (res.newBricks && res.newBricks.length > 0) {
-      // Audio feedback on brick placement
-      brickAudio.triggerBrickPlacement(res.newBricks[0].gridPos[2]);
-    }
-
     setStats({
       totalPlaced: res.totalPlacedBricks,
       leafCount: res.bomStats.leafCount,
@@ -223,7 +226,6 @@ export const MarkovStudio: React.FC = () => {
 
     if (res.phase === 'DONE') {
       setIsPlaying(false);
-      confetti({ particleCount: 70, spread: 75, origin: { y: 0.6 } });
       return false;
     }
 
@@ -302,7 +304,6 @@ export const MarkovStudio: React.FC = () => {
     if (sourceModel && grid) {
       setDistanceMetric(MeshDistanceEvaluator.evaluate(solvedBricks, sourceModel, grid));
     }
-    confetti({ particleCount: 80, spread: 80, origin: { y: 0.6 } });
   };
 
   // Discretize single island alone
@@ -341,7 +342,6 @@ export const MarkovStudio: React.FC = () => {
       uniqueParts: res.bomStats.uniquePartCount,
       coverage: Math.round(res.coverageRatio * 100)
     });
-    confetti({ particleCount: 70, spread: 80, origin: { y: 0.6 } });
   };
 
   // Solve WFC on single island or full assembly
@@ -379,7 +379,7 @@ export const MarkovStudio: React.FC = () => {
   };
 
   const handleReset = () => {
-    initializeModel(modelType, targetHeightBricks, options);
+    initializeModel(modelType, targetHeightBricks, options, undefined, modelUrl);
   };
 
   const handleExportLDR = () => {
@@ -390,6 +390,7 @@ export const MarkovStudio: React.FC = () => {
 
   const handleFileUpload = (file: File) => {
     setModelType('custom');
+    setModelUrl(undefined);
     initializeModel('custom', targetHeightBricks, options, file);
   };
 
@@ -403,10 +404,34 @@ export const MarkovStudio: React.FC = () => {
         height: '100vh',
         overflow: 'hidden',
         backgroundColor: '#090a0f',
-        position: 'relative'
+        position: 'relative',
+        fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
       }}
     >
-      {/* 3D Viewport Area - minWidth: 0 prevents flex overflow */}
+      {/* 1. Left Drawer Panel: SEC 1 (Model Selector) & SEC 2 (Params & Islands) */}
+      <LeftDrawer
+        isOpen={isLeftDrawerOpen}
+        onToggleOpen={() => setIsLeftDrawerOpen(!isLeftDrawerOpen)}
+        currentModelId={modelType}
+        onSelectModel={handleSelectModel}
+        onFileUpload={handleFileUpload}
+        voxelizeMode={options.voxelizeMode || 'surface'}
+        onChangeVoxelizeMode={(m) => handleChangeOptions({ voxelizeMode: m })}
+        sourceMeshMode={sourceMeshMode}
+        onChangeSourceMeshMode={setSourceMeshMode}
+        colorMode={colorMode}
+        onChangeColorMode={setColorMode}
+        islands={grid?.islands}
+        selectedIslandId={selectedIslandId}
+        onSelectIsland={setSelectedIslandId}
+        onDiscretizeIsland={handleDiscretizeIsland}
+        onDiscretizeAllIndependently={handleDiscretizeAllIndependently}
+        onSolveWfcOnIsland={handleSolveWfcOnIsland}
+        onRerollColors={handleRerollColors}
+        isLoading={isLoading}
+      />
+
+      {/* 2. Center 3D Viewport Area */}
       <div style={{ flex: '1 1 0%', minWidth: 0, height: '100%', position: 'relative', overflow: 'hidden' }}>
         <Viewport3D
           bricks={bricks}
@@ -420,58 +445,89 @@ export const MarkovStudio: React.FC = () => {
           selectedIslandId={selectedIslandId}
         />
 
-        {/* Floating Sidebar Toggle Button */}
-        <button
-          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          style={{
-            position: 'absolute',
-            top: 16,
-            right: 16,
-            zIndex: 30,
-            padding: '7px 12px',
-            borderRadius: 8,
-            border: '1px solid rgba(56, 189, 248, 0.3)',
-            backgroundColor: isSidebarOpen ? 'rgba(15, 23, 42, 0.85)' : '#0284c7',
-            color: '#f8fafc',
-            fontWeight: 700,
-            fontSize: 11,
-            cursor: 'pointer',
-            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.4)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6
-          }}
-        >
-          {isSidebarOpen ? '✕ Hide Controls' : '⚙️ Show Controls & Islands'}
-        </button>
+        {/* Floating Drawer Toggle Buttons */}
+        <div style={{ position: 'absolute', top: 14, left: 16, zIndex: 30, display: 'flex', gap: 8 }}>
+          {!isLeftDrawerOpen && (
+            <button
+              onClick={() => setIsLeftDrawerOpen(true)}
+              style={{
+                height: 32,
+                padding: '0 12px',
+                borderRadius: 6,
+                border: '1px solid #334155',
+                backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                backdropFilter: 'blur(8px)',
+                color: '#f8fafc',
+                fontWeight: 600,
+                fontSize: 11,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)'
+              }}
+            >
+              <PanelLeftIcon size={14} color="#38bdf8" />
+              <span>Show Models</span>
+            </button>
+          )}
+        </div>
+
+        <div style={{ position: 'absolute', top: 14, right: 16, zIndex: 30, display: 'flex', gap: 8 }}>
+          {!isRightDrawerOpen && (
+            <button
+              onClick={() => setIsRightDrawerOpen(true)}
+              style={{
+                height: 32,
+                padding: '0 12px',
+                borderRadius: 6,
+                border: '1px solid #334155',
+                backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                backdropFilter: 'blur(8px)',
+                color: '#f8fafc',
+                fontWeight: 600,
+                fontSize: 11,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)'
+              }}
+            >
+              <PanelRightIcon size={14} color="#38bdf8" />
+              <span>Show Settings</span>
+            </button>
+          )}
+        </div>
 
         {/* Top Floating HUD: Real-time BOM & Pipeline Analytics */}
         <div
           style={{
             position: 'absolute',
-            top: 16,
-            left: 200,
-            right: 16,
+            top: 14,
+            left: isLeftDrawerOpen ? 16 : 140,
+            right: isRightDrawerOpen ? 16 : 140,
             display: 'flex',
-            gap: 12,
             alignItems: 'center',
-            justifyContent: 'flex-end',
-            pointerEvents: 'none'
+            justifyContent: 'center',
+            pointerEvents: 'none',
+            zIndex: 10
           }}
         >
           <div
             style={{
-              padding: '8px 16px',
-              backgroundColor: 'rgba(15, 23, 42, 0.85)',
+              padding: '6px 16px',
+              backgroundColor: 'rgba(15, 23, 42, 0.88)',
               backdropFilter: 'blur(12px)',
               border: '1px solid rgba(148, 163, 184, 0.15)',
-              borderRadius: 12,
+              borderRadius: 8,
               display: 'flex',
-              gap: 16,
+              gap: 14,
               alignItems: 'center',
-              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4)',
               color: '#f8fafc',
-              fontSize: 12
+              fontSize: 11,
+              pointerEvents: 'auto'
             }}
           >
             <div>
@@ -479,7 +535,7 @@ export const MarkovStudio: React.FC = () => {
               <span style={{ fontWeight: 700, color: currentPhaseInfo.color }}>{currentPhaseInfo.title}</span>
             </div>
 
-            <div style={{ width: 1, height: 16, backgroundColor: 'rgba(148, 163, 184, 0.2)' }} />
+            <div style={{ width: 1, height: 14, backgroundColor: 'rgba(148, 163, 184, 0.2)' }} />
 
             <div>
               <span style={{ color: '#94a3b8' }}>Bricks:</span>{' '}
@@ -501,7 +557,7 @@ export const MarkovStudio: React.FC = () => {
               <span style={{ fontWeight: 700 }}>{stats.leafCount}</span>
             </div>
 
-            <div style={{ width: 1, height: 16, backgroundColor: 'rgba(148, 163, 184, 0.2)' }} />
+            <div style={{ width: 1, height: 14, backgroundColor: 'rgba(148, 163, 184, 0.2)' }} />
 
             <div>
               <span style={{ color: '#94a3b8' }}>Parts:</span>{' '}
@@ -512,125 +568,49 @@ export const MarkovStudio: React.FC = () => {
               <span style={{ color: '#94a3b8' }}>Coverage:</span>{' '}
               <span style={{ fontWeight: 700, color: '#34d399' }}>{stats.coverage}%</span>
             </div>
-          </div>
-        </div>
 
-        {/* Bottom Interactive Growth Timeline Slider */}
-        {bricks.length > 0 && (
-          <div
-            style={{
-              position: 'absolute',
-              bottom: 20,
-              left: 24,
-              right: 24,
-              padding: '12px 20px',
-              backgroundColor: 'rgba(15, 23, 42, 0.85)',
-              backdropFilter: 'blur(16px)',
-              border: '1px solid rgba(148, 163, 184, 0.2)',
-              borderRadius: 14,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 16,
-              boxShadow: '0 12px 36px rgba(0, 0, 0, 0.5)'
-            }}
-          >
-            <span style={{ fontSize: 12, fontWeight: 700, color: '#38bdf8', whiteSpace: 'nowrap' }}>
-              Timeline ({currentStepIndex} / {bricks.length})
-            </span>
-            <input
-              type="range"
-              min={1}
-              max={bricks.length}
-              value={currentStepIndex}
-              onChange={(e) => {
-                setIsPlaying(false);
-                setCurrentStepIndex(parseInt(e.target.value));
-              }}
-              style={{ flex: 1, accentColor: '#38bdf8' }}
-            />
-            <div style={{ display: 'flex', gap: 6 }}>
-              <button
-                onClick={() => setCurrentStepIndex(Math.max(1, currentStepIndex - 1))}
-                style={{
-                  padding: '4px 10px',
-                  borderRadius: 6,
-                  border: '1px solid rgba(148, 163, 184, 0.2)',
-                  backgroundColor: '#1e293b',
-                  color: '#cbd5e1',
-                  fontSize: 11,
-                  cursor: 'pointer'
-                }}
-              >
-                ◀ Step
-              </button>
-              <button
-                onClick={() => setCurrentStepIndex(Math.min(bricks.length, currentStepIndex + 1))}
-                style={{
-                  padding: '4px 10px',
-                  borderRadius: 6,
-                  border: '1px solid rgba(148, 163, 184, 0.2)',
-                  backgroundColor: '#1e293b',
-                  color: '#cbd5e1',
-                  fontSize: 11,
-                  cursor: 'pointer'
-                }}
-              >
-                Step ▶
-              </button>
+            <div style={{ width: 1, height: 14, backgroundColor: 'rgba(148, 163, 184, 0.2)' }} />
+
+            <div style={{ fontSize: 10, color: '#64748b' }}>
+              Authentic LDraw System (20x20x24 LDU)
             </div>
           </div>
-        )}
+        </div>
       </div>
 
-      {/* Side Control Panel */}
-      {isSidebarOpen && (
-        <ControlPanel
-          modelType={modelType}
-          onSelectModel={handleSelectModel}
-          onFileUpload={handleFileUpload}
-          targetHeightBricks={targetHeightBricks}
-          onChangeHeight={handleChangeHeight}
-          colorMode={colorMode}
-          onChangeColorMode={setColorMode}
-          islands={grid?.islands}
-          selectedIslandId={selectedIslandId}
-          onSelectIsland={setSelectedIslandId}
-          onDiscretizeIsland={handleDiscretizeIsland}
-          onDiscretizeAllIndependently={handleDiscretizeAllIndependently}
-          onSolveWfcOnIsland={handleSolveWfcOnIsland}
-          onRerollColors={handleRerollColors}
-          options={options}
-          onChangeOptions={handleChangeOptions}
-          viewportMode={viewportMode}
-          onChangeViewportMode={setViewportMode}
-          sourceMeshMode={sourceMeshMode}
-          onChangeSourceMeshMode={setSourceMeshMode}
-          isPlaying={isPlaying}
-          onTogglePlay={() => setIsPlaying(!isPlaying)}
-          onStep={executeStep}
-          onSolveAll={handleSolveAll}
-          onReset={handleReset}
-          onExportLDR={handleExportLDR}
-          onOpenDatabase={() => setIsDatabaseOpen(true)}
-          onOpenGallery={() => setIsGalleryOpen(true)}
-          isMuted={isMuted}
-          onToggleMute={() => setIsMuted(brickAudio.toggleMute())}
-          autoRotate={autoRotate}
-          onToggleAutoRotate={() => setAutoRotate(!autoRotate)}
-          speed={speed}
-          onChangeSpeed={setSpeed}
-          isLoading={isLoading}
-          loadingMessage={loadingMessage}
-          omrCategory={omrCategory}
-          onChangeOmrCategory={handleChangeOmrCategory}
-          onHarmonizeNeighborhoods={handleHarmonizeNeighborhoods}
-          onVerifyBuildability={handleVerifyBuildability}
-          onEvaluateDistance={handleEvaluateDistance}
-          distanceMetric={distanceMetric}
-          buildabilityReport={buildabilityReport}
-          harmonizationResult={harmonizationResult}
-        />
-      )}
+      {/* 3. Right Drawer Panel: Generation Settings, Scale, OMR, WFC, Polish */}
+      <RightDrawer
+        isOpen={isRightDrawerOpen}
+        onToggleOpen={() => setIsRightDrawerOpen(!isRightDrawerOpen)}
+        targetHeightBricks={targetHeightBricks}
+        onChangeHeight={handleChangeHeight}
+        options={options}
+        onChangeOptions={handleChangeOptions}
+        viewportMode={viewportMode}
+        onChangeViewportMode={setViewportMode}
+        isPlaying={isPlaying}
+        onTogglePlay={() => setIsPlaying(!isPlaying)}
+        onStep={executeStep}
+        onSolveAll={handleSolveAll}
+        onReset={handleReset}
+        onExportLDR={handleExportLDR}
+        onOpenDatabase={() => setIsDatabaseOpen(true)}
+        onOpenGallery={() => setIsGalleryOpen(true)}
+        autoRotate={autoRotate}
+        onToggleAutoRotate={() => setAutoRotate(!autoRotate)}
+        speed={speed}
+        onChangeSpeed={setSpeed}
+        isLoading={isLoading}
+        loadingMessage={loadingMessage}
+        omrCategory={omrCategory}
+        onChangeOmrCategory={handleChangeOmrCategory}
+        onHarmonizeNeighborhoods={handleHarmonizeNeighborhoods}
+        onVerifyBuildability={handleVerifyBuildability}
+        onEvaluateDistance={handleEvaluateDistance}
+        distanceMetric={distanceMetric}
+        buildabilityReport={buildabilityReport}
+        harmonizationResult={harmonizationResult}
+      />
 
       {/* Inspectors */}
       <ConnectorDatabaseInspector isOpen={isDatabaseOpen} onClose={() => setIsDatabaseOpen(false)} />

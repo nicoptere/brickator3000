@@ -1,8 +1,18 @@
 /**
- * PlaybackControls - Decoupled Engine Playback & Action Triggers.
+ * PlaybackControls - Decoupled Simulation & Solver Action Controls (Zero Emojis).
  */
 
 import React from 'react';
+import {
+  PlayIcon,
+  PauseIcon,
+  StepForwardIcon,
+  SparklesIcon,
+  RotateCcwIcon,
+  DownloadIcon,
+  DatabaseIcon,
+  GridIcon
+} from '../common/Icons';
 
 interface PlaybackControlsProps {
   isPlaying: boolean;
@@ -39,7 +49,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
           <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             Growth Speed
           </label>
-          <span style={{ fontSize: 11, fontFamily: 'monospace', color: '#cbd5e1' }}>{speed}x</span>
+          <span style={{ fontSize: 11, fontFamily: 'monospace', color: '#38bdf8' }}>{speed}x</span>
         </div>
         <input
           type="range"
@@ -47,7 +57,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
           max={20}
           value={speed}
           onChange={(e) => onChangeSpeed(parseInt(e.target.value))}
-          style={{ width: '100%', accentColor: '#38bdf8' }}
+          style={{ width: '100%', accentColor: '#38bdf8', cursor: 'pointer' }}
         />
       </div>
 
@@ -57,7 +67,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
           onClick={onTogglePlay}
           disabled={isLoading}
           style={{
-            padding: '9px 12px',
+            height: 34,
             borderRadius: 7,
             border: 'none',
             fontSize: 12,
@@ -71,24 +81,30 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
             gap: 6
           }}
         >
-          {isPlaying ? '⏸ Pause' : '▶ Grow Model'}
+          {isPlaying ? <PauseIcon size={14} /> : <PlayIcon size={14} />}
+          <span>{isPlaying ? 'Pause' : 'Grow Model'}</span>
         </button>
 
         <button
           onClick={onStep}
           disabled={isLoading}
           style={{
-            padding: '9px 12px',
+            height: 34,
             borderRadius: 7,
-            border: '1px solid rgba(148, 163, 184, 0.2)',
+            border: '1px solid #334155',
             backgroundColor: '#1e293b',
             color: '#f8fafc',
             fontSize: 12,
             fontWeight: 600,
-            cursor: isLoading ? 'wait' : 'pointer'
+            cursor: isLoading ? 'wait' : 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 6
           }}
         >
-          ⏭ Step 1x
+          <StepForwardIcon size={14} />
+          <span>Step 1x</span>
         </button>
       </div>
 
@@ -97,69 +113,89 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
           onClick={onSolveAll}
           disabled={isLoading}
           style={{
-            padding: '8px 10px',
+            height: 32,
             borderRadius: 6,
             border: 'none',
-            backgroundColor: '#3b82f6',
+            backgroundColor: '#0284c7',
             color: '#ffffff',
             fontSize: 11,
-            fontWeight: 600,
-            cursor: isLoading ? 'wait' : 'pointer'
+            fontWeight: 700,
+            cursor: isLoading ? 'wait' : 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 5
           }}
         >
-          ⚡ Solve All
+          <SparklesIcon size={13} />
+          <span>Solve Model</span>
         </button>
 
         <button
           onClick={onReset}
           disabled={isLoading}
           style={{
-            padding: '8px 10px',
+            height: 32,
             borderRadius: 6,
-            border: '1px solid rgba(148, 163, 184, 0.2)',
+            border: '1px solid #334155',
             backgroundColor: '#1e293b',
             color: '#cbd5e1',
             fontSize: 11,
             fontWeight: 600,
-            cursor: isLoading ? 'wait' : 'pointer'
+            cursor: isLoading ? 'wait' : 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 5
           }}
         >
-          ↺ Reset
+          <RotateCcwIcon size={13} />
+          <span>Reset</span>
         </button>
       </div>
 
-      {/* Database & OMR Triggers */}
+      {/* Database & OMR Inspector Modals */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
         <button
           onClick={onOpenDatabase}
           style={{
-            padding: '7px 8px',
+            height: 30,
             borderRadius: 6,
             border: '1px solid rgba(56, 189, 248, 0.3)',
             backgroundColor: 'rgba(56, 189, 248, 0.1)',
             color: '#38bdf8',
-            fontSize: 10,
+            fontSize: 11,
             fontWeight: 600,
-            cursor: 'pointer'
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 5
           }}
         >
-          📚 Connectors
+          <DatabaseIcon size={13} />
+          <span>Connectors</span>
         </button>
 
         <button
           onClick={onOpenGallery}
           style={{
-            padding: '7px 8px',
+            height: 30,
             borderRadius: 6,
             border: '1px solid rgba(16, 185, 129, 0.3)',
             backgroundColor: 'rgba(16, 185, 129, 0.1)',
             color: '#34d399',
-            fontSize: 10,
+            fontSize: 11,
             fontWeight: 600,
-            cursor: 'pointer'
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 5
           }}
         >
-          🏛️ OMR Gallery
+          <GridIcon size={13} />
+          <span>OMR Gallery</span>
         </button>
       </div>
 
@@ -168,17 +204,22 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
         onClick={onExportLDR}
         disabled={isLoading}
         style={{
-          padding: '9px 12px',
+          height: 34,
           borderRadius: 7,
           border: 'none',
           backgroundColor: '#e11d48',
           color: '#ffffff',
           fontSize: 12,
           fontWeight: 700,
-          cursor: isLoading ? 'wait' : 'pointer'
+          cursor: isLoading ? 'wait' : 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 6
         }}
       >
-        💾 Export .LDR (0x2RRGGBB)
+        <DownloadIcon size={14} />
+        <span>Export LDraw (.ldr)</span>
       </button>
     </div>
   );
