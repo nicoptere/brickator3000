@@ -1,24 +1,35 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
-import { ConfigProvider, App as AntApp, message } from 'antd';
+import { ConfigProvider, App as AntApp } from 'antd';
 import { Viewport3D, type Viewport3DHandle } from './viewport/Viewport3D';
 import {
   ModelSelectorPanel,
   SAMPLE_MODELS,
   type SampleModelItem,
-  type CleanModelItem
+  type CleanModelItem,
+  type DiscretizeConfig
 } from './components/ModelSelectorPanel';
 import type { ModelStats } from './viewport/viewportEngine';
+import type { SolverResult } from './solver/kernelSolver';
+import { segmentMeshIslandsAsync } from './solver/islandSegmenter';
+import { rasterizeIslandsToLatticeAsync } from './solver/triangleRasterizer';
+import { GrowingSurfaceKernelSolver } from './solver/kernelSolver';
 import { getAssetUrl } from './url';
 
 export const MainApp: React.FC = () => {
   const viewportRef = useRef<Viewport3DHandle | null>(null);
   const [modelStats, setModelStats] = useState<ModelStats | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isDiscretizing, setIsDiscretizing] = useState<boolean>(false);
+  const [discretizeProgress, setDiscretizeProgress] = useState<{ stage: string; percent: number } | null>(null);
+  const [discretizerResult, setDiscretizerResult] = useState<SolverResult | null>(null);
+  const [viewMode, setViewMode] = useState<'mesh' | 'lego' | 'both'>('lego');
   const { message: antMessage } = AntApp.useApp();
 
   const handleSelectSampleModel = useCallback(async (model: SampleModelItem) => {
     if (!viewportRef.current) return;
     setIsLoading(true);
+    setDiscretizerResult(null);
+    viewportRef.current.clearBricks();
     try {
       if (model.type.startsWith('procedural')) {
         await viewportRef.current.loadModelFromUrl('', model.type, model.label);
@@ -36,6 +47,8 @@ export const MainApp: React.FC = () => {
   const handleSelectCleanModel = useCallback(async (model: CleanModelItem) => {
     if (!viewportRef.current) return;
     setIsLoading(true);
+    setDiscretizerResult(null);
+    viewportRef.current.clearBricks();
     try {
       const url = getAssetUrl(model.path);
       await viewportRef.current.loadModelFromUrl(url, 'glb', model.name);
@@ -49,6 +62,8 @@ export const MainApp: React.FC = () => {
   const handleUploadFile = useCallback(async (file: File) => {
     if (!viewportRef.current) return;
     setIsLoading(true);
+    setDiscretizerResult(null);
+    viewportRef.current.clearBricks();
     try {
       await viewportRef.current.loadModelFromFile(file);
       antMessage.success(`Loaded ${file.name}`);
@@ -58,6 +73,89 @@ export const MainApp: React.FC = () => {
       setIsLoading(false);
     }
   }, [antMessage]);
+
+  // Execute the V2 Surface Discretization Pipeline
+  const handleDiscretize = useCallback(async (config: DiscretizeConfig) => {
+    if (!viewportRef.current) return;
+    const activeModel = viewportRef.current.getActiveModel();
+    if (!activeModel) {
+      antMessage.warning('No active 3D model loaded to discretize.');
+      return;
+    }
+
+    setIsDiscretizing(true);
+    setDiscretizeProgress({ stage: 'Extracting Topological Islands...', percent: 5 });
+
+    try {
+      // 1. Half-Edge DSU Island Segmentation
+      const islands = await segmentMeshIslandsAsync(activeModel, (pct) => {
+        setDiscretizeProgress({ stage: 'Segmenting Topological Islands...', percent: Math.round(5 + pct * 0.25) });
+      });
+
+      if (islands.length === 0) {
+        throw new Error('No triangles found in loaded 3D mesh.');
+      }
+
+      // 2. Direct Triangle Surface Rasterization & Barycentric Color Sampling
+      setDiscretizeProgress({ stage: 'Rasterizing Surface Hull...', percent: 32 });
+      const lattice = await rasterizeIslandsToLatticeAsync(islands, {
+        targetStuds: config.targetStuds,
+        onProgress: (pct) => {
+          setDiscretizeProgress({ stage: 'Rasterizing Surface Hull & Normals...', percent: Math.round(32 + pct * 0.28) });
+        }
+      });
+
+      // 3. Multi-Scale Surface-Growing Kernel Solver
+      setDiscretizeProgress({ stage: 'Dispatching Mechanical Kernels...', percent: 62 });
+      const solver = new GrowingSurfaceKernelSolver(lattice, {
+        dispatchStrategy: config.strategy,
+        enableCurvedSlopes: config.enableCurvedSlopes,
+        enableMacaroni: config.enableMacaroni,
+        enableCanisters: config.enableCanisters,
+        enableStudlessTiles: config.enableStudlessTiles,
+        onProgress: (stage, pct) => {
+          setDiscretizeProgress({ stage, percent: Math.round(62 + pct * 0.36) });
+        }
+      });
+
+      const result = await solver.solve();
+      setDiscretizerResult(result);
+      setViewMode('lego');
+
+      // 4. Render LEGO Model in Viewport
+      viewportRef.current.displayDiscretizedBricks(result.bricks, result.lattice);
+
+      antMessage.success(
+        `Discretized in ${result.executionTimeMs} ms: ${result.bricks.length} bricks placed (${result.stats.totalConnections} connections, 100% Grounded)`
+      );
+    } catch (err: any) {
+      antMessage.error(err.message || 'Discretization failed');
+    } finally {
+      setIsDiscretizing(false);
+      setDiscretizeProgress(null);
+    }
+  }, [antMessage]);
+
+  const handleViewModeChange = useCallback((mode: 'mesh' | 'lego' | 'both') => {
+    setViewMode(mode);
+    if (viewportRef.current) {
+      viewportRef.current.setViewMode(mode);
+    }
+  }, []);
+
+  const handleExportLDraw = useCallback(() => {
+    if (!discretizerResult) return;
+    const blob = new Blob([discretizerResult.ldrawCode], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${modelStats?.name || 'model'}_discretized.ldr`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    antMessage.success('Exported LDraw .ldr file');
+  }, [discretizerResult, modelStats, antMessage]);
 
   // Load default duck model on mount
   useEffect(() => {
@@ -80,6 +178,13 @@ export const MainApp: React.FC = () => {
         onUploadFile={handleUploadFile}
         modelStats={modelStats}
         isLoading={isLoading}
+        onDiscretize={handleDiscretize}
+        isDiscretizing={isDiscretizing}
+        discretizeProgress={discretizeProgress}
+        discretizerResult={discretizerResult}
+        viewMode={viewMode}
+        onViewModeChange={handleViewModeChange}
+        onExportLDraw={handleExportLDraw}
       />
     </div>
   );

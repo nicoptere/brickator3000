@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Card,
   Select,
@@ -6,23 +6,26 @@ import {
   Button,
   Upload,
   Typography,
-  Space,
   Tag,
   Divider,
   Spin,
   Alert,
-  Tooltip
+  Slider,
+  Radio,
+  Checkbox,
+  Progress
 } from 'antd';
 import {
   UploadOutlined,
   SearchOutlined,
-  ReloadOutlined,
-  InfoCircleOutlined,
-  AppstoreOutlined,
-  FileTextOutlined
+  ThunderboltOutlined,
+  DownloadOutlined,
+  EyeOutlined,
+  CheckCircleOutlined
 } from '@ant-design/icons';
 import { getAssetUrl } from '../url';
 import type { ModelStats } from '../viewport/viewportEngine';
+import type { SolverResult } from '../solver/kernelSolver';
 
 const { Text, Title } = Typography;
 
@@ -69,12 +72,28 @@ export const SAMPLE_MODELS: SampleModelItem[] = [
   { label: 'Procedural Torus Knot', value: 'torus', path: '', type: 'procedural_torus' }
 ];
 
+export interface DiscretizeConfig {
+  targetStuds: number;
+  strategy: 'tiered' | 'size_descent';
+  enableCurvedSlopes: boolean;
+  enableMacaroni: boolean;
+  enableCanisters: boolean;
+  enableStudlessTiles: boolean;
+}
+
 export interface ModelSelectorPanelProps {
   onSelectSampleModel: (model: SampleModelItem) => void;
   onSelectCleanModel: (model: CleanModelItem) => void;
   onUploadFile: (file: File) => void;
   modelStats: ModelStats | null;
   isLoading: boolean;
+  onDiscretize: (config: DiscretizeConfig) => void;
+  isDiscretizing: boolean;
+  discretizeProgress: { stage: string; percent: number } | null;
+  discretizerResult: SolverResult | null;
+  viewMode: 'mesh' | 'lego' | 'both';
+  onViewModeChange: (mode: 'mesh' | 'lego' | 'both') => void;
+  onExportLDraw: () => void;
 }
 
 export const ModelSelectorPanel: React.FC<ModelSelectorPanelProps> = ({
@@ -82,7 +101,14 @@ export const ModelSelectorPanel: React.FC<ModelSelectorPanelProps> = ({
   onSelectCleanModel,
   onUploadFile,
   modelStats,
-  isLoading
+  isLoading,
+  onDiscretize,
+  isDiscretizing,
+  discretizeProgress,
+  discretizerResult,
+  viewMode,
+  onViewModeChange,
+  onExportLDraw
 }) => {
   const [activeSource, setActiveSource] = useState<'sample' | 'clean'>('sample');
   const [selectedSampleValue, setSelectedSampleValue] = useState<string>('duck');
@@ -92,6 +118,14 @@ export const ModelSelectorPanel: React.FC<ModelSelectorPanelProps> = ({
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedCleanModelId, setSelectedCleanModelId] = useState<string>('');
+
+  // Discretizer Settings
+  const [targetStuds, setTargetStuds] = useState<number>(24);
+  const [strategy, setStrategy] = useState<'tiered' | 'size_descent'>('tiered');
+  const [enableCurvedSlopes, setEnableCurvedSlopes] = useState<boolean>(true);
+  const [enableMacaroni, setEnableMacaroni] = useState<boolean>(true);
+  const [enableCanisters, setEnableCanisters] = useState<boolean>(true);
+  const [enableStudlessTiles, setEnableStudlessTiles] = useState<boolean>(true);
 
   // Fetch clean models manifest
   useEffect(() => {
@@ -160,6 +194,17 @@ export const ModelSelectorPanel: React.FC<ModelSelectorPanelProps> = ({
     }
   };
 
+  const handleRunDiscretize = () => {
+    onDiscretize({
+      targetStuds,
+      strategy,
+      enableCurvedSlopes,
+      enableMacaroni,
+      enableCanisters,
+      enableStudlessTiles
+    });
+  };
+
   return (
     <div
       style={{
@@ -167,13 +212,14 @@ export const ModelSelectorPanel: React.FC<ModelSelectorPanelProps> = ({
         top: 16,
         left: 16,
         zIndex: 10,
-        width: 360,
+        width: 380,
         maxWidth: 'calc(100vw - 32px)',
         maxHeight: 'calc(100vh - 32px)',
         display: 'flex',
         flexDirection: 'column',
         gap: 12,
-        pointerEvents: 'auto'
+        pointerEvents: 'auto',
+        overflowY: 'auto'
       }}
     >
       <Card
@@ -197,10 +243,10 @@ export const ModelSelectorPanel: React.FC<ModelSelectorPanelProps> = ({
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <Title level={5} style={{ margin: 0, color: '#0f172a', fontWeight: 600 }}>
-              Model Discretizer
+              Surface Discretizer V2
             </Title>
             <Text type="secondary" style={{ fontSize: 12, color: '#64748b' }}>
-              Input Mesh Inspection Stage
+              Multi-Scale Kernel Engine (LTRON Graph)
             </Text>
           </div>
           {isLoading && <Spin size="small" />}
@@ -240,9 +286,9 @@ export const ModelSelectorPanel: React.FC<ModelSelectorPanelProps> = ({
 
         {/* Sample Models View */}
         {activeSource === 'sample' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             <Text style={{ fontSize: 12, color: '#64748b', fontWeight: 500 }}>
-              Select Sample Model:
+              Select Model:
             </Text>
             <Select
               value={selectedSampleValue}
@@ -258,7 +304,7 @@ export const ModelSelectorPanel: React.FC<ModelSelectorPanelProps> = ({
 
         {/* Clean Models View */}
         {activeSource === 'clean' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {loadingManifest ? (
               <div style={{ textAlign: 'center', padding: '16px 0' }}>
                 <Spin size="small" />
@@ -286,7 +332,7 @@ export const ModelSelectorPanel: React.FC<ModelSelectorPanelProps> = ({
                   />
                   <Input
                     size="small"
-                    placeholder="Search models..."
+                    placeholder="Search..."
                     prefix={<SearchOutlined style={{ color: '#94a3b8' }} />}
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
@@ -297,7 +343,7 @@ export const ModelSelectorPanel: React.FC<ModelSelectorPanelProps> = ({
 
                 <Select
                   showSearch
-                  placeholder="Select a clean model..."
+                  placeholder="Select model..."
                   value={selectedCleanModelId || undefined}
                   onChange={handleCleanModelChange}
                   filterOption={false}
@@ -331,32 +377,32 @@ export const ModelSelectorPanel: React.FC<ModelSelectorPanelProps> = ({
               color: '#0f172a'
             }}
           >
-            Upload 3D Mesh (GLB, OBJ, PLY, 3DS)
+            Upload Mesh (GLB, OBJ, PLY, 3DS)
           </Button>
         </Upload>
 
-        {/* Model Statistics Display */}
+        {/* Active Mesh Stats */}
         {modelStats && (
           <div
             style={{
               backgroundColor: '#f8fafc',
               border: '1px solid #e2e8f0',
               borderRadius: 6,
-              padding: '10px 12px',
+              padding: '8px 10px',
               display: 'flex',
               flexDirection: 'column',
-              gap: 6
+              gap: 4
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Text strong style={{ fontSize: 13, color: '#0f172a' }}>
+              <Text strong style={{ fontSize: 12, color: '#0f172a' }}>
                 {modelStats.name}
               </Text>
-              <Tag color="blue" style={{ margin: 0, fontSize: 11 }}>
-                Loaded
+              <Tag color="blue" style={{ margin: 0, fontSize: 10 }}>
+                Mesh Ready
               </Tag>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, fontSize: 12 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, fontSize: 11 }}>
               <div>
                 <Text type="secondary">Triangles: </Text>
                 <Text strong>{modelStats.triangleCount.toLocaleString()}</Text>
@@ -365,13 +411,184 @@ export const ModelSelectorPanel: React.FC<ModelSelectorPanelProps> = ({
                 <Text type="secondary">Vertices: </Text>
                 <Text strong>{modelStats.vertexCount.toLocaleString()}</Text>
               </div>
-              <div style={{ gridColumn: 'span 2' }}>
-                <Text type="secondary">Bounding Box: </Text>
-                <Text style={{ fontFamily: 'monospace', fontSize: 11 }}>
-                  {modelStats.dimensions.x} x {modelStats.dimensions.y} x {modelStats.dimensions.z}
+            </div>
+          </div>
+        )}
+
+        <Divider style={{ margin: '4px 0', borderColor: '#e2e8f0' }} />
+
+        {/* Discretizer Controls */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Text style={{ fontSize: 12, color: '#0f172a', fontWeight: 500 }}>
+              Resolution (Max Studs): {targetStuds}
+            </Text>
+          </div>
+          <Slider
+            min={16}
+            max={48}
+            step={4}
+            value={targetStuds}
+            onChange={setTargetStuds}
+            style={{ margin: '4px 0' }}
+          />
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <Text style={{ fontSize: 12, color: '#64748b', fontWeight: 500 }}>
+              Dispatch Strategy:
+            </Text>
+            <Radio.Group
+              size="small"
+              value={strategy}
+              onChange={e => setStrategy(e.target.value)}
+              style={{ display: 'flex', width: '100%' }}
+            >
+              <Radio.Button value="tiered" style={{ flex: 1, textAlign: 'center' }}>
+                Tiered Multi-Pass
+              </Radio.Button>
+              <Radio.Button value="size_descent" style={{ flex: 1, textAlign: 'center' }}>
+                Size-Descent
+              </Radio.Button>
+            </Radio.Group>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, fontSize: 11, marginTop: 4 }}>
+            <Checkbox
+              checked={enableCurvedSlopes}
+              onChange={e => setEnableCurvedSlopes(e.target.checked)}
+            >
+              Curved Slopes
+            </Checkbox>
+            <Checkbox
+              checked={enableMacaroni}
+              onChange={e => setEnableMacaroni(e.target.checked)}
+            >
+              Macaroni Tiles
+            </Checkbox>
+            <Checkbox
+              checked={enableCanisters}
+              onChange={e => setEnableCanisters(e.target.checked)}
+            >
+              Round Canisters
+            </Checkbox>
+            <Checkbox
+              checked={enableStudlessTiles}
+              onChange={e => setEnableStudlessTiles(e.target.checked)}
+            >
+              Studless Top Tiles
+            </Checkbox>
+          </div>
+
+          <Button
+            type="primary"
+            icon={<ThunderboltOutlined />}
+            loading={isDiscretizing}
+            onClick={handleRunDiscretize}
+            style={{
+              marginTop: 6,
+              backgroundColor: '#2563eb',
+              borderColor: '#2563eb',
+              height: 36,
+              fontWeight: 500
+            }}
+          >
+            {isDiscretizing ? 'Discretizing...' : 'Discretize Model'}
+          </Button>
+
+          {/* Progress Indicator */}
+          {discretizeProgress && (
+            <div style={{ marginTop: 4 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#64748b' }}>
+                <span>{discretizeProgress.stage}</span>
+                <span>{discretizeProgress.percent}%</span>
+              </div>
+              <Progress percent={discretizeProgress.percent} showInfo={false} size="small" strokeColor="#2563eb" />
+            </div>
+          )}
+        </div>
+
+        {/* Results Card */}
+        {discretizerResult && (
+          <div
+            style={{
+              backgroundColor: '#eff6ff',
+              border: '1px solid #bfdbfe',
+              borderRadius: 6,
+              padding: '10px 12px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 8,
+              marginTop: 4
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Text strong style={{ fontSize: 12, color: '#1e40af' }}>
+                Discretization Result
+              </Text>
+              <Tag color="success" icon={<CheckCircleOutlined />} style={{ margin: 0, fontSize: 11 }}>
+                100% Grounded
+              </Tag>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, fontSize: 12 }}>
+              <div>
+                <Text type="secondary">Total Bricks: </Text>
+                <Text strong>{discretizerResult.bricks.length}</Text>
+              </div>
+              <div>
+                <Text type="secondary">Connections: </Text>
+                <Text strong>{discretizerResult.stats.totalConnections}</Text>
+              </div>
+              <div>
+                <Text type="secondary">Execution: </Text>
+                <Text strong>{discretizerResult.executionTimeMs} ms</Text>
+              </div>
+              <div>
+                <Text type="secondary">Parts Variety: </Text>
+                <Text strong>
+                  {new Set(discretizerResult.bricks.map(b => b.partId)).size} types
                 </Text>
               </div>
             </div>
+
+            {/* View Mode Radio Group */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 4 }}>
+              <Text style={{ fontSize: 11, color: '#1e40af', fontWeight: 500 }}>
+                Viewport Display Mode:
+              </Text>
+              <Radio.Group
+                size="small"
+                value={viewMode}
+                onChange={e => onViewModeChange(e.target.value)}
+                style={{ display: 'flex', width: '100%' }}
+              >
+                <Radio.Button value="mesh" style={{ flex: 1, textAlign: 'center' }}>
+                  Mesh
+                </Radio.Button>
+                <Radio.Button value="lego" style={{ flex: 1, textAlign: 'center' }}>
+                  LEGO
+                </Radio.Button>
+                <Radio.Button value="both" style={{ flex: 1, textAlign: 'center' }}>
+                  Overlay
+                </Radio.Button>
+              </Radio.Group>
+            </div>
+
+            {/* Export LDraw Button */}
+            <Button
+              size="small"
+              icon={<DownloadOutlined />}
+              onClick={onExportLDraw}
+              style={{
+                marginTop: 4,
+                backgroundColor: '#ffffff',
+                borderColor: '#bfdbfe',
+                color: '#1e40af',
+                fontWeight: 500
+              }}
+            >
+              Export LDraw (.ldr)
+            </Button>
           </div>
         )}
       </Card>

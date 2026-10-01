@@ -1,5 +1,8 @@
 import React, { useEffect, useRef, useState, forwardRef, useImperativeHandle } from 'react';
 import { ViewportEngine, type ModelStats } from './viewportEngine';
+import type { PlacedBrick } from '../core/types';
+import type { PlateLattice3D } from '../core/PlateLattice3D';
+import type * as THREE from 'three';
 
 export interface Viewport3DProps {
   onModelLoaded?: (stats: ModelStats) => void;
@@ -10,6 +13,10 @@ export interface Viewport3DProps {
 export interface Viewport3DHandle {
   loadModelFromUrl: (url: string, fileType: string, modelName: string) => Promise<void>;
   loadModelFromFile: (file: File) => Promise<void>;
+  displayDiscretizedBricks: (bricks: PlacedBrick[], lattice: PlateLattice3D) => void;
+  setViewMode: (mode: 'mesh' | 'lego' | 'both') => void;
+  clearBricks: () => void;
+  getActiveModel: () => THREE.Object3D | null;
   getEngine: () => ViewportEngine | null;
 }
 
@@ -59,6 +66,24 @@ export const Viewport3D = forwardRef<Viewport3DHandle, Viewport3DProps>(({
       } catch (err: any) {
         if (onError) onError(err.message || 'Failed to load model file');
       }
+    },
+    displayDiscretizedBricks: (bricks: PlacedBrick[], lattice: PlateLattice3D) => {
+      if (engineRef.current) {
+        engineRef.current.displayDiscretizedBricks(bricks, lattice);
+      }
+    },
+    setViewMode: (mode: 'mesh' | 'lego' | 'both') => {
+      if (engineRef.current) {
+        engineRef.current.setViewMode(mode);
+      }
+    },
+    clearBricks: () => {
+      if (engineRef.current) {
+        engineRef.current.clearBricks();
+      }
+    },
+    getActiveModel: () => {
+      return engineRef.current ? engineRef.current.getActiveModel() : null;
     },
     getEngine: () => engineRef.current
   }));

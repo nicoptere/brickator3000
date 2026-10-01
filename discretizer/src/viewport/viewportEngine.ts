@@ -4,6 +4,8 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader.js';
 import { TDSParser } from '../parsers/tdsParser';
+import type { PlacedBrick } from '../core/types';
+import type { PlateLattice3D } from '../core/PlateLattice3D';
 
 export interface ModelStats {
   name: string;
@@ -24,6 +26,8 @@ export class ViewportEngine {
   private renderer: THREE.WebGLRenderer;
   private controls: OrbitControls;
   private modelRoot: THREE.Group;
+  private bricksRoot: THREE.Group;
+  private currentViewMode: 'mesh' | 'lego' | 'both' = 'mesh';
   private gridHelper!: THREE.GridHelper;
   private floorPlane!: THREE.Mesh;
   private animFrameId: number = 0;
@@ -73,6 +77,10 @@ export class ViewportEngine {
     // Model Container Root
     this.modelRoot = new THREE.Group();
     this.scene.add(this.modelRoot);
+
+    // Discretized Bricks Container Root
+    this.bricksRoot = new THREE.Group();
+    this.scene.add(this.bricksRoot);
 
     // Start render loop
     this.render = this.render.bind(this);
@@ -309,6 +317,129 @@ export class ViewportEngine {
         }
       });
     }
+  }
+
+  public clearBricks(): void {
+    while (this.bricksRoot.children.length > 0) {
+      const child = this.bricksRoot.children[0];
+      this.bricksRoot.remove(child);
+      child.traverse((c) => {
+        if ((c as any).geometry) (c as any).geometry.dispose();
+        if ((c as any).material) {
+          const m = (c as any).material;
+          if (Array.isArray(m)) m.forEach(x => x.dispose());
+          else m.dispose();
+        }
+      });
+    }
+  }
+
+  public setViewMode(mode: 'mesh' | 'lego' | 'both'): void {
+    this.currentViewMode = mode;
+    if (mode === 'mesh') {
+      this.modelRoot.visible = true;
+      this.bricksRoot.visible = false;
+      this.setMeshOpacity(1.0);
+    } else if (mode === 'lego') {
+      this.modelRoot.visible = false;
+      this.bricksRoot.visible = true;
+    } else {
+      this.modelRoot.visible = true;
+      this.bricksRoot.visible = true;
+      this.setMeshOpacity(0.35); // Semi-transparent overlay comparison
+    }
+  }
+
+  private setMeshOpacity(opacity: number): void {
+    this.modelRoot.traverse((child) => {
+      if ((child as THREE.Mesh).isMesh) {
+        const m = (child as THREE.Mesh).material;
+        const mats = Array.isArray(m) ? m : [m];
+        mats.forEach(mat => {
+          mat.transparent = opacity < 1.0;
+          mat.opacity = opacity;
+        });
+      }
+    });
+  }
+
+  /**
+   * Display placed LEGO bricks with realistic ABS plastic materials and top studs.
+   */
+  public displayDiscretizedBricks(bricks: PlacedBrick[], lattice: PlateLattice3D): void {
+    this.clearBricks();
+
+    // Align LEGO scale with loaded mesh bounds
+    const bbox = new THREE.Box3().setFromObject(this.modelRoot);
+    const size = new THREE.Vector3();
+    bbox.getSize(size);
+
+    const studPitch = (size.x || 8.0) / lattice.numStudsX;
+    const platePitch = studPitch * 0.4;
+
+    const group = new THREE.Group();
+
+    // Shared stud cylinder geometry (radius 0.24 * studPitch, height 0.18 * studPitch)
+    const studGeo = new THREE.CylinderGeometry(studPitch * 0.24, studPitch * 0.24, studPitch * 0.18, 16);
+
+    for (const brick of bricks) {
+      const [bx, bz, by] = brick.gridPos;
+      const [bw, bd, bh] = brick.size;
+
+      // Position in scene
+      const posX = (bx + bw / 2 - lattice.numStudsX / 2) * studPitch;
+      const posZ = (bz + bd / 2 - lattice.numStudsZ / 2) * studPitch;
+      const posY = (by + bh / 2) * platePitch;
+
+      const brickWidth = bw * studPitch;
+      const brickDepth = bd * studPitch;
+      const brickHeight = bh * platePitch;
+
+      const mat = new THREE.MeshPhysicalMaterial({
+        color: new THREE.Color(brick.colorHex),
+        roughness: 0.2,
+        metalness: 0.05,
+        clearcoat: 0.35,
+        clearcoatRoughness: 0.1
+      });
+
+      // Body mesh
+      let bodyGeo: THREE.BufferGeometry;
+      if (brick.category === 'ROUND_CANISTER') {
+        bodyGeo = new THREE.CylinderGeometry(brickWidth * 0.48, brickWidth * 0.48, brickHeight, 24);
+      } else {
+        bodyGeo = new THREE.BoxGeometry(brickWidth - 0.01, brickHeight - 0.005, brickDepth - 0.01);
+      }
+
+      const bodyMesh = new THREE.Mesh(bodyGeo, mat);
+      bodyMesh.position.set(posX, posY, posZ);
+      bodyMesh.castShadow = true;
+      bodyMesh.receiveShadow = true;
+      group.add(bodyMesh);
+
+      // Top studs (omit for smooth flat tiles and curved slopes)
+      const hasTopStuds = brick.category !== 'TILE_FLAT' && brick.category !== 'SLOPE_CURVED' && brick.category !== 'CHEESE_SLOPE';
+      if (hasTopStuds) {
+        for (let sx = 0; sx < bw; sx++) {
+          for (let sz = 0; sz < bd; sz++) {
+            const studMesh = new THREE.Mesh(studGeo, mat);
+            const studX = (bx + sx + 0.5 - lattice.numStudsX / 2) * studPitch;
+            const studZ = (bz + sz + 0.5 - lattice.numStudsZ / 2) * studPitch;
+            const studY = (by + bh) * platePitch + (studPitch * 0.09);
+            studMesh.position.set(studX, studY, studZ);
+            studMesh.castShadow = true;
+            group.add(studMesh);
+          }
+        }
+      }
+    }
+
+    this.bricksRoot.add(group);
+    this.setViewMode('lego');
+  }
+
+  public getActiveModel(): THREE.Object3D | null {
+    return this.modelRoot.children.length > 0 ? this.modelRoot.children[0] : null;
   }
 
   public getModelRoot(): THREE.Group {

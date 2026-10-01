@@ -52,7 +52,15 @@ export interface PlacedBrick {
   colorPacked: number;
   ldrawPos: [number, number, number]; // LDraw world coordinates (LDU)
   ldrawMatrix: number[]; // 3x3 rotation matrix
-  category: 'SLOPE_CURVED' | 'SLOPE_INVERTED' | 'MACARONI_WEDGE' | 'ROUND_CANISTER' | 'CORE_INFILL' | 'TILE_FLAT';
+  category:
+    | 'ORGANIC_DOME'
+    | 'SLOPE_CURVED'
+    | 'SLOPE_INVERTED'
+    | 'MACARONI_WEDGE'
+    | 'ROUND_CANISTER'
+    | 'CORE_INFILL'
+    | 'TILE_FLAT'
+    | 'CHEESE_SLOPE';
   connectors: ConnectorSite[];
   islandId?: number;
 }
