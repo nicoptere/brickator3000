@@ -169,6 +169,14 @@ export class AssemblyGraph3D {
     }
   }
 
+  public hasBrick(instanceId: string): boolean {
+    return this.bricks.has(instanceId);
+  }
+
+  public getBrick(instanceId: string): PlacedBrick | undefined {
+    return this.bricks.get(instanceId);
+  }
+
   public isGrounded(instanceId: string): boolean {
     if (!this.bricks.has(instanceId)) return false;
     return this.dsuFind(instanceId) === this.GROUND_ID;
@@ -288,9 +296,5 @@ export class AssemblyGraph3D {
 
   public getAllBricks(): PlacedBrick[] {
     return Array.from(this.bricks.values());
-  }
-
-  public getBrick(id: string): PlacedBrick | undefined {
-    return this.bricks.get(id);
   }
 }

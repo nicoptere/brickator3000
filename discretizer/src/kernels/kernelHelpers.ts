@@ -25,14 +25,45 @@ export function createSlopeMask(
   slopeDir: '+z' | '-z' = '+z'
 ): boolean[][][] {
   const mask: boolean[][][] = [];
+  const denom = Math.max(1, d - 1);
   for (let y = 0; y < h; y++) {
     const layer: boolean[][] = [];
     for (let z = 0; z < d; z++) {
       const row: boolean[] = [];
-      const zNorm = slopeDir === '+z' ? z / d : (d - 1 - z) / d;
-      const yNorm = y / h;
-      // Sloping threshold: upper portion towards front is empty
-      const isSolid = yNorm <= (1.0 - zNorm * 0.75);
+      const zNorm = slopeDir === '+z' ? z / denom : (d - 1 - z) / denom;
+      // Slope descends from full height (h plates at zNorm=0) to front lip (1 plate y=0 at zNorm=1)
+      const maxSolidY = Math.round((h - 1) * (1.0 - zNorm));
+      const isSolid = y <= maxSolidY;
+      for (let x = 0; x < w; x++) {
+        row.push(isSolid);
+      }
+      layer.push(row);
+    }
+    mask.push(layer);
+  }
+  return mask;
+}
+
+/**
+ * Creates an inverted sloped 3D occupancy mask where material recedes on the bottom.
+ */
+export function createInvertedSlopeMask(
+  w: number,
+  d: number,
+  h: number,
+  slopeDir: '+z' | '-z' = '+z'
+): boolean[][][] {
+  const mask: boolean[][][] = [];
+  const denom = Math.max(1, d - 1);
+  for (let y = 0; y < h; y++) {
+    const layer: boolean[][] = [];
+    for (let z = 0; z < d; z++) {
+      const row: boolean[] = [];
+      const zNorm = slopeDir === '+z' ? z / denom : (d - 1 - z) / denom;
+      // Inverted slope: underside recedes towards front
+      // zNorm=0: full height (y=0..h-1); zNorm=1: top plate only (y=h-1)
+      const minSolidY = Math.round((h - 1) * zNorm);
+      const isSolid = y >= minSolidY;
       for (let x = 0; x < w; x++) {
         row.push(isSolid);
       }
@@ -107,6 +138,148 @@ export function createStandardConnectors(
     }
   }
 
+  return conns;
+}
+
+/**
+ * Slope connectors:
+ * For upward slopes descending in +z:
+ * - Top male studs at the back row (z = 0, y = h) pointing [0, 0, 1] (+Y skyward).
+ * - Bottom female tubes on the base (y = 0) pointing [0, 0, -1] (-Y groundward).
+ */
+export function createSlopeConnectors(
+  w: number,
+  d: number,
+  h: number,
+  hasTopStuds: boolean = true,
+  slopeDir: '+z' | '-z' = '+z'
+): ConnectorSite[] {
+  const conns: ConnectorSite[] = [];
+
+  if (hasTopStuds) {
+    const studZ = slopeDir === '+z' ? 0 : d - 1;
+    for (let x = 0; x < w; x++) {
+      conns.push({
+        localPos: [x, studZ, h],
+        direction: [0, 0, 1], // +Y skyward
+        polarity: 'MALE',
+        jointType: 'STUD_TUBE'
+      });
+    }
+  }
+
+  // Full base female tubes
+  for (let x = 0; x < w; x++) {
+    for (let z = 0; z < d; z++) {
+      conns.push({
+        localPos: [x, z, 0],
+        direction: [0, 0, -1], // -Y groundward
+        polarity: 'FEMALE',
+        jointType: 'STUD_TUBE'
+      });
+    }
+  }
+
+  return conns;
+}
+
+/**
+ * Inverted slope connectors:
+ * - Full top male studs across the top surface (z in [0..d-1], y = h) pointing [0, 0, 1] (+Y skyward).
+ * - Bottom female tubes on the back supporting row (z = 0, y = 0) pointing [0, 0, -1] (-Y groundward).
+ */
+export function createInvertedSlopeConnectors(
+  w: number,
+  d: number,
+  h: number
+): ConnectorSite[] {
+  const conns: ConnectorSite[] = [];
+
+  // Top surface studs
+  for (let x = 0; x < w; x++) {
+    for (let z = 0; z < d; z++) {
+      conns.push({
+        localPos: [x, z, h],
+        direction: [0, 0, 1],
+        polarity: 'MALE',
+        jointType: 'STUD_TUBE'
+      });
+    }
+  }
+
+  // Bottom tubes on the back row
+  for (let x = 0; x < w; x++) {
+    conns.push({
+      localPos: [x, 0, 0],
+      direction: [0, 0, -1],
+      polarity: 'FEMALE',
+      jointType: 'STUD_TUBE'
+    });
+  }
+
+  return conns;
+}
+
+/**
+ * Creates a wedge plate occupancy mask [1][d][w].
+ */
+export function createWedgeMask(
+  w: number,
+  d: number,
+  h: number,
+  wedgeType: 'left_3x2' | 'right_3x2' | 'wedge_3x6'
+): boolean[][][] {
+  const mask: boolean[][][] = [];
+  for (let y = 0; y < h; y++) {
+    const layer: boolean[][] = [];
+    for (let z = 0; z < d; z++) {
+      const row: boolean[] = [];
+      for (let x = 0; x < w; x++) {
+        let isSolid = true;
+        if (wedgeType === 'left_3x2') {
+          if (x === 1 && z === 2) isSolid = false;
+        } else if (wedgeType === 'right_3x2') {
+          if (x === 0 && z === 2) isSolid = false;
+        } else if (wedgeType === 'wedge_3x6') {
+          if ((x === 0 || x === 2) && (z === 0 || z === 5)) isSolid = false;
+        }
+        row.push(isSolid);
+      }
+      layer.push(row);
+    }
+    mask.push(layer);
+  }
+  return mask;
+}
+
+/**
+ * Creates connectors matching a wedge plate mask.
+ */
+export function createWedgeConnectors(
+  w: number,
+  d: number,
+  h: number,
+  mask: boolean[][][]
+): ConnectorSite[] {
+  const conns: ConnectorSite[] = [];
+  for (let z = 0; z < d; z++) {
+    for (let x = 0; x < w; x++) {
+      if (mask[0] && mask[0][z] && mask[0][z][x]) {
+        conns.push({
+          localPos: [x, z, h],
+          direction: [0, 0, 1],
+          polarity: 'MALE',
+          jointType: 'STUD_TUBE'
+        });
+        conns.push({
+          localPos: [x, z, 0],
+          direction: [0, 0, -1],
+          polarity: 'FEMALE',
+          jointType: 'STUD_TUBE'
+        });
+      }
+    }
+  }
   return conns;
 }
 

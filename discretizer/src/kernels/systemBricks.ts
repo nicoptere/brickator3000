@@ -161,5 +161,18 @@ export const SYSTEM_BRICKS: BaseKernelDefinition[] = [
     weightBonus: 5.5,
     connectors: createStandardConnectors(2, 2, 3, true, true),
     occupancyMask: createSolidMask(2, 2, 3)
+  },
+  {
+    partId: '2453b',
+    name: 'Brick 1 x 1 x 5 Tall',
+    system: 'SYSTEM',
+    category: 'BRICK_STANDARD',
+    baseSize: [1, 1, 15],
+    targetNormal: [0, 0, 0],
+    minNormalDot: 0.0,
+    tier: 5,
+    weightBonus: 12.0,
+    connectors: createStandardConnectors(1, 1, 15, true, true),
+    occupancyMask: createSolidMask(1, 1, 15)
   }
 ];

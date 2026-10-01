@@ -21,7 +21,12 @@ import {
   ThunderboltOutlined,
   DownloadOutlined,
   EyeOutlined,
-  CheckCircleOutlined
+  CheckCircleOutlined,
+  AppstoreOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
+  DownOutlined,
+  RightOutlined
 } from '@ant-design/icons';
 import { getAssetUrl } from '../url';
 import type { ModelStats } from '../viewport/viewportEngine';
@@ -60,6 +65,7 @@ export interface SampleModelItem {
 }
 
 export const SAMPLE_MODELS: SampleModelItem[] = [
+  { label: 'Procedural Sphere', value: 'sphere', path: '', type: 'procedural_sphere' },
   { label: 'Classic Duck (GLB)', value: 'duck', path: 'sample_models/duck.glb', type: 'glb' },
   { label: 'Mahogany Table (Baked GLB)', value: 'table_baked', path: 'sample_models/table_baked.glb', type: 'glb' },
   { label: 'Bieder Chair (Baked GLB)', value: 'bieder_chair', path: 'sample_models/bieder_chair.glb', type: 'glb' },
@@ -68,7 +74,6 @@ export const SAMPLE_MODELS: SampleModelItem[] = [
   { label: 'Coffee Table (3DS)', value: 'coffeetable', path: 'sample_models/coffee_table.3ds', type: '3ds' },
   { label: 'Prison 0 (OBJ)', value: 'prison', path: 'sample_models/prison_0.obj', type: 'obj' },
   { label: 'Delacroix Sculpture (PLY)', value: 'delacroix', path: 'sample_models/delacroix_low_poly.ply', type: 'ply' },
-  { label: 'Procedural Sphere', value: 'sphere', path: '', type: 'procedural_sphere' },
   { label: 'Procedural Torus Knot', value: 'torus', path: '', type: 'procedural_torus' }
 ];
 
@@ -83,6 +88,9 @@ export interface DiscretizeConfig {
   enableMacaroni: boolean;
   enableCanisters: boolean;
   enableStudlessTiles: boolean;
+  hollowCore: boolean;
+  shellThickness: number;
+  useFull18kCatalog: boolean;
 }
 
 export interface ModelSelectorPanelProps {
@@ -98,6 +106,8 @@ export interface ModelSelectorPanelProps {
   viewMode: 'mesh' | 'lego' | 'both';
   onViewModeChange: (mode: 'mesh' | 'lego' | 'both') => void;
   onExportLDraw: () => void;
+  onMeshSnappingChange?: (snap: boolean, targetStuds: number, verticalUnit: 'stud' | 'brick') => void;
+  onOpenPartsCatalog?: () => void;
 }
 
 export const ModelSelectorPanel: React.FC<ModelSelectorPanelProps> = ({
@@ -112,10 +122,17 @@ export const ModelSelectorPanel: React.FC<ModelSelectorPanelProps> = ({
   discretizerResult,
   viewMode,
   onViewModeChange,
-  onExportLDraw
+  onExportLDraw,
+  onMeshSnappingChange,
+  onOpenPartsCatalog
 }) => {
+  const [isPanelCollapsed, setIsPanelCollapsed] = useState<boolean>(false);
+  const [isModelSourceOpen, setIsModelSourceOpen] = useState<boolean>(true);
+  const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(true);
+  const [isStatsOpen, setIsStatsOpen] = useState<boolean>(true);
+
   const [activeSource, setActiveSource] = useState<'sample' | 'clean'>('sample');
-  const [selectedSampleValue, setSelectedSampleValue] = useState<string>('duck');
+  const [selectedSampleValue, setSelectedSampleValue] = useState<string>('sphere');
   const [cleanManifest, setCleanManifest] = useState<CleanManifest | null>(null);
   const [loadingManifest, setLoadingManifest] = useState<boolean>(true);
   const [manifestError, setManifestError] = useState<string | null>(null);
@@ -123,17 +140,20 @@ export const ModelSelectorPanel: React.FC<ModelSelectorPanelProps> = ({
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedCleanModelId, setSelectedCleanModelId] = useState<string>('');
 
-  // Discretizer Settings (Resolution 2 to 64 units)
-  const [targetStuds, setTargetStuds] = useState<number>(16);
-  const [verticalUnit, setVerticalUnit] = useState<'stud' | 'brick'>('stud');
+  // Discretizer Settings (Resolution 2 to 128 units, universal grid 1 unit = 1 plate = 8 LDU)
+  const [targetStuds, setTargetStuds] = useState<number>(32);
+  const [verticalUnit] = useState<'stud' | 'brick'>('stud');
   const [snapVertices, setSnapVertices] = useState<boolean>(false);
   const [enableCollapse, setEnableCollapse] = useState<boolean>(true);
   const [enableVoxelRecompute, setEnableVoxelRecompute] = useState<boolean>(true);
   const [strategy, setStrategy] = useState<'tiered' | 'size_descent'>('size_descent');
   const [enableCurvedSlopes, setEnableCurvedSlopes] = useState<boolean>(true);
-  const [enableMacaroni, setEnableMacaroni] = useState<boolean>(false);
-  const [enableCanisters, setEnableCanisters] = useState<boolean>(false);
+  const [enableMacaroni, setEnableMacaroni] = useState<boolean>(true);
+  const [enableCanisters, setEnableCanisters] = useState<boolean>(true);
   const [enableStudlessTiles, setEnableStudlessTiles] = useState<boolean>(true);
+  const [hollowCore, setHollowCore] = useState<boolean>(true);
+  const [shellThickness, setShellThickness] = useState<number>(2);
+  const [useFull18kCatalog, setUseFull18kCatalog] = useState<boolean>(false);
 
   // Fetch clean models manifest
   useEffect(() => {
@@ -213,9 +233,42 @@ export const ModelSelectorPanel: React.FC<ModelSelectorPanelProps> = ({
       enableCurvedSlopes,
       enableMacaroni,
       enableCanisters,
-      enableStudlessTiles
+      enableStudlessTiles,
+      hollowCore,
+      shellThickness,
+      useFull18kCatalog
     });
   };
+
+  if (isPanelCollapsed) {
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          top: 16,
+          left: 16,
+          zIndex: 20,
+          pointerEvents: 'auto'
+        }}
+      >
+        <Button
+          type="default"
+          icon={<MenuUnfoldOutlined />}
+          onClick={() => setIsPanelCollapsed(false)}
+          style={{
+            backgroundColor: '#ffffff',
+            borderColor: '#e2e8f0',
+            boxShadow: '0 4px 12px rgba(15, 23, 42, 0.08)',
+            borderRadius: 8,
+            fontWeight: 500,
+            color: '#0f172a'
+          }}
+        >
+          Discretizer Controls
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -252,6 +305,7 @@ export const ModelSelectorPanel: React.FC<ModelSelectorPanelProps> = ({
           }
         }}
       >
+        {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <Title level={5} style={{ margin: 0, color: '#0f172a', fontWeight: 600 }}>
@@ -261,388 +315,510 @@ export const ModelSelectorPanel: React.FC<ModelSelectorPanelProps> = ({
               Multi-Scale Kernel Engine (LTRON Graph)
             </Text>
           </div>
-          {isLoading && <Spin size="small" />}
-        </div>
-
-        <Divider style={{ margin: '4px 0', borderColor: '#e2e8f0' }} />
-
-        {/* Source Toggle */}
-        <div style={{ display: 'flex', gap: 6 }}>
-          <Button
-            size="small"
-            type={activeSource === 'sample' ? 'primary' : 'default'}
-            onClick={() => setActiveSource('sample')}
-            style={{
-              flex: 1,
-              backgroundColor: activeSource === 'sample' ? '#2563eb' : '#f8fafc',
-              borderColor: activeSource === 'sample' ? '#2563eb' : '#e2e8f0',
-              color: activeSource === 'sample' ? '#ffffff' : '#0f172a'
-            }}
-          >
-            Sample Meshes
-          </Button>
-          <Button
-            size="small"
-            type={activeSource === 'clean' ? 'primary' : 'default'}
-            onClick={() => setActiveSource('clean')}
-            style={{
-              flex: 1,
-              backgroundColor: activeSource === 'clean' ? '#2563eb' : '#f8fafc',
-              borderColor: activeSource === 'clean' ? '#2563eb' : '#e2e8f0',
-              color: activeSource === 'clean' ? '#ffffff' : '#0f172a'
-            }}
-          >
-            Clean Library ({allCleanModels.length})
-          </Button>
-        </div>
-
-        {/* Sample Models View */}
-        {activeSource === 'sample' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <Text style={{ fontSize: 12, color: '#64748b', fontWeight: 500 }}>
-              Select Model:
-            </Text>
-            <Select
-              value={selectedSampleValue}
-              onChange={handleSampleChange}
-              style={{ width: '100%' }}
-              options={SAMPLE_MODELS.map(m => ({
-                label: m.label,
-                value: m.value
-              }))}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            {onOpenPartsCatalog && (
+              <Button
+                size="small"
+                icon={<AppstoreOutlined />}
+                onClick={onOpenPartsCatalog}
+                title="Browse 18K LDraw Parts Catalog"
+                style={{ fontSize: 12 }}
+              >
+                18K Catalog
+              </Button>
+            )}
+            {isLoading && <Spin size="small" />}
+            <Button
+              type="text"
+              size="small"
+              icon={<MenuFoldOutlined style={{ fontSize: 13, color: '#64748b' }} />}
+              onClick={() => setIsPanelCollapsed(true)}
+              title="Collapse Panel"
+              style={{ width: 24, height: 24, padding: 0 }}
             />
           </div>
-        )}
-
-        {/* Clean Models View */}
-        {activeSource === 'clean' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {loadingManifest ? (
-              <div style={{ textAlign: 'center', padding: '16px 0' }}>
-                <Spin size="small" />
-                <Text style={{ display: 'block', fontSize: 12, color: '#64748b', marginTop: 8 }}>
-                  Loading clean manifest...
-                </Text>
-              </div>
-            ) : manifestError ? (
-              <Alert message={manifestError} type="error" showIcon style={{ fontSize: 12 }} />
-            ) : (
-              <>
-                <div style={{ display: 'flex', gap: 6 }}>
-                  <Select
-                    size="small"
-                    value={selectedCategory}
-                    onChange={setSelectedCategory}
-                    style={{ width: 140 }}
-                    options={[
-                      { label: 'All Categories', value: 'all' },
-                      ...categories.map(c => ({
-                        label: `${c.title} (${c.count})`,
-                        value: c.name
-                      }))
-                    ]}
-                  />
-                  <Input
-                    size="small"
-                    placeholder="Search..."
-                    prefix={<SearchOutlined style={{ color: '#94a3b8' }} />}
-                    value={searchQuery}
-                    onChange={e => setSearchQuery(e.target.value)}
-                    allowClear
-                    style={{ flex: 1 }}
-                  />
-                </div>
-
-                <Select
-                  showSearch
-                  placeholder="Select model..."
-                  value={selectedCleanModelId || undefined}
-                  onChange={handleCleanModelChange}
-                  filterOption={false}
-                  style={{ width: '100%' }}
-                  options={filteredCleanModels.slice(0, 100).map(m => ({
-                    label: `${m.name} (${m.sizeFormatted})`,
-                    value: m.id
-                  }))}
-                />
-              </>
-            )}
-          </div>
-        )}
-
-        {/* Upload Custom File */}
-        <Upload
-          beforeUpload={(file) => {
-            onUploadFile(file);
-            return false;
-          }}
-          showUploadList={false}
-          accept=".glb,.gltf,.obj,.ply,.3ds"
-        >
-          <Button
-            icon={<UploadOutlined />}
-            size="small"
-            style={{
-              width: '100%',
-              backgroundColor: '#f8fafc',
-              borderColor: '#e2e8f0',
-              color: '#0f172a'
-            }}
-          >
-            Upload Mesh (GLB, OBJ, PLY, 3DS)
-          </Button>
-        </Upload>
-
-        {/* Active Mesh Stats */}
-        {modelStats && (
-          <div
-            style={{
-              backgroundColor: '#f8fafc',
-              border: '1px solid #e2e8f0',
-              borderRadius: 6,
-              padding: '8px 10px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 4
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Text strong style={{ fontSize: 12, color: '#0f172a' }}>
-                {modelStats.name}
-              </Text>
-              <Tag color="blue" style={{ margin: 0, fontSize: 10 }}>
-                Mesh Ready
-              </Tag>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, fontSize: 11 }}>
-              <div>
-                <Text type="secondary">Triangles: </Text>
-                <Text strong>{modelStats.triangleCount.toLocaleString()}</Text>
-              </div>
-              <div>
-                <Text type="secondary">Vertices: </Text>
-                <Text strong>{modelStats.vertexCount.toLocaleString()}</Text>
-              </div>
-            </div>
-          </div>
-        )}
+        </div>
 
         <Divider style={{ margin: '4px 0', borderColor: '#e2e8f0' }} />
 
-        {/* Discretizer Controls */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Text style={{ fontSize: 12, color: '#0f172a', fontWeight: 500 }}>
-              Resolution ({verticalUnit === 'brick' ? 'Brick units, 1 unit = 3 plates' : 'Studs'}): {targetStuds}
-            </Text>
-          </div>
-          <Slider
-            min={2}
-            max={64}
-            step={1}
-            value={targetStuds}
-            onChange={setTargetStuds}
-            marks={{ 2: '2', 16: '16', 32: '32', 48: '48', 64: '64' }}
-            style={{ margin: '4px 0 16px 0' }}
-          />
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <Text style={{ fontSize: 12, color: '#64748b', fontWeight: 500 }}>
-              Vertical Unit:
-            </Text>
-            <Radio.Group
-              size="small"
-              value={verticalUnit}
-              onChange={e => setVerticalUnit(e.target.value)}
-              style={{ display: 'flex', width: '100%' }}
-            >
-              <Radio.Button value="stud" style={{ flex: 1, textAlign: 'center' }}>
-                Studs / Plates
-              </Radio.Button>
-              <Radio.Button value="brick" style={{ flex: 1, textAlign: 'center' }}>
-                Brick Units (1 unit = 3 plates)
-              </Radio.Button>
-            </Radio.Group>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <Text style={{ fontSize: 12, color: '#64748b', fontWeight: 500 }}>
-              Dispatch Strategy:
-            </Text>
-            <Radio.Group
-              size="small"
-              value={strategy}
-              onChange={e => setStrategy(e.target.value)}
-              style={{ display: 'flex', width: '100%' }}
-            >
-              <Radio.Button value="size_descent" style={{ flex: 1, textAlign: 'center' }}>
-                Size-Descent
-              </Radio.Button>
-              <Radio.Button value="tiered" style={{ flex: 1, textAlign: 'center' }}>
-                Tiered Multi-Pass
-              </Radio.Button>
-            </Radio.Group>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, fontSize: 11, marginTop: 4 }}>
-            <Checkbox
-              checked={enableCurvedSlopes}
-              onChange={e => setEnableCurvedSlopes(e.target.checked)}
-            >
-              Curved Slopes
-            </Checkbox>
-            <Checkbox
-              checked={enableStudlessTiles}
-              onChange={e => setEnableStudlessTiles(e.target.checked)}
-            >
-              Studless Top Tiles
-            </Checkbox>
-            <Checkbox
-              checked={enableMacaroni}
-              onChange={e => setEnableMacaroni(e.target.checked)}
-            >
-              Macaroni Tiles
-            </Checkbox>
-            <Checkbox
-              checked={enableCanisters}
-              onChange={e => setEnableCanisters(e.target.checked)}
-            >
-              Round Canisters
-            </Checkbox>
-            <Checkbox
-              checked={snapVertices}
-              onChange={e => setSnapVertices(e.target.checked)}
-            >
-              Snap Vertices to Grid
-            </Checkbox>
-            <Checkbox
-              checked={enableCollapse}
-              onChange={e => {
-                setEnableCollapse(e.target.checked);
-                setEnableVoxelRecompute(e.target.checked);
-              }}
-            >
-              Voxel Collapse Pass
-            </Checkbox>
-          </div>
-
-          <Button
-            type="primary"
-            icon={<ThunderboltOutlined />}
-            loading={isDiscretizing}
-            onClick={handleRunDiscretize}
+        {/* Section 1: Model Source (Collapsible) */}
+        <div>
+          <div
+            onClick={() => setIsModelSourceOpen(!isModelSourceOpen)}
             style={{
-              marginTop: 6,
-              backgroundColor: '#2563eb',
-              borderColor: '#2563eb',
-              height: 36,
-              fontWeight: 500
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              cursor: 'pointer',
+              userSelect: 'none',
+              padding: '2px 0'
             }}
           >
-            {isDiscretizing ? 'Discretizing...' : 'Discretize Model'}
-          </Button>
+            <Text strong style={{ fontSize: 12, color: '#0f172a' }}>
+              Model Source
+            </Text>
+            {isModelSourceOpen ? (
+              <DownOutlined style={{ fontSize: 10, color: '#64748b' }} />
+            ) : (
+              <RightOutlined style={{ fontSize: 10, color: '#64748b' }} />
+            )}
+          </div>
 
-          {/* Progress Indicator */}
-          {discretizeProgress && (
-            <div style={{ marginTop: 4 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#64748b' }}>
-                <span>{discretizeProgress.stage}</span>
-                <span>{discretizeProgress.percent}%</span>
+          {isModelSourceOpen && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
+              {/* Source Toggle */}
+              <div style={{ display: 'flex', gap: 6 }}>
+                <Button
+                  size="small"
+                  type={activeSource === 'sample' ? 'primary' : 'default'}
+                  onClick={() => setActiveSource('sample')}
+                  style={{
+                    flex: 1,
+                    backgroundColor: activeSource === 'sample' ? '#2563eb' : '#f8fafc',
+                    borderColor: activeSource === 'sample' ? '#2563eb' : '#e2e8f0',
+                    color: activeSource === 'sample' ? '#ffffff' : '#0f172a'
+                  }}
+                >
+                  Sample Meshes
+                </Button>
+                <Button
+                  size="small"
+                  type={activeSource === 'clean' ? 'primary' : 'default'}
+                  onClick={() => setActiveSource('clean')}
+                  style={{
+                    flex: 1,
+                    backgroundColor: activeSource === 'clean' ? '#2563eb' : '#f8fafc',
+                    borderColor: activeSource === 'clean' ? '#2563eb' : '#e2e8f0',
+                    color: activeSource === 'clean' ? '#ffffff' : '#0f172a'
+                  }}
+                >
+                  Clean Library ({allCleanModels.length})
+                </Button>
               </div>
-              <Progress percent={discretizeProgress.percent} showInfo={false} size="small" strokeColor="#2563eb" />
+
+              {/* Sample Models View */}
+              {activeSource === 'sample' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <Text style={{ fontSize: 12, color: '#64748b', fontWeight: 500 }}>
+                    Select Model:
+                  </Text>
+                  <Select
+                    value={selectedSampleValue}
+                    onChange={handleSampleChange}
+                    style={{ width: '100%' }}
+                    options={SAMPLE_MODELS.map(m => ({
+                      label: m.label,
+                      value: m.value
+                    }))}
+                  />
+                </div>
+              )}
+
+              {/* Clean Models View */}
+              {activeSource === 'clean' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {loadingManifest ? (
+                    <div style={{ textAlign: 'center', padding: '16px 0' }}>
+                      <Spin size="small" />
+                      <Text style={{ display: 'block', fontSize: 12, color: '#64748b', marginTop: 8 }}>
+                        Loading clean manifest...
+                      </Text>
+                    </div>
+                  ) : manifestError ? (
+                    <Alert message={manifestError} type="error" showIcon style={{ fontSize: 12 }} />
+                  ) : (
+                    <>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        <Select
+                          size="small"
+                          value={selectedCategory}
+                          onChange={setSelectedCategory}
+                          style={{ width: 140 }}
+                          options={[
+                            { label: 'All Categories', value: 'all' },
+                            ...categories.map(c => ({
+                              label: `${c.title} (${c.count})`,
+                              value: c.name
+                            }))
+                          ]}
+                        />
+                        <Input
+                          size="small"
+                          placeholder="Search..."
+                          prefix={<SearchOutlined style={{ color: '#94a3b8' }} />}
+                          value={searchQuery}
+                          onChange={e => setSearchQuery(e.target.value)}
+                          allowClear
+                          style={{ flex: 1 }}
+                        />
+                      </div>
+
+                      <Select
+                        showSearch
+                        placeholder="Select model..."
+                        value={selectedCleanModelId || undefined}
+                        onChange={handleCleanModelChange}
+                        filterOption={false}
+                        style={{ width: '100%' }}
+                        options={filteredCleanModels.slice(0, 100).map(m => ({
+                          label: `${m.name} (${m.sizeFormatted})`,
+                          value: m.id
+                        }))}
+                      />
+                    </>
+                  )}
+                </div>
+              )}
+
+              {/* Upload Custom File */}
+              <Upload
+                beforeUpload={(file) => {
+                  onUploadFile(file);
+                  return false;
+                }}
+                showUploadList={false}
+                accept=".glb,.gltf,.obj,.ply,.3ds"
+              >
+                <Button
+                  icon={<UploadOutlined />}
+                  size="small"
+                  style={{
+                    width: '100%',
+                    backgroundColor: '#f8fafc',
+                    borderColor: '#e2e8f0',
+                    color: '#0f172a'
+                  }}
+                >
+                  Upload Mesh (GLB, OBJ, PLY, 3DS)
+                </Button>
+              </Upload>
+
+              {/* Active Mesh Stats */}
+              {modelStats && (
+                <div
+                  style={{
+                    backgroundColor: '#f8fafc',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: 6,
+                    padding: '8px 10px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 4
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Text strong style={{ fontSize: 12, color: '#0f172a' }}>
+                      {modelStats.name}
+                    </Text>
+                    <Tag color="blue" style={{ margin: 0, fontSize: 10 }}>
+                      Mesh Ready
+                    </Tag>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, fontSize: 11 }}>
+                    <div>
+                      <Text type="secondary">Triangles: </Text>
+                      <Text strong>{modelStats.triangleCount.toLocaleString()}</Text>
+                    </div>
+                    <div>
+                      <Text type="secondary">Vertices: </Text>
+                      <Text strong>{modelStats.vertexCount.toLocaleString()}</Text>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
 
-        {/* Results Card */}
-        {discretizerResult && (
+        <Divider style={{ margin: '4px 0', borderColor: '#e2e8f0' }} />
+
+        {/* Section 2: Discretizer Settings (Collapsible) */}
+        <div>
           <div
+            onClick={() => setIsSettingsOpen(!isSettingsOpen)}
             style={{
-              backgroundColor: '#eff6ff',
-              border: '1px solid #bfdbfe',
-              borderRadius: 6,
-              padding: '10px 12px',
               display: 'flex',
-              flexDirection: 'column',
-              gap: 8,
-              marginTop: 4
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              cursor: 'pointer',
+              userSelect: 'none',
+              padding: '2px 0'
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Text strong style={{ fontSize: 12, color: '#1e40af' }}>
-                Discretization Result
-              </Text>
-              {discretizerResult.stats.is100PercentGrounded ? (
-                <Tag color="success" icon={<CheckCircleOutlined />} style={{ margin: 0, fontSize: 11 }}>
-                  100% Grounded
-                </Tag>
-              ) : (
-                <Tag color="warning" style={{ margin: 0, fontSize: 11 }}>
-                  {discretizerResult.stats.groundedBricks}/{discretizerResult.stats.totalBricks} Grounded
-                </Tag>
-              )}
-            </div>
+            <Text strong style={{ fontSize: 12, color: '#0f172a' }}>
+              Discretization Settings
+            </Text>
+            {isSettingsOpen ? (
+              <DownOutlined style={{ fontSize: 10, color: '#64748b' }} />
+            ) : (
+              <RightOutlined style={{ fontSize: 10, color: '#64748b' }} />
+            )}
+          </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, fontSize: 12 }}>
-              <div>
-                <Text type="secondary">Total Bricks: </Text>
-                <Text strong>{discretizerResult.bricks.length}</Text>
-              </div>
-              <div>
-                <Text type="secondary">Connections: </Text>
-                <Text strong>{discretizerResult.stats.totalConnections}</Text>
-              </div>
-              <div>
-                <Text type="secondary">Execution: </Text>
-                <Text strong>{discretizerResult.executionTimeMs} ms</Text>
-              </div>
-              <div>
-                <Text type="secondary">Parts Variety: </Text>
-                <Text strong>
-                  {new Set(discretizerResult.bricks.map(b => b.partId)).size} types
+          {isSettingsOpen && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
+              {/* Resolution Slider: 2 to 128 units */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Text style={{ fontSize: 12, color: '#0f172a', fontWeight: 500 }}>
+                  Resolution (Studs/Plates): {targetStuds}
                 </Text>
               </div>
-            </div>
+              <Slider
+                min={2}
+                max={128}
+                step={1}
+                value={targetStuds}
+                onChange={val => {
+                  setTargetStuds(val);
+                  if (snapVertices) onMeshSnappingChange?.(true, val, verticalUnit);
+                }}
+                marks={{ 2: '2', 32: '32', 64: '64', 96: '96', 128: '128' }}
+                style={{ margin: '4px 0 16px 0' }}
+              />
 
-            {/* View Mode Radio Group */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 4 }}>
-              <Text style={{ fontSize: 11, color: '#1e40af', fontWeight: 500 }}>
-                Viewport Display Mode:
-              </Text>
-              <Radio.Group
-                size="small"
-                value={viewMode}
-                onChange={e => onViewModeChange(e.target.value)}
-                style={{ display: 'flex', width: '100%' }}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <Text style={{ fontSize: 12, color: '#64748b', fontWeight: 500 }}>
+                  Dispatch Strategy:
+                </Text>
+                <Radio.Group
+                  size="small"
+                  value={strategy}
+                  onChange={e => setStrategy(e.target.value)}
+                  style={{ display: 'flex', width: '100%' }}
+                >
+                  <Radio.Button value="size_descent" style={{ flex: 1, textAlign: 'center' }}>
+                    Size-Descent
+                  </Radio.Button>
+                  <Radio.Button value="tiered" style={{ flex: 1, textAlign: 'center' }}>
+                    Tiered Multi-Pass
+                  </Radio.Button>
+                </Radio.Group>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, fontSize: 11, marginTop: 4 }}>
+                <Checkbox
+                  checked={enableCurvedSlopes}
+                  onChange={e => setEnableCurvedSlopes(e.target.checked)}
+                >
+                  Curved Slopes
+                </Checkbox>
+                <Checkbox
+                  checked={enableStudlessTiles}
+                  onChange={e => setEnableStudlessTiles(e.target.checked)}
+                >
+                  Studless Top Tiles
+                </Checkbox>
+                <Checkbox
+                  checked={enableMacaroni}
+                  onChange={e => setEnableMacaroni(e.target.checked)}
+                >
+                  Macaroni Tiles
+                </Checkbox>
+                <Checkbox
+                  checked={enableCanisters}
+                  onChange={e => setEnableCanisters(e.target.checked)}
+                >
+                  Round Canisters
+                </Checkbox>
+                <Checkbox
+                  checked={snapVertices}
+                  onChange={e => {
+                    const checked = e.target.checked;
+                    setSnapVertices(checked);
+                    onMeshSnappingChange?.(checked, targetStuds, verticalUnit);
+                    if (checked && viewMode === 'lego') {
+                      onViewModeChange('both');
+                    }
+                  }}
+                >
+                  Snap Vertices to Grid
+                </Checkbox>
+                <Checkbox
+                  checked={enableCollapse}
+                  onChange={e => setEnableCollapse(e.target.checked)}
+                >
+                  Voxel Collapse Pass
+                </Checkbox>
+                <Checkbox
+                  checked={enableVoxelRecompute}
+                  onChange={e => setEnableVoxelRecompute(e.target.checked)}
+                >
+                  Dynamic Voxel Recompute
+                </Checkbox>
+                <Checkbox
+                  checked={hollowCore}
+                  onChange={e => setHollowCore(e.target.checked)}
+                >
+                  Hollow Core Shell
+                </Checkbox>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Checkbox
+                    checked={useFull18kCatalog}
+                    onChange={e => setUseFull18kCatalog(e.target.checked)}
+                  >
+                    Full 18K Catalog
+                  </Checkbox>
+                  {onOpenPartsCatalog && (
+                    <Button
+                      type="link"
+                      size="small"
+                      icon={<AppstoreOutlined />}
+                      onClick={onOpenPartsCatalog}
+                      style={{ padding: '0 4px', height: 'auto', fontSize: 12, color: '#2563eb' }}
+                    >
+                      Browse
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              <Button
+                type="primary"
+                icon={<ThunderboltOutlined />}
+                loading={isDiscretizing}
+                onClick={handleRunDiscretize}
+                style={{
+                  marginTop: 6,
+                  backgroundColor: '#2563eb',
+                  borderColor: '#2563eb',
+                  height: 36,
+                  fontWeight: 500
+                }}
               >
-                <Radio.Button value="mesh" style={{ flex: 1, textAlign: 'center' }}>
-                  Mesh
-                </Radio.Button>
-                <Radio.Button value="lego" style={{ flex: 1, textAlign: 'center' }}>
-                  LEGO
-                </Radio.Button>
-                <Radio.Button value="both" style={{ flex: 1, textAlign: 'center' }}>
-                  Overlay
-                </Radio.Button>
-              </Radio.Group>
-            </div>
+                {isDiscretizing ? 'Discretizing...' : 'Discretize Model'}
+              </Button>
 
-            {/* Export LDraw Button */}
-            <Button
-              size="small"
-              icon={<DownloadOutlined />}
-              onClick={onExportLDraw}
-              style={{
-                marginTop: 4,
-                backgroundColor: '#ffffff',
-                borderColor: '#bfdbfe',
-                color: '#1e40af',
-                fontWeight: 500
-              }}
-            >
-              Export LDraw (.ldr)
-            </Button>
-          </div>
+              {/* Progress Indicator */}
+              {discretizeProgress && (
+                <div style={{ marginTop: 4 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#64748b' }}>
+                    <span>{discretizeProgress.stage}</span>
+                    <span>{discretizeProgress.percent}%</span>
+                  </div>
+                  <Progress percent={discretizeProgress.percent} showInfo={false} size="small" strokeColor="#2563eb" />
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Section 3: Discretization Results (Collapsible) */}
+        {discretizerResult && (
+          <>
+            <Divider style={{ margin: '4px 0', borderColor: '#e2e8f0' }} />
+            <div>
+              <div
+                onClick={() => setIsStatsOpen(!isStatsOpen)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  cursor: 'pointer',
+                  userSelect: 'none',
+                  padding: '2px 0'
+                }}
+              >
+                <Text strong style={{ fontSize: 12, color: '#1e40af' }}>
+                  Discretization Results
+                </Text>
+                {isStatsOpen ? (
+                  <DownOutlined style={{ fontSize: 10, color: '#1e40af' }} />
+                ) : (
+                  <RightOutlined style={{ fontSize: 10, color: '#1e40af' }} />
+                )}
+              </div>
+
+              {isStatsOpen && (
+                <div
+                  style={{
+                    backgroundColor: '#eff6ff',
+                    border: '1px solid #bfdbfe',
+                    borderRadius: 6,
+                    padding: '10px 12px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 8,
+                    marginTop: 8
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Text strong style={{ fontSize: 12, color: '#1e40af' }}>
+                      Build Summary
+                    </Text>
+                    {discretizerResult.stats.is100PercentGrounded ? (
+                      <Tag color="success" icon={<CheckCircleOutlined />} style={{ margin: 0, fontSize: 11 }}>
+                        100% Grounded
+                      </Tag>
+                    ) : (
+                      <Tag color="warning" style={{ margin: 0, fontSize: 11 }}>
+                        {discretizerResult.stats.groundedBricks}/{discretizerResult.stats.totalBricks} Grounded
+                      </Tag>
+                    )}
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, fontSize: 12 }}>
+                    <div>
+                      <Text type="secondary">Total Bricks: </Text>
+                      <Text strong>{discretizerResult.bricks.length}</Text>
+                    </div>
+                    <div>
+                      <Text type="secondary">Connections: </Text>
+                      <Text strong>{discretizerResult.stats.totalConnections}</Text>
+                    </div>
+                    <div>
+                      <Text type="secondary">Execution: </Text>
+                      <Text strong>{discretizerResult.executionTimeMs} ms</Text>
+                    </div>
+                    <div>
+                      <Text type="secondary">Parts Variety: </Text>
+                      <Text strong>
+                        {new Set(discretizerResult.bricks.map(b => b.partId)).size} types
+                      </Text>
+                    </div>
+                  </div>
+
+                  {/* View Mode Radio Group */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 4 }}>
+                    <Text style={{ fontSize: 11, color: '#1e40af', fontWeight: 500 }}>
+                      Viewport Display Mode:
+                    </Text>
+                    <Radio.Group
+                      size="small"
+                      value={viewMode}
+                      onChange={e => onViewModeChange(e.target.value)}
+                      style={{ display: 'flex', width: '100%' }}
+                    >
+                      <Radio.Button value="mesh" style={{ flex: 1, textAlign: 'center' }}>
+                        Mesh
+                      </Radio.Button>
+                      <Radio.Button value="lego" style={{ flex: 1, textAlign: 'center' }}>
+                        LEGO
+                      </Radio.Button>
+                      <Radio.Button value="both" style={{ flex: 1, textAlign: 'center' }}>
+                        Overlay
+                      </Radio.Button>
+                    </Radio.Group>
+                  </div>
+
+                  {/* Export LDraw Button */}
+                  <Button
+                    size="small"
+                    icon={<DownloadOutlined />}
+                    onClick={onExportLDraw}
+                    style={{
+                      marginTop: 4,
+                      backgroundColor: '#ffffff',
+                      borderColor: '#bfdbfe',
+                      color: '#1e40af',
+                      fontWeight: 500
+                    }}
+                  >
+                    Export LDraw (.ldr)
+                  </Button>
+                </div>
+              )}
+            </div>
+          </>
         )}
       </Card>
     </div>

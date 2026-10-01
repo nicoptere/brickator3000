@@ -9,13 +9,8 @@ function assert(condition: boolean, msg: string): void {
   console.log(`PASSED: ${msg}`);
 }
 
-async function runSolverTest() {
-  console.log('--- Phase 3: Surface-Growing Discretization Solver Tests ---\n');
-
-  // Construct a synthetic 16x16x15 dome / pyramid lattice
+function createSyntheticDomeLattice(): PlateLattice3D {
   const lattice = new PlateLattice3D(16, 16, 18);
-
-  // Generate a rounded dome with surface normals pointing outward
   const centerX = 8;
   const centerZ = 8;
   const radius = 6;
@@ -29,7 +24,6 @@ async function runSolverTest() {
         const dist = Math.sqrt(dx * dx + dz * dz);
 
         if (dist <= currentRadius) {
-          // Outward normal vector
           const len = Math.sqrt(dx * dx + dz * dz + 4);
           const nx = dx / len;
           const nz = dz / len;
@@ -42,6 +36,13 @@ async function runSolverTest() {
   }
 
   lattice.computeDistanceTransform();
+  return lattice;
+}
+
+async function runSolverTest() {
+  console.log('--- Phase 3: Surface-Growing Discretization Solver Tests ---\n');
+
+  const lattice = createSyntheticDomeLattice();
   console.log(`Generated synthetic dome lattice with ${lattice.totalOccupied} occupied voxels.`);
   assert(lattice.totalOccupied > 100, 'Synthetic dome populated with voxels');
 
@@ -52,9 +53,8 @@ async function runSolverTest() {
     enableSlopes: true,
     enableCurvedSlopes: true,
     enableStudlessTiles: true,
-    onProgress: (stage, pct) => {
-      // Progress logger
-    }
+    enableVoxelRecompute: true,
+    onProgress: () => {}
   });
 
   const result = await solver.solve();
@@ -72,17 +72,20 @@ async function runSolverTest() {
   assert(ldrawLines.length === result.bricks.length, 'Every placed brick generates an authentic LDraw line');
   assert(ldrawLines[0].includes('0x22563EB'), 'Direct 24-bit RGB (0x2RRGGBB) format verified in LDraw line');
 
-  // Check variety of placed parts (not just standard 1x1 or 2x2)
+  // Check variety of placed parts (modern, bionicle, standard)
   const uniquePartIds = new Set(result.bricks.map(b => b.partId));
   console.log(`Unique part types utilized: ${Array.from(uniquePartIds).join(', ')}`);
   assert(uniquePartIds.size >= 3, `Diverse parts utilized (got ${uniquePartIds.size} distinct part types)`);
 
-  // Run Solver in Size-Descent mode
+  // Run Solver in Size-Descent mode with fresh lattice
   console.log('\n[Running Size-Descent Solver]');
-  const sizeDescentSolver = new GrowingSurfaceKernelSolver(lattice, {
-    dispatchStrategy: 'size_descent'
+  const sdLattice = createSyntheticDomeLattice();
+  const sizeDescentSolver = new GrowingSurfaceKernelSolver(sdLattice, {
+    dispatchStrategy: 'size_descent',
+    enableVoxelRecompute: true
   });
   const sdResult = await sizeDescentSolver.solve();
+  console.log(`Size-descent placed ${sdResult.bricks.length} bricks with ${sdResult.stats.groundedBricks}/${sdResult.stats.totalBricks} grounded.`);
   assert(sdResult.bricks.length > 0, 'Size-descent solver completed successfully');
   assert(sdResult.stats.groundedBricks > 0, 'Size-descent model has grounded bricks');
 

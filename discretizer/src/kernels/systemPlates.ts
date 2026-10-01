@@ -150,7 +150,7 @@ export const SYSTEM_PLATES: BaseKernelDefinition[] = [
     minNormalDot: 0.0,
     tier: 6,
     weightBonus: 6.5,
-    connectors: createStandardConnectors(2, 8, 3, true, true),
+    connectors: createStandardConnectors(2, 8, 1, true, true),
     occupancyMask: createSolidMask(2, 8, 1)
   },
   {

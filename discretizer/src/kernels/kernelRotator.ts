@@ -5,11 +5,20 @@ import type { ConnectorSite } from '../core/types';
  * Generates canonical 4-way yaw rotation variants (0, 90, 180, 270 degrees)
  * for each kernel definition, pruning redundant symmetrical rotations.
  */
-export function generateKernelVariants(catalog: BaseKernelDefinition[]): RotatedKernelVariant[] {
+export function generateKernelVariants(
+  catalog: BaseKernelDefinition[],
+  verticalUnit: 'stud' | 'brick' = 'stud'
+): RotatedKernelVariant[] {
   const variants: RotatedKernelVariant[] = [];
 
   for (const def of catalog) {
-    const [w, d, h] = def.baseSize;
+    if (verticalUnit === 'brick') {
+      // In brick unit mode, exclude sub-brick standard plates (h < 3)
+      // but retain flat tiles, slopes, cheese slopes, and wedges
+      if (def.category === 'PLATE_STANDARD' && def.baseSize[2] < 3) continue;
+    }
+
+    const [w, d] = def.baseSize;
 
     // Check rotational symmetry
     const isSquare = w === d;
@@ -25,15 +34,23 @@ export function generateKernelVariants(catalog: BaseKernelDefinition[]): Rotated
     }
 
     for (const rot of angles) {
-      variants.push(createVariant(def, rot));
+      variants.push(createVariant(def, rot, verticalUnit));
     }
   }
 
   return variants;
 }
 
-function createVariant(def: BaseKernelDefinition, rotation: number): RotatedKernelVariant {
-  const [w, d, h] = def.baseSize;
+function createVariant(
+  def: BaseKernelDefinition,
+  rotation: number,
+  verticalUnit: 'stud' | 'brick' = 'stud'
+): RotatedKernelVariant {
+  const [origW, origD, origH] = def.baseSize;
+  const h = verticalUnit === 'brick' ? Math.max(1, Math.round(origH / 3)) : origH;
+  const w = origW;
+  const d = origD;
+
   const isRotated90or270 = rotation === 90 || rotation === 270;
   const size: [number, number, number] = isRotated90or270 ? [d, w, h] : [w, d, h];
 
@@ -55,7 +72,10 @@ function createVariant(def: BaseKernelDefinition, rotation: number): RotatedKern
 
   // Rotate connectors
   const rotatedConnectors: ConnectorSite[] = def.connectors.map((c) => {
-    const [lx, lz, ly] = c.localPos;
+    const [lx, lz, origLy] = c.localPos;
+    const ly = verticalUnit === 'brick'
+      ? (origLy === 0 ? 0 : Math.max(1, Math.round((origLy / origH) * h)))
+      : origLy;
     const [cdx, cdz, cdy] = c.direction;
 
     let rlx = lx;
@@ -91,6 +111,7 @@ function createVariant(def: BaseKernelDefinition, rotation: number): RotatedKern
   // Rotate 3D occupancy mask
   const rotatedMask: boolean[][][] = [];
   for (let y = 0; y < h; y++) {
+    const sourceY = verticalUnit === 'brick' ? Math.min(origH - 1, y * 3) : y;
     const layer: boolean[][] = [];
     for (let rz = 0; rz < size[1]; rz++) {
       const row: boolean[] = new Array(size[0]).fill(false);
@@ -109,7 +130,7 @@ function createVariant(def: BaseKernelDefinition, rotation: number): RotatedKern
           oz = rx;
         }
 
-        if (def.occupancyMask[y] && def.occupancyMask[y][oz] && def.occupancyMask[y][oz][ox]) {
+        if (def.occupancyMask[sourceY] && def.occupancyMask[sourceY][oz] && def.occupancyMask[sourceY][oz][ox]) {
           row[rx] = true;
         }
       }

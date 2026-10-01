@@ -13,6 +13,7 @@ import type { SolverResult } from './solver/kernelSolver';
 import { segmentMeshIslandsAsync } from './solver/islandSegmenter';
 import { rasterizeIslandsToLatticeAsync } from './solver/triangleRasterizer';
 import { GrowingSurfaceKernelSolver } from './solver/kernelSolver';
+import { PartsCatalogModal } from './components/PartsCatalogModal';
 import { getAssetUrl } from './url';
 
 export const MainApp: React.FC = () => {
@@ -24,6 +25,7 @@ export const MainApp: React.FC = () => {
   const [discretizerResult, setDiscretizerResult] = useState<SolverResult | null>(null);
   const [viewMode, setViewMode] = useState<'mesh' | 'lego' | 'both'>('mesh');
   const [isEngineReady, setIsEngineReady] = useState<boolean>(false);
+  const [isPartsCatalogOpen, setIsPartsCatalogOpen] = useState<boolean>(false);
   const { message: antMessage } = AntApp.useApp();
 
   const handleSelectSampleModel = useCallback(async (model: SampleModelItem) => {
@@ -109,6 +111,8 @@ export const MainApp: React.FC = () => {
         targetStuds: config.targetStuds,
         verticalUnit: config.verticalUnit,
         snapVertices: config.snapVertices,
+        hollowCore: config.hollowCore,
+        shellThickness: config.shellThickness ?? 2,
         onProgress: (pct) => {
           setDiscretizeProgress({ stage: 'Rasterizing Surface Hull & Normals...', percent: Math.round(32 + pct * 0.28) });
         }
@@ -124,6 +128,7 @@ export const MainApp: React.FC = () => {
         enableStudlessTiles: config.enableStudlessTiles,
         enableCollapse: config.enableCollapse,
         enableVoxelRecompute: config.enableVoxelRecompute,
+        useFull18kCatalog: config.useFull18kCatalog,
         onProgress: (stage, pct) => {
           setDiscretizeProgress({ stage, percent: Math.round(62 + pct * 0.36) });
         }
@@ -180,6 +185,12 @@ export const MainApp: React.FC = () => {
     setIsEngineReady(true);
   }, []);
 
+  const handleMeshSnappingChange = useCallback((snap: boolean, targetStuds: number, verticalUnit: 'stud' | 'brick') => {
+    if (viewportRef.current) {
+      viewportRef.current.updateMeshSnapping(snap, targetStuds, verticalUnit);
+    }
+  }, []);
+
   // Load default duck model once viewport engine is ready
   useEffect(() => {
     if (!isEngineReady) return;
@@ -196,6 +207,7 @@ export const MainApp: React.FC = () => {
         onReady={handleViewportReady}
         onModelLoaded={handleModelLoaded}
         onError={handleError}
+        discretizerResult={discretizerResult}
       />
       <ModelSelectorPanel
         onSelectSampleModel={handleSelectSampleModel}
@@ -210,6 +222,12 @@ export const MainApp: React.FC = () => {
         viewMode={viewMode}
         onViewModeChange={handleViewModeChange}
         onExportLDraw={handleExportLDraw}
+        onMeshSnappingChange={handleMeshSnappingChange}
+        onOpenPartsCatalog={() => setIsPartsCatalogOpen(true)}
+      />
+      <PartsCatalogModal
+        visible={isPartsCatalogOpen}
+        onClose={() => setIsPartsCatalogOpen(false)}
       />
     </div>
   );

@@ -36,3 +36,22 @@
 ## 5. Asynchronous Pre-processing & UI Responsiveness
 - **No Main Thread Freezing**: Never run CPU-intensive mesh pre-processing (half-edge island extraction, raycasting, voxelization, Markov solving) synchronously without yielding. Always yield to the event loop (`await new Promise(r => setTimeout(r, 0))`) periodically.
 - **Pre-Process Progress Popin**: Display a centered modal popin during mesh pre-processing with a live percentage bar (0%–100%), active stage descriptions, and real-time topological island discovery feedback.
+
+## 6. Crust vs. Core Disambiguation & Vertical Structure Invariant
+- **Strict Crust / Core Stratification**:
+  - **Structural Core (depth >= 2)**: Discretized first with large structural bricks ($h = 3$ plates: $2\times8, 2\times6, 2\times4, 1\times8, 1\times6, 2\times3, 2\times2, 1\times4, 1\times2$) and full-height $1\times1\times3$ bricks (`3005`). Strictly ban cosmetic slopes, wedges, and thin 1-plate slices from the interior core.
+  - **Exterior Crust (depth <= 1)**: Strictly cosmetic. Reserved for curved slopes, 45° slopes, cheese slopes, wedges, macaroni curves, and top flat tiles.
+- **Vertical Columns & Masts**:
+  - Morphologically detect continuous vertical shafts ($h \ge 3$) with empty horizontal neighbors.
+  - Automatically pack with $1\times1\times5$ tall column bricks (`2453b`, height 15 plates = 120 LDU) and full-height $h=3$ bricks (`3005`, `3004`). Never decompose vertical uprights into stacked 1-plate slivers.
+
+## 7. Universal 1-Plate Grid & Resolution Invariant
+- **Universal Plate Unit**: Discretization must strictly operate on the universal LEGO plate grid ($1\text{ unit} = 1\text{ plate} = 8\text{ LDU} = 0.4\text{ studs}$ in $Y$, $1\text{ stud} = 20\text{ LDU}$ in $X/Z$).
+- **Zero "1 Brick = 3 Plates" Discrete Grid**: Never introduce or re-enable a coarse "1 brick = 3 plates" discrete lattice mode.
+- **High Resolution Support**: Maintain support for resolution scaling up to 128 units (`min={2}`, `max={128}`).
+
+## 8. Continuous Curvature Guidance & Quadrant 1 Viewport
+- **Curvature Tensor Alignment**: Slopes and wedges must be aligned with the principal curvature gradient tensor ($\nabla \mathbf{n}$) and dihedral crease lines ($\ge 20^\circ$) extracted from the continuous mesh, not single-triangle normal quantization.
+- **Quadrant 1 Viewport Display**: In the 4-split WebGL layout, Quadrant 1 (top-left) must always render the source mesh: 100% opaque (`transparent = false`, `depthWrite = true`) with diffuse texture and overlaid with `#2563eb` curvature/crease lines.
+- **Collapsible UI Panels**: All control sidebars and panel sub-sections must be collapsible into compact drawer pills and accordions with clean SVG icons (zero emojis).
+

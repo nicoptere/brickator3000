@@ -54,6 +54,7 @@ export interface PlacedBrick {
   ldrawMatrix: number[]; // 3x3 rotation matrix
   category: string;
   connectors: ConnectorSite[];
+  occupancyMask?: boolean[][][];
   islandId?: number;
 }
 
@@ -65,3 +66,25 @@ export interface BuildabilityStats {
   totalConnections: number;
   seamInterlockScore: number;
 }
+
+export interface EvaluationStep {
+  stepIndex: number;
+  stage: string;
+  partId: string;
+  partName: string;
+  category: string;
+  gridPos: [number, number, number];
+  size: [number, number, number];
+  rotation: number;
+  occupancyMask?: boolean[][][];
+  overlapRatio: number;
+  loss: number;
+  score: number;
+  status: 'ACCEPTED' | 'REJECTED' | 'SUPERSEDED';
+  rejectionReason?: string;
+  targetVoxels: {
+    pos: [number, number, number];
+    status: 'MATCH' | 'AIR' | 'COLLISION';
+  }[];
+}
+

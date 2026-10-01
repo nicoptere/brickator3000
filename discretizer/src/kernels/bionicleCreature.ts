@@ -1,5 +1,10 @@
 import type { BaseKernelDefinition } from './types';
-import { createSolidMask, createStandardConnectors } from './kernelHelpers';
+import {
+  createSolidMask,
+  createStandardConnectors,
+  createWedgeMask,
+  createWedgeConnectors
+} from './kernelHelpers';
 
 /**
  * LEGO Modern, Weird, Bionicle / Constraction & Wedge Elements
@@ -133,13 +138,13 @@ export const BIONICLE_AND_WEIRD_PARTS: BaseKernelDefinition[] = [
     system: 'SYSTEM',
     category: 'WEDGE_PLATE',
     baseSize: [2, 3, 1],
-    targetNormal: [0, 1, 0],
-    minNormalDot: 0.0,
-    tier: 6,
-    weightBonus: 6.0,
+    targetNormal: [0.707, 0, 0.707],
+    minNormalDot: 0.35,
+    tier: 3,
+    weightBonus: 6.5,
     omrFrequency: 16.5,
-    connectors: createStandardConnectors(2, 3, 1, true, true),
-    occupancyMask: createSolidMask(2, 3, 1)
+    connectors: createWedgeConnectors(2, 3, 1, createWedgeMask(2, 3, 1, 'left_3x2')),
+    occupancyMask: createWedgeMask(2, 3, 1, 'left_3x2')
   },
   {
     partId: '43723',
@@ -147,13 +152,13 @@ export const BIONICLE_AND_WEIRD_PARTS: BaseKernelDefinition[] = [
     system: 'SYSTEM',
     category: 'WEDGE_PLATE',
     baseSize: [2, 3, 1],
-    targetNormal: [0, 1, 0],
-    minNormalDot: 0.0,
-    tier: 6,
-    weightBonus: 6.0,
+    targetNormal: [-0.707, 0, 0.707],
+    minNormalDot: 0.35,
+    tier: 3,
+    weightBonus: 6.5,
     omrFrequency: 16.5,
-    connectors: createStandardConnectors(2, 3, 1, true, true),
-    occupancyMask: createSolidMask(2, 3, 1)
+    connectors: createWedgeConnectors(2, 3, 1, createWedgeMask(2, 3, 1, 'right_3x2')),
+    occupancyMask: createWedgeMask(2, 3, 1, 'right_3x2')
   },
   {
     partId: '2419',
@@ -161,13 +166,13 @@ export const BIONICLE_AND_WEIRD_PARTS: BaseKernelDefinition[] = [
     system: 'SYSTEM',
     category: 'WEDGE_PLATE',
     baseSize: [3, 6, 1],
-    targetNormal: [0, 1, 0],
-    minNormalDot: 0.0,
-    tier: 6,
-    weightBonus: 8.0,
+    targetNormal: [0.707, 0, 0.707],
+    minNormalDot: 0.35,
+    tier: 3,
+    weightBonus: 8.5,
     omrFrequency: 18.0,
-    connectors: createStandardConnectors(3, 6, 1, true, true),
-    occupancyMask: createSolidMask(3, 6, 1)
+    connectors: createWedgeConnectors(3, 6, 1, createWedgeMask(3, 6, 1, 'wedge_3x6')),
+    occupancyMask: createWedgeMask(3, 6, 1, 'wedge_3x6')
   },
 
   // ==========================================

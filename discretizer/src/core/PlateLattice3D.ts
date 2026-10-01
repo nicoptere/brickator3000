@@ -26,6 +26,7 @@ export class PlateLattice3D {
   public worldMin: [number, number, number] = [0, 0, 0];
   public worldStudPitch: number = 1.0;
   public worldPlatePitch: number = 0.4;
+  public verticalUnit: 'stud' | 'brick' = 'stud';
 
   constructor(numStudsX: number, numStudsZ: number, numPlatesY: number) {
     this.numStudsX = numStudsX;
@@ -120,11 +121,24 @@ export class PlateLattice3D {
 
   public getDepth(x: number, z: number, y: number): number {
     if (!this.isInBounds(x, z, y)) return 0;
+    if (this.occupancy[this.getIndex(x, z, y)] === 0) return 0;
     return this.depth[this.getIndex(x, z, y)];
   }
 
   public getOccupancyBuffer(): Uint8Array {
     return this.occupancy;
+  }
+
+  /**
+   * Clears a single voxel cell from occupancy buffer and decrements total count.
+   */
+  public clearVoxel(x: number, z: number, y: number): void {
+    if (!this.isInBounds(x, z, y)) return;
+    const idx = this.getIndex(x, z, y);
+    if (this.occupancy[idx] === 1) {
+      this.occupancy[idx] = 0;
+      this.totalOccupied--;
+    }
   }
 
   /**
@@ -214,8 +228,9 @@ export class PlateLattice3D {
   ): [number, number, number] {
     const ldrawX = (x + widthStuds / 2 - this.numStudsX / 2) * 20.0;
     const ldrawZ = (z + depthStuds / 2 - this.numStudsZ / 2) * 20.0;
-    // In LDraw, 1 plate = 8 LDU. Origin Y=0 is the top surface of the piece, Y goes downward.
-    const ldrawY = -(y * 8.0 + heightPlates * 8.0);
+    // In LDraw, 1 plate = 8 LDU, 1 brick = 24 LDU. Origin Y=0 is the top surface of the piece, Y goes downward.
+    const unitHeightLDU = this.verticalUnit === 'brick' ? 24.0 : 8.0;
+    const ldrawY = -(y * unitHeightLDU + heightPlates * unitHeightLDU);
     return [ldrawX, ldrawY, ldrawZ];
   }
 

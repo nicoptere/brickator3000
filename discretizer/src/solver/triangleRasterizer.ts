@@ -5,22 +5,26 @@ import type { MeshIsland } from './islandSegmenter';
 export interface RasterizerOptions {
   /** Target resolution along largest horizontal dimension (default 24 units, up to 64) */
   targetStuds: number;
-  /** Vertical unit mode: 'stud' (plates) or 'brick' (1 unit = 3 plates = 24 LDU) */
+  /** Vertical unit mode: 'stud' (plates, 1 unit = 0.4 stud = 8 LDU) or 'brick' (1 unit = 3 plates = 1.2 studs = 24 LDU) */
   verticalUnit?: 'stud' | 'brick';
   /** Snaps mesh triangle vertices to the discrete grid before rasterization */
   snapVertices?: boolean;
+  /** Leave the core hollow, discretizing only the outer shell/hull (default true per user directive) */
+  hollowCore?: boolean;
+  /** Morphological thickness of the outer shell in voxels (default 2 to eliminate holes and provide brick depth) */
+  shellThickness?: number;
   onProgress?: (percent: number) => void;
 }
 
 /**
  * Direct Triangle Surface Rasterizer into PlateLattice3D with Barycentric 24-bit RGB and Normals.
- * Combines surface preservation with exterior-flood cavity volume filling (the best of both approaches).
+ * Discretizes the surface hull into 6-connected voxels, leaving the interior core hollow per user directive.
  */
 export async function rasterizeIslandsToLatticeAsync(
   islands: MeshIsland[],
   options: RasterizerOptions
 ): Promise<PlateLattice3D> {
-  const { targetStuds, verticalUnit = 'stud', snapVertices = false, onProgress } = options;
+  const { targetStuds, verticalUnit = 'stud', snapVertices = false, hollowCore = true, shellThickness = 2, onProgress } = options;
 
   // 1. Calculate world bounding box across all islands
   const bbox = new THREE.Box3();
@@ -35,18 +39,21 @@ export async function rasterizeIslandsToLatticeAsync(
   const size = new THREE.Vector3();
   bbox.getSize(size);
 
-  // Resolution along largest dimension: 2 to 64 units
-  const resolution = Math.max(2, Math.min(64, targetStuds));
+  // Resolution along largest dimension: 2 to 128 units
+  const resolution = Math.max(2, Math.min(128, targetStuds));
   const maxDim = Math.max(size.x, size.y, size.z, 0.001);
   const worldStudPitch = maxDim / resolution;
-  // Authentic LEGO: 1 plate = 8 LDU = 0.4 studs. 1 brick = 24 LDU = 3 plates.
-  const worldPlatePitch = worldStudPitch * 0.4;
+  // Authentic LEGO vertical pitch:
+  // Plate mode: 1 unit = 1 plate = 8 LDU = 0.4 studs
+  // Brick mode: 1 unit = 1 brick = 24 LDU = 3 plates = 1.2 studs
+  const worldPlatePitch = verticalUnit === 'brick' ? worldStudPitch * 1.2 : worldStudPitch * 0.4;
 
   const numStudsX = Math.max(1, Math.ceil(size.x / worldStudPitch));
   const numStudsZ = Math.max(1, Math.ceil(size.z / worldStudPitch));
-  const numPlatesY = Math.max(1, Math.ceil(size.y / worldPlatePitch));
+  const numPlatesY = Math.max(1, Math.ceil(size.y / worldPlatePitch)) + 4;
 
   const lattice = new PlateLattice3D(numStudsX, numStudsZ, numPlatesY);
+  lattice.verticalUnit = verticalUnit;
   lattice.worldMin = [bbox.min.x, bbox.min.y, bbox.min.z];
   lattice.worldStudPitch = worldStudPitch;
   lattice.worldPlatePitch = worldPlatePitch;
@@ -134,18 +141,7 @@ export async function rasterizeIslandsToLatticeAsync(
           const [gx, gz, gy] = worldToGrid(p);
           const colorPacked = sampleColor(tri, u, v, w);
 
-          if (verticalUnit === 'brick') {
-            // In Brick unit mode (1 unit = 3 plates), fill full 3-plate brick interval
-            const baseBrickY = Math.floor(gy / 3) * 3;
-            for (let dy = 0; dy < 3; dy++) {
-              const by = baseBrickY + dy;
-              if (by < numPlatesY) {
-                lattice.setVoxel(gx, gz, by, colorPacked, [fn.x, fn.y, fn.z], island.id);
-              }
-            }
-          } else {
-            lattice.setVoxel(gx, gz, gy, colorPacked, [fn.x, fn.y, fn.z], island.id);
-          }
+          lattice.setVoxel(gx, gz, gy, colorPacked, [fn.x, fn.y, fn.z], island.id);
         }
       }
 
@@ -160,14 +156,18 @@ export async function rasterizeIslandsToLatticeAsync(
   // Step 2: Close micro-apertures and narrow joint gaps on thin struts/stems
   closeJointGaps(lattice);
 
-  // Step 3: Aperture-Sealed Exterior Flood Fill to fill true interior volumes (tabletop discs, closed bodies)
-  if (onProgress) onProgress(65);
-  fillInteriorCavities(lattice);
+  // Step 3: Aperture-Sealed Exterior Flood Fill or Morphological Shell Thickening
+  if (!hollowCore) {
+    if (onProgress) onProgress(65);
+    fillInteriorCavities(lattice);
+    closeJointGaps(lattice);
+  } else if (shellThickness > 1) {
+    if (onProgress) onProgress(65);
+    thickenHollowShell(lattice, shellThickness);
+    closeJointGaps(lattice);
+  }
 
-  // Step 4: Final gap-closing pass
-  closeJointGaps(lattice);
-
-  // Step 5: Compute 6-connected distance transform
+  // Step 4: Compute 6-connected distance transform
   if (onProgress) onProgress(85);
   lattice.computeDistanceTransform();
 
@@ -349,6 +349,105 @@ function fillInteriorCavities(lattice: PlateLattice3D): void {
             lattice.setVoxel(x, z, y, nearestCol, [0, 1, 0], 0);
           }
         }
+      }
+    }
+  }
+}
+
+/**
+ * Thickens a hollow shell inward by `thickness` voxels (default 2).
+ * Expands inward along inverted surface normals while strictly keeping
+ * exterior air untouched and preserving the hollow interior core.
+ */
+function thickenHollowShell(lattice: PlateLattice3D, thickness: number = 2): void {
+  if (thickness <= 1) return;
+
+  const { numStudsX, numStudsZ, numPlatesY } = lattice;
+
+  // 1. Identify exterior air using 26-connectivity flood fill from padded boundary
+  const padX = numStudsX + 2;
+  const padZ = numStudsZ + 2;
+  const padY = numPlatesY + 2;
+
+  const isExterior: boolean[][][] = [];
+  for (let x = 0; x < padX; x++) {
+    isExterior[x] = [];
+    for (let z = 0; z < padZ; z++) {
+      isExterior[x][z] = new Array(padY).fill(false);
+    }
+  }
+
+  const queue: [number, number, number][] = [[0, 0, 0]];
+  isExterior[0][0][0] = true;
+  let qHead = 0;
+
+  while (qHead < queue.length) {
+    const [cx, cz, cy] = queue[qHead++];
+    const neighbors: [number, number, number][] = [
+      [cx + 1, cz, cy], [cx - 1, cz, cy],
+      [cx, cz + 1, cy], [cx, cz - 1, cy],
+      [cx, cz, cy + 1], [cx, cz, cy - 1]
+    ];
+
+    for (const [nx, nz, ny] of neighbors) {
+      if (nx >= 0 && nx < padX && nz >= 0 && nz < padZ && ny >= 0 && ny < padY) {
+        if (!isExterior[nx][nz][ny]) {
+          const gx = nx - 1;
+          const gz = nz - 1;
+          const gy = ny - 1;
+          const isInside = gx >= 0 && gx < numStudsX && gz >= 0 && gz < numStudsZ && gy >= 0 && gy < numPlatesY;
+          const isOccupied = isInside && lattice.isOccupied(gx, gz, gy);
+          if (!isOccupied) {
+            isExterior[nx][nz][ny] = true;
+            queue.push([nx, nz, ny]);
+          }
+        }
+      }
+    }
+  }
+
+  // 2. Perform inward dilation for (thickness - 1) layers
+  for (let step = 0; step < thickness - 1; step++) {
+    const candidates: { x: number; z: number; y: number; col: number; n: [number, number, number] }[] = [];
+
+    for (let y = 0; y < numPlatesY; y++) {
+      for (let z = 0; z < numStudsZ; z++) {
+        for (let x = 0; x < numStudsX; x++) {
+          if (lattice.isOccupied(x, z, y)) {
+            const vox = lattice.getVoxel(x, z, y)!;
+            const [nx, ny, nz] = vox.normal;
+
+            const neighbors: [number, number, number][] = [
+              [x + 1, z, y], [x - 1, z, y],
+              [x, z + 1, y], [x, z - 1, y],
+              [x, z, y + 1], [x, z, y - 1]
+            ];
+
+            for (const [ax, az, ay] of neighbors) {
+              if (ax >= 0 && ax < numStudsX && az >= 0 && az < numStudsZ && ay >= 0 && ay < numPlatesY) {
+                if (!lattice.isOccupied(ax, az, ay)) {
+                  // Must not be exterior air
+                  if (!isExterior[ax + 1][az + 1][ay + 1]) {
+                    // Inward test: step direction dot normal <= 0.1
+                    const dx = ax - x;
+                    const dz = az - z;
+                    const dy = ay - y;
+                    const dot = dx * nx + dz * nz + dy * ny;
+                    if (dot <= 0.25) {
+                      candidates.push({ x: ax, z: az, y: ay, col: vox.colorPacked, n: vox.normal });
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    for (const c of candidates) {
+      if (!lattice.isOccupied(c.x, c.z, c.y)) {
+        lattice.setVoxel(c.x, c.z, c.y, c.col, c.n, 0);
       }
     }
   }

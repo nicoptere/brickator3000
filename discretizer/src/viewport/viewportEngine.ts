@@ -4,8 +4,9 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader.js';
 import { TDSParser } from '../parsers/tdsParser';
-import type { PlacedBrick } from '../core/types';
+import type { PlacedBrick, EvaluationStep } from '../core/types';
 import type { PlateLattice3D } from '../core/PlateLattice3D';
+import { createCurvatureFeatureOverlay } from '../core/meshCurvature';
 
 export interface ModelStats {
   name: string;
@@ -19,6 +20,8 @@ export interface ViewportEngineOptions {
   onLoadingProgress?: (progress: number) => void;
 }
 
+export type ViewportLayoutMode = 'split4' | 'voxel' | 'eval' | 'lego' | 'inspector' | 'mesh';
+
 export class ViewportEngine {
   private container: HTMLElement;
   private scene: THREE.Scene;
@@ -27,12 +30,22 @@ export class ViewportEngine {
   private controls: OrbitControls;
   private modelRoot: THREE.Group;
   private bricksRoot: THREE.Group;
+  private voxelRoot: THREE.Group;
+  private evalRoot: THREE.Group;
+  private inspectorRoot: THREE.Group;
   private currentViewMode: 'mesh' | 'lego' | 'both' = 'mesh';
+  private currentLayoutMode: ViewportLayoutMode = 'lego';
+  private currentLattice: PlateLattice3D | null = null;
+  private currentBricks: PlacedBrick[] = [];
+  private currentInspectionStep: EvaluationStep | null = null;
   private gridHelper!: THREE.GridHelper;
   private floorPlane!: THREE.Mesh;
   private animFrameId: number = 0;
   private isDisposed: boolean = false;
   private options: ViewportEngineOptions;
+  private isSnappingActive: boolean = false;
+  private lastTargetStuds: number = 16;
+  private lastVerticalUnit: 'stud' | 'brick' = 'stud';
 
   constructor(container: HTMLElement, options: ViewportEngineOptions = {}) {
     this.container = container;
@@ -81,6 +94,18 @@ export class ViewportEngine {
     // Discretized Bricks Container Root
     this.bricksRoot = new THREE.Group();
     this.scene.add(this.bricksRoot);
+
+    // Voxel Space Container Root (Quadrant 1)
+    this.voxelRoot = new THREE.Group();
+    this.scene.add(this.voxelRoot);
+
+    // Physical Candidate Evaluation Root (Quadrant 2)
+    this.evalRoot = new THREE.Group();
+    this.scene.add(this.evalRoot);
+
+    // Step-by-Step Inspector Root (Quadrant 4)
+    this.inspectorRoot = new THREE.Group();
+    this.scene.add(this.inspectorRoot);
 
     // Start render loop
     this.render = this.render.bind(this);
@@ -143,7 +168,104 @@ export class ViewportEngine {
     if (this.isDisposed) return;
     this.animFrameId = requestAnimationFrame(this.render);
     this.controls.update();
-    this.renderer.render(this.scene, this.camera);
+
+    const width = this.container.clientWidth || window.innerWidth;
+    const height = this.container.clientHeight || window.innerHeight;
+
+    if (this.currentLayoutMode === 'split4') {
+      const halfW = Math.floor(width / 2);
+      const halfH = Math.floor(height / 2);
+
+      this.renderer.setScissorTest(true);
+
+      // Quadrant 1 (Top-Left): Source Mesh with Texture & Curvature/Feature Lines
+      this.configureQuadrantVisibility('mesh');
+      this.renderer.setViewport(0, halfH, halfW, halfH);
+      this.renderer.setScissor(0, halfH, halfW, halfH);
+      this.camera.aspect = halfW / halfH;
+      this.camera.updateProjectionMatrix();
+      this.renderer.render(this.scene, this.camera);
+
+      // Quadrant 2 (Top-Right): Physical Candidate Evaluation View
+      this.configureQuadrantVisibility('eval');
+      this.renderer.setViewport(halfW, halfH, halfW, halfH);
+      this.renderer.setScissor(halfW, halfH, halfW, halfH);
+      this.camera.aspect = halfW / halfH;
+      this.camera.updateProjectionMatrix();
+      this.renderer.render(this.scene, this.camera);
+
+      // Quadrant 3 (Bottom-Left): LEGO Assembly View
+      this.configureQuadrantVisibility('lego');
+      this.renderer.setViewport(0, 0, halfW, halfH);
+      this.renderer.setScissor(0, 0, halfW, halfH);
+      this.camera.aspect = halfW / halfH;
+      this.camera.updateProjectionMatrix();
+      this.renderer.render(this.scene, this.camera);
+
+      // Quadrant 4 (Bottom-Right): Step-by-Step Inspector View
+      this.configureQuadrantVisibility('inspector');
+      this.renderer.setViewport(halfW, 0, halfW, halfH);
+      this.renderer.setScissor(halfW, 0, halfW, halfH);
+      this.camera.aspect = halfW / halfH;
+      this.camera.updateProjectionMatrix();
+      this.renderer.render(this.scene, this.camera);
+    } else {
+      this.renderer.setScissorTest(false);
+      this.configureQuadrantVisibility(this.currentLayoutMode);
+      this.renderer.setViewport(0, 0, width, height);
+      this.camera.aspect = width / height;
+      this.camera.updateProjectionMatrix();
+      this.renderer.render(this.scene, this.camera);
+    }
+  }
+
+  private configureQuadrantVisibility(mode: ViewportLayoutMode): void {
+    if (mode === 'voxel') {
+      this.modelRoot.visible = (this.currentViewMode === 'both');
+      this.voxelRoot.visible = true;
+      this.evalRoot.visible = false;
+      this.bricksRoot.visible = false;
+      this.inspectorRoot.visible = false;
+    } else if (mode === 'eval') {
+      this.modelRoot.visible = false;
+      this.voxelRoot.visible = true;
+      this.evalRoot.visible = true;
+      this.bricksRoot.visible = false;
+      this.inspectorRoot.visible = false;
+    } else if (mode === 'lego') {
+      this.modelRoot.visible = (this.currentViewMode === 'both');
+      this.voxelRoot.visible = false;
+      this.evalRoot.visible = false;
+      this.bricksRoot.visible = true;
+      this.inspectorRoot.visible = false;
+    } else if (mode === 'inspector') {
+      this.modelRoot.visible = false;
+      this.voxelRoot.visible = false;
+      this.evalRoot.visible = false;
+      this.bricksRoot.visible = true;
+      this.inspectorRoot.visible = true;
+    } else {
+      this.modelRoot.visible = true;
+      this.voxelRoot.visible = false;
+      this.evalRoot.visible = false;
+      this.bricksRoot.visible = false;
+      this.inspectorRoot.visible = false;
+    }
+  }
+
+  public clearGroup(group: THREE.Group): void {
+    while (group.children.length > 0) {
+      const child = group.children[0];
+      group.remove(child);
+      child.traverse((c) => {
+        if ((c as any).geometry) (c as any).geometry.dispose();
+        if ((c as any).material) {
+          const m = (c as any).material;
+          if (Array.isArray(m)) m.forEach(x => x.dispose());
+          else m.dispose();
+        }
+      });
+    }
   }
 
   public clearModel(): void {
@@ -198,9 +320,9 @@ export class ViewportEngine {
       const geom = new THREE.SphereGeometry(4, 64, 32);
       geom.computeVertexNormals();
       const mat = new THREE.MeshStandardMaterial({
-        color: 0x2563eb,
-        roughness: 0.3,
-        metalness: 0.1
+        color: 0xffffff,
+        roughness: 0.35,
+        metalness: 0.05
       });
       loadedObject = new THREE.Mesh(geom, mat);
     } else if (fileType === 'procedural_torus') {
@@ -270,6 +392,9 @@ export class ViewportEngine {
           const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
           mats.forEach(m => {
             m.side = THREE.DoubleSide;
+            m.transparent = false;
+            m.opacity = 1.0;
+            m.depthWrite = true;
           });
         }
 
@@ -305,11 +430,34 @@ export class ViewportEngine {
 
     // Re-center model and position base on ground plane Y = 0
     obj.position.set(-center.x * scale, -bbox.min.y * scale, -center.z * scale);
+    obj.updateMatrixWorld(true);
+
+    // Add curvature & feature line overlay on the opaque model
+    const overlay = createCurvatureFeatureOverlay(obj);
+    obj.add(overlay);
+
+    // Cache original bounding box and geometry positions for grid snapping
+    const origBBox = new THREE.Box3().setFromObject(obj);
+    obj.userData.origBBox = origBBox;
+
+    obj.traverse((child) => {
+      if ((child as THREE.Mesh).isMesh) {
+        const m = child as THREE.Mesh;
+        if (m.geometry && m.geometry.attributes.position) {
+          m.geometry.userData.originalPositions = m.geometry.attributes.position.clone();
+        }
+      }
+    });
 
     this.modelRoot.add(obj);
 
     // Re-apply current view mode so the newly loaded mesh is properly visible
     this.setViewMode(this.currentViewMode);
+
+    // If grid snapping is active, snap the newly loaded mesh
+    if (this.isSnappingActive) {
+      this.updateMeshSnapping(true, this.lastTargetStuds, this.lastVerticalUnit);
+    }
 
     // Camera framing
     const scaledSize = size.clone().multiplyScalar(scale);
@@ -332,19 +480,89 @@ export class ViewportEngine {
     }
   }
 
-  public clearBricks(): void {
-    while (this.bricksRoot.children.length > 0) {
-      const child = this.bricksRoot.children[0];
-      this.bricksRoot.remove(child);
-      child.traverse((c) => {
-        if ((c as any).geometry) (c as any).geometry.dispose();
-        if ((c as any).material) {
-          const m = (c as any).material;
-          if (Array.isArray(m)) m.forEach(x => x.dispose());
-          else m.dispose();
+  /**
+   * Visually quantizes mesh vertices to the discrete plate/brick lattice grid.
+   */
+  public updateMeshSnapping(
+    snap: boolean,
+    targetStuds: number = 16,
+    verticalUnit: 'stud' | 'brick' = 'stud'
+  ): void {
+    this.isSnappingActive = snap;
+    this.lastTargetStuds = targetStuds;
+    this.lastVerticalUnit = verticalUnit;
+
+    const obj = this.getActiveModel();
+    if (!obj) return;
+
+    const bbox: THREE.Box3 = obj.userData.origBBox || new THREE.Box3().setFromObject(obj);
+    const sizeX = bbox.max.x - bbox.min.x;
+    const sizeZ = bbox.max.z - bbox.min.z;
+    const maxDim = Math.max(sizeX, sizeZ, 0.001);
+
+    const worldStudPitch = maxDim / targetStuds;
+    const worldPlatePitch = verticalUnit === 'brick' ? worldStudPitch * 1.2 : worldStudPitch * 0.4;
+
+    obj.updateMatrixWorld(true);
+
+    obj.traverse((child) => {
+      if ((child as THREE.Mesh).isMesh) {
+        const mesh = child as THREE.Mesh;
+        const geom = mesh.geometry;
+        if (!geom || !geom.attributes.position) return;
+
+        const origPosAttr = geom.userData.originalPositions as THREE.BufferAttribute | undefined;
+        if (!origPosAttr) return;
+
+        const posAttr = geom.attributes.position;
+        const count = origPosAttr.count;
+
+        if (!snap) {
+          // Restore continuous smooth original coordinates
+          if (posAttr instanceof THREE.BufferAttribute) {
+            posAttr.copy(origPosAttr);
+            posAttr.needsUpdate = true;
+          }
+          geom.computeVertexNormals();
+          geom.computeBoundingBox();
+          geom.computeBoundingSphere();
+          return;
         }
-      });
-    }
+
+        // Quantize coordinates to discrete LEGO grid pitch in world space
+        const matrixWorld = mesh.matrixWorld;
+        const invMatrix = new THREE.Matrix4().copy(matrixWorld).invert();
+        const v = new THREE.Vector3();
+
+        for (let i = 0; i < count; i++) {
+          v.fromBufferAttribute(origPosAttr, i);
+          v.applyMatrix4(matrixWorld);
+
+          const sx = Math.round((v.x - bbox.min.x) / worldStudPitch) * worldStudPitch + bbox.min.x;
+          const sz = Math.round((v.z - bbox.min.z) / worldStudPitch) * worldStudPitch + bbox.min.z;
+          const sy = Math.round((v.y - bbox.min.y) / worldPlatePitch) * worldPlatePitch + bbox.min.y;
+
+          v.set(sx, sy, sz);
+          v.applyMatrix4(invMatrix);
+          posAttr.setXYZ(i, v.x, v.y, v.z);
+        }
+
+        posAttr.needsUpdate = true;
+        geom.computeVertexNormals();
+        geom.computeBoundingBox();
+        geom.computeBoundingSphere();
+      }
+    });
+  }
+
+  public clearBricks(): void {
+    this.clearGroup(this.bricksRoot);
+    this.clearGroup(this.voxelRoot);
+    this.clearGroup(this.evalRoot);
+    this.clearGroup(this.inspectorRoot);
+    this.currentBricks = [];
+    this.currentLattice = null;
+    this.currentInspectionStep = null;
   }
 
   public setViewMode(mode: 'mesh' | 'lego' | 'both'): void {
@@ -381,6 +599,14 @@ export class ViewportEngine {
    */
   public displayDiscretizedBricks(bricks: PlacedBrick[], lattice: PlateLattice3D): void {
     this.clearBricks();
+    this.currentLattice = lattice;
+    this.currentBricks = bricks;
+
+    // Build Q1 Voxel Space View
+    this.displayVoxelSpace(lattice);
+
+    // Build Q2 Physical Candidate Testing View
+    this.displayCandidateEvaluation(lattice, bricks);
 
     if (bricks.length === 0) return;
 
@@ -459,7 +685,12 @@ export class ViewportEngine {
         dummy.position.set(wx, wy, wz);
         if (isBox) {
           dummy.rotation.set(0, 0, 0);
-          dummy.scale.set(bw * studPitch - gapH, bh * platePitch - gapV, bd * studPitch - gapH);
+          const isTileInBrickMode = b.category === 'TILE_FLAT' && lattice.verticalUnit === 'brick';
+          const heightScale = isTileInBrickMode ? Math.max(0.01, platePitch / 3 - gapV) : (bh * platePitch - gapV);
+          if (isTileInBrickMode) {
+            dummy.position.set(wx, wy - platePitch * (1 / 3), wz);
+          }
+          dummy.scale.set(bw * studPitch - gapH, heightScale, bd * studPitch - gapH);
         } else {
           dummy.rotation.set(0, -(b.rotation * Math.PI) / 180, 0);
           dummy.scale.set(baseW * studPitch - gapH, baseH * platePitch - gapV, baseD * studPitch - gapH);
@@ -601,6 +832,170 @@ export class ViewportEngine {
 
     this.bricksRoot.add(group);
     this.setViewMode('lego');
+    this.setLayoutMode('split4');
+  }
+
+  public setLayoutMode(mode: ViewportLayoutMode): void {
+    this.currentLayoutMode = mode;
+  }
+
+  public getLayoutMode(): ViewportLayoutMode {
+    return this.currentLayoutMode;
+  }
+
+  public getCurrentLattice(): PlateLattice3D | null {
+    return this.currentLattice;
+  }
+
+  public displayVoxelSpace(lattice: PlateLattice3D): void {
+    this.currentLattice = lattice;
+    this.clearGroup(this.voxelRoot);
+
+    const b = lattice.bounds;
+    const occupiedVoxels: { x: number; z: number; y: number; colorHex: string }[] = [];
+
+    for (let y = b.minY; y <= b.maxY; y++) {
+      for (let z = b.minZ; z <= b.maxZ; z++) {
+        for (let x = b.minX; x <= b.maxX; x++) {
+          const v = lattice.getVoxel(x, z, y);
+          if (v && v.occupied) {
+            occupiedVoxels.push({ x, z, y, colorHex: v.colorHex });
+          }
+        }
+      }
+    }
+
+    if (occupiedVoxels.length === 0) return;
+
+    const studPitch = lattice.worldStudPitch;
+    const platePitch = lattice.worldPlatePitch;
+    const boxGeo = new THREE.BoxGeometry(studPitch * 0.92, platePitch * 0.92, studPitch * 0.92);
+    const voxelMat = new THREE.MeshStandardMaterial({
+      roughness: 0.35,
+      metalness: 0.05
+    });
+
+    const mesh = new THREE.InstancedMesh(boxGeo, voxelMat, occupiedVoxels.length);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+
+    const dummy = new THREE.Object3D();
+    const color = new THREE.Color();
+
+    for (let i = 0; i < occupiedVoxels.length; i++) {
+      const v = occupiedVoxels[i];
+      const [wx, wy, wz] = lattice.gridToWorld(v.x + 0.5, v.z + 0.5, v.y + 0.5);
+      dummy.position.set(wx, wy, wz);
+      dummy.rotation.set(0, 0, 0);
+      dummy.scale.set(1, 1, 1);
+      dummy.updateMatrix();
+
+      mesh.setMatrixAt(i, dummy.matrix);
+      color.set(v.colorHex);
+      mesh.setColorAt(i, color);
+    }
+
+    mesh.instanceMatrix.needsUpdate = true;
+    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+    this.voxelRoot.add(mesh);
+  }
+
+  public displayCandidateEvaluation(lattice: PlateLattice3D, bricks: PlacedBrick[]): void {
+    this.clearGroup(this.evalRoot);
+
+    const studPitch = lattice.worldStudPitch;
+    const platePitch = lattice.worldPlatePitch;
+
+    // Visualizes bounding boxes of placed and candidate pieces
+    for (let i = 0; i < Math.min(bricks.length, 160); i++) {
+      const b = bricks[i];
+      const [bw, bd, bh] = b.size;
+      const [wx, wy, wz] = lattice.gridToWorld(b.gridPos[0] + bw / 2, b.gridPos[1] + bd / 2, b.gridPos[2] + bh / 2);
+
+      const boxGeo = new THREE.BoxGeometry(bw * studPitch, bh * platePitch, bd * studPitch);
+      const edges = new THREE.EdgesGeometry(boxGeo);
+      const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x60a5fa, transparent: true, opacity: 0.6 }));
+      line.position.set(wx, wy, wz);
+      this.evalRoot.add(line);
+    }
+  }
+
+  public setInspectionStep(step: EvaluationStep | null): void {
+    this.currentInspectionStep = step;
+    this.clearGroup(this.inspectorRoot);
+
+    if (!step || !this.currentLattice) return;
+    const lattice = this.currentLattice;
+    const studPitch = lattice.worldStudPitch;
+    const platePitch = lattice.worldPlatePitch;
+
+    const [bw, bd, bh] = step.size;
+    const [wx, wy, wz] = lattice.gridToWorld(step.gridPos[0] + bw / 2, step.gridPos[1] + bd / 2, step.gridPos[2] + bh / 2);
+
+    // 1. Candidate Wireframe Bounding Box Gizmo
+    const boxGeo = new THREE.BoxGeometry(bw * studPitch, bh * platePitch, bd * studPitch);
+    const edges = new THREE.EdgesGeometry(boxGeo);
+    const boxColor = step.status === 'ACCEPTED' ? 0x22c55e : (step.status === 'REJECTED' ? 0xef4444 : 0xf59e0b);
+    const boxLines = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: boxColor, linewidth: 3 }));
+    boxLines.position.set(wx, wy, wz);
+    this.inspectorRoot.add(boxLines);
+
+    // 2. Candidate Part 3D Volume Gizmo
+    const partMat = new THREE.MeshPhysicalMaterial({
+      color: step.status === 'ACCEPTED' ? 0x2563eb : (step.status === 'REJECTED' ? 0xef4444 : 0xf59e0b),
+      transparent: true,
+      opacity: 0.75,
+      roughness: 0.2,
+      emissive: step.status === 'ACCEPTED' ? 0x1d4ed8 : 0x000000,
+      emissiveIntensity: 0.3
+    });
+
+    const candidateMesh = new THREE.Mesh(boxGeo, partMat);
+    candidateMesh.position.set(wx, wy, wz);
+    this.inspectorRoot.add(candidateMesh);
+
+    // 3. 3D Coordinate Orientation Arrows Gizmo
+    const axes = new THREE.AxesHelper(Math.max(bw, bd, bh) * studPitch * 0.9);
+    axes.position.set(wx, wy, wz);
+    this.inspectorRoot.add(axes);
+
+    // 4. Highlighted Target Voxels
+    if (step.targetVoxels && step.targetVoxels.length > 0) {
+      const matchGeo = new THREE.BoxGeometry(studPitch * 0.88, platePitch * 0.88, studPitch * 0.88);
+      const matchMat = new THREE.MeshStandardMaterial({
+        color: 0x22c55e,
+        transparent: true,
+        opacity: 0.85,
+        emissive: 0x15803d,
+        emissiveIntensity: 0.3
+      });
+
+      const airMat = new THREE.MeshStandardMaterial({
+        color: 0xef4444,
+        transparent: true,
+        opacity: 0.75,
+        emissive: 0xb91c1c,
+        emissiveIntensity: 0.3
+      });
+
+      for (const tv of step.targetVoxels) {
+        const [tvX, tvY, tvZ] = lattice.gridToWorld(tv.pos[0] + 0.5, tv.pos[1] + 0.5, tv.pos[2] + 0.5);
+        if (tv.status === 'MATCH') {
+          const mMesh = new THREE.Mesh(matchGeo, matchMat);
+          mMesh.position.set(tvX, tvY, tvZ);
+          this.inspectorRoot.add(mMesh);
+        } else if (tv.status === 'AIR') {
+          const aMesh = new THREE.Mesh(matchGeo, airMat);
+          aMesh.position.set(tvX, tvY, tvZ);
+          this.inspectorRoot.add(aMesh);
+        } else if (tv.status === 'COLLISION') {
+          const cEdges = new THREE.EdgesGeometry(matchGeo);
+          const cLines = new THREE.LineSegments(cEdges, new THREE.LineBasicMaterial({ color: 0xdc2626, linewidth: 2 }));
+          cLines.position.set(tvX, tvY, tvZ);
+          this.inspectorRoot.add(cLines);
+        }
+      }
+    }
   }
 
   public getActiveModel(): THREE.Object3D | null {

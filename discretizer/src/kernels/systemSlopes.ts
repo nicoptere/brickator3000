@@ -1,5 +1,12 @@
 import type { BaseKernelDefinition } from './types';
-import { createSolidMask, createSlopeMask, createStandardConnectors } from './kernelHelpers';
+import {
+  createSolidMask,
+  createSlopeMask,
+  createInvertedSlopeMask,
+  createStandardConnectors,
+  createSlopeConnectors,
+  createInvertedSlopeConnectors
+} from './kernelHelpers';
 
 /**
  * LEGO System Slopes & Curved Aerodynamic Elements
@@ -18,7 +25,7 @@ export const SYSTEM_SLOPES: BaseKernelDefinition[] = [
     minNormalDot: 0.45,
     tier: 2,
     weightBonus: 6.0,
-    connectors: createStandardConnectors(1, 2, 3, false, true),
+    connectors: createSlopeConnectors(1, 2, 3, false, '+z'),
     occupancyMask: createSlopeMask(1, 2, 3, '+z')
   },
   {
@@ -31,7 +38,7 @@ export const SYSTEM_SLOPES: BaseKernelDefinition[] = [
     minNormalDot: 0.45,
     tier: 2,
     weightBonus: 7.5,
-    connectors: createStandardConnectors(2, 2, 3, false, true),
+    connectors: createSlopeConnectors(2, 2, 3, false, '+z'),
     occupancyMask: createSlopeMask(2, 2, 3, '+z')
   },
   {
@@ -44,7 +51,7 @@ export const SYSTEM_SLOPES: BaseKernelDefinition[] = [
     minNormalDot: 0.45,
     tier: 2,
     weightBonus: 8.0,
-    connectors: createStandardConnectors(1, 4, 3, false, true),
+    connectors: createSlopeConnectors(1, 4, 3, false, '+z'),
     occupancyMask: createSlopeMask(1, 4, 3, '+z')
   },
   {
@@ -57,7 +64,7 @@ export const SYSTEM_SLOPES: BaseKernelDefinition[] = [
     minNormalDot: 0.45,
     tier: 2,
     weightBonus: 9.0,
-    connectors: createStandardConnectors(2, 4, 3, false, true),
+    connectors: createSlopeConnectors(2, 4, 3, false, '+z'),
     occupancyMask: createSlopeMask(2, 4, 3, '+z')
   },
   {
@@ -70,12 +77,12 @@ export const SYSTEM_SLOPES: BaseKernelDefinition[] = [
     minNormalDot: 0.45,
     tier: 2,
     weightBonus: 8.2,
-    connectors: createStandardConnectors(2, 3, 3, false, true),
+    connectors: createSlopeConnectors(2, 3, 3, false, '+z'),
     occupancyMask: createSlopeMask(2, 3, 3, '+z')
   },
 
   // ==========================================
-  // Inverted Curved Slopes (Overhangs)
+  // Inverted Curved Slopes (Overhangs - with Top Studs)
   // ==========================================
   {
     partId: '24201',
@@ -87,8 +94,8 @@ export const SYSTEM_SLOPES: BaseKernelDefinition[] = [
     minNormalDot: 0.45,
     tier: 2,
     weightBonus: 6.5,
-    connectors: createStandardConnectors(1, 2, 3, true, false),
-    occupancyMask: createSolidMask(1, 2, 3)
+    connectors: createInvertedSlopeConnectors(1, 2, 3),
+    occupancyMask: createInvertedSlopeMask(1, 2, 3, '+z')
   },
   {
     partId: '93273',
@@ -100,8 +107,8 @@ export const SYSTEM_SLOPES: BaseKernelDefinition[] = [
     minNormalDot: 0.45,
     tier: 2,
     weightBonus: 8.0,
-    connectors: createStandardConnectors(1, 4, 3, true, false),
-    occupancyMask: createSolidMask(1, 4, 3)
+    connectors: createInvertedSlopeConnectors(1, 4, 3),
+    occupancyMask: createInvertedSlopeMask(1, 4, 3, '+z')
   },
   {
     partId: '32803',
@@ -113,8 +120,8 @@ export const SYSTEM_SLOPES: BaseKernelDefinition[] = [
     minNormalDot: 0.45,
     tier: 2,
     weightBonus: 7.8,
-    connectors: createStandardConnectors(2, 2, 3, true, false),
-    occupancyMask: createSolidMask(2, 2, 3)
+    connectors: createInvertedSlopeConnectors(2, 2, 3),
+    occupancyMask: createInvertedSlopeMask(2, 2, 3, '+z')
   },
 
   // ==========================================
@@ -130,7 +137,7 @@ export const SYSTEM_SLOPES: BaseKernelDefinition[] = [
     minNormalDot: 0.35,
     tier: 2,
     weightBonus: 4.0,
-    connectors: createStandardConnectors(1, 1, 2, false, true),
+    connectors: createSlopeConnectors(1, 1, 2, false, '+z'),
     occupancyMask: createSlopeMask(1, 1, 2, '+z')
   },
   {
@@ -143,12 +150,12 @@ export const SYSTEM_SLOPES: BaseKernelDefinition[] = [
     minNormalDot: 0.35,
     tier: 2,
     weightBonus: 5.5,
-    connectors: createStandardConnectors(1, 2, 2, false, true),
+    connectors: createSlopeConnectors(1, 2, 2, false, '+z'),
     occupancyMask: createSlopeMask(1, 2, 2, '+z')
   },
 
   // ==========================================
-  // Traditional 45° Slopes
+  // Traditional 45° Slopes (with Top Studs "Up")
   // ==========================================
   {
     partId: '3040',
@@ -160,7 +167,7 @@ export const SYSTEM_SLOPES: BaseKernelDefinition[] = [
     minNormalDot: 0.50,
     tier: 2,
     weightBonus: 5.0,
-    connectors: createStandardConnectors(1, 2, 3, false, true),
+    connectors: createSlopeConnectors(1, 2, 3, true, '+z'), // Top studs enabled!
     occupancyMask: createSlopeMask(1, 2, 3, '+z')
   },
   {
@@ -173,7 +180,7 @@ export const SYSTEM_SLOPES: BaseKernelDefinition[] = [
     minNormalDot: 0.50,
     tier: 2,
     weightBonus: 6.5,
-    connectors: createStandardConnectors(2, 2, 3, false, true),
+    connectors: createSlopeConnectors(2, 2, 3, true, '+z'), // Top studs enabled!
     occupancyMask: createSlopeMask(2, 2, 3, '+z')
   },
   {
@@ -186,7 +193,7 @@ export const SYSTEM_SLOPES: BaseKernelDefinition[] = [
     minNormalDot: 0.50,
     tier: 2,
     weightBonus: 8.0,
-    connectors: createStandardConnectors(2, 4, 3, false, true),
+    connectors: createSlopeConnectors(2, 4, 3, true, '+z'), // Top studs enabled!
     occupancyMask: createSlopeMask(2, 4, 3, '+z')
   },
   {
@@ -199,8 +206,8 @@ export const SYSTEM_SLOPES: BaseKernelDefinition[] = [
     minNormalDot: 0.50,
     tier: 2,
     weightBonus: 5.5,
-    connectors: createStandardConnectors(1, 2, 3, true, false),
-    occupancyMask: createSolidMask(1, 2, 3)
+    connectors: createInvertedSlopeConnectors(1, 2, 3), // Top studs enabled!
+    occupancyMask: createInvertedSlopeMask(1, 2, 3, '+z')
   },
   {
     partId: '3660',
@@ -212,8 +219,8 @@ export const SYSTEM_SLOPES: BaseKernelDefinition[] = [
     minNormalDot: 0.50,
     tier: 2,
     weightBonus: 7.0,
-    connectors: createStandardConnectors(2, 2, 3, true, false),
-    occupancyMask: createSolidMask(2, 2, 3)
+    connectors: createInvertedSlopeConnectors(2, 2, 3), // Top studs enabled!
+    occupancyMask: createInvertedSlopeMask(2, 2, 3, '+z')
   },
   {
     partId: '4286',
@@ -225,7 +232,7 @@ export const SYSTEM_SLOPES: BaseKernelDefinition[] = [
     minNormalDot: 0.45,
     tier: 2,
     weightBonus: 6.0,
-    connectors: createStandardConnectors(1, 3, 3, false, true),
+    connectors: createSlopeConnectors(1, 3, 3, true, '+z'), // Top studs enabled!
     occupancyMask: createSlopeMask(1, 3, 3, '+z')
   },
   {
@@ -238,7 +245,7 @@ export const SYSTEM_SLOPES: BaseKernelDefinition[] = [
     minNormalDot: 0.45,
     tier: 2,
     weightBonus: 7.5,
-    connectors: createStandardConnectors(2, 3, 3, false, true),
+    connectors: createSlopeConnectors(2, 3, 3, true, '+z'), // Top studs enabled!
     occupancyMask: createSlopeMask(2, 3, 3, '+z')
   }
 ];

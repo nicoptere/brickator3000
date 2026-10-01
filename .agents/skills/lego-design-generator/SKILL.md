@@ -70,3 +70,21 @@ Dual Sampling Pipeline:
 - Model height scales range from **2 to 32 bricks** (1*1*1 brick grid).
 - Preset buttons: **4, 8, 12, 16, 24, 32** bricks.
 - Default recommended scale: **16 bricks**.
+
+## 5. Continuous Overlap Scoring & Core-First Packing
+- **Avoid Binary Rejection**: When testing brick footprints, evaluate continuous volume overlap ratio:
+  $$\text{Overlap} = \frac{|\mathcal{V}_{\text{brick}} \cap \mathcal{V}_{\text{lattice}}|}{|\mathcal{V}_{\text{brick}}|}$$
+  - $\ge 8$ studs: threshold $\ge 45\%$.
+  - $\ge 4$ studs: threshold $\ge 50\%$.
+  - $\ge 3$ studs: threshold $\ge 67\%$.
+- **Area-Weighted Rewards**: Prioritize larger bricks over smaller ones using logarithmic area rewards:
+  $$\mathcal{S} = w_{\text{vol}} \cdot \text{Overlap} + w_{\text{area}} \cdot \log_2(W \cdot D) - P_{\text{atomic}} \cdot \mathbb{I}_{1\times1}$$
+- **Core-First Infill**: Interior core voxels ($\text{depth} \ge 2$) must be packed first with large structural bricks ($h=3$). Cosmetic slopes and 1-plate slivers are strictly banned from core voxels.
+- **Vertical Upright Preservation**: Continuous vertical spans ($h \ge 3$) must be packed with tall column bricks ($1\times1\times5$ `2453b` or $h=3$ bricks `3005`), never fragmented into stacked single plates.
+
+## 6. Curvature-Guided Boundary Synthesis
+- **Dihedral Creases**: Identify sharp feature edges where adjacent face normals diverge by $\ge 20^\circ$.
+- **Lattice Curvature Gradient**: Compute:
+  $$\kappa_x = \frac{\partial n_y}{\partial x}, \quad \kappa_z = \frac{\partial n_y}{\partial z}$$
+  Align slope rotations with the principal axis $\max(|\kappa_x|, |\kappa_z|)$ rather than raw per-triangle normal quantization.
+
