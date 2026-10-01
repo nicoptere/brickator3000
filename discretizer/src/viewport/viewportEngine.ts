@@ -465,11 +465,12 @@ export class ViewportEngine {
       for (let i = 0; i < cylinderBricks.length; i++) {
         const b = cylinderBricks[i];
         const [bw, bd, bh] = b.size;
+        const [baseW, baseD, baseH] = b.baseSize;
         const [wx, wy, wz] = lattice.gridToWorld(b.gridPos[0] + bw / 2, b.gridPos[1] + bd / 2, b.gridPos[2] + bh / 2);
 
         dummy.position.set(wx, wy, wz);
-        dummy.rotation.set(0, 0, 0);
-        dummy.scale.set(bw * studPitch * 0.98, bh * platePitch - gapV, bd * studPitch * 0.98);
+        dummy.rotation.set(0, -(b.rotation * Math.PI) / 180, 0);
+        dummy.scale.set(baseW * studPitch * 0.98, baseH * platePitch - gapV, baseD * studPitch * 0.98);
         dummy.updateMatrix();
 
         cylMesh.setMatrixAt(i, dummy.matrix);
@@ -482,7 +483,7 @@ export class ViewportEngine {
       group.add(cylMesh);
     }
 
-    // 4. Instanced Mesh for Modern Curved Slopes
+    // 4. Instanced Mesh for Modern Curved Slopes & Wedge Elements
     if (slopeBricks.length > 0) {
       const slopeShape = new THREE.Shape();
       slopeShape.moveTo(-0.5, -0.5);
@@ -492,7 +493,8 @@ export class ViewportEngine {
       slopeShape.lineTo(-0.5, -0.5);
 
       const slopeGeo = new THREE.ExtrudeGeometry(slopeShape, { depth: 1.0, bevelEnabled: false });
-      slopeGeo.rotateY(Math.PI / 2);
+      // Rotate -90° around Y so unrotated slope faces +Z matching targetNormal [0, 0.707, 0.707]
+      slopeGeo.rotateY(-Math.PI / 2);
       slopeGeo.center();
       slopeGeo.computeVertexNormals();
 
@@ -503,11 +505,14 @@ export class ViewportEngine {
       for (let i = 0; i < slopeBricks.length; i++) {
         const b = slopeBricks[i];
         const [bw, bd, bh] = b.size;
+        const [baseW, baseD, baseH] = b.baseSize;
         const [wx, wy, wz] = lattice.gridToWorld(b.gridPos[0] + bw / 2, b.gridPos[1] + bd / 2, b.gridPos[2] + bh / 2);
 
         dummy.position.set(wx, wy, wz);
-        dummy.rotation.set(0, (b.rotation * Math.PI) / 180, 0);
-        dummy.scale.set(bw * studPitch - gapH, bh * platePitch - gapV, bd * studPitch - gapH);
+        // Negate angle so clockwise yaw in lattice maps to Three.js right-handed rotation
+        dummy.rotation.set(0, -(b.rotation * Math.PI) / 180, 0);
+        // Scale by unrotated baseSize in local space BEFORE rotation
+        dummy.scale.set(baseW * studPitch - gapH, baseH * platePitch - gapV, baseD * studPitch - gapH);
         dummy.updateMatrix();
 
         slopeMesh.setMatrixAt(i, dummy.matrix);
@@ -534,8 +539,16 @@ export class ViewportEngine {
       let studIdx = 0;
 
       for (const b of bricks) {
-        const hasTopStuds = b.category !== 'TILE_FLAT' && b.category !== 'SLOPE_CURVED' && b.category !== 'CHEESE_SLOPE';
-        if (!hasTopStuds) continue;
+        const isSmoothOrSlope =
+          b.category === 'TILE_FLAT' ||
+          b.category === 'SLOPE_CURVED' ||
+          b.category === 'CHEESE_SLOPE' ||
+          b.category === 'SLOPE_45' ||
+          b.category === 'SLOPE_INVERTED' ||
+          b.category === 'ORGANIC_DOME' ||
+          b.partId === '98138' ||
+          b.partId === '14769';
+        if (isSmoothOrSlope) continue;
 
         color.set(b.colorHex);
 
