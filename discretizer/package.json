@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "test": "tsx src/tests/coreMath.test.ts"
   },
   "dependencies": {
     "@ant-design/icons": "^6.3.4",
