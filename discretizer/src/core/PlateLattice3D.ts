@@ -22,6 +22,11 @@ export class PlateLattice3D {
     maxY: number;
   };
 
+  // Continuous world-space bounding box and pitches for 1:1 mesh alignment
+  public worldMin: [number, number, number] = [0, 0, 0];
+  public worldStudPitch: number = 1.0;
+  public worldPlatePitch: number = 0.4;
+
   constructor(numStudsX: number, numStudsZ: number, numPlatesY: number) {
     this.numStudsX = numStudsX;
     this.numStudsZ = numStudsZ;
@@ -212,5 +217,16 @@ export class PlateLattice3D {
     // In LDraw, 1 plate = 8 LDU. Origin Y=0 is the top surface of the piece, Y goes downward.
     const ldrawY = -(y * 8.0 + heightPlates * 8.0);
     return [ldrawX, ldrawY, ldrawZ];
+  }
+
+  /**
+   * Convert discrete grid coordinates [gx, gz, gy] and optional offsets
+   * directly to authentic continuous 3D world scene coordinates matching the input mesh.
+   */
+  public gridToWorld(gx: number, gz: number, gy: number): [number, number, number] {
+    const wx = this.worldMin[0] + gx * this.worldStudPitch;
+    const wy = this.worldMin[1] + gy * this.worldPlatePitch;
+    const wz = this.worldMin[2] + gz * this.worldStudPitch;
+    return [wx, wy, wz];
   }
 }

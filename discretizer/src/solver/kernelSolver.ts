@@ -53,8 +53,11 @@ export class GrowingSurfaceKernelSolver {
 
     // Filter catalog based on feature toggles
     const activeCatalog = KERNEL_CATALOG.filter(def => {
-      if (def.category === 'SLOPE_CURVED' && !this.options.enableCurvedSlopes) return false;
-      if (def.category === 'SLOPE_INVERTED' && !this.options.enableSlopes) return false;
+      // Default to LEGO System elements for pure geometry discretization
+      if (def.system === 'TECHNIC') return false;
+
+      const isSlope = def.category === 'SLOPE_CURVED' || def.category === 'CHEESE_SLOPE' || def.category === 'SLOPE_INVERTED' || def.category === 'SLOPE_45';
+      if (isSlope && !this.options.enableCurvedSlopes) return false;
       if (def.category === 'MACARONI_WEDGE' && !this.options.enableMacaroni) return false;
       if (def.category === 'ROUND_CANISTER' && !this.options.enableCanisters) return false;
       if (def.category === 'TILE_FLAT' && !this.options.enableStudlessTiles) return false;
@@ -85,9 +88,8 @@ export class GrowingSurfaceKernelSolver {
       await this.solveSizeDescentPipeline();
     }
 
-    // 4. Grounding & Auto-Remediation Verification
+    // 4. Grounding Verification
     onProgress('Verifying Mechanical Grounding...', 90);
-    this.remediateFloatingBricks();
     await new Promise(r => setTimeout(r, 0));
 
     // 5. Build LDraw Model Script
@@ -110,50 +112,70 @@ export class GrowingSurfaceKernelSolver {
 
   /**
    * Strategy 1: Tiered Multi-Pass Pipeline (Default)
-   * Hierarchical feature passes: Organic/Apex -> Slopes -> Macaroni -> Canisters -> Core Infill -> Tiles
+   * Hierarchical feature passes: Apex -> Slopes -> Macaronis -> Canisters -> Core Infill -> Plates -> Tiles
    */
   private async solveTieredPipeline(): Promise<void> {
     const { onProgress } = this.options;
 
     // Pass 1: Organic Curvatures & Apex Domes (Tier 1) - only at apex
-    onProgress('Pass 1: Organic Curvatures & Radar Dishes...', 25);
+    onProgress('Pass 1: Organic Curvatures & Radar Dishes...', 20);
     await this.runPass(this.variants.filter(v => v.def.tier === 1), { requireDepth0: true, requireApex: true });
 
-    // Pass 2: Modern Curved & Inverted Slopes (Tier 2)
-    onProgress('Pass 2: Curved & Inverted Slopes...', 40);
-    await this.runPass(this.variants.filter(v => v.def.tier === 2), { requireDepth0: true });
+    // Pass 2: Modern Curved & Inverted Slopes (Tier 2) - on exposed sloping surfaces
+    onProgress('Pass 2: Curved & Inverted Slopes...', 35);
+    await this.runPass(this.variants.filter(v => v.def.tier === 2), { requireDepth0: true, requireExposedTop: true });
 
     // Pass 3: Macaroni Corners & Wedges (Tier 3)
-    onProgress('Pass 3: Macaroni Corners & Wedges...', 55);
-    await this.runPass(this.variants.filter(v => v.def.tier === 3), { requireDepth0: true });
+    onProgress('Pass 3: Macaroni Corners & Wedges...', 50);
+    await this.runPass(this.variants.filter(v => v.def.tier === 3), { requireDepth0: true, requireExposedTop: true });
 
-    // Pass 4: Cylinders & Canisters (Tier 4)
-    onProgress('Pass 4: Cylinders & Round Columns...', 65);
-    await this.runPass(this.variants.filter(v => v.def.tier === 4), { checkPillar: true });
+    // Pass 4: Cylinders & Canisters (Tier 4) - only where structurally supported
+    if (this.options.enableCanisters) {
+      onProgress('Pass 4: Cylinders & Round Columns...', 60);
+      await this.runPass(this.variants.filter(v => v.def.tier === 4), { checkPillar: true });
+    }
 
-    // Pass 5: Interlocked Structural Core Infill (Tier 5: 3001, 3003, 3004, 3005)
+    // Pass 5: Structural Core Infill (Tier 5: 3001, 3003, 3004, 3005, etc.)
     onProgress('Pass 5: Interlocked Core Infill (Running Bond)...', 75);
     await this.runPass(this.variants.filter(v => v.def.tier === 5), { enforceRunningBond: true });
 
-    // Pass 6: Studless Top Tile Finishes (Tier 6)
+    // Pass 6: Detail Plates & Structural Infill Plates (Tier 6: 3020, 3022, 3023, 3024, 3710, etc.)
+    onProgress('Pass 6: Structural Infill Plates...', 85);
+    await this.runPass(this.variants.filter(v => v.def.tier === 6), {});
+
+    // Pass 7: Studless Top Tile Finishes (Tier 7) - cap all exposed top plate surfaces
     if (this.options.enableStudlessTiles) {
-      onProgress('Pass 6: Studless Top Tile Finishes...', 85);
-      await this.runPass(this.variants.filter(v => v.def.tier === 6), { requireExposedTop: true });
+      onProgress('Pass 7: Studless Top Tile Finishes...', 92);
+      await this.runPass(this.variants.filter(v => v.def.tier === 7 || v.def.category === 'TILE_FLAT'), { requireExposedTop: true });
     }
   }
 
   /**
-   * Strategy 2: Pure Greedy Size-Descent
-   * Orders all kernels by bounding volume descending.
+   * Strategy 2: Size-Descent with Surface Preservation
+   * Prioritizes surface slopes and tiles on the exterior, then sorts core by volume.
    */
   private async solveSizeDescentPipeline(): Promise<void> {
-    const sorted = [...this.variants].sort((a, b) => {
+    const { onProgress } = this.options;
+
+    // 1. Surface slopes & tiles first so mesh curves are preserved
+    if (this.options.enableCurvedSlopes) {
+      onProgress('Surface Slopes Pass...', 30);
+      await this.runPass(this.variants.filter(v => v.def.tier === 2), { requireDepth0: true, requireExposedTop: true });
+    }
+
+    if (this.options.enableStudlessTiles) {
+      onProgress('Surface Tiles Pass...', 50);
+      await this.runPass(this.variants.filter(v => v.def.tier === 7 || v.def.category === 'TILE_FLAT'), { requireExposedTop: true });
+    }
+
+    // 2. Greedy Size-Descent on remaining volume (excluding tiles)
+    const sorted = [...this.variants.filter(v => v.def.category !== 'TILE_FLAT')].sort((a, b) => {
       const volA = a.size[0] * a.size[1] * a.size[2];
       const volB = b.size[0] * b.size[1] * b.size[2];
       return volB - volA;
     });
 
-    this.options.onProgress('Greedy Size-Descent Solver...', 50);
+    onProgress('Core Size-Descent Infill...', 70);
     await this.runPass(sorted, { enforceRunningBond: true });
   }
 
@@ -190,12 +212,6 @@ export class GrowingSurfaceKernelSolver {
             if (!isNearApex || !hasAirAbove) continue;
           }
 
-          // Check if top stud is exposed to air
-          if (constraints.requireExposedTop) {
-            const hasAirAbove = !this.lattice.isOccupied(x, z, y + 1);
-            if (!hasAirAbove) continue;
-          }
-
           // Evaluate candidate variants at this anchor (x, z, y)
           let bestVariant: RotatedKernelVariant | null = null;
           let bestScore = -Infinity;
@@ -226,7 +242,7 @@ export class GrowingSurfaceKernelSolver {
     z: number,
     y: number,
     variant: RotatedKernelVariant,
-    constraints: { enforceRunningBond?: boolean }
+    constraints: { enforceRunningBond?: boolean; requireExposedTop?: boolean }
   ): number {
     const [w, d, h] = variant.size;
 
@@ -235,26 +251,49 @@ export class GrowingSurfaceKernelSolver {
       return -1;
     }
 
-    // 2. Instant O(1) Integral Volume Check: Region must have high solid density
+    // Check canisters: never float in mid-air without support underneath
+    if (variant.category === 'ROUND_CANISTER') {
+      if (y > 0 && !this.hasSupportUnderneath(x, z, y, w, d)) {
+        return -1;
+      }
+    }
+
+    // Check if exposed top is required (curved slopes, studless tiles)
+    if (constraints.requireExposedTop || variant.def.category === 'SLOPE_CURVED' || variant.def.category === 'TILE_FLAT') {
+      const topY = y + h;
+      for (let dz = 0; dz < d; dz++) {
+        for (let dx = 0; dx < w; dx++) {
+          if (this.lattice.isOccupied(x + dx, z + dz, topY)) {
+            return -1; // Top surface is blocked by voxels above; cannot place studless top feature here!
+          }
+        }
+      }
+    }
+
+    // 2. Instant O(1) Integral Volume Check: Slopes/Tiles on perimeter require lower density
     const solidCount = this.integral.queryBox(x, z, y, x + w - 1, z + d - 1, y + h - 1);
     const volume = w * d * h;
-    if (solidCount < volume * 0.70) {
+    const isSurfaceSlope = variant.def.tier === 2 || variant.def.tier === 3;
+    const isTile = variant.def.category === 'TILE_FLAT';
+    const minDensity = isSurfaceSlope ? 0.35 : (isTile ? 0.40 : 0.65);
+    if (solidCount < volume * minDensity) {
       return -1;
     }
 
     // 3. Normal Vector Cosine Alignment (for surface features)
     let normalScore = 0;
-    const isSurfacePart = variant.def.tier <= 3 || variant.def.tier === 6;
+    const isSurfacePart = variant.def.tier <= 3 || variant.def.category === 'TILE_FLAT';
 
     if (isSurfacePart) {
       const vNorm = this.lattice.getVoxel(x, z, y)?.normal;
       if (vNorm) {
         const [tnx, tny, tnz] = variant.targetNormal;
         const dot = vNorm[0] * tnx + vNorm[1] * tny + vNorm[2] * tnz;
-        if (dot < variant.def.minNormalDot) {
+        // Require positive directional alignment
+        if (dot < 0.15) {
           return -1; // Normal alignment threshold violated
         }
-        normalScore = dot * 12.0;
+        normalScore = dot * 25.0; // Strong bonus for slope alignment
       }
     }
 
@@ -272,9 +311,10 @@ export class GrowingSurfaceKernelSolver {
       interlockScore = this.assemblyGraph.evaluateSeamInterlock(x, z, y, w, d, h);
     }
 
-    // Combined multi-objective score
+    // Combined multi-objective score: interlock can boost running bond, clamped to remain valid
     const volumeScore = Math.log2(volume + 1) * 3.0;
-    return variant.def.weightBonus + volumeScore + normalScore + interlockScore;
+    const baseScore = variant.def.weightBonus + volumeScore + normalScore;
+    return Math.max(0.1, baseScore + interlockScore);
   }
 
   private calculateColorVariance(x: number, z: number, y: number, w: number, d: number, h: number): number {
@@ -321,6 +361,18 @@ export class GrowingSurfaceKernelSolver {
     }
 
     return Math.sqrt(sqDiffSum / count);
+  }
+
+  private hasSupportUnderneath(x: number, z: number, y: number, w: number, d: number): boolean {
+    if (y === 0) return true;
+    for (let dz = 0; dz < d; dz++) {
+      for (let dx = 0; dx < w; dx++) {
+        if (this.bitset.isClaimed(x + dx, z + dz, y - 1)) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   private commitCandidate(x: number, z: number, y: number, variant: RotatedKernelVariant): void {
@@ -388,49 +440,6 @@ export class GrowingSurfaceKernelSolver {
     const hex = '#' + packed.toString(16).padStart(6, '0');
 
     return { hex, packed };
-  }
-
-  /**
-   * Automatic BFS Remediation: Cast vertical support pillars from any floating brick
-   * straight down to Y=0 to guarantee 100% physical buildability.
-   */
-  private remediateFloatingBricks(): void {
-    const bricks = this.assemblyGraph.getAllBricks();
-    for (const brick of bricks) {
-      if (!this.assemblyGraph.isGrounded(brick.instanceId)) {
-        // Cast ray down from anchor point to y = 0
-        const [bx, bz, by] = brick.gridPos;
-        let curY = by;
-        while (curY > 0) {
-          const h = curY >= 3 ? 3 : 1;
-          const nextY = curY - h;
-          const partId = h === 3 ? '3005' : '3024';
-          const name = h === 3 ? 'Brick 1 x 1 (Support Column)' : 'Plate 1 x 1 (Support Plate)';
-          const supportId = `support_col_${bx}_${bz}_${nextY}`;
-          const ldrawPos = this.lattice.gridToLDraw(bx, bz, nextY, 1, 1, h);
-          const supportBrick: PlacedBrick = {
-            instanceId: supportId,
-            partId,
-            name,
-            gridPos: [bx, bz, nextY],
-            baseSize: [1, 1, h],
-            size: [1, 1, h],
-            rotation: 0,
-            colorHex: '#64748b',
-            colorPacked: 0x64748b,
-            ldrawPos,
-            ldrawMatrix: [1, 0, 0, 0, 1, 0, 0, 0, 1],
-            category: 'CORE_INFILL',
-            connectors: [
-              { localPos: [0, 0, h], direction: [0, 0, 1], polarity: 'MALE', jointType: 'STUD_TUBE' },
-              { localPos: [0, 0, 0], direction: [0, 0, -1], polarity: 'FEMALE', jointType: 'STUD_TUBE' }
-            ]
-          };
-          this.assemblyGraph.addBrick(supportBrick);
-          curY = nextY;
-        }
-      }
-    }
   }
 
   /**

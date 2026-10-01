@@ -163,4 +163,9 @@ export class LegoBitset3D {
     if (!this.isInBounds(x, z, y)) return null;
     return this.cellOwners[this.getIndex(x, z, y)];
   }
+
+  public isClaimed(x: number, z: number, y: number): boolean {
+    if (!this.isInBounds(x, z, y)) return false;
+    return this.cellOwners[this.getIndex(x, z, y)] !== null;
+  }
 }

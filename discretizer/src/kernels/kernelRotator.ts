@@ -134,6 +134,7 @@ function createVariant(def: BaseKernelDefinition, rotation: number): RotatedKern
     def,
     partId: def.partId,
     name: def.name,
+    system: def.system,
     category: def.category,
     rotation,
     size,

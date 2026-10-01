@@ -1,18 +1,32 @@
 import type { ConnectorSite } from '../core/types';
 
+export type LegoSystem = 'SYSTEM' | 'TECHNIC';
+
 export type KernelCategory =
-  | 'ORGANIC_DOME'
+  // LEGO System Categories
+  | 'BRICK_STANDARD'
+  | 'PLATE_STANDARD'
+  | 'TILE_FLAT'
   | 'SLOPE_CURVED'
   | 'SLOPE_INVERTED'
-  | 'MACARONI_WEDGE'
+  | 'SLOPE_45'
+  | 'CHEESE_SLOPE'
   | 'ROUND_CANISTER'
+  | 'ORGANIC_DOME'
+  | 'MACARONI_WEDGE'
   | 'CORE_INFILL'
-  | 'TILE_FLAT'
-  | 'CHEESE_SLOPE';
+  // LEGO Technic Categories
+  | 'TECHNIC_BRICK'
+  | 'TECHNIC_BEAM'
+  | 'TECHNIC_AXLE'
+  | 'TECHNIC_PIN'
+  | 'TECHNIC_CONNECTOR'
+  | 'TECHNIC_GEAR';
 
 export interface BaseKernelDefinition {
   partId: string;
   name: string;
+  system: LegoSystem;
   category: KernelCategory;
   /** Unrotated dimensions in grid units: [widthStuds, depthStuds, heightPlates] */
   baseSize: [number, number, number];
@@ -20,7 +34,7 @@ export interface BaseKernelDefinition {
   targetNormal: [number, number, number];
   /** Minimum normal dot product threshold to accept this part [0.0 .. 1.0] */
   minNormalDot: number;
-  /** Priority tier (1: Organic/Apex, 2: Slopes, 3: Macaroni, 4: Canister, 5: Core, 6: Tiles) */
+  /** Priority tier (1: Organic/Apex, 2: Slopes, 3: Macaroni, 4: Canister, 5: Core Infill, 6: Detail Plates, 7: Studless Tiles) */
   tier: number;
   /** Relative weight bonus for scoring */
   weightBonus: number;
@@ -34,6 +48,7 @@ export interface RotatedKernelVariant {
   def: BaseKernelDefinition;
   partId: string;
   name: string;
+  system: LegoSystem;
   category: KernelCategory;
   rotation: number; // 0, 90, 180, 270
   /** Bounding box in grid units after yaw rotation: [widthStuds, depthStuds, heightPlates] */

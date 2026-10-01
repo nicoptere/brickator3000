@@ -119,8 +119,8 @@ export const ModelSelectorPanel: React.FC<ModelSelectorPanelProps> = ({
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedCleanModelId, setSelectedCleanModelId] = useState<string>('');
 
-  // Discretizer Settings
-  const [targetStuds, setTargetStuds] = useState<number>(24);
+  // Discretizer Settings (Resolution 2 to 16, step 1)
+  const [targetStuds, setTargetStuds] = useState<number>(10);
   const [strategy, setStrategy] = useState<'tiered' | 'size_descent'>('tiered');
   const [enableCurvedSlopes, setEnableCurvedSlopes] = useState<boolean>(true);
   const [enableMacaroni, setEnableMacaroni] = useState<boolean>(true);
@@ -425,12 +425,13 @@ export const ModelSelectorPanel: React.FC<ModelSelectorPanelProps> = ({
             </Text>
           </div>
           <Slider
-            min={16}
-            max={48}
-            step={4}
+            min={2}
+            max={16}
+            step={1}
             value={targetStuds}
             onChange={setTargetStuds}
-            style={{ margin: '4px 0' }}
+            marks={{ 2: '2', 4: '4', 8: '8', 12: '12', 16: '16' }}
+            style={{ margin: '4px 0 16px 0' }}
           />
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>

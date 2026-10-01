@@ -377,74 +377,191 @@ export class ViewportEngine {
   }
 
   /**
-   * Display placed LEGO bricks with realistic ABS plastic materials and top studs.
+   * Display placed LEGO bricks with high-performance THREE.InstancedMesh and exact bounding box alignment.
    */
   public displayDiscretizedBricks(bricks: PlacedBrick[], lattice: PlateLattice3D): void {
     this.clearBricks();
 
-    // Align LEGO scale with loaded mesh bounds
-    const bbox = new THREE.Box3().setFromObject(this.modelRoot);
-    const size = new THREE.Vector3();
-    bbox.getSize(size);
-
-    const studPitch = (size.x || 8.0) / lattice.numStudsX;
-    const platePitch = studPitch * 0.4;
+    if (bricks.length === 0) return;
 
     const group = new THREE.Group();
 
-    // Shared stud cylinder geometry (radius 0.24 * studPitch, height 0.18 * studPitch)
-    const studGeo = new THREE.CylinderGeometry(studPitch * 0.24, studPitch * 0.24, studPitch * 0.18, 16);
+    // High quality shared ABS plastic material
+    const plasticMat = new THREE.MeshPhysicalMaterial({
+      roughness: 0.18,
+      metalness: 0.02,
+      clearcoat: 0.35,
+      clearcoatRoughness: 0.1
+    });
 
-    for (const brick of bricks) {
-      const [bx, bz, by] = brick.gridPos;
-      const [bw, bd, bh] = brick.size;
+    // 1. Separate bricks by shape category
+    const boxBricks: PlacedBrick[] = [];
+    const cylinderBricks: PlacedBrick[] = [];
+    const slopeBricks: PlacedBrick[] = [];
 
-      // Position in scene
-      const posX = (bx + bw / 2 - lattice.numStudsX / 2) * studPitch;
-      const posZ = (bz + bd / 2 - lattice.numStudsZ / 2) * studPitch;
-      const posY = (by + bh / 2) * platePitch;
+    let totalStuds = 0;
 
-      const brickWidth = bw * studPitch;
-      const brickDepth = bd * studPitch;
-      const brickHeight = bh * platePitch;
+    for (const b of bricks) {
+      const isCyl = b.category === 'ROUND_CANISTER' || b.category === 'ORGANIC_DOME' || b.category === 'TECHNIC_PIN' || b.partId === '98138' || b.partId === '6141';
+      const isSlope = b.category === 'SLOPE_CURVED' || b.category === 'CHEESE_SLOPE' || b.category === 'SLOPE_45' || b.category === 'SLOPE_INVERTED';
 
-      const mat = new THREE.MeshPhysicalMaterial({
-        color: new THREE.Color(brick.colorHex),
-        roughness: 0.2,
-        metalness: 0.05,
-        clearcoat: 0.35,
-        clearcoatRoughness: 0.1
-      });
-
-      // Body mesh
-      let bodyGeo: THREE.BufferGeometry;
-      if (brick.category === 'ROUND_CANISTER') {
-        bodyGeo = new THREE.CylinderGeometry(brickWidth * 0.48, brickWidth * 0.48, brickHeight, 24);
+      if (isCyl) {
+        cylinderBricks.push(b);
+      } else if (isSlope) {
+        slopeBricks.push(b);
       } else {
-        bodyGeo = new THREE.BoxGeometry(brickWidth - 0.01, brickHeight - 0.005, brickDepth - 0.01);
+        boxBricks.push(b);
       }
 
-      const bodyMesh = new THREE.Mesh(bodyGeo, mat);
-      bodyMesh.position.set(posX, posY, posZ);
-      bodyMesh.castShadow = true;
-      bodyMesh.receiveShadow = true;
-      group.add(bodyMesh);
-
-      // Top studs (omit for smooth flat tiles and curved slopes)
-      const hasTopStuds = brick.category !== 'TILE_FLAT' && brick.category !== 'SLOPE_CURVED' && brick.category !== 'CHEESE_SLOPE';
+      const hasTopStuds = b.category !== 'TILE_FLAT' && !isSlope && b.category !== 'TECHNIC_BEAM' && b.category !== 'TECHNIC_AXLE';
       if (hasTopStuds) {
-        for (let sx = 0; sx < bw; sx++) {
-          for (let sz = 0; sz < bd; sz++) {
-            const studMesh = new THREE.Mesh(studGeo, mat);
-            const studX = (bx + sx + 0.5 - lattice.numStudsX / 2) * studPitch;
-            const studZ = (bz + sz + 0.5 - lattice.numStudsZ / 2) * studPitch;
-            const studY = (by + bh) * platePitch + (studPitch * 0.09);
-            studMesh.position.set(studX, studY, studZ);
-            studMesh.castShadow = true;
-            group.add(studMesh);
+        totalStuds += b.size[0] * b.size[1];
+      }
+    }
+
+    const dummy = new THREE.Object3D();
+    const color = new THREE.Color();
+
+    const studPitch = lattice.worldStudPitch;
+    const platePitch = lattice.worldPlatePitch;
+    const gapH = Math.min(0.012, studPitch * 0.02);
+    const gapV = Math.min(0.006, platePitch * 0.02);
+
+    // 2. Instanced Mesh for Standard Box Bricks / Plates / Tiles
+    if (boxBricks.length > 0) {
+      const boxGeo = new THREE.BoxGeometry(1.0, 1.0, 1.0);
+      const boxMesh = new THREE.InstancedMesh(boxGeo, plasticMat, boxBricks.length);
+      boxMesh.castShadow = true;
+      boxMesh.receiveShadow = true;
+
+      for (let i = 0; i < boxBricks.length; i++) {
+        const b = boxBricks[i];
+        const [bw, bd, bh] = b.size;
+        const [wx, wy, wz] = lattice.gridToWorld(b.gridPos[0] + bw / 2, b.gridPos[1] + bd / 2, b.gridPos[2] + bh / 2);
+
+        dummy.position.set(wx, wy, wz);
+        dummy.rotation.set(0, 0, 0);
+        dummy.scale.set(bw * studPitch - gapH, bh * platePitch - gapV, bd * studPitch - gapH);
+        dummy.updateMatrix();
+
+        boxMesh.setMatrixAt(i, dummy.matrix);
+        color.set(b.colorHex);
+        boxMesh.setColorAt(i, color);
+      }
+
+      boxMesh.instanceMatrix.needsUpdate = true;
+      if (boxMesh.instanceColor) boxMesh.instanceColor.needsUpdate = true;
+      group.add(boxMesh);
+    }
+
+    // 3. Instanced Mesh for Round Canisters and Round Tiles
+    if (cylinderBricks.length > 0) {
+      const cylGeo = new THREE.CylinderGeometry(0.5, 0.5, 1.0, 24);
+      cylGeo.computeVertexNormals();
+      const cylMesh = new THREE.InstancedMesh(cylGeo, plasticMat, cylinderBricks.length);
+      cylMesh.castShadow = true;
+      cylMesh.receiveShadow = true;
+
+      for (let i = 0; i < cylinderBricks.length; i++) {
+        const b = cylinderBricks[i];
+        const [bw, bd, bh] = b.size;
+        const [wx, wy, wz] = lattice.gridToWorld(b.gridPos[0] + bw / 2, b.gridPos[1] + bd / 2, b.gridPos[2] + bh / 2);
+
+        dummy.position.set(wx, wy, wz);
+        dummy.rotation.set(0, 0, 0);
+        dummy.scale.set(bw * studPitch * 0.98, bh * platePitch - gapV, bd * studPitch * 0.98);
+        dummy.updateMatrix();
+
+        cylMesh.setMatrixAt(i, dummy.matrix);
+        color.set(b.colorHex);
+        cylMesh.setColorAt(i, color);
+      }
+
+      cylMesh.instanceMatrix.needsUpdate = true;
+      if (cylMesh.instanceColor) cylMesh.instanceColor.needsUpdate = true;
+      group.add(cylMesh);
+    }
+
+    // 4. Instanced Mesh for Modern Curved Slopes
+    if (slopeBricks.length > 0) {
+      const slopeShape = new THREE.Shape();
+      slopeShape.moveTo(-0.5, -0.5);
+      slopeShape.lineTo(0.5, -0.5);
+      slopeShape.lineTo(0.5, -0.167);
+      slopeShape.quadraticCurveTo(0.1, 0.45, -0.5, 0.5);
+      slopeShape.lineTo(-0.5, -0.5);
+
+      const slopeGeo = new THREE.ExtrudeGeometry(slopeShape, { depth: 1.0, bevelEnabled: false });
+      slopeGeo.rotateY(Math.PI / 2);
+      slopeGeo.center();
+      slopeGeo.computeVertexNormals();
+
+      const slopeMesh = new THREE.InstancedMesh(slopeGeo, plasticMat, slopeBricks.length);
+      slopeMesh.castShadow = true;
+      slopeMesh.receiveShadow = true;
+
+      for (let i = 0; i < slopeBricks.length; i++) {
+        const b = slopeBricks[i];
+        const [bw, bd, bh] = b.size;
+        const [wx, wy, wz] = lattice.gridToWorld(b.gridPos[0] + bw / 2, b.gridPos[1] + bd / 2, b.gridPos[2] + bh / 2);
+
+        dummy.position.set(wx, wy, wz);
+        dummy.rotation.set(0, (b.rotation * Math.PI) / 180, 0);
+        dummy.scale.set(bw * studPitch - gapH, bh * platePitch - gapV, bd * studPitch - gapH);
+        dummy.updateMatrix();
+
+        slopeMesh.setMatrixAt(i, dummy.matrix);
+        color.set(b.colorHex);
+        slopeMesh.setColorAt(i, color);
+      }
+
+      slopeMesh.instanceMatrix.needsUpdate = true;
+      if (slopeMesh.instanceColor) slopeMesh.instanceColor.needsUpdate = true;
+      group.add(slopeMesh);
+    }
+
+    // 5. Unified Instanced Mesh for ALL Top Studs
+    if (totalStuds > 0) {
+      const studRadius = studPitch * 0.24;
+      const studHeight = studPitch * 0.18;
+      const studGeo = new THREE.CylinderGeometry(studRadius, studRadius, studHeight, 16);
+      studGeo.computeVertexNormals();
+
+      const studMesh = new THREE.InstancedMesh(studGeo, plasticMat, totalStuds);
+      studMesh.castShadow = true;
+      studMesh.receiveShadow = true;
+
+      let studIdx = 0;
+
+      for (const b of bricks) {
+        const hasTopStuds = b.category !== 'TILE_FLAT' && b.category !== 'SLOPE_CURVED' && b.category !== 'CHEESE_SLOPE';
+        if (!hasTopStuds) continue;
+
+        color.set(b.colorHex);
+
+        for (let sx = 0; sx < b.size[0]; sx++) {
+          for (let sz = 0; sz < b.size[1]; sz++) {
+            const [sxW, syW, szW] = lattice.gridToWorld(
+              b.gridPos[0] + sx + 0.5,
+              b.gridPos[1] + sz + 0.5,
+              b.gridPos[2] + b.size[2]
+            );
+
+            dummy.position.set(sxW, syW + studHeight * 0.5, szW);
+            dummy.rotation.set(0, 0, 0);
+            dummy.scale.set(1.0, 1.0, 1.0);
+            dummy.updateMatrix();
+
+            studMesh.setMatrixAt(studIdx, dummy.matrix);
+            studMesh.setColorAt(studIdx, color);
+            studIdx++;
           }
         }
       }
+
+      studMesh.instanceMatrix.needsUpdate = true;
+      if (studMesh.instanceColor) studMesh.instanceColor.needsUpdate = true;
+      group.add(studMesh);
     }
 
     this.bricksRoot.add(group);

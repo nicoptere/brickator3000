@@ -29,30 +29,31 @@ export async function rasterizeIslandsToLatticeAsync(
 
   const size = new THREE.Vector3();
   bbox.getSize(size);
-  const center = new THREE.Vector3();
-  bbox.getCenter(center);
 
-  // Horizontal stud pitch = 20 LDU, Plate height = 8 LDU
-  // Stud to plate aspect ratio: height / width = 8 / 20 = 0.4
-  const maxHorizontalDim = Math.max(size.x, size.z, 0.001);
-  const studScale = targetStuds / maxHorizontalDim; // Grid units per world unit
+  // Resolution along largest dimension: 2 to 16 studs
+  const resolution = Math.max(2, Math.min(32, targetStuds));
+  const maxDim = Math.max(size.x, size.y, size.z, 0.001);
+  const worldStudPitch = maxDim / resolution;
+  const worldPlatePitch = worldStudPitch * 0.4; // Authentic LEGO 8 LDU / 20 LDU = 0.4
 
-  const numStudsX = Math.max(4, Math.ceil(size.x * studScale) + 4);
-  const numStudsZ = Math.max(4, Math.ceil(size.z * studScale) + 4);
-  // In LEGO, 1 stud = 20 LDU, 1 plate = 8 LDU => vertical resolution is 20/8 = 2.5 plates per stud
-  const numPlatesY = Math.max(3, Math.ceil(size.y * studScale * 2.5) + 3);
+  const numStudsX = Math.max(1, Math.ceil(size.x / worldStudPitch));
+  const numStudsZ = Math.max(1, Math.ceil(size.z / worldStudPitch));
+  const numPlatesY = Math.max(1, Math.ceil(size.y / worldPlatePitch));
 
   const lattice = new PlateLattice3D(numStudsX, numStudsZ, numPlatesY);
+  lattice.worldMin = [bbox.min.x, bbox.min.y, bbox.min.z];
+  lattice.worldStudPitch = worldStudPitch;
+  lattice.worldPlatePitch = worldPlatePitch;
 
   const minX = bbox.min.x;
   const minZ = bbox.min.z;
   const minY = bbox.min.y;
 
-  // Coordinate mapping from continuous 3D to integer plate grid
+  // Direct 1:1 coordinate mapping from continuous 3D to integer plate grid
   const worldToGrid = (pt: THREE.Vector3): [number, number, number] => {
-    const gx = Math.floor((pt.x - minX) * studScale + 2);
-    const gz = Math.floor((pt.z - minZ) * studScale + 2);
-    const gy = Math.floor((pt.y - minY) * studScale * 2.5 + 1);
+    const gx = Math.min(numStudsX - 1, Math.max(0, Math.floor((pt.x - minX) / worldStudPitch)));
+    const gz = Math.min(numStudsZ - 1, Math.max(0, Math.floor((pt.z - minZ) / worldStudPitch)));
+    const gy = Math.min(numPlatesY - 1, Math.max(0, Math.floor((pt.y - minY) / worldPlatePitch)));
     return [gx, gz, gy];
   };
 
@@ -84,7 +85,7 @@ export async function rasterizeIslandsToLatticeAsync(
     return 0x94a3b8;
   };
 
-  // Rasterize surface triangles island-by-island
+  // Step 1: Rasterize surface triangles island-by-island
   let processedTris = 0;
   const totalTris = islands.reduce((acc, isl) => acc + isl.triangleCount, 0);
 
@@ -95,14 +96,14 @@ export async function rasterizeIslandsToLatticeAsync(
       const vc = tri.c;
       const fn = tri.normal;
 
-      // Compute edge lengths in world space
+      // Compute edge lengths relative to plate pitch for dense sampling
       const e1 = new THREE.Vector3().subVectors(vb, va);
       const e2 = new THREE.Vector3().subVectors(vc, va);
-      const l1 = e1.length() * studScale * 2.5;
-      const l2 = e2.length() * studScale * 2.5;
+      const l1 = Math.max(1, e1.length() / worldPlatePitch);
+      const l2 = Math.max(1, e2.length() / worldPlatePitch);
 
-      const steps1 = Math.max(1, Math.ceil(l1 * 1.5));
-      const steps2 = Math.max(1, Math.ceil(l2 * 1.5));
+      const steps1 = Math.max(1, Math.ceil(l1 * 2.0));
+      const steps2 = Math.max(1, Math.ceil(l2 * 2.0));
 
       for (let s1 = 0; s1 <= steps1; s1++) {
         const u = s1 / steps1;
@@ -132,13 +133,76 @@ export async function rasterizeIslandsToLatticeAsync(
 
       processedTris++;
       if (processedTris % 2500 === 0) {
-        if (onProgress) onProgress(Math.round((processedTris / totalTris) * 85));
+        if (onProgress) onProgress(Math.round((processedTris / totalTris) * 60));
         await new Promise(r => setTimeout(r, 0));
       }
     }
   }
 
-  // Compute 6-connected distance transform (depth 0 = surface hull, depth >= 1 = interior core)
+  // Step 2: Solid Interior Volume Voxelization (Dual-Axis Scanline Fill across Bounding Box)
+  // Guarantees all interior core volume of the mesh within the bounding box is fully solid-filled
+  if (onProgress) onProgress(70);
+
+  // Scanline along Z for each (x, y)
+  for (let y = 0; y < numPlatesY; y++) {
+    for (let x = 0; x < numStudsX; x++) {
+      const occupiedZs: number[] = [];
+      for (let z = 0; z < numStudsZ; z++) {
+        if (lattice.isOccupied(x, z, y)) {
+          occupiedZs.push(z);
+        }
+      }
+
+      if (occupiedZs.length >= 2) {
+        const firstZ = occupiedZs[0];
+        const lastZ = occupiedZs[occupiedZs.length - 1];
+        const vFirst = lattice.getVoxel(x, firstZ, y);
+        const col = vFirst?.colorPacked ?? 0x2563eb;
+        const isl = vFirst?.islandId ?? 1;
+
+        for (let i = 0; i < occupiedZs.length - 1; i++) {
+          const zA = occupiedZs[i];
+          const zB = occupiedZs[i + 1];
+          if (zB - zA > 1) {
+            for (let fz = zA + 1; fz < zB; fz++) {
+              lattice.setVoxel(x, fz, y, col, [0, 1, 0], isl);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Scanline along X for each (z, y)
+  for (let y = 0; y < numPlatesY; y++) {
+    for (let z = 0; z < numStudsZ; z++) {
+      const occupiedXs: number[] = [];
+      for (let x = 0; x < numStudsX; x++) {
+        if (lattice.isOccupied(x, z, y)) {
+          occupiedXs.push(x);
+        }
+      }
+
+      if (occupiedXs.length >= 2) {
+        const firstX = occupiedXs[0];
+        const vFirst = lattice.getVoxel(firstX, z, y);
+        const col = vFirst?.colorPacked ?? 0x2563eb;
+        const isl = vFirst?.islandId ?? 1;
+
+        for (let i = 0; i < occupiedXs.length - 1; i++) {
+          const xA = occupiedXs[i];
+          const xB = occupiedXs[i + 1];
+          if (xB - xA > 1) {
+            for (let fx = xA + 1; fx < xB; fx++) {
+              lattice.setVoxel(fx, z, y, col, [0, 1, 0], isl);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Step 3: Compute 6-connected distance transform (depth 0 = surface hull, depth >= 1 = interior core)
   if (onProgress) onProgress(90);
   lattice.computeDistanceTransform();
 
