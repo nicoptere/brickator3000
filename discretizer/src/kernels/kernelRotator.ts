@@ -121,11 +121,11 @@ function createVariant(def: BaseKernelDefinition, rotation: number): RotatedKern
   // Authentic LDraw 3x3 orientation matrix
   let ldrawMatrix: number[];
   if (rotation === 90) {
-    ldrawMatrix = [0, 0, 1, 0, 1, 0, -1, 0, 0];
+    ldrawMatrix = [0, 0, -1, 0, 1, 0, 1, 0, 0];
   } else if (rotation === 180) {
     ldrawMatrix = [-1, 0, 0, 0, 1, 0, 0, 0, -1];
   } else if (rotation === 270) {
-    ldrawMatrix = [0, 0, -1, 0, 1, 0, 1, 0, 0];
+    ldrawMatrix = [0, 0, 1, 0, 1, 0, -1, 0, 0];
   } else {
     ldrawMatrix = [1, 0, 0, 0, 1, 0, 0, 0, 1];
   }

@@ -14,6 +14,8 @@ export interface SolverOptions {
   enableMacaroni?: boolean;
   enableCanisters?: boolean;
   enableStudlessTiles?: boolean;
+  enableCollapse?: boolean;
+  enableVoxelRecompute?: boolean;
   colorVarianceThreshold?: number; // Standard deviation threshold in RGB space (default 45)
   onProgress?: (stage: string, percent: number) => void;
 }
@@ -47,6 +49,8 @@ export class GrowingSurfaceKernelSolver {
       enableMacaroni: options.enableMacaroni ?? true,
       enableCanisters: options.enableCanisters ?? true,
       enableStudlessTiles: options.enableStudlessTiles ?? true,
+      enableCollapse: options.enableCollapse ?? true,
+      enableVoxelRecompute: options.enableVoxelRecompute ?? true,
       colorVarianceThreshold: options.colorVarianceThreshold ?? 45,
       onProgress: options.onProgress ?? (() => {})
     };
@@ -59,7 +63,7 @@ export class GrowingSurfaceKernelSolver {
       const isSlope = def.category === 'SLOPE_CURVED' || def.category === 'CHEESE_SLOPE' || def.category === 'SLOPE_INVERTED' || def.category === 'SLOPE_45';
       if (isSlope && !this.options.enableCurvedSlopes) return false;
       if (def.category === 'MACARONI_WEDGE' && !this.options.enableMacaroni) return false;
-      if (def.category === 'ROUND_CANISTER' && !this.options.enableCanisters) return false;
+      if ((def.category === 'ROUND_CANISTER' || def.category === 'ORGANIC_DOME') && !this.options.enableCanisters) return false;
       if (def.category === 'TILE_FLAT' && !this.options.enableStudlessTiles) return false;
       return true;
     });
@@ -88,9 +92,12 @@ export class GrowingSurfaceKernelSolver {
       await this.solveSizeDescentPipeline();
     }
 
-    // 4. Grounding Verification
-    onProgress('Verifying Mechanical Grounding...', 90);
-    await new Promise(r => setTimeout(r, 0));
+    // 4. Grounding Verification & Dynamic Collapse Pass
+    if (this.options.enableCollapse) {
+      onProgress('Verifying Grounding & Running Collapse Pass...', 90);
+      this.runCollapsePass();
+      await new Promise(r => setTimeout(r, 0));
+    }
 
     // 5. Build LDraw Model Script
     onProgress('Compiling LDraw Model...', 95);
@@ -190,31 +197,50 @@ export class GrowingSurfaceKernelSolver {
 
   /**
    * Strategy 2: Size-Descent with Surface Preservation
-   * Prioritizes surface slopes and tiles on the exterior, then sorts core by volume.
+   * Prioritizes ground anchor, then sorts core by volume, followed by surface slopes and finish tiles.
    */
   private async solveSizeDescentPipeline(): Promise<void> {
     const { onProgress } = this.options;
 
-    // 1. Surface slopes & tiles first so mesh curves are preserved
-    if (this.options.enableCurvedSlopes) {
-      onProgress('Surface Slopes Pass...', 30);
-      await this.runPass(this.variants.filter(v => v.def.tier === 2), { requireDepth0: true, requireExposedTop: true });
-    }
+    // Pass 1: Foundation at Ground Plane (y = 0) to establish grounded physical anchor
+    onProgress('Pass 1: Ground Plane Foundation...', 15);
+    const foundationBricks = this.variants.filter(
+      v => v.def.tier === 5 || v.def.category === 'BRICK_STANDARD' || v.def.category === 'PLATE_STANDARD'
+    );
+    await this.runGroundPass(foundationBricks);
 
-    if (this.options.enableStudlessTiles) {
-      onProgress('Surface Tiles Pass...', 50);
-      await this.runPass(this.variants.filter(v => v.def.tier === 7 || v.def.category === 'TILE_FLAT'), { requireExposedTop: true });
-    }
-
-    // 2. Greedy Size-Descent on remaining volume (excluding tiles)
-    const sorted = [...this.variants.filter(v => v.def.category !== 'TILE_FLAT')].sort((a, b) => {
+    // Pass 2: Greedy Size-Descent on Core Volume (excluding tiles and domes)
+    onProgress('Pass 2: Core Size-Descent Infill...', 40);
+    const coreBricks = [...this.variants.filter(
+      v => v.def.category !== 'TILE_FLAT' && v.def.category !== 'ORGANIC_DOME'
+    )].sort((a, b) => {
       const volA = a.size[0] * a.size[1] * a.size[2];
       const volB = b.size[0] * b.size[1] * b.size[2];
       return volB - volA;
     });
+    await this.runPass(coreBricks, { enforceRunningBond: true });
 
-    onProgress('Core Size-Descent Infill...', 70);
-    await this.runPass(sorted, { enforceRunningBond: true });
+    // Pass 3: Exterior Slopes
+    if (this.options.enableCurvedSlopes) {
+      onProgress('Pass 3: Surface Slopes...', 65);
+      await this.runPass(this.variants.filter(v => v.def.tier === 2), { requireDepth0: true });
+    }
+
+    // Pass 4: Top Studless Tiles
+    if (this.options.enableStudlessTiles) {
+      onProgress('Pass 4: Studless Top Finish...', 80);
+      await this.runPass(this.variants.filter(v => v.def.tier === 7 || v.def.category === 'TILE_FLAT'), { requireExposedTop: true });
+    }
+
+    // Pass 5: Detail & Structural Infill Plates
+    onProgress('Pass 5: Structural Detail Plates...', 88);
+    await this.runPass(this.variants.filter(v => v.def.tier === 6), {});
+
+    // Pass 6: Collapse Pass (if enabled)
+    if (this.options.enableCollapse) {
+      onProgress('Pass 6: Gravity & Connectivity Collapse...', 93);
+      this.runCollapsePass();
+    }
   }
 
   private async runPass(
@@ -257,9 +283,17 @@ export class GrowingSurfaceKernelSolver {
 
           for (const variant of candidateVariants) {
             const score = this.evaluateCandidate(x, z, y, variant, constraints);
-            if (score > bestScore && score > 0) {
+            if (score > bestScore + 0.001) {
               bestScore = score;
               bestVariant = variant;
+            } else if (Math.abs(score - bestScore) <= 0.001 && bestVariant && score > 0) {
+              // Tie-breaker: alternate long-axis orientation across layers for running bond
+              const isEven = Math.floor(y / 3) % 2 === 0;
+              if (isEven && variant.size[0] > variant.size[1]) {
+                bestVariant = variant;
+              } else if (!isEven && variant.size[1] > variant.size[0]) {
+                bestVariant = variant;
+              }
             }
           }
 
@@ -281,7 +315,12 @@ export class GrowingSurfaceKernelSolver {
     z: number,
     y: number,
     variant: RotatedKernelVariant,
-    constraints: { enforceRunningBond?: boolean; requireExposedTop?: boolean; preferInterior?: boolean } = {}
+    constraints: {
+      enforceRunningBond?: boolean;
+      requireExposedTop?: boolean;
+      preferInterior?: boolean;
+      requireApex?: boolean;
+    } = {}
   ): number {
     const [w, d, h] = variant.size;
 
@@ -300,6 +339,13 @@ export class GrowingSurfaceKernelSolver {
       if (y > 0 && !this.hasSupportUnderneath(x, z, y, w, d)) {
         return -1;
       }
+    }
+
+    // Hemispherical Apex Domes / Inverted Dishes (Tier 1): strictly for top apexes, never in vertical column
+    if (variant.category === 'ORGANIC_DOME') {
+      if (!constraints.requireApex) return -1;
+      const hasAirAbove = !this.lattice.isOccupied(x, z, y + h);
+      if (!hasAirAbove) return -1;
     }
 
     const isDirectionalSlope =
@@ -438,9 +484,21 @@ export class GrowingSurfaceKernelSolver {
       interlockScore = this.assemblyGraph.evaluateSeamInterlock(x, z, y, w, d, h);
     }
 
+    // Alternating layer orientation bias for masonry running bond (criss-cross):
+    const brickLayer = Math.floor(y / 3);
+    const isEvenBrick = brickLayer % 2 === 0;
+    let orientationScore = 0;
+    if (w !== d) {
+      if (isEvenBrick && w > d) orientationScore += 1.0;
+      else if (!isEvenBrick && d > w) orientationScore += 1.0;
+    }
+
+    // OMR Frequency bonus:
+    const omrBonus = variant.def.omrFrequency ? Math.min(2.5, variant.def.omrFrequency / 25.0) : 0;
+
     // Combined multi-objective score: interlock can boost running bond, clamped to remain valid
     const volumeScore = Math.log2(volume + 1) * 3.0;
-    const baseScore = variant.def.weightBonus + volumeScore + normalScore;
+    const baseScore = variant.def.weightBonus + volumeScore + normalScore + orientationScore + omrBonus;
     return Math.max(0.1, baseScore + interlockScore);
   }
 
@@ -567,6 +625,77 @@ export class GrowingSurfaceKernelSolver {
     const hex = '#' + packed.toString(16).padStart(6, '0');
 
     return { hex, packed };
+  }
+
+  /**
+   * Gravity & Connectivity Collapse Pass:
+   * Identifies any floating components (bricks not grounded to y = 0) and collapses them
+   * downward along Y until they rest on a supported brick, or removes them safely.
+   */
+  private runCollapsePass(): void {
+    const allBricks = this.assemblyGraph.getAllBricks();
+    let changed = false;
+
+    // Sort bricks by Y ascending so lower layers settle first
+    const sorted = [...allBricks].sort((a, b) => a.gridPos[2] - b.gridPos[2]);
+
+    for (const brick of sorted) {
+      if (this.assemblyGraph.isGrounded(brick.instanceId)) {
+        continue;
+      }
+
+      // Brick is ungrounded (floating in air)! Attempt to drop it downward along Y
+      const [bx, bz, by] = brick.gridPos;
+      const [bw, bd, bh] = brick.size;
+      let targetY = -1;
+
+      for (let dy = 1; dy <= by; dy++) {
+        const testY = by - dy;
+        const canConnect = testY === 0 || this.assemblyGraph.canConnectToGrounded(bx, bz, testY, brick.connectors);
+        if (canConnect) {
+          // Check collision with other bricks
+          let canFit = true;
+          for (let ly = 0; ly < bh; ly++) {
+            for (let lz = 0; lz < bd; lz++) {
+              for (let lx = 0; lx < bw; lx++) {
+                const cellY = testY + ly;
+                const owner = this.bitset.getCellOwner(bx + lx, bz + lz, cellY);
+                if (owner !== null && owner !== brick.instanceId) {
+                  canFit = false;
+                  break;
+                }
+              }
+              if (!canFit) break;
+            }
+            if (!canFit) break;
+          }
+          if (canFit) {
+            targetY = testY;
+            break;
+          }
+        }
+      }
+
+      if (targetY !== -1 && targetY !== by) {
+        this.bitset.releaseRegion(bx, bz, by, bw, bd, bh);
+        this.assemblyGraph.removeBrick(brick.instanceId);
+
+        brick.gridPos = [bx, bz, targetY];
+        brick.ldrawPos = this.lattice.gridToLDraw(bx, bz, targetY, bw, bd, bh);
+        this.bitset.claimRegion(bx, bz, targetY, bw, bd, bh, brick.instanceId);
+        this.assemblyGraph.addBrick(brick);
+        changed = true;
+      } else if (!this.assemblyGraph.isGrounded(brick.instanceId)) {
+        // Cannot be grounded safely; remove floating brick and free cells
+        this.bitset.releaseRegion(bx, bz, by, bw, bd, bh);
+        this.assemblyGraph.removeBrick(brick.instanceId);
+        changed = true;
+      }
+    }
+
+    if (changed && this.options.enableVoxelRecompute) {
+      this.integral.build(this.lattice);
+    }
   }
 
   /**

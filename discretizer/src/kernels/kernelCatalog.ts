@@ -8,16 +8,18 @@ import { TECHNIC_BRICKS } from './technicBricks';
 import { TECHNIC_BEAMS } from './technicBeams';
 import { TECHNIC_AXLES_PINS } from './technicAxlesPins';
 import { TECHNIC_GEARS } from './technicGears';
+import { BIONICLE_AND_WEIRD_PARTS } from './bionicleCreature';
 
 /**
- * LEGO System Part Catalog (Bricks, Plates, Tiles, Slopes, Cylinders, Radar Dishes)
+ * LEGO System Part Catalog (Bricks, Plates, Tiles, Slopes, Cylinders, Modern/Bionicle, Wedges)
  */
 export const SYSTEM_CATALOG: BaseKernelDefinition[] = [
   ...SYSTEM_BRICKS,
   ...SYSTEM_PLATES,
   ...SYSTEM_TILES,
   ...SYSTEM_SLOPES,
-  ...SYSTEM_ROUND
+  ...SYSTEM_ROUND,
+  ...BIONICLE_AND_WEIRD_PARTS
 ];
 
 /**

@@ -3,19 +3,24 @@ import { PlateLattice3D } from '../core/PlateLattice3D';
 import type { MeshIsland } from './islandSegmenter';
 
 export interface RasterizerOptions {
-  /** Target resolution along largest horizontal dimension (default 24 studs) */
+  /** Target resolution along largest horizontal dimension (default 24 units, up to 64) */
   targetStuds: number;
+  /** Vertical unit mode: 'stud' (plates) or 'brick' (1 unit = 3 plates = 24 LDU) */
+  verticalUnit?: 'stud' | 'brick';
+  /** Snaps mesh triangle vertices to the discrete grid before rasterization */
+  snapVertices?: boolean;
   onProgress?: (percent: number) => void;
 }
 
 /**
  * Direct Triangle Surface Rasterizer into PlateLattice3D with Barycentric 24-bit RGB and Normals.
+ * Combines surface preservation with exterior-flood cavity volume filling (the best of both approaches).
  */
 export async function rasterizeIslandsToLatticeAsync(
   islands: MeshIsland[],
   options: RasterizerOptions
 ): Promise<PlateLattice3D> {
-  const { targetStuds, onProgress } = options;
+  const { targetStuds, verticalUnit = 'stud', snapVertices = false, onProgress } = options;
 
   // 1. Calculate world bounding box across all islands
   const bbox = new THREE.Box3();
@@ -30,11 +35,12 @@ export async function rasterizeIslandsToLatticeAsync(
   const size = new THREE.Vector3();
   bbox.getSize(size);
 
-  // Resolution along largest dimension: 2 to 16 studs
-  const resolution = Math.max(2, Math.min(32, targetStuds));
+  // Resolution along largest dimension: 2 to 64 units
+  const resolution = Math.max(2, Math.min(64, targetStuds));
   const maxDim = Math.max(size.x, size.y, size.z, 0.001);
   const worldStudPitch = maxDim / resolution;
-  const worldPlatePitch = worldStudPitch * 0.4; // Authentic LEGO 8 LDU / 20 LDU = 0.4
+  // Authentic LEGO: 1 plate = 8 LDU = 0.4 studs. 1 brick = 24 LDU = 3 plates.
+  const worldPlatePitch = worldStudPitch * 0.4;
 
   const numStudsX = Math.max(1, Math.ceil(size.x / worldStudPitch));
   const numStudsZ = Math.max(1, Math.ceil(size.z / worldStudPitch));
@@ -55,6 +61,14 @@ export async function rasterizeIslandsToLatticeAsync(
     const gz = Math.min(numStudsZ - 1, Math.max(0, Math.floor((pt.z - minZ) / worldStudPitch)));
     const gy = Math.min(numPlatesY - 1, Math.max(0, Math.floor((pt.y - minY) / worldPlatePitch)));
     return [gx, gz, gy];
+  };
+
+  const snapPoint = (pt: THREE.Vector3): THREE.Vector3 => {
+    if (!snapVertices) return pt;
+    const sx = Math.round((pt.x - minX) / worldStudPitch) * worldStudPitch + minX;
+    const sz = Math.round((pt.z - minZ) / worldStudPitch) * worldStudPitch + minZ;
+    const sy = Math.round((pt.y - minY) / worldPlatePitch) * worldPlatePitch + minY;
+    return new THREE.Vector3(sx, sy, sz);
   };
 
   // Helper to extract 24-bit packed RGB color
@@ -91,9 +105,9 @@ export async function rasterizeIslandsToLatticeAsync(
 
   for (const island of islands) {
     for (const tri of island.triangles) {
-      const va = tri.a;
-      const vb = tri.b;
-      const vc = tri.c;
+      const va = snapPoint(tri.a);
+      const vb = snapPoint(tri.b);
+      const vc = snapPoint(tri.c);
       const fn = tri.normal;
 
       // Compute edge lengths relative to plate pitch for dense sampling
@@ -120,29 +134,222 @@ export async function rasterizeIslandsToLatticeAsync(
           const [gx, gz, gy] = worldToGrid(p);
           const colorPacked = sampleColor(tri, u, v, w);
 
-          lattice.setVoxel(
-            gx,
-            gz,
-            gy,
-            colorPacked,
-            [fn.x, fn.y, fn.z],
-            island.id
-          );
+          if (verticalUnit === 'brick') {
+            // In Brick unit mode (1 unit = 3 plates), fill full 3-plate brick interval
+            const baseBrickY = Math.floor(gy / 3) * 3;
+            for (let dy = 0; dy < 3; dy++) {
+              const by = baseBrickY + dy;
+              if (by < numPlatesY) {
+                lattice.setVoxel(gx, gz, by, colorPacked, [fn.x, fn.y, fn.z], island.id);
+              }
+            }
+          } else {
+            lattice.setVoxel(gx, gz, gy, colorPacked, [fn.x, fn.y, fn.z], island.id);
+          }
         }
       }
 
       processedTris++;
       if (processedTris % 2500 === 0) {
-        if (onProgress) onProgress(Math.round((processedTris / totalTris) * 60));
+        if (onProgress) onProgress(Math.round((processedTris / totalTris) * 50));
         await new Promise(r => setTimeout(r, 0));
       }
     }
   }
 
-  // Step 2: Compute 6-connected distance transform on the surface hull
-  if (onProgress) onProgress(80);
+  // Step 2: Close micro-apertures and narrow joint gaps on thin struts/stems
+  closeJointGaps(lattice);
+
+  // Step 3: Aperture-Sealed Exterior Flood Fill to fill true interior volumes (tabletop discs, closed bodies)
+  if (onProgress) onProgress(65);
+  fillInteriorCavities(lattice);
+
+  // Step 4: Final gap-closing pass
+  closeJointGaps(lattice);
+
+  // Step 5: Compute 6-connected distance transform
+  if (onProgress) onProgress(85);
   lattice.computeDistanceTransform();
 
   if (onProgress) onProgress(100);
   return lattice;
+}
+
+/**
+ * Enforces 6-connectivity (face contact) across narrow articulated joints,
+ * thin struts, and multi-mesh boundaries to prevent disjoint components.
+ */
+function closeJointGaps(lattice: PlateLattice3D): void {
+  const { numStudsX, numStudsZ, numPlatesY } = lattice;
+  for (let y = 1; y < numPlatesY - 1; y++) {
+    for (let z = 1; z < numStudsZ - 1; z++) {
+      for (let x = 1; x < numStudsX - 1; x++) {
+        if (!lattice.isOccupied(x, z, y)) {
+          const hasX = lattice.isOccupied(x - 1, z, y) && lattice.isOccupied(x + 1, z, y);
+          const hasZ = lattice.isOccupied(x, z - 1, y) && lattice.isOccupied(x, z + 1, y);
+          const hasY = lattice.isOccupied(x, z, y - 1) && lattice.isOccupied(x, z, y + 1);
+          if (hasX || hasZ || hasY) {
+            const sampleX = hasX ? x - 1 : x;
+            const sampleZ = hasZ ? z - 1 : z;
+            const sampleY = hasY ? y - 1 : y;
+            const refColor = lattice.getVoxel(sampleX, sampleZ, sampleY)?.colorPacked ?? 0x94a3b8;
+            lattice.setVoxel(x, z, y, refColor, [0, 1, 0], 0);
+          }
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Aperture-Sealed Exterior Flood Fill:
+ * Uses 26-connectivity morphological boundary sealing to prevent exterior air
+ * from leaking through diagonal triangle seams into the interior of watertight meshes.
+ * Solidly fills enclosed interior volumes while strictly preserving open exterior air
+ * (e.g. open space between table legs, open arches).
+ */
+function fillInteriorCavities(lattice: PlateLattice3D): void {
+  const { numStudsX, numStudsZ, numPlatesY } = lattice;
+
+  // Snapshot original solid surface mask
+  const solid: boolean[][][] = [];
+  for (let x = 0; x < numStudsX; x++) {
+    solid[x] = [];
+    for (let z = 0; z < numStudsZ; z++) {
+      solid[x][z] = [];
+      for (let y = 0; y < numPlatesY; y++) {
+        solid[x][z][y] = lattice.isOccupied(x, z, y);
+      }
+    }
+  }
+
+  // 1. Morphologically dilate boundary (26-connectivity) by 1 cell to seal micro-apertures
+  const dilated: boolean[][][] = [];
+  for (let x = 0; x < numStudsX; x++) {
+    dilated[x] = [];
+    for (let z = 0; z < numStudsZ; z++) {
+      dilated[x][z] = [];
+      for (let y = 0; y < numPlatesY; y++) {
+        let occ = false;
+        for (let dx = -1; dx <= 1 && !occ; dx++) {
+          for (let dz = -1; dz <= 1 && !occ; dz++) {
+            for (let dy = -1; dy <= 1 && !occ; dy++) {
+              const ax = x + dx, az = z + dz, ay = y + dy;
+              if (ax >= 0 && ax < numStudsX && az >= 0 && az < numStudsZ && ay >= 0 && ay < numPlatesY) {
+                if (solid[ax][az][ay]) occ = true;
+              }
+            }
+          }
+        }
+        dilated[x][z][y] = occ;
+      }
+    }
+  }
+
+  // 2. Flood fill exterior air on padded grid
+  const padX = numStudsX + 2;
+  const padZ = numStudsZ + 2;
+  const padY = numPlatesY + 2;
+
+  const isExterior: boolean[][][] = [];
+  for (let x = 0; x < padX; x++) {
+    isExterior[x] = [];
+    for (let z = 0; z < padZ; z++) {
+      isExterior[x][z] = new Array(padY).fill(false);
+    }
+  }
+
+  const queue: [number, number, number][] = [[0, 0, 0]];
+  isExterior[0][0][0] = true;
+  let qHead = 0;
+
+  while (qHead < queue.length) {
+    const [cx, cz, cy] = queue[qHead++];
+    const neighbors: [number, number, number][] = [
+      [cx + 1, cz, cy], [cx - 1, cz, cy],
+      [cx, cz + 1, cy], [cx, cz - 1, cy],
+      [cx, cz, cy + 1], [cx, cz, cy - 1]
+    ];
+
+    for (const [nx, nz, ny] of neighbors) {
+      if (nx >= 0 && nx < padX && nz >= 0 && nz < padZ && ny >= 0 && ny < padY) {
+        if (!isExterior[nx][nz][ny]) {
+          const gx = nx - 1;
+          const gz = nz - 1;
+          const gy = ny - 1;
+          const isInside = gx >= 0 && gx < numStudsX && gz >= 0 && gz < numStudsZ && gy >= 0 && gy < numPlatesY;
+          const isOccupied = isInside && dilated[gx][gz][gy];
+          if (!isOccupied) {
+            isExterior[nx][nz][ny] = true;
+            queue.push([nx, nz, ny]);
+          }
+        }
+      }
+    }
+  }
+
+  // 3. Compute original surface bounding ranges
+  const minX_zy: number[][] = [];
+  const maxX_zy: number[][] = [];
+  for (let z = 0; z < numStudsZ; z++) {
+    minX_zy[z] = new Array(numPlatesY).fill(-1);
+    maxX_zy[z] = new Array(numPlatesY).fill(-1);
+    for (let y = 0; y < numPlatesY; y++) {
+      for (let x = 0; x < numStudsX; x++) {
+        if (solid[x][z][y]) {
+          if (minX_zy[z][y] === -1) minX_zy[z][y] = x;
+          maxX_zy[z][y] = x;
+        }
+      }
+    }
+  }
+
+  const minZ_xy: number[][] = [];
+  const maxZ_xy: number[][] = [];
+  for (let x = 0; x < numStudsX; x++) {
+    minZ_xy[x] = new Array(numPlatesY).fill(-1);
+    maxZ_xy[x] = new Array(numPlatesY).fill(-1);
+    for (let y = 0; y < numPlatesY; y++) {
+      for (let z = 0; z < numStudsZ; z++) {
+        if (solid[x][z][y]) {
+          if (minZ_xy[x][y] === -1) minZ_xy[x][y] = z;
+          maxZ_xy[x][y] = z;
+        }
+      }
+    }
+  }
+
+  // 4. Fill all interior cavities within the original geometry boundary
+  for (let x = 0; x < numStudsX; x++) {
+    for (let z = 0; z < numStudsZ; z++) {
+      for (let y = 0; y < numPlatesY; y++) {
+        if (!lattice.isOccupied(x, z, y)) {
+          const notExt = !isExterior[x + 1][z + 1][y + 1];
+          const boundedX = minX_zy[z][y] !== -1 && x >= minX_zy[z][y] && x <= maxX_zy[z][y];
+          const boundedZ = minZ_xy[x][y] !== -1 && z >= minZ_xy[x][y] && z <= maxZ_xy[x][y];
+
+          if (notExt && (boundedX || boundedZ)) {
+            let nearestCol = 0x94a3b8;
+            let minDistSq = Infinity;
+            for (let dx = -3; dx <= 3 && minDistSq > 1; dx++) {
+              for (let dz = -3; dz <= 3 && minDistSq > 1; dz++) {
+                const ax = x + dx, az = z + dz;
+                if (ax >= 0 && ax < numStudsX && az >= 0 && az < numStudsZ) {
+                  if (solid[ax][az][y]) {
+                    const d2 = dx * dx + dz * dz;
+                    if (d2 < minDistSq) {
+                      minDistSq = d2;
+                      const vox = lattice.getVoxel(ax, az, y);
+                      if (vox) nearestCol = vox.colorPacked;
+                    }
+                  }
+                }
+              }
+            }
+            lattice.setVoxel(x, z, y, nearestCol, [0, 1, 0], 0);
+          }
+        }
+      }
+    }
+  }
 }

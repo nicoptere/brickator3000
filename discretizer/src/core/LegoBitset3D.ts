@@ -122,14 +122,26 @@ export class LegoBitset3D {
     heightPlates: number,
     brickInstanceId: string
   ): void {
+    if (
+      x < 0 || x + widthStuds > this.numStudsX ||
+      z < 0 || z + depthStuds > this.numStudsZ ||
+      y < 0 || y + heightPlates > this.numPlatesY
+    ) {
+      return;
+    }
+
     for (let dy = 0; dy < heightPlates; dy++) {
       for (let dz = 0; dz < depthStuds; dz++) {
         for (let dx = 0; dx < widthStuds; dx++) {
           const idx = this.getIndex(x + dx, z + dz, y + dy);
           const wordIdx = Math.floor(idx / 64);
           const bitPos = BigInt(idx % 64);
-          this.words[wordIdx] &= ~(1n << bitPos);
-          this.cellOwners[idx] = brickInstanceId;
+          if (wordIdx < this.words.length) {
+            this.words[wordIdx] &= ~(1n << bitPos);
+          }
+          if (idx < this.cellOwners.length) {
+            this.cellOwners[idx] = brickInstanceId;
+          }
         }
       }
     }
@@ -146,14 +158,26 @@ export class LegoBitset3D {
     depthStuds: number,
     heightPlates: number
   ): void {
+    if (
+      x < 0 || x + widthStuds > this.numStudsX ||
+      z < 0 || z + depthStuds > this.numStudsZ ||
+      y < 0 || y + heightPlates > this.numPlatesY
+    ) {
+      return;
+    }
+
     for (let dy = 0; dy < heightPlates; dy++) {
       for (let dz = 0; dz < depthStuds; dz++) {
         for (let dx = 0; dx < widthStuds; dx++) {
           const idx = this.getIndex(x + dx, z + dz, y + dy);
           const wordIdx = Math.floor(idx / 64);
           const bitPos = BigInt(idx % 64);
-          this.words[wordIdx] |= (1n << bitPos);
-          this.cellOwners[idx] = null;
+          if (wordIdx < this.words.length) {
+            this.words[wordIdx] |= (1n << bitPos);
+          }
+          if (idx < this.cellOwners.length) {
+            this.cellOwners[idx] = null;
+          }
         }
       }
     }

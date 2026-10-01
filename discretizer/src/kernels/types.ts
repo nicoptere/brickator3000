@@ -14,6 +14,10 @@ export type KernelCategory =
   | 'ROUND_CANISTER'
   | 'ORGANIC_DOME'
   | 'MACARONI_WEDGE'
+  | 'WEDGE_PLATE'
+  | 'JUMPER_PLATE'
+  | 'CORNER_PLATE'
+  | 'BIONICLE_CREATURE'
   | 'CORE_INFILL'
   // LEGO Technic Categories
   | 'TECHNIC_BRICK'
@@ -38,6 +42,8 @@ export interface BaseKernelDefinition {
   tier: number;
   /** Relative weight bonus for scoring */
   weightBonus: number;
+  /** OMR official model frequency percentage (0-100) */
+  omrFrequency?: number;
   /** Connectors in unrotated part space */
   connectors: ConnectorSite[];
   /** 3D local occupancy mask [heightPlates][depthStuds][widthStuds] (true = solid) */

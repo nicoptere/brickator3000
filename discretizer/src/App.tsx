@@ -104,9 +104,11 @@ export const MainApp: React.FC = () => {
       }
 
       // 2. Direct Triangle Surface Rasterization & Barycentric Color Sampling
-      setDiscretizeProgress({ stage: 'Rasterizing Surface Hull...', percent: 32 });
+      setDiscretizeProgress({ stage: 'Rasterizing Surface Hull & Volumes...', percent: 32 });
       const lattice = await rasterizeIslandsToLatticeAsync(islands, {
         targetStuds: config.targetStuds,
+        verticalUnit: config.verticalUnit,
+        snapVertices: config.snapVertices,
         onProgress: (pct) => {
           setDiscretizeProgress({ stage: 'Rasterizing Surface Hull & Normals...', percent: Math.round(32 + pct * 0.28) });
         }
@@ -120,6 +122,8 @@ export const MainApp: React.FC = () => {
         enableMacaroni: config.enableMacaroni,
         enableCanisters: config.enableCanisters,
         enableStudlessTiles: config.enableStudlessTiles,
+        enableCollapse: config.enableCollapse,
+        enableVoxelRecompute: config.enableVoxelRecompute,
         onProgress: (stage, pct) => {
           setDiscretizeProgress({ stage, percent: Math.round(62 + pct * 0.36) });
         }

@@ -74,6 +74,10 @@ export const SAMPLE_MODELS: SampleModelItem[] = [
 
 export interface DiscretizeConfig {
   targetStuds: number;
+  verticalUnit: 'stud' | 'brick';
+  snapVertices: boolean;
+  enableCollapse: boolean;
+  enableVoxelRecompute: boolean;
   strategy: 'tiered' | 'size_descent';
   enableCurvedSlopes: boolean;
   enableMacaroni: boolean;
@@ -119,12 +123,16 @@ export const ModelSelectorPanel: React.FC<ModelSelectorPanelProps> = ({
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedCleanModelId, setSelectedCleanModelId] = useState<string>('');
 
-  // Discretizer Settings (Resolution 2 to 16, step 1)
-  const [targetStuds, setTargetStuds] = useState<number>(10);
-  const [strategy, setStrategy] = useState<'tiered' | 'size_descent'>('tiered');
+  // Discretizer Settings (Resolution 2 to 64 units)
+  const [targetStuds, setTargetStuds] = useState<number>(16);
+  const [verticalUnit, setVerticalUnit] = useState<'stud' | 'brick'>('stud');
+  const [snapVertices, setSnapVertices] = useState<boolean>(false);
+  const [enableCollapse, setEnableCollapse] = useState<boolean>(true);
+  const [enableVoxelRecompute, setEnableVoxelRecompute] = useState<boolean>(true);
+  const [strategy, setStrategy] = useState<'tiered' | 'size_descent'>('size_descent');
   const [enableCurvedSlopes, setEnableCurvedSlopes] = useState<boolean>(true);
-  const [enableMacaroni, setEnableMacaroni] = useState<boolean>(true);
-  const [enableCanisters, setEnableCanisters] = useState<boolean>(true);
+  const [enableMacaroni, setEnableMacaroni] = useState<boolean>(false);
+  const [enableCanisters, setEnableCanisters] = useState<boolean>(false);
   const [enableStudlessTiles, setEnableStudlessTiles] = useState<boolean>(true);
 
   // Fetch clean models manifest
@@ -197,6 +205,10 @@ export const ModelSelectorPanel: React.FC<ModelSelectorPanelProps> = ({
   const handleRunDiscretize = () => {
     onDiscretize({
       targetStuds,
+      verticalUnit,
+      snapVertices,
+      enableCollapse,
+      enableVoxelRecompute,
       strategy,
       enableCurvedSlopes,
       enableMacaroni,
@@ -421,18 +433,37 @@ export const ModelSelectorPanel: React.FC<ModelSelectorPanelProps> = ({
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Text style={{ fontSize: 12, color: '#0f172a', fontWeight: 500 }}>
-              Resolution (Max Studs): {targetStuds}
+              Resolution ({verticalUnit === 'brick' ? 'Brick units, 1 unit = 3 plates' : 'Studs'}): {targetStuds}
             </Text>
           </div>
           <Slider
             min={2}
-            max={16}
+            max={64}
             step={1}
             value={targetStuds}
             onChange={setTargetStuds}
-            marks={{ 2: '2', 4: '4', 8: '8', 12: '12', 16: '16' }}
+            marks={{ 2: '2', 16: '16', 32: '32', 48: '48', 64: '64' }}
             style={{ margin: '4px 0 16px 0' }}
           />
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <Text style={{ fontSize: 12, color: '#64748b', fontWeight: 500 }}>
+              Vertical Unit:
+            </Text>
+            <Radio.Group
+              size="small"
+              value={verticalUnit}
+              onChange={e => setVerticalUnit(e.target.value)}
+              style={{ display: 'flex', width: '100%' }}
+            >
+              <Radio.Button value="stud" style={{ flex: 1, textAlign: 'center' }}>
+                Studs / Plates
+              </Radio.Button>
+              <Radio.Button value="brick" style={{ flex: 1, textAlign: 'center' }}>
+                Brick Units (1 unit = 3 plates)
+              </Radio.Button>
+            </Radio.Group>
+          </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             <Text style={{ fontSize: 12, color: '#64748b', fontWeight: 500 }}>
@@ -444,11 +475,11 @@ export const ModelSelectorPanel: React.FC<ModelSelectorPanelProps> = ({
               onChange={e => setStrategy(e.target.value)}
               style={{ display: 'flex', width: '100%' }}
             >
-              <Radio.Button value="tiered" style={{ flex: 1, textAlign: 'center' }}>
-                Tiered Multi-Pass
-              </Radio.Button>
               <Radio.Button value="size_descent" style={{ flex: 1, textAlign: 'center' }}>
                 Size-Descent
+              </Radio.Button>
+              <Radio.Button value="tiered" style={{ flex: 1, textAlign: 'center' }}>
+                Tiered Multi-Pass
               </Radio.Button>
             </Radio.Group>
           </div>
@@ -459,6 +490,12 @@ export const ModelSelectorPanel: React.FC<ModelSelectorPanelProps> = ({
               onChange={e => setEnableCurvedSlopes(e.target.checked)}
             >
               Curved Slopes
+            </Checkbox>
+            <Checkbox
+              checked={enableStudlessTiles}
+              onChange={e => setEnableStudlessTiles(e.target.checked)}
+            >
+              Studless Top Tiles
             </Checkbox>
             <Checkbox
               checked={enableMacaroni}
@@ -473,10 +510,19 @@ export const ModelSelectorPanel: React.FC<ModelSelectorPanelProps> = ({
               Round Canisters
             </Checkbox>
             <Checkbox
-              checked={enableStudlessTiles}
-              onChange={e => setEnableStudlessTiles(e.target.checked)}
+              checked={snapVertices}
+              onChange={e => setSnapVertices(e.target.checked)}
             >
-              Studless Top Tiles
+              Snap Vertices to Grid
+            </Checkbox>
+            <Checkbox
+              checked={enableCollapse}
+              onChange={e => {
+                setEnableCollapse(e.target.checked);
+                setEnableVoxelRecompute(e.target.checked);
+              }}
+            >
+              Voxel Collapse Pass
             </Checkbox>
           </div>
 
