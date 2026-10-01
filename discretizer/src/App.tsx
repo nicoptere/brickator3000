@@ -22,14 +22,17 @@ export const MainApp: React.FC = () => {
   const [isDiscretizing, setIsDiscretizing] = useState<boolean>(false);
   const [discretizeProgress, setDiscretizeProgress] = useState<{ stage: string; percent: number } | null>(null);
   const [discretizerResult, setDiscretizerResult] = useState<SolverResult | null>(null);
-  const [viewMode, setViewMode] = useState<'mesh' | 'lego' | 'both'>('lego');
+  const [viewMode, setViewMode] = useState<'mesh' | 'lego' | 'both'>('mesh');
+  const [isEngineReady, setIsEngineReady] = useState<boolean>(false);
   const { message: antMessage } = AntApp.useApp();
 
   const handleSelectSampleModel = useCallback(async (model: SampleModelItem) => {
     if (!viewportRef.current) return;
     setIsLoading(true);
     setDiscretizerResult(null);
+    setViewMode('mesh');
     viewportRef.current.clearBricks();
+    viewportRef.current.setViewMode('mesh');
     try {
       if (model.type.startsWith('procedural')) {
         await viewportRef.current.loadModelFromUrl('', model.type, model.label);
@@ -48,7 +51,9 @@ export const MainApp: React.FC = () => {
     if (!viewportRef.current) return;
     setIsLoading(true);
     setDiscretizerResult(null);
+    setViewMode('mesh');
     viewportRef.current.clearBricks();
+    viewportRef.current.setViewMode('mesh');
     try {
       const url = getAssetUrl(model.path);
       await viewportRef.current.loadModelFromUrl(url, 'glb', model.name);
@@ -63,7 +68,9 @@ export const MainApp: React.FC = () => {
     if (!viewportRef.current) return;
     setIsLoading(true);
     setDiscretizerResult(null);
+    setViewMode('mesh');
     viewportRef.current.clearBricks();
+    viewportRef.current.setViewMode('mesh');
     try {
       await viewportRef.current.loadModelFromFile(file);
       antMessage.success(`Loaded ${file.name}`);
@@ -157,20 +164,34 @@ export const MainApp: React.FC = () => {
     antMessage.success('Exported LDraw .ldr file');
   }, [discretizerResult, modelStats, antMessage]);
 
-  // Load default duck model on mount
+  const handleModelLoaded = useCallback((stats: ModelStats) => {
+    setModelStats(stats);
+  }, []);
+
+  const handleError = useCallback((err: string) => {
+    antMessage.error(err);
+  }, [antMessage]);
+
+  const handleViewportReady = useCallback(() => {
+    setIsEngineReady(true);
+  }, []);
+
+  // Load default duck model once viewport engine is ready
   useEffect(() => {
+    if (!isEngineReady) return;
     const initialModel = SAMPLE_MODELS[0];
     if (initialModel) {
       handleSelectSampleModel(initialModel);
     }
-  }, [handleSelectSampleModel]);
+  }, [isEngineReady, handleSelectSampleModel]);
 
   return (
     <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden' }}>
       <Viewport3D
         ref={viewportRef}
-        onModelLoaded={(stats) => setModelStats(stats)}
-        onError={(err) => antMessage.error(err)}
+        onReady={handleViewportReady}
+        onModelLoaded={handleModelLoaded}
+        onError={handleError}
       />
       <ModelSelectorPanel
         onSelectSampleModel={handleSelectSampleModel}

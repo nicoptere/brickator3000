@@ -8,6 +8,7 @@ export interface Viewport3DProps {
   onModelLoaded?: (stats: ModelStats) => void;
   onLoadingProgress?: (progress: number) => void;
   onError?: (error: string) => void;
+  onReady?: () => void;
 }
 
 export interface Viewport3DHandle {
@@ -23,18 +24,23 @@ export interface Viewport3DHandle {
 export const Viewport3D = forwardRef<Viewport3DHandle, Viewport3DProps>(({
   onModelLoaded,
   onLoadingProgress,
-  onError
+  onError,
+  onReady
 }, ref) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const engineRef = useRef<ViewportEngine | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
 
+  // Keep latest callbacks in ref to avoid re-instantiating ViewportEngine
+  const callbacksRef = useRef({ onModelLoaded, onLoadingProgress, onError, onReady });
+  callbacksRef.current = { onModelLoaded, onLoadingProgress, onError, onReady };
+
   useEffect(() => {
     if (!containerRef.current) return;
 
     const engine = new ViewportEngine(containerRef.current, {
-      onModelLoaded,
-      onLoadingProgress
+      onModelLoaded: (stats) => callbacksRef.current.onModelLoaded?.(stats),
+      onLoadingProgress: (pct) => callbacksRef.current.onLoadingProgress?.(pct)
     });
     engineRef.current = engine;
 
@@ -43,28 +49,54 @@ export const Viewport3D = forwardRef<Viewport3DHandle, Viewport3DProps>(({
     };
     window.addEventListener('resize', handleResize);
 
+    // Notify parent that the 3D viewport engine is ready
+    if (callbacksRef.current.onReady) {
+      callbacksRef.current.onReady();
+    }
+
     return () => {
       window.removeEventListener('resize', handleResize);
       engine.dispose();
       engineRef.current = null;
     };
-  }, [onModelLoaded, onLoadingProgress]);
+  }, []);
 
   useImperativeHandle(ref, () => ({
     loadModelFromUrl: async (url: string, fileType: string, modelName: string) => {
-      if (!engineRef.current) return;
+      if (!engineRef.current) {
+        // Wait up to 500ms if engine is initializing
+        for (let i = 0; i < 10 && !engineRef.current; i++) {
+          await new Promise(r => setTimeout(r, 50));
+        }
+      }
+      if (!engineRef.current) {
+        throw new Error('Viewport engine not initialized.');
+      }
       try {
         await engineRef.current.loadModelFromUrl(url, fileType, modelName);
       } catch (err: any) {
-        if (onError) onError(err.message || 'Failed to load model from URL');
+        if (callbacksRef.current.onError) {
+          callbacksRef.current.onError(err.message || 'Failed to load model from URL');
+        }
+        throw err;
       }
     },
     loadModelFromFile: async (file: File) => {
-      if (!engineRef.current) return;
+      if (!engineRef.current) {
+        for (let i = 0; i < 10 && !engineRef.current; i++) {
+          await new Promise(r => setTimeout(r, 50));
+        }
+      }
+      if (!engineRef.current) {
+        throw new Error('Viewport engine not initialized.');
+      }
       try {
         await engineRef.current.loadModelFromFile(file);
       } catch (err: any) {
-        if (onError) onError(err.message || 'Failed to load model file');
+        if (callbacksRef.current.onError) {
+          callbacksRef.current.onError(err.message || 'Failed to load model file');
+        }
+        throw err;
       }
     },
     displayDiscretizedBricks: (bricks: PlacedBrick[], lattice: PlateLattice3D) => {

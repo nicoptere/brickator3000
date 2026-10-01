@@ -224,7 +224,7 @@ export const ModelSelectorPanel: React.FC<ModelSelectorPanelProps> = ({
     >
       <Card
         size="small"
-        bordered
+        variant="outlined"
         style={{
           backgroundColor: '#ffffff',
           borderColor: '#e2e8f0',

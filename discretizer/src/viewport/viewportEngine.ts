@@ -266,8 +266,18 @@ export class ViewportEngine {
         mesh.castShadow = true;
         mesh.receiveShadow = true;
 
+        if (mesh.material) {
+          const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+          mats.forEach(m => {
+            m.side = THREE.DoubleSide;
+          });
+        }
+
         if (mesh.geometry) {
           const geo = mesh.geometry;
+          if (!geo.attributes.normal) {
+            geo.computeVertexNormals();
+          }
           if (geo.index) {
             triangleCount += geo.index.count / 3;
           } else if (geo.attributes.position) {
@@ -297,6 +307,9 @@ export class ViewportEngine {
     obj.position.set(-center.x * scale, -bbox.min.y * scale, -center.z * scale);
 
     this.modelRoot.add(obj);
+
+    // Re-apply current view mode so the newly loaded mesh is properly visible
+    this.setViewMode(this.currentViewMode);
 
     // Camera framing
     const scaledSize = size.clone().multiplyScalar(scale);
