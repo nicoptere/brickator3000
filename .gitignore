@@ -34,3 +34,4 @@ docs/papers/rebrickable_database/
 # Sub-repository
 generator/
 
+discretizer/node_modules
