@@ -526,9 +526,15 @@ export const ModelSelectorPanel: React.FC<ModelSelectorPanelProps> = ({
               <Text strong style={{ fontSize: 12, color: '#1e40af' }}>
                 Discretization Result
               </Text>
-              <Tag color="success" icon={<CheckCircleOutlined />} style={{ margin: 0, fontSize: 11 }}>
-                100% Grounded
-              </Tag>
+              {discretizerResult.stats.is100PercentGrounded ? (
+                <Tag color="success" icon={<CheckCircleOutlined />} style={{ margin: 0, fontSize: 11 }}>
+                  100% Grounded
+                </Tag>
+              ) : (
+                <Tag color="warning" style={{ margin: 0, fontSize: 11 }}>
+                  {discretizerResult.stats.groundedBricks}/{discretizerResult.stats.totalBricks} Grounded
+                </Tag>
+              )}
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, fontSize: 12 }}>

@@ -112,41 +112,79 @@ export class GrowingSurfaceKernelSolver {
 
   /**
    * Strategy 1: Tiered Multi-Pass Pipeline (Default)
-   * Hierarchical feature passes: Apex -> Slopes -> Macaronis -> Canisters -> Core Infill -> Plates -> Tiles
+   * Hierarchical feature passes: Ground Foundation -> Core Infill -> Slopes -> Macaronis -> Canisters -> Tiles -> Plates
    */
   private async solveTieredPipeline(): Promise<void> {
     const { onProgress } = this.options;
 
-    // Pass 1: Organic Curvatures & Apex Domes (Tier 1) - only at apex
-    onProgress('Pass 1: Organic Curvatures & Radar Dishes...', 20);
-    await this.runPass(this.variants.filter(v => v.def.tier === 1), { requireDepth0: true, requireApex: true });
+    // Pass 1: Foundation at Ground Plane (y = 0)
+    onProgress('Pass 1: Ground Plane Foundation...', 15);
+    const foundationVariants = this.variants
+      .filter(v => v.category.startsWith('BRICK') || v.category.startsWith('PLATE'))
+      .sort((a, b) => (b.size[0] * b.size[1] * b.size[2]) - (a.size[0] * a.size[1] * a.size[2]));
+    await this.runGroundPass(foundationVariants);
 
-    // Pass 2: Modern Curved & Inverted Slopes (Tier 2) - on exposed sloping surfaces
-    onProgress('Pass 2: Curved & Inverted Slopes...', 35);
-    await this.runPass(this.variants.filter(v => v.def.tier === 2), { requireDepth0: true, requireExposedTop: true });
+    // Pass 2: Core Infill Bricks (prefer interior voxels so exterior sloped voxels are preserved)
+    onProgress('Pass 2: Interlocked Core Infill (Running Bond)...', 30);
+    const coreBricks = this.variants.filter(v => v.category.startsWith('BRICK'));
+    await this.runPass(coreBricks, { preferInterior: true, enforceRunningBond: true });
 
-    // Pass 3: Macaroni Corners & Wedges (Tier 3)
-    onProgress('Pass 3: Macaroni Corners & Wedges...', 50);
-    await this.runPass(this.variants.filter(v => v.def.tier === 3), { requireDepth0: true, requireExposedTop: true });
+    // Pass 3: Modern Curved, 45°, 33°, and Inverted Slopes on exposed sloping surfaces
+    if (this.options.enableSlopes || this.options.enableCurvedSlopes) {
+      onProgress('Pass 3: Slopes (45°, 33°, Curved & Inverted)...', 50);
+      const slopeVariants = this.variants.filter(v =>
+        v.category === 'SLOPE_45' ||
+        v.category === 'CHEESE_SLOPE' ||
+        v.category === 'SLOPE_CURVED' ||
+        v.category === 'SLOPE_INVERTED'
+      );
+      await this.runPass(slopeVariants, { requireDepth0: true });
+    }
 
-    // Pass 4: Cylinders & Canisters (Tier 4) - only where structurally supported
+    // Pass 4: Macaroni Corners & Wedges (Tier 3)
+    if (this.options.enableMacaroni) {
+      onProgress('Pass 4: Macaroni Corners & Wedges...', 65);
+      await this.runPass(this.variants.filter(v => v.def.tier === 3), { requireDepth0: true });
+    }
+
+    // Pass 5: Cylinders & Round Canisters (Tier 4)
     if (this.options.enableCanisters) {
-      onProgress('Pass 4: Cylinders & Round Columns...', 60);
+      onProgress('Pass 5: Cylinders & Round Columns...', 75);
       await this.runPass(this.variants.filter(v => v.def.tier === 4), { checkPillar: true });
     }
 
-    // Pass 5: Structural Core Infill (Tier 5: 3001, 3003, 3004, 3005, etc.)
-    onProgress('Pass 5: Interlocked Core Infill (Running Bond)...', 75);
-    await this.runPass(this.variants.filter(v => v.def.tier === 5), { enforceRunningBond: true });
+    // Pass 6: Studless Top Tile Finishes (Tier 7) - run BEFORE plates on top exposed surfaces!
+    if (this.options.enableStudlessTiles) {
+      onProgress('Pass 6: Studless Top Tile Finishes...', 85);
+      await this.runPass(this.variants.filter(v => v.def.tier === 7 || v.def.category === 'TILE_FLAT'), { requireExposedTop: true });
+    }
 
-    // Pass 6: Detail Plates & Structural Infill Plates (Tier 6: 3020, 3022, 3023, 3024, 3710, etc.)
-    onProgress('Pass 6: Structural Infill Plates...', 85);
+    // Pass 7: Detail & Structural Infill Plates (Tier 6)
+    onProgress('Pass 7: Structural Infill Plates...', 90);
     await this.runPass(this.variants.filter(v => v.def.tier === 6), {});
 
-    // Pass 7: Studless Top Tile Finishes (Tier 7) - cap all exposed top plate surfaces
-    if (this.options.enableStudlessTiles) {
-      onProgress('Pass 7: Studless Top Tile Finishes...', 92);
-      await this.runPass(this.variants.filter(v => v.def.tier === 7 || v.def.category === 'TILE_FLAT'), { requireExposedTop: true });
+    // Pass 8: Final Fallback Core Bricks for any remaining interior voids
+    await this.runPass(coreBricks, { enforceRunningBond: true });
+  }
+
+  private async runGroundPass(foundationVariants: RotatedKernelVariant[]): Promise<void> {
+    const b = this.lattice.bounds;
+    for (let z = b.minZ; z <= b.maxZ; z++) {
+      for (let x = b.minX; x <= b.maxX; x++) {
+        if (!this.bitset.isAvailable(x, z, 0)) continue;
+        let bestV: RotatedKernelVariant | null = null;
+        let bestS = -1;
+        for (const v of foundationVariants) {
+          const s = this.evaluateCandidate(x, z, 0, v, {});
+          if (s > bestS && s > 0) {
+            bestS = s;
+            bestV = v;
+          }
+        }
+        if (bestV) {
+          this.commitCandidate(x, z, 0, bestV);
+        }
+      }
     }
   }
 
@@ -187,6 +225,7 @@ export class GrowingSurfaceKernelSolver {
       requireApex?: boolean;
       checkPillar?: boolean;
       enforceRunningBond?: boolean;
+      preferInterior?: boolean;
     } = {}
   ): Promise<void> {
     if (candidateVariants.length === 0) return;
@@ -242,12 +281,17 @@ export class GrowingSurfaceKernelSolver {
     z: number,
     y: number,
     variant: RotatedKernelVariant,
-    constraints: { enforceRunningBond?: boolean; requireExposedTop?: boolean }
+    constraints: { enforceRunningBond?: boolean; requireExposedTop?: boolean; preferInterior?: boolean } = {}
   ): number {
     const [w, d, h] = variant.size;
 
     // 1. Instant O(1) Bounding Box Bitset Check: Must be completely available
     if (!this.bitset.isRegionAvailable(x, z, y, w, d, h)) {
+      return -1;
+    }
+
+    // Mechanical Connectivity: At y > 0, piece must connect to an already-grounded brick
+    if (y > 0 && !this.assemblyGraph.canConnectToGrounded(x, z, y, variant.connectors)) {
       return -1;
     }
 
@@ -258,14 +302,114 @@ export class GrowingSurfaceKernelSolver {
       }
     }
 
-    // Check if exposed top is required (curved slopes, studless tiles)
-    if (constraints.requireExposedTop || variant.def.category === 'SLOPE_CURVED' || variant.def.category === 'TILE_FLAT') {
+    const isDirectionalSlope =
+      variant.category === 'SLOPE_CURVED' ||
+      variant.category === 'SLOPE_45' ||
+      variant.category === 'CHEESE_SLOPE' ||
+      variant.category === 'SLOPE_INVERTED';
+
+    let normalScore = 0;
+
+    if (isDirectionalSlope) {
+      const vNorm = this.lattice.getVoxel(x, z, y)?.normal;
+      if (!vNorm) return -1;
+
+      const [nx, ny, nz] = vNorm;
+      const len = Math.hypot(nx, ny, nz) || 1;
+      const cosAngle = Math.max(-1, Math.min(1, ny / len));
+      const angleDeg = (Math.acos(cosAngle) * 180) / Math.PI;
+
+      const isInverted = variant.category === 'SLOPE_INVERTED';
+
+      if (isInverted) {
+        // Inverted slope: overhang / underside (negative Y normal)
+        if (ny >= -0.20) return -1;
+        // Underside must descend into empty air below
+        if (y > 0 && this.lattice.isOccupied(x, z, y - 1)) return -1;
+      } else {
+        // Upward slope: requires upward or lateral face
+        if (ny < -0.20) return -1;
+        // Flat horizontal surfaces (tabletop, roof) must NOT use directional slopes
+        if (angleDeg < 22) return -1;
+
+        // Top surface must not be blocked by solid voxels
+        const topY = y + h;
+        for (let dz = 0; dz < d; dz++) {
+          for (let dx = 0; dx < w; dx++) {
+            if (this.lattice.isOccupied(x + dx, z + dz, topY)) return -1;
+          }
+        }
+
+        // Check physical step contour into empty air based on heading:
+        // A slope must descend from solid into empty air!
+        if (variant.rotation === 0) {
+          // Descends in +Z: front face at z + d touches empty air, normal nz is positive
+          const airInFront = z + d >= this.lattice.numStudsZ || !this.lattice.isOccupied(x, z + d, y);
+          if (!airInFront || nz < 0.10) return -1;
+        } else if (variant.rotation === 180) {
+          // Descends in -Z: front face at z - 1 touches empty air, normal nz is negative
+          const airInFront = z - 1 < 0 || !this.lattice.isOccupied(x, z - 1, y);
+          if (!airInFront || nz > -0.10) return -1;
+        } else if (variant.rotation === 90) {
+          // Descends in -X: front face at x - 1 touches empty air, normal nx is negative
+          const airInFront = x - 1 < 0 || !this.lattice.isOccupied(x - 1, z, y);
+          if (!airInFront || nx > -0.10) return -1;
+        } else if (variant.rotation === 270) {
+          // Descends in +X: front face at x + w touches empty air, normal nx is positive
+          const airInFront = x + w >= this.lattice.numStudsX || !this.lattice.isOccupied(x + w, z, y);
+          if (!airInFront || nx < 0.10) return -1;
+        }
+
+        // Horizontal normal alignment
+        const [tnx, tny, tnz] = variant.targetNormal;
+        const hNorm = Math.hypot(nx, nz);
+        const tHoriz = Math.hypot(tnx, tnz);
+        if (hNorm > 0.01 && tHoriz > 0.01) {
+          const horizDot = (nx * tnx + nz * tnz) / (hNorm * tHoriz);
+          if (horizDot < 0.60) return -1;
+        }
+
+        // Slope angle classification bonus:
+        // 45° slopes match ~45° surfaces
+        if (variant.category === 'SLOPE_45') {
+          if (angleDeg >= 36 && angleDeg <= 54) {
+            normalScore += 50.0; // 45° slope match!
+          } else {
+            normalScore += 15.0;
+          }
+        } else if (variant.category === 'CHEESE_SLOPE') {
+          if (angleDeg >= 22 && angleDeg < 36) {
+            normalScore += 50.0; // 30°/33° slope match!
+          } else {
+            normalScore += 15.0;
+          }
+        } else if (variant.category === 'SLOPE_CURVED') {
+          if (angleDeg > 54 || (angleDeg >= 30 && angleDeg <= 60)) {
+            normalScore += 45.0; // Curved slope match!
+          } else {
+            normalScore += 15.0;
+          }
+        }
+      }
+    } else if (variant.category === 'TILE_FLAT') {
+      const vNorm = this.lattice.getVoxel(x, z, y)?.normal;
+      if (vNorm && vNorm[1] > 0.80) {
+        normalScore += 30.0; // Flat upward face matches tiles
+      }
       const topY = y + h;
       for (let dz = 0; dz < d; dz++) {
         for (let dx = 0; dx < w; dx++) {
-          if (this.lattice.isOccupied(x + dx, z + dz, topY)) {
-            return -1; // Top surface is blocked by voxels above; cannot place studless top feature here!
-          }
+          if (this.lattice.isOccupied(x + dx, z + dz, topY)) return -1;
+        }
+      }
+    } else if (constraints.preferInterior) {
+      // Don't place core bricks on voxels that have empty air and normal angle > 22° (save them for slopes!)
+      const vNorm = this.lattice.getVoxel(x, z, y)?.normal;
+      if (vNorm) {
+        const len = Math.hypot(vNorm[0], vNorm[1], vNorm[2]) || 1;
+        const angleDeg = (Math.acos(Math.max(-1, Math.min(1, vNorm[1] / len))) * 180) / Math.PI;
+        if (angleDeg >= 22 && this.lattice.getDepth(x, z, y) === 0) {
+          return -1; // Reserve boundary surface slope voxel for actual slope elements!
         }
       }
     }
@@ -278,23 +422,6 @@ export class GrowingSurfaceKernelSolver {
     const minDensity = isSurfaceSlope ? 0.35 : (isTile ? 0.40 : 0.65);
     if (solidCount < volume * minDensity) {
       return -1;
-    }
-
-    // 3. Normal Vector Cosine Alignment (for surface features)
-    let normalScore = 0;
-    const isSurfacePart = variant.def.tier <= 3 || variant.def.category === 'TILE_FLAT';
-
-    if (isSurfacePart) {
-      const vNorm = this.lattice.getVoxel(x, z, y)?.normal;
-      if (vNorm) {
-        const [tnx, tny, tnz] = variant.targetNormal;
-        const dot = vNorm[0] * tnx + vNorm[1] * tny + vNorm[2] * tnz;
-        // Require positive directional alignment
-        if (dot < 0.15) {
-          return -1; // Normal alignment threshold violated
-        }
-        normalScore = dot * 25.0; // Strong bonus for slope alignment
-      }
     }
 
     // 4. Color Variance Gating (Preserve texture boundaries)

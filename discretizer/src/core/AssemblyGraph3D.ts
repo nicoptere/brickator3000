@@ -175,6 +175,31 @@ export class AssemblyGraph3D {
   }
 
   /**
+   * Checks if candidate connectors at (x, z, y) form at least one valid mechanical snap
+   * with an already-placed grounded brick (or touches y = 0).
+   */
+  public canConnectToGrounded(x: number, z: number, y: number, connectors: ConnectorSite[]): boolean {
+    if (y === 0) return true;
+
+    for (const conn of connectors) {
+      const gx = x + conn.localPos[0];
+      const gz = z + conn.localPos[1];
+      const gy = y + conn.localPos[2];
+      const oppDx = -conn.direction[0];
+      const oppDz = -conn.direction[1];
+      const oppDy = -conn.direction[2];
+      const oppPolarity = conn.polarity === 'MALE' ? 'FEMALE' : 'MALE';
+
+      const matingKey = this.getConnectorKey(gx, gz, gy, oppDx, oppDz, oppDy, oppPolarity);
+      const mate = this.connectorRegistry.get(matingKey);
+      if (mate && this.isGrounded(mate.brickId)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
    * Computes seam staggering / running bond score for a candidate brick.
    * Rewards spanning across multiple supporting bricks.
    * Heavily penalizes vertical seam alignment (Minecraft column stacking).

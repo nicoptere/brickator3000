@@ -397,25 +397,37 @@ export class ViewportEngine {
     // 1. Separate bricks by shape category
     const boxBricks: PlacedBrick[] = [];
     const cylinderBricks: PlacedBrick[] = [];
-    const slopeBricks: PlacedBrick[] = [];
+    const slopeCurvedBricks: PlacedBrick[] = [];
+    const slope45Bricks: PlacedBrick[] = [];
+    const cheeseSlopeBricks: PlacedBrick[] = [];
+    const slopeInvertedBricks: PlacedBrick[] = [];
 
-    let totalStuds = 0;
+    // Build occupied cells set to eliminate covered studs
+    const occupiedCells = new Set<string>();
 
     for (const b of bricks) {
+      for (let dy = 0; dy < b.size[2]; dy++) {
+        for (let dz = 0; dz < b.size[1]; dz++) {
+          for (let dx = 0; dx < b.size[0]; dx++) {
+            occupiedCells.add(`${b.gridPos[0] + dx},${b.gridPos[1] + dz},${b.gridPos[2] + dy}`);
+          }
+        }
+      }
+
       const isCyl = b.category === 'ROUND_CANISTER' || b.category === 'ORGANIC_DOME' || b.category === 'TECHNIC_PIN' || b.partId === '98138' || b.partId === '6141';
-      const isSlope = b.category === 'SLOPE_CURVED' || b.category === 'CHEESE_SLOPE' || b.category === 'SLOPE_45' || b.category === 'SLOPE_INVERTED';
 
       if (isCyl) {
         cylinderBricks.push(b);
-      } else if (isSlope) {
-        slopeBricks.push(b);
+      } else if (b.category === 'SLOPE_45') {
+        slope45Bricks.push(b);
+      } else if (b.category === 'CHEESE_SLOPE') {
+        cheeseSlopeBricks.push(b);
+      } else if (b.category === 'SLOPE_INVERTED') {
+        slopeInvertedBricks.push(b);
+      } else if (b.category === 'SLOPE_CURVED') {
+        slopeCurvedBricks.push(b);
       } else {
         boxBricks.push(b);
-      }
-
-      const hasTopStuds = b.category !== 'TILE_FLAT' && !isSlope && b.category !== 'TECHNIC_BEAM' && b.category !== 'TECHNIC_AXLE';
-      if (hasTopStuds) {
-        totalStuds += b.size[0] * b.size[1];
       }
     }
 
@@ -427,149 +439,159 @@ export class ViewportEngine {
     const gapH = Math.min(0.012, studPitch * 0.02);
     const gapV = Math.min(0.006, platePitch * 0.02);
 
-    // 2. Instanced Mesh for Standard Box Bricks / Plates / Tiles
-    if (boxBricks.length > 0) {
-      const boxGeo = new THREE.BoxGeometry(1.0, 1.0, 1.0);
-      const boxMesh = new THREE.InstancedMesh(boxGeo, plasticMat, boxBricks.length);
-      boxMesh.castShadow = true;
-      boxMesh.receiveShadow = true;
+    const renderInstanced = (
+      brickList: PlacedBrick[],
+      geometry: THREE.BufferGeometry,
+      isBox: boolean = false
+    ) => {
+      if (brickList.length === 0) return;
+      geometry.computeVertexNormals();
+      const mesh = new THREE.InstancedMesh(geometry, plasticMat, brickList.length);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
 
-      for (let i = 0; i < boxBricks.length; i++) {
-        const b = boxBricks[i];
-        const [bw, bd, bh] = b.size;
-        const [wx, wy, wz] = lattice.gridToWorld(b.gridPos[0] + bw / 2, b.gridPos[1] + bd / 2, b.gridPos[2] + bh / 2);
-
-        dummy.position.set(wx, wy, wz);
-        dummy.rotation.set(0, 0, 0);
-        dummy.scale.set(bw * studPitch - gapH, bh * platePitch - gapV, bd * studPitch - gapH);
-        dummy.updateMatrix();
-
-        boxMesh.setMatrixAt(i, dummy.matrix);
-        color.set(b.colorHex);
-        boxMesh.setColorAt(i, color);
-      }
-
-      boxMesh.instanceMatrix.needsUpdate = true;
-      if (boxMesh.instanceColor) boxMesh.instanceColor.needsUpdate = true;
-      group.add(boxMesh);
-    }
-
-    // 3. Instanced Mesh for Round Canisters and Round Tiles
-    if (cylinderBricks.length > 0) {
-      const cylGeo = new THREE.CylinderGeometry(0.5, 0.5, 1.0, 24);
-      cylGeo.computeVertexNormals();
-      const cylMesh = new THREE.InstancedMesh(cylGeo, plasticMat, cylinderBricks.length);
-      cylMesh.castShadow = true;
-      cylMesh.receiveShadow = true;
-
-      for (let i = 0; i < cylinderBricks.length; i++) {
-        const b = cylinderBricks[i];
+      for (let i = 0; i < brickList.length; i++) {
+        const b = brickList[i];
         const [bw, bd, bh] = b.size;
         const [baseW, baseD, baseH] = b.baseSize;
         const [wx, wy, wz] = lattice.gridToWorld(b.gridPos[0] + bw / 2, b.gridPos[1] + bd / 2, b.gridPos[2] + bh / 2);
 
         dummy.position.set(wx, wy, wz);
-        dummy.rotation.set(0, -(b.rotation * Math.PI) / 180, 0);
-        dummy.scale.set(baseW * studPitch * 0.98, baseH * platePitch - gapV, baseD * studPitch * 0.98);
+        if (isBox) {
+          dummy.rotation.set(0, 0, 0);
+          dummy.scale.set(bw * studPitch - gapH, bh * platePitch - gapV, bd * studPitch - gapH);
+        } else {
+          dummy.rotation.set(0, -(b.rotation * Math.PI) / 180, 0);
+          dummy.scale.set(baseW * studPitch - gapH, baseH * platePitch - gapV, baseD * studPitch - gapH);
+        }
         dummy.updateMatrix();
 
-        cylMesh.setMatrixAt(i, dummy.matrix);
+        mesh.setMatrixAt(i, dummy.matrix);
         color.set(b.colorHex);
-        cylMesh.setColorAt(i, color);
+        mesh.setColorAt(i, color);
       }
 
-      cylMesh.instanceMatrix.needsUpdate = true;
-      if (cylMesh.instanceColor) cylMesh.instanceColor.needsUpdate = true;
-      group.add(cylMesh);
+      mesh.instanceMatrix.needsUpdate = true;
+      if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+      group.add(mesh);
+    };
+
+    // 2. Standard Box Bricks / Plates / Tiles
+    const boxGeo = new THREE.BoxGeometry(1.0, 1.0, 1.0);
+    renderInstanced(boxBricks, boxGeo, true);
+
+    // 3. Cylinders / Round Canisters / Round Plates
+    const cylGeo = new THREE.CylinderGeometry(0.5, 0.5, 1.0, 24);
+    renderInstanced(cylinderBricks, cylGeo, false);
+
+    // 4. Modern Curved Slopes
+    const sCurved = new THREE.Shape();
+    sCurved.moveTo(-0.5, -0.5);
+    sCurved.lineTo(0.5, -0.5);
+    sCurved.lineTo(0.5, -0.167);
+    sCurved.quadraticCurveTo(0.1, 0.45, -0.5, 0.5);
+    sCurved.lineTo(-0.5, -0.5);
+    const geoCurved = new THREE.ExtrudeGeometry(sCurved, { depth: 1.0, bevelEnabled: false });
+    geoCurved.rotateY(-Math.PI / 2);
+    geoCurved.center();
+    renderInstanced(slopeCurvedBricks, geoCurved, false);
+
+    // 5. Authentic 45° Flat Slopes (3040, 3039, 3037)
+    const s45 = new THREE.Shape();
+    s45.moveTo(-0.5, -0.5);
+    s45.lineTo(0.5, -0.5);
+    s45.lineTo(-0.5, 0.5);
+    s45.lineTo(-0.5, -0.5);
+    const geo45 = new THREE.ExtrudeGeometry(s45, { depth: 1.0, bevelEnabled: false });
+    geo45.rotateY(-Math.PI / 2);
+    geo45.center();
+    renderInstanced(slope45Bricks, geo45, false);
+
+    // 6. Authentic 31° Cheese Slopes (54200, 85984)
+    const sCheese = new THREE.Shape();
+    sCheese.moveTo(-0.5, -0.5);
+    sCheese.lineTo(0.5, -0.5);
+    sCheese.lineTo(0.5, -0.35);
+    sCheese.lineTo(-0.5, 0.5);
+    sCheese.lineTo(-0.5, -0.5);
+    const geoCheese = new THREE.ExtrudeGeometry(sCheese, { depth: 1.0, bevelEnabled: false });
+    geoCheese.rotateY(-Math.PI / 2);
+    geoCheese.center();
+    renderInstanced(cheeseSlopeBricks, geoCheese, false);
+
+    // 7. Authentic Inverted Slopes (24201, 93273, 32803, 3665)
+    const sInv = new THREE.Shape();
+    sInv.moveTo(-0.5, 0.5);
+    sInv.lineTo(0.5, 0.5);
+    sInv.lineTo(0.5, 0.167);
+    sInv.lineTo(-0.5, -0.5);
+    sInv.lineTo(-0.5, 0.5);
+    const geoInv = new THREE.ExtrudeGeometry(sInv, { depth: 1.0, bevelEnabled: false });
+    geoInv.rotateY(-Math.PI / 2);
+    geoInv.center();
+    renderInstanced(slopeInvertedBricks, geoInv, false);
+
+    // 8. Unified Instanced Mesh for Exposed Top Studs (Covered studs omitted!)
+    const studRadius = studPitch * 0.24;
+    const studHeight = studPitch * 0.18;
+    const studGeo = new THREE.CylinderGeometry(studRadius, studRadius, studHeight, 16);
+    studGeo.computeVertexNormals();
+
+    interface VisibleStud {
+      pos: [number, number, number];
+      colorHex: string;
     }
+    const visibleStuds: VisibleStud[] = [];
 
-    // 4. Instanced Mesh for Modern Curved Slopes & Wedge Elements
-    if (slopeBricks.length > 0) {
-      const slopeShape = new THREE.Shape();
-      slopeShape.moveTo(-0.5, -0.5);
-      slopeShape.lineTo(0.5, -0.5);
-      slopeShape.lineTo(0.5, -0.167);
-      slopeShape.quadraticCurveTo(0.1, 0.45, -0.5, 0.5);
-      slopeShape.lineTo(-0.5, -0.5);
+    for (const b of bricks) {
+      const isSmooth =
+        b.category === 'TILE_FLAT' ||
+        b.category === 'SLOPE_CURVED' ||
+        b.category === 'CHEESE_SLOPE' ||
+        b.category === 'SLOPE_45' ||
+        b.category === 'ORGANIC_DOME' ||
+        b.category === 'TECHNIC_BEAM' ||
+        b.category === 'TECHNIC_AXLE' ||
+        b.partId === '98138' ||
+        b.partId === '14769';
+      if (isSmooth) continue;
 
-      const slopeGeo = new THREE.ExtrudeGeometry(slopeShape, { depth: 1.0, bevelEnabled: false });
-      // Rotate -90° around Y so unrotated slope faces +Z matching targetNormal [0, 0.707, 0.707]
-      slopeGeo.rotateY(-Math.PI / 2);
-      slopeGeo.center();
-      slopeGeo.computeVertexNormals();
+      const topGy = b.gridPos[2] + b.size[2];
 
-      const slopeMesh = new THREE.InstancedMesh(slopeGeo, plasticMat, slopeBricks.length);
-      slopeMesh.castShadow = true;
-      slopeMesh.receiveShadow = true;
+      for (let sx = 0; sx < b.size[0]; sx++) {
+        for (let sz = 0; sz < b.size[1]; sz++) {
+          const gx = b.gridPos[0] + sx;
+          const gz = b.gridPos[1] + sz;
 
-      for (let i = 0; i < slopeBricks.length; i++) {
-        const b = slopeBricks[i];
-        const [bw, bd, bh] = b.size;
-        const [baseW, baseD, baseH] = b.baseSize;
-        const [wx, wy, wz] = lattice.gridToWorld(b.gridPos[0] + bw / 2, b.gridPos[1] + bd / 2, b.gridPos[2] + bh / 2);
+          // Check if covered by another brick above
+          if (occupiedCells.has(`${gx},${gz},${topGy}`)) {
+            continue; // Stud is covered by upper brick!
+          }
 
-        dummy.position.set(wx, wy, wz);
-        // Negate angle so clockwise yaw in lattice maps to Three.js right-handed rotation
-        dummy.rotation.set(0, -(b.rotation * Math.PI) / 180, 0);
-        // Scale by unrotated baseSize in local space BEFORE rotation
-        dummy.scale.set(baseW * studPitch - gapH, baseH * platePitch - gapV, baseD * studPitch - gapH);
-        dummy.updateMatrix();
-
-        slopeMesh.setMatrixAt(i, dummy.matrix);
-        color.set(b.colorHex);
-        slopeMesh.setColorAt(i, color);
+          const [sxW, syW, szW] = lattice.gridToWorld(gx + 0.5, gz + 0.5, topGy);
+          visibleStuds.push({
+            pos: [sxW, syW + studHeight * 0.5, szW],
+            colorHex: b.colorHex
+          });
+        }
       }
-
-      slopeMesh.instanceMatrix.needsUpdate = true;
-      if (slopeMesh.instanceColor) slopeMesh.instanceColor.needsUpdate = true;
-      group.add(slopeMesh);
     }
 
-    // 5. Unified Instanced Mesh for ALL Top Studs
-    if (totalStuds > 0) {
-      const studRadius = studPitch * 0.24;
-      const studHeight = studPitch * 0.18;
-      const studGeo = new THREE.CylinderGeometry(studRadius, studRadius, studHeight, 16);
-      studGeo.computeVertexNormals();
-
-      const studMesh = new THREE.InstancedMesh(studGeo, plasticMat, totalStuds);
+    if (visibleStuds.length > 0) {
+      const studMesh = new THREE.InstancedMesh(studGeo, plasticMat, visibleStuds.length);
       studMesh.castShadow = true;
       studMesh.receiveShadow = true;
 
-      let studIdx = 0;
+      for (let i = 0; i < visibleStuds.length; i++) {
+        const s = visibleStuds[i];
+        dummy.position.set(s.pos[0], s.pos[1], s.pos[2]);
+        dummy.rotation.set(0, 0, 0);
+        dummy.scale.set(1.0, 1.0, 1.0);
+        dummy.updateMatrix();
 
-      for (const b of bricks) {
-        const isSmoothOrSlope =
-          b.category === 'TILE_FLAT' ||
-          b.category === 'SLOPE_CURVED' ||
-          b.category === 'CHEESE_SLOPE' ||
-          b.category === 'SLOPE_45' ||
-          b.category === 'SLOPE_INVERTED' ||
-          b.category === 'ORGANIC_DOME' ||
-          b.partId === '98138' ||
-          b.partId === '14769';
-        if (isSmoothOrSlope) continue;
-
-        color.set(b.colorHex);
-
-        for (let sx = 0; sx < b.size[0]; sx++) {
-          for (let sz = 0; sz < b.size[1]; sz++) {
-            const [sxW, syW, szW] = lattice.gridToWorld(
-              b.gridPos[0] + sx + 0.5,
-              b.gridPos[1] + sz + 0.5,
-              b.gridPos[2] + b.size[2]
-            );
-
-            dummy.position.set(sxW, syW + studHeight * 0.5, szW);
-            dummy.rotation.set(0, 0, 0);
-            dummy.scale.set(1.0, 1.0, 1.0);
-            dummy.updateMatrix();
-
-            studMesh.setMatrixAt(studIdx, dummy.matrix);
-            studMesh.setColorAt(studIdx, color);
-            studIdx++;
-          }
-        }
+        studMesh.setMatrixAt(i, dummy.matrix);
+        color.set(s.colorHex);
+        studMesh.setColorAt(i, color);
       }
 
       studMesh.instanceMatrix.needsUpdate = true;

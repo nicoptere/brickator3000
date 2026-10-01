@@ -139,71 +139,8 @@ export async function rasterizeIslandsToLatticeAsync(
     }
   }
 
-  // Step 2: Solid Interior Volume Voxelization (Dual-Axis Scanline Fill across Bounding Box)
-  // Guarantees all interior core volume of the mesh within the bounding box is fully solid-filled
-  if (onProgress) onProgress(70);
-
-  // Scanline along Z for each (x, y)
-  for (let y = 0; y < numPlatesY; y++) {
-    for (let x = 0; x < numStudsX; x++) {
-      const occupiedZs: number[] = [];
-      for (let z = 0; z < numStudsZ; z++) {
-        if (lattice.isOccupied(x, z, y)) {
-          occupiedZs.push(z);
-        }
-      }
-
-      if (occupiedZs.length >= 2) {
-        const firstZ = occupiedZs[0];
-        const lastZ = occupiedZs[occupiedZs.length - 1];
-        const vFirst = lattice.getVoxel(x, firstZ, y);
-        const col = vFirst?.colorPacked ?? 0x2563eb;
-        const isl = vFirst?.islandId ?? 1;
-
-        for (let i = 0; i < occupiedZs.length - 1; i++) {
-          const zA = occupiedZs[i];
-          const zB = occupiedZs[i + 1];
-          if (zB - zA > 1) {
-            for (let fz = zA + 1; fz < zB; fz++) {
-              lattice.setVoxel(x, fz, y, col, [0, 1, 0], isl);
-            }
-          }
-        }
-      }
-    }
-  }
-
-  // Scanline along X for each (z, y)
-  for (let y = 0; y < numPlatesY; y++) {
-    for (let z = 0; z < numStudsZ; z++) {
-      const occupiedXs: number[] = [];
-      for (let x = 0; x < numStudsX; x++) {
-        if (lattice.isOccupied(x, z, y)) {
-          occupiedXs.push(x);
-        }
-      }
-
-      if (occupiedXs.length >= 2) {
-        const firstX = occupiedXs[0];
-        const vFirst = lattice.getVoxel(firstX, z, y);
-        const col = vFirst?.colorPacked ?? 0x2563eb;
-        const isl = vFirst?.islandId ?? 1;
-
-        for (let i = 0; i < occupiedXs.length - 1; i++) {
-          const xA = occupiedXs[i];
-          const xB = occupiedXs[i + 1];
-          if (xB - xA > 1) {
-            for (let fx = xA + 1; fx < xB; fx++) {
-              lattice.setVoxel(fx, z, y, col, [0, 1, 0], isl);
-            }
-          }
-        }
-      }
-    }
-  }
-
-  // Step 3: Compute 6-connected distance transform (depth 0 = surface hull, depth >= 1 = interior core)
-  if (onProgress) onProgress(90);
+  // Step 2: Compute 6-connected distance transform on the surface hull
+  if (onProgress) onProgress(80);
   lattice.computeDistanceTransform();
 
   if (onProgress) onProgress(100);
