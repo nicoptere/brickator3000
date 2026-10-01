@@ -15,6 +15,7 @@ import { ModelParamsInspector } from './controls/ModelParamsInspector';
 import { SourceMeshMode } from './Viewport3D';
 import { ColorMode } from './controls/ColorModeSelector';
 import { IslandMeta } from './controls/IslandInspector';
+import { UploadedModelItem } from './controls/ModelSelector';
 
 interface LeftDrawerProps {
   isOpen: boolean;
@@ -22,6 +23,9 @@ interface LeftDrawerProps {
   currentModelId: string;
   onSelectModel: (id: string, url?: string) => void;
   onFileUpload: (file: File) => void;
+  uploadedModels?: UploadedModelItem[];
+  onSelectUploadedModel?: (item: UploadedModelItem) => void;
+  onReloadUploadedModel?: (item: UploadedModelItem) => void;
   voxelizeMode: 'surface' | 'solid';
   onChangeVoxelizeMode: (m: 'surface' | 'solid') => void;
   sourceMeshMode: SourceMeshMode;
@@ -44,6 +48,9 @@ export const LeftDrawer: React.FC<LeftDrawerProps> = ({
   currentModelId,
   onSelectModel,
   onFileUpload,
+  uploadedModels = [],
+  onSelectUploadedModel,
+  onReloadUploadedModel,
   voxelizeMode,
   onChangeVoxelizeMode,
   sourceMeshMode,
@@ -72,29 +79,29 @@ export const LeftDrawer: React.FC<LeftDrawerProps> = ({
         maxWidth: 350,
         flexShrink: 0,
         height: '100%',
-        backgroundColor: '#090a0f',
-        borderRight: '1px solid #1e293b',
+        backgroundColor: '#ffffff',
+        borderRight: '1px solid #e2e8f0',
         display: 'flex',
         flexDirection: 'column',
         zIndex: 25,
-        color: '#f8fafc',
-        boxShadow: '4px 0 24px rgba(0, 0, 0, 0.4)'
+        color: '#0f172a',
+        boxShadow: '4px 0 24px rgba(0, 0, 0, 0.05)'
       }}
     >
       {/* Header */}
       <div
         style={{
           padding: '12px 14px',
-          borderBottom: '1px solid #1e293b',
-          backgroundColor: '#0f172a',
+          borderBottom: '1px solid #e2e8f0',
+          backgroundColor: '#f8fafc',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between'
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <PanelLeftIcon size={16} color="#38bdf8" />
-          <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: '-0.01em', color: '#f8fafc' }}>
+          <PanelLeftIcon size={16} color="#2563eb" />
+          <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: '-0.01em', color: '#0f172a' }}>
             Source Mesh & Model Params
           </span>
         </div>
@@ -104,9 +111,9 @@ export const LeftDrawer: React.FC<LeftDrawerProps> = ({
           style={{
             padding: '4px 8px',
             borderRadius: 5,
-            border: '1px solid #334155',
-            backgroundColor: '#1e293b',
-            color: '#94a3b8',
+            border: '1px solid #e2e8f0',
+            backgroundColor: '#f1f5f9',
+            color: '#475569',
             fontSize: 11,
             fontWeight: 600,
             cursor: 'pointer'
@@ -126,7 +133,7 @@ export const LeftDrawer: React.FC<LeftDrawerProps> = ({
             minHeight: isSec1Open ? 200 : 'auto',
             display: 'flex',
             flexDirection: 'column',
-            borderBottom: '1px solid #1e293b',
+            borderBottom: '1px solid #e2e8f0',
             overflow: 'hidden'
           }}
         >
@@ -136,10 +143,10 @@ export const LeftDrawer: React.FC<LeftDrawerProps> = ({
             style={{
               width: '100%',
               padding: '10px 14px',
-              backgroundColor: '#0f172a',
+              backgroundColor: '#f8fafc',
               border: 'none',
-              borderBottom: isSec1Open ? '1px solid rgba(148, 163, 184, 0.1)' : 'none',
-              color: '#f8fafc',
+              borderBottom: isSec1Open ? '1px solid #e2e8f0' : 'none',
+              color: '#0f172a',
               fontSize: 11,
               fontWeight: 700,
               textTransform: 'uppercase',
@@ -151,7 +158,7 @@ export const LeftDrawer: React.FC<LeftDrawerProps> = ({
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ color: '#38bdf8' }}>{isSec1Open ? <ChevronDownIcon size={13} /> : <ChevronRightIcon size={13} />}</span>
+              <span style={{ color: '#2563eb' }}>{isSec1Open ? <ChevronDownIcon size={13} /> : <ChevronRightIcon size={13} />}</span>
               <span>1. 3D Model Selector</span>
             </div>
             <span style={{ fontSize: 10, color: '#64748b', textTransform: 'none', fontWeight: 500 }}>
@@ -166,6 +173,9 @@ export const LeftDrawer: React.FC<LeftDrawerProps> = ({
                 currentModelId={currentModelId}
                 onSelectModel={onSelectModel}
                 onFileUpload={onFileUpload}
+                uploadedModels={uploadedModels}
+                onSelectUploadedModel={onSelectUploadedModel}
+                onReloadUploadedModel={onReloadUploadedModel}
                 isLoading={isLoading}
               />
             </div>
@@ -189,10 +199,10 @@ export const LeftDrawer: React.FC<LeftDrawerProps> = ({
             style={{
               width: '100%',
               padding: '10px 14px',
-              backgroundColor: '#0f172a',
+              backgroundColor: '#f8fafc',
               border: 'none',
-              borderBottom: isSec2Open ? '1px solid rgba(148, 163, 184, 0.1)' : 'none',
-              color: '#f8fafc',
+              borderBottom: isSec2Open ? '1px solid #e2e8f0' : 'none',
+              color: '#0f172a',
               fontSize: 11,
               fontWeight: 700,
               textTransform: 'uppercase',
@@ -204,11 +214,11 @@ export const LeftDrawer: React.FC<LeftDrawerProps> = ({
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ color: '#38bdf8' }}>{isSec2Open ? <ChevronDownIcon size={13} /> : <ChevronRightIcon size={13} />}</span>
-              <span>2. Shell, Overlay & Islands</span>
+              <span style={{ color: '#2563eb' }}>{isSec2Open ? <ChevronDownIcon size={13} /> : <ChevronRightIcon size={13} />}</span>
+              <span>2. Shell, Overlay & Materials</span>
             </div>
             <span style={{ fontSize: 10, color: '#64748b', textTransform: 'none', fontWeight: 500 }}>
-              {islands.length > 0 ? `${islands.length} Islands` : 'Parameters'}
+              Parameters
             </span>
           </button>
 

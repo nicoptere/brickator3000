@@ -18,7 +18,7 @@
  *      underlying bricks, ensuring physical clutch stability without vertical fault lines.
  */
 
-import { PlacedBrick, VoxelGrid, WFC_SCALE_COLORS, PieceProfile } from './types';
+import { PlacedBrick, VoxelGrid, WFC_SCALE_COLORS, PieceProfile, MarkovEngineOptions } from './types';
 import { LDU_STUD_PITCH, LDU_BRICK_HEIGHT, LDU_PLATE_HEIGHT } from './connectivityDictionary';
 import { WFC_REFINER } from './wfcRefinerEngine';
 import { CARDINAL_ROTATIONS } from './pieceFingerprint';
@@ -57,7 +57,8 @@ export class PolishHarmonizer {
   public static harmonizeNeighborhoods(
     placedBricks: Map<string, PlacedBrick>,
     occupiedCellToBrickId: Map<string, string>,
-    grid: VoxelGrid
+    grid: VoxelGrid,
+    options?: MarkovEngineOptions
   ): HarmonizationResult {
     let harmonizedSlopesCount = 0;
     let mergedContinuousCurvesCount = 0;
@@ -300,18 +301,22 @@ export class PolishHarmonizer {
       }
     }
 
-    // 4. Pole & Cylinder Harmonization
-    // - Thin poles / struts: replaced with canisters (3062b) and round plates (6141)
-    // - Square poles / pillars: merged into unbroken tall bricks (2453b 1x1x5, 3005 1x1x3)
-    // - Larger 2x2 round columns: replaced with 2x2 round cylinders (3941) and round plates (4032a)
-    // - Large 4x4 round columns: replaced with 4x4 round cylinders (6222) and round plates (60474)
-    // - Beyond 4x4 round perimeters: perimeter corners replaced with macaroni quadrants (3063b / 27925)
-    const poleHarmonization = this.harmonizePolesAndCylinders(
-      placedBricks,
-      occupiedCellToBrickId,
-      grid,
-      processedIds
-    );
+    // 4. Pole & Cylinder Harmonization (enabled only if enableVerticalPolesToCylinders is true)
+    let poleHarmonization = {
+      mergedPolesCount: 0,
+      replacedCanistersCount: 0,
+      replacedCylindersCount: 0,
+      replacedMacaroniCount: 0
+    };
+
+    if (options?.enableVerticalPolesToCylinders) {
+      poleHarmonization = this.harmonizePolesAndCylinders(
+        placedBricks,
+        occupiedCellToBrickId,
+        grid,
+        processedIds
+      );
+    }
 
     const totalModifications =
       harmonizedSlopesCount +

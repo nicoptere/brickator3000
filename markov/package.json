@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "test": "npx tsx src/tests/markovEngine.test.ts"
+    "test": "npx tsx src/tests/markovEngine.test.ts",
+    "deploy": "./scripts/deploy.sh all",
+    "deploy:quick": "./scripts/deploy.sh quick"
   },
   "dependencies": {
     "react": "^19.0.0",

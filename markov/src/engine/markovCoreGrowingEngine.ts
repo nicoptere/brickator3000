@@ -153,13 +153,13 @@ export class MarkovCoreGrowingEngine {
       seedMode: options.seedMode ?? 'DEEPEST_CORE',
       staggerRunningBond: options.staggerRunningBond ?? true,
       enableModernWeirdParts: options.enableModernWeirdParts ?? true,
-      enableStudlessTopFinish: options.enableStudlessTopFinish ?? false,
+      enableStudlessTopFinish: options.enableStudlessTopFinish ?? true,
       directRGBSampling: options.directRGBSampling ?? true,
       randomSeed: options.randomSeed ?? 42,
       maxSteps: options.maxSteps ?? 5000,
       numHeads,
       batchStepSize: options.batchStepSize ?? 16,
-      colorMode: options.colorMode ?? 'wfc_hierarchy'
+      colorMode: options.colorMode ?? 'actual'
     };
 
     let s = this.options.randomSeed!;
@@ -1148,7 +1148,8 @@ export class MarkovCoreGrowingEngine {
     this.harmonizationResult = PolishHarmonizer.harmonizeNeighborhoods(
       this.placedBricks,
       this.occupiedCellToBrickId,
-      this.grid
+      this.grid,
+      this.options
     );
     if (this.options.enableBuildabilityVerify !== false) {
       this.currentPhase = 'BUILDABILITY_VERIFY';
@@ -1175,7 +1176,8 @@ export class MarkovCoreGrowingEngine {
     this.harmonizationResult = PolishHarmonizer.harmonizeNeighborhoods(
       this.placedBricks,
       this.occupiedCellToBrickId,
-      this.grid
+      this.grid,
+      this.options
     );
     return this.harmonizationResult;
   }

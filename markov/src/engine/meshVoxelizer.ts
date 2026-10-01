@@ -22,6 +22,8 @@ import { VoxelGrid, VoxelCell, PlacedBrick } from './types';
 import { MultiResolutionLattice } from './multiResolutionLattice';
 import { MeshIslandSegmenter, MeshIsland } from './meshIslandSegmenter';
 import { MeshDistanceEvaluator, MeshDistanceResult, MeshDistanceOptions } from './meshDistanceMetric';
+import { sampleAnyTexture, sampleTexturePixel, sampleDecodedPixel } from './meshTextureSampler';
+import { getAssetUrl } from '../utils/url';
 
 export interface VoxelizerOptions {
   targetHeightBricks?: number; // Target model height in 1*1*1 bricks (e.g. 16, 24, 32, 64)
@@ -30,6 +32,7 @@ export interface VoxelizerOptions {
   brickHeightLDU?: number; // 24 LDU = 1 brick (1*1*1 brick height)
   plateHeightLDU?: number; // 8 LDU = 1 plate (for legacy compatibility)
   voxelizeMode?: 'surface' | 'solid'; // 'surface' = only voxels that hit/contain mesh surface (default); 'solid' = volumetric solid filling
+  precomputedIslands?: MeshIsland[]; // Pre-extracted topological half-edge islands to skip redundant segmentation
 }
 
 // Standard official LEGO palette for fallback color code mapping
@@ -223,50 +226,18 @@ export class MeshVoxelizer {
    * Samples a pixel color from a texture map at UV coordinates (browser environment).
    */
   public static sampleTexturePixel(texture: THREE.Texture, uv: THREE.Vector2): THREE.Color | null {
-    if (typeof document === 'undefined' || !texture.image) return null;
-    const img = texture.image as any;
-
-    if (typeof img.complete === 'boolean' && !img.complete) return null;
-    if (img.width === 0 || img.height === 0) return null;
-
-    let cached = this.canvasCache.get(img);
-    if (!cached) {
-      try {
-        const canvas = document.createElement('canvas');
-        canvas.width = img.width || 256;
-        canvas.height = img.height || 256;
-        const ctx = canvas.getContext('2d', { willReadFrequently: true });
-        if (!ctx) return null;
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        cached = { canvas, ctx };
-        this.canvasCache.set(img, cached);
-      } catch {
-        return null;
-      }
-    }
-
-    let u = uv.x % 1;
-    let v = uv.y % 1;
-    if (u < 0) u += 1;
-    if (v < 0) v += 1;
-    if (texture.flipY !== false) {
-      v = 1 - v;
-    }
-
-    const px = Math.min(cached.canvas.width - 1, Math.max(0, Math.floor(u * cached.canvas.width)));
-    const py = Math.min(cached.canvas.height - 1, Math.max(0, Math.floor(v * cached.canvas.height)));
-
-    try {
-      const p = cached.ctx.getImageData(px, py, 1, 1).data;
-      if (p[3] < 10) return null; // Skip transparent pixels
-      return new THREE.Color(p[0] / 255, p[1] / 255, p[2] / 255);
-    } catch {
-      return null;
-    }
+    return sampleTexturePixel(texture, uv.x, uv.y);
   }
 
   /**
-   * Extracts direct RGB diffuse and vertex color from an intersection hit.
+   * Samples a pixel color from a decoded buffer at UV coordinates (Node.js/headless environment).
+   */
+  public static sampleDecodedPixel(tex: any, u: number, v: number): THREE.Color | null {
+    return sampleDecodedPixel(tex, u, v);
+  }
+
+  /**
+   * Extracts direct RGB diffuse, texture, and vertex color from an intersection hit.
    */
   public static sampleColorFromHit(hit: THREE.Intersection): {
     colorHex: string;
@@ -277,23 +248,12 @@ export class MeshVoxelizer {
     const geom = mesh.geometry;
     let sampledColor: THREE.Color | null = null;
 
-    // 0. Try Decoded Texture (e.g. Node.js or embedded GLB texture)
-    if (mesh.userData?.decodedTexture && hit.uv) {
-      const tex = mesh.userData.decodedTexture;
-      let u = hit.uv.x % 1;
-      let v = hit.uv.y % 1;
-      if (u < 0) u += 1;
-      if (v < 0) v += 1;
-      const px = Math.min(tex.width - 1, Math.max(0, Math.floor(u * tex.width)));
-      const py = Math.min(tex.height - 1, Math.max(0, Math.floor(v * tex.height)));
-      const idx = (py * tex.width + px) * 4;
-      const alpha = tex.pixels[idx + 3];
-      if (alpha > 20) {
-        sampledColor = new THREE.Color(
-          tex.pixels[idx] / 255,
-          tex.pixels[idx + 1] / 255,
-          tex.pixels[idx + 2] / 255
-        );
+    // 0. Try Texture Map if UV available (handles both browser THREE.Texture and Node.js decoded buffers)
+    if (hit.uv) {
+      const mat = mesh.material ? (Array.isArray(mesh.material) ? mesh.material[hit.face?.materialIndex ?? 0] : mesh.material) : null;
+      const tex = (mat as any)?.map || mesh.userData?.texture || mesh.userData?.decodedTexture || (mesh.parent as any)?.userData?.decodedTexture;
+      if (tex) {
+        sampledColor = sampleAnyTexture(tex, hit.uv.x, hit.uv.y);
       }
     }
 
@@ -319,18 +279,7 @@ export class MeshVoxelizer {
       sampledColor = new THREE.Color((ra + rb + rc) / 3.0, (ga + gb + gc) / 3.0, (ba + bb + bc) / 3.0);
     }
 
-    // 2. Try Texture Map if UV available
-    if (!sampledColor && hit.uv && mesh.material) {
-      const mat = Array.isArray(mesh.material)
-        ? mesh.material[hit.face?.materialIndex ?? 0]
-        : mesh.material;
-
-      if ((mat as any)?.map) {
-        sampledColor = this.sampleTexturePixel((mat as any).map, hit.uv);
-      }
-    }
-
-    // 3. Try Material Diffuse Color
+    // 2. Try Material Diffuse Color
     if (!sampledColor && mesh.material) {
       const mat = Array.isArray(mesh.material)
         ? mesh.material[hit.face?.materialIndex ?? 0]
@@ -341,7 +290,7 @@ export class MeshVoxelizer {
       }
     }
 
-    // 4. Fallback Default
+    // 3. Fallback Default
     if (!sampledColor) {
       sampledColor = new THREE.Color(0xf2cd37); // Default LEGO Yellow
     }
@@ -359,20 +308,26 @@ export class MeshVoxelizer {
   /**
    * Loads an authentic 3D model (GLTF/GLB, OBJ, PLY) asynchronously.
    */
-  public static async loadModel(pathOrUrlOrFile: string | File): Promise<THREE.Object3D> {
+  public static async loadModel(
+    pathOrUrlOrFile: string | File,
+    onProgress?: (loaded: number, total: number) => void
+  ): Promise<THREE.Object3D> {
     if (typeof pathOrUrlOrFile === 'string') {
-      const url = pathOrUrlOrFile;
-      const lower = url.toLowerCase();
+      const rawPath = pathOrUrlOrFile;
       const fs = await getNodeFs();
       const zlib = await getNodeZlib();
 
-      const resolveLocalPath = (rawPath: string): string | null => {
+      // In browser, resolve asset URLs dynamically for subpaths / external hosting
+      const url = fs ? rawPath : getAssetUrl(rawPath);
+      const lower = url.toLowerCase();
+
+      const resolveLocalPath = (p: string): string | null => {
         if (!fs) return null;
         const candidates = [
-          rawPath,
-          rawPath.startsWith('/') ? `public${rawPath}` : `public/${rawPath}`,
-          rawPath.startsWith('/') ? `.${rawPath}` : `./${rawPath}`,
-          rawPath.startsWith('/') ? rawPath.slice(1) : rawPath
+          p,
+          p.startsWith('/') ? `public${p}` : `public/${p}`,
+          p.startsWith('/') ? `.${p}` : `./${p}`,
+          p.startsWith('/') ? p.slice(1) : p
         ];
         for (const c of candidates) {
           try {
@@ -382,11 +337,17 @@ export class MeshVoxelizer {
         return null;
       };
 
+      const handleProgress = (xhr: ProgressEvent) => {
+        if (xhr && xhr.lengthComputable && onProgress) {
+          onProgress(xhr.loaded, xhr.total);
+        }
+      };
+
       if (lower.endsWith('.glb') || lower.endsWith('.gltf')) {
         let decodedTextures: Array<{ width: number; height: number; pixels: Uint8Array }> = [];
         let scene: THREE.Object3D | null = null;
 
-        const localPath = resolveLocalPath(url);
+        const localPath = resolveLocalPath(rawPath);
         if (fs && localPath) {
           try {
             const buf = fs.readFileSync(localPath);
@@ -403,7 +364,7 @@ export class MeshVoxelizer {
 
         if (!scene) {
           const loader = new GLTFLoader();
-          const gltf = await loader.loadAsync(url);
+          const gltf = await loader.loadAsync(url, handleProgress);
           scene = gltf.scene;
         }
 
@@ -413,12 +374,23 @@ export class MeshVoxelizer {
               c.userData.decodedTexture = decodedTextures[0];
             }
           });
+          scene.userData.decodedTexture = decodedTextures[0];
+        } else {
+          scene.traverse((c) => {
+            if ((c as THREE.Mesh).isMesh) {
+              const m = c as THREE.Mesh;
+              const mat = Array.isArray(m.material) ? m.material[0] : m.material;
+              if ((mat as any)?.map) {
+                m.userData.texture = (mat as any).map;
+              }
+            }
+          });
         }
         return scene;
       }
 
       if (lower.endsWith('.ply')) {
-        const localPath = resolveLocalPath(url);
+        const localPath = resolveLocalPath(rawPath);
         if (fs && localPath) {
           try {
             const buf = fs.readFileSync(localPath);
@@ -435,7 +407,7 @@ export class MeshVoxelizer {
         }
 
         const loader = new PLYLoader();
-        const geom = await loader.loadAsync(url);
+        const geom = await loader.loadAsync(url, handleProgress);
         const mat = new THREE.MeshStandardMaterial({
           vertexColors: !!geom.attributes.color,
           roughness: 0.4
@@ -444,7 +416,7 @@ export class MeshVoxelizer {
       }
 
       if (lower.endsWith('.obj')) {
-        const localPath = resolveLocalPath(url);
+        const localPath = resolveLocalPath(rawPath);
         if (fs && localPath) {
           try {
             const text = fs.readFileSync(localPath, 'utf-8');
@@ -456,11 +428,11 @@ export class MeshVoxelizer {
         }
 
         const loader = new OBJLoader();
-        return await loader.loadAsync(url);
+        return await loader.loadAsync(url, handleProgress);
       }
 
       // Default fallback to GLTFLoader
-      const localPath = resolveLocalPath(url);
+      const localPath = resolveLocalPath(rawPath);
       if (fs && localPath) {
         try {
           const buf = fs.readFileSync(localPath);
@@ -485,6 +457,14 @@ export class MeshVoxelizer {
         const loader = new GLTFLoader();
         const gltf = await new Promise<any>((resolve, reject) => {
           loader.parse(buffer, '', resolve, reject);
+        });
+        gltf.scene.traverse((c: any) => {
+          if (c.isMesh) {
+            const mat = Array.isArray(c.material) ? c.material[0] : c.material;
+            if (mat?.map) {
+              c.userData.texture = mat.map;
+            }
+          }
         });
         return gltf.scene;
       }
@@ -842,7 +822,7 @@ export class MeshVoxelizer {
     });
 
     // Prepass: Topological half-edge connected island extraction
-    const islands = MeshIslandSegmenter.segmentObject(object);
+    const islands = options.precomputedIslands || MeshIslandSegmenter.segmentObject(object);
     console.log(`[MeshVoxelizer] Detected ${islands.length} topological mesh islands via half-edge prepass.`);
 
     const raycaster = new THREE.Raycaster();
@@ -879,13 +859,10 @@ export class MeshVoxelizer {
         const col = geom.attributes.color;
         const uv = geom.attributes.uv;
 
-        // Texture map if available on child mesh
-        let decodedTex: any = null;
-        object.traverse((c) => {
-          if ((c as any).userData?.decodedTexture && !decodedTex) {
-            decodedTex = (c as any).userData.decodedTexture;
-          }
-        });
+        // Texture map if available on island, child mesh, or object
+        const texMap = isl.texture || (isl.mesh.material as any)?.map || isl.mesh.userData?.texture || (object as any)?.userData?.texture || null;
+        const decodedTex = isl.decodedTexture || isl.mesh.userData?.decodedTexture || (object as any)?.userData?.decodedTexture || null;
+        const textureSource = texMap || decodedTex;
 
         for (let i = 0; i < pos.count; i += 3) {
           vA.set(pos.getX(i), pos.getY(i), pos.getZ(i));
@@ -932,27 +909,32 @@ export class MeshVoxelizer {
                   occupiedCount++;
                   cell.islandId = isl.id;
                   cell.islandColorHex = isl.colorHex;
-                  cell.colorHex = isl.colorHex;
+                  cell.colorHex = isl.originalColorHex || isl.colorHex;
                   cell.colorName = isl.name;
                   cell.normal = [nX, nY, nZ];
 
-                  // Direct color sampling if vertex colors exist
-                  if (col) {
-                    const fw = 1.0 - fu - fv;
+                  let sampledColor: THREE.Color | null = null;
+                  const fw = 1.0 - fu - fv;
+
+                  // 1. Direct texture sampling with interpolated barycentric UV
+                  if (uv && textureSource) {
+                    const curU = fw * uvA.x + fu * uvB.x + fv * uvC.x;
+                    const curV = fw * uvA.y + fu * uvB.y + fv * uvC.y;
+                    sampledColor = sampleAnyTexture(textureSource, curU, curV);
+                  }
+
+                  // 2. Direct vertex color sampling with interpolated barycentric weights
+                  if (!sampledColor && col) {
                     const r = fw * col.getX(i) + fu * col.getX(i + 1) + fv * col.getX(i + 2);
                     const g = fw * col.getY(i) + fu * col.getY(i + 1) + fv * col.getY(i + 2);
                     const b = fw * col.getZ(i) + fu * col.getZ(i + 1) + fv * col.getZ(i + 2);
-                    cell.colorHex = `#${fastFloatToHex(r)}${fastFloatToHex(g)}${fastFloatToHex(b)}`;
-                  } else if (decodedTex && uv) {
-                    const fw = 1.0 - fu - fv;
-                    const curU = fw * uvA.x + fu * uvB.x + fv * uvC.x;
-                    const curV = fw * uvA.y + fu * uvB.y + fv * uvC.y;
-                    const px = Math.min(decodedTex.width - 1, Math.max(0, Math.floor(((curU % 1 + 1) % 1) * decodedTex.width)));
-                    const py = Math.min(decodedTex.height - 1, Math.max(0, Math.floor((1 - ((curV % 1 + 1) % 1)) * decodedTex.height)));
-                    const idx = (py * decodedTex.width + px) * 4;
-                    if (decodedTex.pixels[idx + 3] > 20) {
-                      cell.colorHex = `#${fastByteToHex(decodedTex.pixels[idx])}${fastByteToHex(decodedTex.pixels[idx + 1])}${fastByteToHex(decodedTex.pixels[idx + 2])}`;
-                    }
+                    sampledColor = new THREE.Color(r, g, b);
+                  }
+
+                  if (sampledColor) {
+                    cell.colorHex = '#' + sampledColor.getHexString();
+                    cell.colorCode = findNearestLegoColor(cell.colorHex).code;
+                    cell.colorName = findNearestLegoColor(cell.colorHex).name;
                   }
                 }
               }
@@ -1021,7 +1003,9 @@ export class MeshVoxelizer {
                   }
                   cell.islandId = isl.id;
                   cell.islandColorHex = isl.colorHex;
-                  cell.colorHex = isl.colorHex; // Color-code each part with its distinct random color
+                  const sampled = this.sampleColorFromHit(hits[0]);
+                  cell.colorHex = sampled?.colorHex || isl.originalColorHex || isl.colorHex;
+                  cell.colorCode = sampled?.colorCode || 15;
                   cell.colorName = isl.name;
 
                   if (hits[0].face) {
@@ -1119,7 +1103,8 @@ export class MeshVoxelizer {
                     const targetIsl = containingIsl || islands[0];
                     cell.islandId = targetIsl.id;
                     cell.islandColorHex = targetIsl.colorHex;
-                    cell.colorHex = targetIsl.colorHex;
+                    cell.colorHex = sampled.colorHex;
+                    cell.colorCode = sampled.colorCode;
                     cell.colorName = targetIsl.name;
                   } else if (cell.islandId === undefined) {
                     cell.colorHex = sampled.colorHex;

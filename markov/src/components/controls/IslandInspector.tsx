@@ -38,9 +38,9 @@ export const IslandInspector: React.FC<IslandInspectorProps> = ({
   return (
     <div
       style={{
-        backgroundColor: '#0f172a',
+        backgroundColor: '#f8fafc',
         borderRadius: 8,
-        border: '1px solid #1e293b',
+        border: '1px solid #e2e8f0',
         padding: 10,
         display: 'flex',
         flexDirection: 'column',
@@ -50,10 +50,10 @@ export const IslandInspector: React.FC<IslandInspectorProps> = ({
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <span style={{ fontSize: 11, fontWeight: 700, color: '#f8fafc', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: '#0f172a', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             Topological Islands ({islands.length})
           </span>
-          <div style={{ fontSize: 10, color: '#94a3b8' }}>
+          <div style={{ fontSize: 10, color: '#64748b' }}>
             {selectedIslandId != null ? `Viewing Island #${selectedIslandId} Solo` : 'Viewing Full Assembly'}
           </div>
         </div>
@@ -65,9 +65,9 @@ export const IslandInspector: React.FC<IslandInspectorProps> = ({
             height: 24,
             padding: '0 8px',
             borderRadius: 4,
-            border: '1px solid #334155',
-            backgroundColor: '#1e293b',
-            color: '#38bdf8',
+            border: '1px solid #e2e8f0',
+            backgroundColor: '#ffffff',
+            color: '#2563eb',
             fontSize: 10,
             fontWeight: 600,
             cursor: 'pointer',
@@ -90,9 +90,9 @@ export const IslandInspector: React.FC<IslandInspectorProps> = ({
             height: 28,
             padding: '0 6px',
             borderRadius: 5,
-            border: '1px solid rgba(56, 189, 248, 0.4)',
-            backgroundColor: 'rgba(56, 189, 248, 0.12)',
-            color: '#38bdf8',
+            border: '1px solid #bfdbfe',
+            backgroundColor: '#eff6ff',
+            color: '#2563eb',
             fontSize: 10,
             fontWeight: 600,
             cursor: isLoading ? 'wait' : 'pointer'
@@ -109,9 +109,9 @@ export const IslandInspector: React.FC<IslandInspectorProps> = ({
             height: 28,
             padding: '0 6px',
             borderRadius: 5,
-            border: '1px solid rgba(168, 85, 247, 0.4)',
-            backgroundColor: 'rgba(168, 85, 247, 0.12)',
-            color: '#c084fc',
+            border: '1px solid #bfdbfe',
+            backgroundColor: '#eff6ff',
+            color: '#2563eb',
             fontSize: 10,
             fontWeight: 600,
             cursor: isLoading ? 'wait' : 'pointer'
@@ -141,9 +141,9 @@ export const IslandInspector: React.FC<IslandInspectorProps> = ({
             justifyContent: 'space-between',
             padding: '5px 8px',
             borderRadius: 5,
-            border: selectedIslandId === null ? '1px solid #38bdf8' : '1px solid transparent',
-            backgroundColor: selectedIslandId === null ? 'rgba(56, 189, 248, 0.15)' : 'rgba(30, 41, 59, 0.4)',
-            color: selectedIslandId === null ? '#38bdf8' : '#94a3b8',
+            border: selectedIslandId === null ? '1px solid #2563eb' : '1px solid #e2e8f0',
+            backgroundColor: selectedIslandId === null ? '#eff6ff' : '#ffffff',
+            color: selectedIslandId === null ? '#2563eb' : '#475569',
             fontSize: 11,
             cursor: 'pointer',
             textAlign: 'left'
@@ -165,8 +165,8 @@ export const IslandInspector: React.FC<IslandInspectorProps> = ({
                 justifyContent: 'space-between',
                 padding: '4px 8px',
                 borderRadius: 5,
-                border: isSelected ? '1px solid #c084fc' : '1px solid transparent',
-                backgroundColor: isSelected ? 'rgba(192, 132, 252, 0.15)' : 'rgba(30, 41, 59, 0.3)',
+                border: isSelected ? '1px solid #2563eb' : '1px solid #e2e8f0',
+                backgroundColor: isSelected ? '#eff6ff' : '#ffffff',
                 cursor: 'pointer',
                 transition: 'background-color 0.1s ease'
               }}
@@ -179,15 +179,15 @@ export const IslandInspector: React.FC<IslandInspectorProps> = ({
                     borderRadius: 3,
                     flexShrink: 0,
                     backgroundColor: isl.colorHex,
-                    border: '1px solid rgba(255,255,255,0.3)',
-                    boxShadow: `0 0 6px ${isl.colorHex}44`
+                    border: '1px solid rgba(0,0,0,0.15)',
+                    boxShadow: `0 1px 3px rgba(0,0,0,0.1)`
                   }}
                 />
                 <span
                   style={{
                     fontSize: 11,
                     fontWeight: isSelected ? 700 : 500,
-                    color: isSelected ? '#f8fafc' : '#cbd5e1',
+                    color: isSelected ? '#2563eb' : '#0f172a',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap'
@@ -210,9 +210,9 @@ export const IslandInspector: React.FC<IslandInspectorProps> = ({
                   style={{
                     padding: '2px 6px',
                     borderRadius: 3,
-                    border: '1px solid #334155',
-                    backgroundColor: '#0f172a',
-                    color: '#38bdf8',
+                    border: '1px solid #bfdbfe',
+                    backgroundColor: '#eff6ff',
+                    color: '#2563eb',
                     fontSize: 10,
                     fontWeight: 600,
                     cursor: 'pointer'

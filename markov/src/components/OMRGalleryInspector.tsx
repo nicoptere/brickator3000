@@ -124,7 +124,7 @@ export const OMRGalleryInspector: React.FC<OMRGalleryInspectorProps> = ({ isOpen
       style={{
         position: 'fixed',
         inset: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.75)',
+        backgroundColor: 'rgba(15, 23, 42, 0.4)',
         backdropFilter: 'blur(8px)',
         zIndex: 1000,
         display: 'flex',
@@ -138,32 +138,32 @@ export const OMRGalleryInspector: React.FC<OMRGalleryInspectorProps> = ({ isOpen
           width: '90%',
           maxWidth: 1000,
           maxHeight: '85vh',
-          backgroundColor: '#0f172a',
-          border: '1px solid rgba(148, 163, 184, 0.2)',
+          backgroundColor: '#ffffff',
+          border: '1px solid #e2e8f0',
           borderRadius: 16,
           display: 'flex',
           flexDirection: 'column',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+          boxShadow: '0 25px 50px -12px rgba(15, 23, 42, 0.2)',
           overflow: 'hidden',
-          color: '#f8fafc'
+          color: '#0f172a'
         }}
       >
         {/* Header */}
         <div
           style={{
             padding: '20px 24px',
-            borderBottom: '1px solid rgba(148, 163, 184, 0.15)',
+            borderBottom: '1px solid #e2e8f0',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            background: 'linear-gradient(to right, rgba(30, 41, 59, 0.5), rgba(15, 23, 42, 0.8))'
+            background: '#f8fafc'
           }}
         >
           <div>
-            <h2 style={{ fontSize: 20, fontWeight: 700, margin: 0, color: '#38bdf8' }}>
+            <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0, color: '#0f172a' }}>
               Official Model Repository (OMR) Study Gallery
             </h2>
-            <p style={{ margin: '4px 0 0', fontSize: 13, color: '#94a3b8' }}>
+            <p style={{ margin: '4px 0 0', fontSize: 13, color: '#64748b' }}>
               Master-level LDraw reference builds analyzed for graph connectivity and running bond
             </p>
           </div>
@@ -171,13 +171,15 @@ export const OMRGalleryInspector: React.FC<OMRGalleryInspectorProps> = ({ isOpen
             onClick={onClose}
             aria-label="Close"
             style={{
-              background: 'transparent',
-              border: 'none',
-              color: '#94a3b8',
-              fontSize: 16,
+              background: '#ffffff',
+              border: '1px solid #e2e8f0',
+              color: '#64748b',
+              fontSize: 12,
+              fontWeight: 600,
               cursor: 'pointer',
-              padding: '6px 10px',
-              borderRadius: 6
+              padding: '6px 14px',
+              borderRadius: 6,
+              transition: 'all 0.15s ease'
             }}
           >
             Close
@@ -188,11 +190,11 @@ export const OMRGalleryInspector: React.FC<OMRGalleryInspectorProps> = ({ isOpen
         <div
           style={{
             padding: '12px 24px',
-            borderBottom: '1px solid rgba(148, 163, 184, 0.1)',
+            borderBottom: '1px solid #e2e8f0',
             display: 'flex',
             gap: 8,
             overflowX: 'auto',
-            backgroundColor: '#1e293b'
+            backgroundColor: '#ffffff'
           }}
         >
           {GALLERY_MODELS.map(m => (
@@ -202,12 +204,12 @@ export const OMRGalleryInspector: React.FC<OMRGalleryInspectorProps> = ({ isOpen
               style={{
                 padding: '8px 16px',
                 borderRadius: 8,
-                border: 'none',
+                border: selectedId === m.id ? 'none' : '1px solid #e2e8f0',
                 fontSize: 13,
                 fontWeight: 600,
                 cursor: 'pointer',
-                backgroundColor: selectedId === m.id ? '#38bdf8' : '#334155',
-                color: selectedId === m.id ? '#0f172a' : '#cbd5e1',
+                backgroundColor: selectedId === m.id ? '#2563eb' : '#f8fafc',
+                color: selectedId === m.id ? '#ffffff' : '#475569',
                 whiteSpace: 'nowrap',
                 transition: 'all 0.15s ease'
               }}
@@ -218,7 +220,7 @@ export const OMRGalleryInspector: React.FC<OMRGalleryInspectorProps> = ({ isOpen
         </div>
 
         {/* Content Body */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: 24, display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: 24, display: 'flex', flexDirection: 'column', gap: 20, backgroundColor: '#f8fafc' }}>
           {/* Top Info Banner */}
           <div
             style={{
@@ -226,27 +228,28 @@ export const OMRGalleryInspector: React.FC<OMRGalleryInspectorProps> = ({ isOpen
               justifyContent: 'space-between',
               alignItems: 'center',
               padding: 16,
-              backgroundColor: 'rgba(30, 41, 59, 0.4)',
-              border: '1px solid rgba(148, 163, 184, 0.15)',
-              borderRadius: 12
+              backgroundColor: '#ffffff',
+              border: '1px solid #e2e8f0',
+              borderRadius: 12,
+              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)'
             }}
           >
             <div>
-              <span style={{ fontSize: 12, color: '#38bdf8', fontWeight: 600 }}>{currentModel.theme}</span>
-              <h3 style={{ margin: '4px 0', fontSize: 18, color: '#f8fafc' }}>{currentModel.name}</h3>
-              <div style={{ fontSize: 12, fontFamily: 'monospace', color: '#94a3b8' }}>
+              <span style={{ fontSize: 12, color: '#2563eb', fontWeight: 600 }}>{currentModel.theme}</span>
+              <h3 style={{ margin: '4px 0', fontSize: 18, color: '#0f172a' }}>{currentModel.name}</h3>
+              <div style={{ fontSize: 12, fontFamily: 'monospace', color: '#64748b' }}>
                 Local File: docs/omr_gallery/{currentModel.filename}
               </div>
             </div>
 
             <div style={{ display: 'flex', gap: 16, textAlign: 'right' }}>
               <div>
-                <div style={{ fontSize: 22, fontWeight: 700, color: '#f8fafc' }}>{currentModel.totalParts}</div>
-                <div style={{ fontSize: 11, color: '#94a3b8' }}>Total Parts</div>
+                <div style={{ fontSize: 22, fontWeight: 700, color: '#0f172a' }}>{currentModel.totalParts}</div>
+                <div style={{ fontSize: 11, color: '#64748b' }}>Total Parts</div>
               </div>
               <div>
-                <div style={{ fontSize: 22, fontWeight: 700, color: '#38bdf8' }}>{currentModel.uniqueParts}</div>
-                <div style={{ fontSize: 11, color: '#94a3b8' }}>Unique Parts</div>
+                <div style={{ fontSize: 22, fontWeight: 700, color: '#2563eb' }}>{currentModel.uniqueParts}</div>
+                <div style={{ fontSize: 11, color: '#64748b' }}>Unique Parts</div>
               </div>
             </div>
           </div>
@@ -255,15 +258,15 @@ export const OMRGalleryInspector: React.FC<OMRGalleryInspectorProps> = ({ isOpen
           <div
             style={{
               padding: 16,
-              backgroundColor: 'rgba(16, 185, 129, 0.08)',
-              border: '1px solid rgba(16, 185, 129, 0.25)',
+              backgroundColor: '#eff6ff',
+              border: '1px solid #bfdbfe',
               borderRadius: 12
             }}
           >
-            <h4 style={{ margin: '0 0 10px', fontSize: 14, fontWeight: 700, color: '#10b981' }}>
+            <h4 style={{ margin: '0 0 10px', fontSize: 14, fontWeight: 700, color: '#2563eb' }}>
               Key Construction Lessons for Markov Discretization:
             </h4>
-            <ul style={{ margin: 0, paddingLeft: 20, fontSize: 13, color: '#cbd5e1', lineHeight: 1.6 }}>
+            <ul style={{ margin: 0, paddingLeft: 20, fontSize: 13, color: '#334155', lineHeight: 1.6 }}>
               {currentModel.constructionLessons.map((lesson, idx) => (
                 <li key={idx} style={{ marginBottom: 4 }}>{lesson}</li>
               ))}
@@ -272,7 +275,7 @@ export const OMRGalleryInspector: React.FC<OMRGalleryInspectorProps> = ({ isOpen
 
           {/* Top Parts Distribution (BOM) */}
           <div>
-            <h4 style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 700, color: '#f8fafc' }}>
+            <h4 style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 700, color: '#0f172a' }}>
               Dominant Piece Distribution (BOM Analysis):
             </h4>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 12 }}>
@@ -281,28 +284,30 @@ export const OMRGalleryInspector: React.FC<OMRGalleryInspectorProps> = ({ isOpen
                   key={part.partId}
                   style={{
                     padding: 12,
-                    backgroundColor: 'rgba(15, 23, 42, 0.6)',
-                    border: '1px solid rgba(148, 163, 184, 0.15)',
+                    backgroundColor: '#ffffff',
+                    border: '1px solid #e2e8f0',
                     borderRadius: 8,
                     display: 'flex',
                     justifyContent: 'space-between',
-                    alignItems: 'center'
+                    alignItems: 'center',
+                    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)'
                   }}
                 >
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: '#f8fafc' }}>{part.name}</div>
-                    <div style={{ fontSize: 11, fontFamily: 'monospace', color: '#94a3b8' }}>ID: {part.partId}</div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: '#0f172a' }}>{part.name}</div>
+                    <div style={{ fontSize: 11, fontFamily: 'monospace', color: '#64748b' }}>ID: {part.partId}</div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: 16, fontWeight: 700, color: '#38bdf8' }}>{part.count}</div>
+                    <div style={{ fontSize: 16, fontWeight: 700, color: '#2563eb' }}>{part.count}</div>
                     <span
                       style={{
                         fontSize: 9,
                         fontWeight: 700,
-                        padding: '1px 4px',
+                        padding: '1px 6px',
                         borderRadius: 3,
-                        backgroundColor: part.role === 'FILL' ? '#f59e0b22' : '#3b82f622',
-                        color: part.role === 'FILL' ? '#f59e0b' : '#3b82f6'
+                        backgroundColor: '#eff6ff',
+                        color: '#2563eb',
+                        border: '1px solid #bfdbfe'
                       }}
                     >
                       {part.role}

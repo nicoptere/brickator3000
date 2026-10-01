@@ -189,6 +189,7 @@ export interface MarkovEngineOptions {
   enableStudlessTopFinish?: boolean;
   enablePolishPass?: boolean; // Harmonizes adjacent slopes, curves, and OMR transitions
   enableBuildabilityVerify?: boolean; // BFS grounding and interlocking verification
+  enableVerticalPolesToCylinders?: boolean; // Convert vertical columns into round canisters and cylinders (off by default)
   directRGBSampling?: boolean; // Cheat mode: 24-bit 0x2RRGGBB
   randomSeed?: number;
   maxSteps?: number;

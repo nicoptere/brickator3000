@@ -198,3 +198,53 @@ export const FocusIcon: React.FC<IconProps> = ({ size = 15, color = 'currentColo
     <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
   </svg>
 );
+
+export const SpinnerIcon: React.FC<IconProps> = ({ size = 16, color = '#2563eb', ...props }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    style={{ animation: 'spin 0.8s linear infinite', flexShrink: 0 }}
+    {...props}
+  >
+    <circle cx="12" cy="12" r="10" stroke="#e2e8f0" strokeWidth="3" />
+    <path
+      d="M12 2a10 10 0 0 1 10 10"
+      stroke={color}
+      strokeWidth="3"
+      strokeLinecap="round"
+    />
+  </svg>
+);
+
+export const SunIcon: React.FC<IconProps> = ({ size = 14, color = 'currentColor', ...props }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+  </svg>
+);
+
+export const MoonIcon: React.FC<IconProps> = ({ size = 14, color = 'currentColor', ...props }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+  </svg>
+);
+
+export const Volume2Icon: React.FC<IconProps> = ({ size = 15, color = 'currentColor', ...props }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+    <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+    <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+  </svg>
+);
+
+export const VolumeXIcon: React.FC<IconProps> = ({ size = 15, color = 'currentColor', ...props }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+    <line x1="23" y1="9" x2="17" y2="15" />
+    <line x1="17" y1="9" x2="23" y2="15" />
+  </svg>
+);
+
+

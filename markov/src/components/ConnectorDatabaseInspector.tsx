@@ -40,7 +40,7 @@ export const ConnectorDatabaseInspector: React.FC<ConnectorDatabaseInspectorProp
       style={{
         position: 'fixed',
         inset: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.75)',
+        backgroundColor: 'rgba(15, 23, 42, 0.4)',
         backdropFilter: 'blur(8px)',
         zIndex: 1000,
         display: 'flex',
@@ -54,46 +54,48 @@ export const ConnectorDatabaseInspector: React.FC<ConnectorDatabaseInspectorProp
           width: '90%',
           maxWidth: 1100,
           maxHeight: '85vh',
-          backgroundColor: '#0f172a',
-          border: '1px solid rgba(148, 163, 184, 0.2)',
+          backgroundColor: '#ffffff',
+          border: '1px solid #e2e8f0',
           borderRadius: 16,
           display: 'flex',
           flexDirection: 'column',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+          boxShadow: '0 25px 50px -12px rgba(15, 23, 42, 0.2)',
           overflow: 'hidden',
-          color: '#f8fafc'
+          color: '#0f172a'
         }}
       >
         {/* Header */}
         <div
           style={{
             padding: '20px 24px',
-            borderBottom: '1px solid rgba(148, 163, 184, 0.15)',
+            borderBottom: '1px solid #e2e8f0',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            background: 'linear-gradient(to right, rgba(30, 41, 59, 0.5), rgba(15, 23, 42, 0.8))'
+            background: '#f8fafc'
           }}
         >
           <div>
-            <h2 style={{ fontSize: 20, fontWeight: 700, margin: 0, color: '#38bdf8' }}>
+            <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0, color: '#0f172a' }}>
               LDraw Connector Database & Connectivity Dictionary
             </h2>
-            <p style={{ margin: '4px 0 0', fontSize: 13, color: '#94a3b8' }}>
-              Hyperedge classification: LEAF, EDGE, FILL & stud equivalence tables
+            <p style={{ margin: '4px 0 0', fontSize: 13, color: '#64748b' }}>
+              Hyperedge classification: LEAF, EDGE, FILL and stud equivalence tables
             </p>
           </div>
           <button
             onClick={onClose}
             aria-label="Close"
             style={{
-              background: 'transparent',
-              border: 'none',
-              color: '#94a3b8',
-              fontSize: 16,
+              background: '#ffffff',
+              border: '1px solid #e2e8f0',
+              color: '#64748b',
+              fontSize: 12,
+              fontWeight: 600,
               cursor: 'pointer',
-              padding: '6px 10px',
-              borderRadius: 6
+              padding: '6px 14px',
+              borderRadius: 6,
+              transition: 'all 0.15s ease'
             }}
           >
             Close
@@ -104,11 +106,11 @@ export const ConnectorDatabaseInspector: React.FC<ConnectorDatabaseInspectorProp
         <div
           style={{
             padding: '12px 24px',
-            borderBottom: '1px solid rgba(148, 163, 184, 0.1)',
+            borderBottom: '1px solid #e2e8f0',
             display: 'flex',
             gap: 12,
             alignItems: 'center',
-            backgroundColor: '#1e293b'
+            backgroundColor: '#ffffff'
           }}
         >
           <input
@@ -119,9 +121,9 @@ export const ConnectorDatabaseInspector: React.FC<ConnectorDatabaseInspectorProp
             style={{
               padding: '8px 12px',
               borderRadius: 8,
-              border: '1px solid rgba(148, 163, 184, 0.25)',
-              backgroundColor: '#090a0f',
-              color: '#f8fafc',
+              border: '1px solid #e2e8f0',
+              backgroundColor: '#f8fafc',
+              color: '#0f172a',
               fontSize: 13,
               outline: 'none',
               width: 260
@@ -136,21 +138,12 @@ export const ConnectorDatabaseInspector: React.FC<ConnectorDatabaseInspectorProp
                 style={{
                   padding: '6px 14px',
                   borderRadius: 6,
-                  border: 'none',
+                  border: selectedCategory === cat ? 'none' : '1px solid #e2e8f0',
                   fontSize: 12,
                   fontWeight: 600,
                   cursor: 'pointer',
-                  backgroundColor:
-                    selectedCategory === cat
-                      ? cat === 'LEAF'
-                        ? '#10b981'
-                        : cat === 'EDGE'
-                        ? '#3b82f6'
-                        : cat === 'FILL'
-                        ? '#f59e0b'
-                        : '#38bdf8'
-                      : '#334155',
-                  color: selectedCategory === cat ? '#ffffff' : '#cbd5e1',
+                  backgroundColor: selectedCategory === cat ? '#2563eb' : '#f8fafc',
+                  color: selectedCategory === cat ? '#ffffff' : '#475569',
                   transition: 'all 0.15s ease'
                 }}
               >
@@ -161,7 +154,7 @@ export const ConnectorDatabaseInspector: React.FC<ConnectorDatabaseInspectorProp
         </div>
 
         {/* Table Content */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: 24 }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: 24, backgroundColor: '#f8fafc' }}>
           <div
             style={{
               display: 'grid',
@@ -171,12 +164,6 @@ export const ConnectorDatabaseInspector: React.FC<ConnectorDatabaseInspectorProp
           >
             {filtered.map(connector => {
               const [wX, wZ, hY] = connector.footprint;
-              const catColor =
-                connector.category === 'LEAF'
-                  ? '#10b981'
-                  : connector.category === 'EDGE'
-                  ? '#3b82f6'
-                  : '#f59e0b';
 
               const topStuds = connector.fingerprint.variants.get(0)?.topStuds.length ?? 0;
               const bottomTubes = connector.fingerprint.variants.get(0)?.bottomTubes.length ?? 0;
@@ -185,13 +172,14 @@ export const ConnectorDatabaseInspector: React.FC<ConnectorDatabaseInspectorProp
                 <div
                   key={connector.partId}
                   style={{
-                    backgroundColor: 'rgba(30, 41, 59, 0.4)',
-                    border: '1px solid rgba(148, 163, 184, 0.15)',
+                    backgroundColor: '#ffffff',
+                    border: '1px solid #e2e8f0',
                     borderRadius: 12,
                     padding: 16,
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: 10
+                    gap: 10,
+                    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)'
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -202,9 +190,9 @@ export const ConnectorDatabaseInspector: React.FC<ConnectorDatabaseInspectorProp
                           fontWeight: 700,
                           padding: '2px 8px',
                           borderRadius: 4,
-                          backgroundColor: `${catColor}22`,
-                          color: catColor,
-                          border: `1px solid ${catColor}44`,
+                          backgroundColor: '#eff6ff',
+                          color: '#2563eb',
+                          border: '1px solid #bfdbfe',
                           marginRight: 6
                         }}
                       >
@@ -217,18 +205,18 @@ export const ConnectorDatabaseInspector: React.FC<ConnectorDatabaseInspectorProp
                             fontWeight: 700,
                             padding: '2px 6px',
                             borderRadius: 4,
-                            backgroundColor: '#8b5cf622',
-                            color: '#a78bfa',
-                            border: '1px solid #8b5cf644'
+                            backgroundColor: '#f1f5f9',
+                            color: '#475569',
+                            border: '1px solid #e2e8f0'
                           }}
                         >
                           MODERN
                         </span>
                       )}
-                      <h4 style={{ margin: '8px 0 2px', fontSize: 15, fontWeight: 700, color: '#f8fafc' }}>
+                      <h4 style={{ margin: '8px 0 2px', fontSize: 14, fontWeight: 700, color: '#0f172a' }}>
                         {connector.name}
                       </h4>
-                      <div style={{ fontSize: 12, fontFamily: 'monospace', color: '#94a3b8' }}>
+                      <div style={{ fontSize: 12, fontFamily: 'monospace', color: '#64748b' }}>
                         LDraw ID: {connector.partId}
                       </div>
                     </div>
@@ -236,11 +224,13 @@ export const ConnectorDatabaseInspector: React.FC<ConnectorDatabaseInspectorProp
                     <div
                       style={{
                         padding: '4px 8px',
-                        background: '#090a0f',
+                        background: '#f1f5f9',
                         borderRadius: 6,
                         fontSize: 11,
                         fontFamily: 'monospace',
-                        color: '#38bdf8'
+                        fontWeight: 600,
+                        color: '#0f172a',
+                        border: '1px solid #e2e8f0'
                       }}
                     >
                       {wX}x{wZ}x{hY}p
@@ -255,28 +245,29 @@ export const ConnectorDatabaseInspector: React.FC<ConnectorDatabaseInspectorProp
                       gap: 8,
                       fontSize: 11,
                       padding: 10,
-                      backgroundColor: 'rgba(15, 23, 42, 0.6)',
+                      backgroundColor: '#f8fafc',
                       borderRadius: 8,
-                      color: '#cbd5e1'
+                      color: '#334155',
+                      border: '1px solid #e2e8f0'
                     }}
                   >
                     <div>
-                      <span style={{ color: '#94a3b8' }}>Profile:</span> {connector.profile}
+                      <span style={{ color: '#64748b' }}>Profile:</span> {connector.profile}
                     </div>
                     <div>
-                      <span style={{ color: '#94a3b8' }}>Curvature:</span> {connector.curvatureClass}
+                      <span style={{ color: '#64748b' }}>Curvature:</span> {connector.curvatureClass}
                     </div>
                     <div>
-                      <span style={{ color: '#94a3b8' }}>Top Studs:</span> {topStuds}
+                      <span style={{ color: '#64748b' }}>Top Studs:</span> {topStuds}
                     </div>
                     <div>
-                      <span style={{ color: '#94a3b8' }}>Bottom Tubes:</span> {bottomTubes}
+                      <span style={{ color: '#64748b' }}>Bottom Tubes:</span> {bottomTubes}
                     </div>
                     <div>
-                      <span style={{ color: '#94a3b8' }}>Clutch Rating:</span> {connector.bondingCapacity}/10
+                      <span style={{ color: '#64748b' }}>Clutch Rating:</span> {connector.bondingCapacity}/10
                     </div>
                     <div>
-                      <span style={{ color: '#94a3b8' }}>Slope Angle:</span> {connector.slopeAngle}°
+                      <span style={{ color: '#64748b' }}>Slope Angle:</span> {connector.slopeAngle}°
                     </div>
                   </div>
                 </div>

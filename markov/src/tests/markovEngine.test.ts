@@ -511,6 +511,34 @@ export async function runTests(): Promise<void> {
 
   console.log('  Pole & cylinder harmonization verified -> PASS\n');
 
+  // Test 13: Texture and Vertex Color Brick Transfer Fidelity
+  console.log('Test 13: Testing Texture & Vertex Color Brick Transfer Fidelity...');
+  if (fs.existsSync('public/sample_models/duck.glb')) {
+    const duckModel = await MeshVoxelizer.loadModel('public/sample_models/duck.glb');
+    const duckGrid = MeshVoxelizer.voxelizeObject(duckModel, { targetHeightBricks: 14 });
+    const duckEngine = new MarkovCoreGrowingEngine(duckGrid, { colorMode: 'actual' });
+    duckEngine.solveAll(3000);
+    const duckColors = Array.from(duckEngine.placedBricks.values()).map(b => b.colorHex);
+    const hasYellow = duckColors.some(c => c.toLowerCase().startsWith('#ff') || c.toLowerCase().startsWith('#fe'));
+    console.log(`    Duck texture bricks: total=${duckColors.length}, has authentic yellow=${hasYellow}`);
+    if (!hasYellow) {
+      throw new Error('Duck model should have authentic yellow colors from texture, not white');
+    }
+  }
+
+  if (fs.existsSync('public/sample_models/dolphin.glb')) {
+    const dolphinModel = await MeshVoxelizer.loadModel('public/sample_models/dolphin.glb');
+    const dolphinGrid = MeshVoxelizer.voxelizeObject(dolphinModel, { targetHeightBricks: 12 });
+    const dolphinEngine = new MarkovCoreGrowingEngine(dolphinGrid, { colorMode: 'actual' });
+    dolphinEngine.solveAll(3000);
+    const dolphinUniqueColors = new Set(Array.from(dolphinEngine.placedBricks.values()).map(b => b.colorHex));
+    console.log(`    Dolphin vertex color bricks: uniqueColors=${dolphinUniqueColors.size}`);
+    if (dolphinUniqueColors.size < 20) {
+      throw new Error('Dolphin model should have rich vertex color gradient across placed bricks');
+    }
+  }
+  console.log('  Texture & vertex color transfer verified -> PASS\n');
+
   console.log('=== ALL TESTS PASSED SUCCESSFULLY! ===');
 }
 

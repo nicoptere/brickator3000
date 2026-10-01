@@ -28,14 +28,14 @@ export const ColorModeSelector: React.FC<ColorModeSelectorProps> = ({
           style={{
             fontSize: 11,
             fontWeight: 700,
-            color: '#94a3b8',
+            color: '#475569',
             textTransform: 'uppercase',
             letterSpacing: '0.05em'
           }}
         >
           Color Material Scheme
         </label>
-        <span style={{ fontSize: 10, color: '#38bdf8', fontWeight: 600 }}>
+        <span style={{ fontSize: 10, color: '#2563eb', fontWeight: 600 }}>
           {colorMode === 'island_components' ? 'Random Materials' : colorMode === 'wfc_hierarchy' ? 'Multi-Scale' : 'Direct RGB'}
         </span>
       </div>
@@ -51,12 +51,12 @@ export const ColorModeSelector: React.FC<ColorModeSelectorProps> = ({
                 height: 30,
                 padding: '0 4px',
                 borderRadius: 6,
-                border: isSelected ? '1px solid #8b5cf6' : '1px solid #334155',
+                border: isSelected ? '1px solid #2563eb' : '1px solid #e2e8f0',
                 fontSize: 10,
                 fontWeight: 600,
                 cursor: 'pointer',
-                backgroundColor: isSelected ? '#8b5cf6' : '#1e293b',
-                color: isSelected ? '#ffffff' : '#cbd5e1',
+                backgroundColor: isSelected ? '#2563eb' : '#f8fafc',
+                color: isSelected ? '#ffffff' : '#475569',
                 transition: 'all 0.15s ease'
               }}
               title={cm.desc}

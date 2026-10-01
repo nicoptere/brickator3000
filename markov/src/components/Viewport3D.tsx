@@ -17,7 +17,8 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { PlacedBrick, VoxelGrid } from '../engine/types';
 import { LDU_STUD_PITCH, LDU_BRICK_HEIGHT, LDU_PLATE_HEIGHT } from '../engine/connectivityDictionary';
 import { LegoGeometryFactory } from './viewport/legoGeometryFactory';
-import { FocusIcon } from './common/Icons';
+import { Volume2Icon, VolumeXIcon, SpinnerIcon } from './common/Icons';
+import { getIslandColorHex } from '../engine/meshIslandSegmenter';
 
 export type ViewportMode = 'FINAL_MODEL' | 'GROWING_CORE' | 'CORE_HEATMAP' | 'SLOPE_CURVATURE';
 export type SourceMeshMode = 'ghost' | 'wireframe' | 'none';
@@ -25,32 +26,52 @@ export type SourceMeshMode = 'ghost' | 'wireframe' | 'none';
 interface Viewport3DProps {
   bricks: PlacedBrick[];
   grid: VoxelGrid | null;
-  mode: ViewportMode;
-  currentStepIndex: number;
-  autoRotate: boolean;
+  mode?: ViewportMode;
+  currentStepIndex?: number;
+  autoRotate?: boolean;
   onFrameModel?: () => void;
   sourceModel?: THREE.Object3D | null;
   sourceMeshMode?: SourceMeshMode;
   colorMode?: 'actual' | 'wfc_hierarchy' | 'island_components';
   selectedIslandId?: number | null;
+  isLoading?: boolean;
+  loadingMessage?: string;
+  themeMode?: 'dark' | 'light';
+  tweenKey?: number;
+  isAudioMuted?: boolean;
+  onToggleAudio?: () => void;
 }
 
 export const Viewport3D: React.FC<Viewport3DProps> = ({
   bricks,
   grid,
-  mode,
-  currentStepIndex,
-  autoRotate,
+  mode = 'FINAL_MODEL',
+  currentStepIndex = 0,
+  autoRotate = false,
   sourceModel = null,
   sourceMeshMode = 'none',
   colorMode = 'island_components',
-  selectedIslandId = null
+  selectedIslandId = null,
+  isLoading = false,
+  loadingMessage = 'Loading 3D Model...',
+  themeMode = 'dark',
+  tweenKey,
+  isAudioMuted = false,
+  onToggleAudio
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const controlsRef = useRef<OrbitControls | null>(null);
+  const floorMatRef = useRef<THREE.ShadowMaterial | null>(null);
+  const hemiLightRef = useRef<THREE.HemisphereLight | null>(null);
+  const autoRotateRef = useRef<boolean>(autoRotate);
+  const resetTurntableRef = useRef<boolean>(false);
+
+  useEffect(() => {
+    autoRotateRef.current = autoRotate;
+  }, [autoRotate]);
 
   const modelGroupRef = useRef<THREE.Group>(new THREE.Group());
   const heatmapGroupRef = useRef<THREE.Group>(new THREE.Group());
@@ -67,9 +88,9 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
   );
   const highlightMaterialRef = useRef<THREE.MeshStandardMaterial>(
     new THREE.MeshStandardMaterial({
-      color: 0x38bdf8,
-      emissive: 0x38bdf8,
-      emissiveIntensity: 0.6,
+      color: 0x2563eb,
+      emissive: 0x2563eb,
+      emissiveIntensity: 0.5,
       roughness: 0.2,
       metalness: 0.1
     })
@@ -80,8 +101,9 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
     const container = containerRef.current;
     if (!container) return;
 
+    const isLight = themeMode === 'light';
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x090a0f);
+    scene.background = new THREE.Color(isLight ? 0xf8fafc : 0x1e222b);
     sceneRef.current = scene;
 
     const camera = new THREE.PerspectiveCamera(
@@ -96,8 +118,10 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
     renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    
+    // HD VSM Shadows
     renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.shadowMap.type = THREE.VSMShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.1;
     container.appendChild(renderer.domElement);
@@ -111,31 +135,46 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
     controlsRef.current = controls;
 
     // Studio Lighting
-    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x1e293b, 0.7);
+    const hemiLight = new THREE.HemisphereLight(
+      0xffffff,
+      isLight ? 0xdbeafe : 0x1e293b,
+      isLight ? 1.05 : 0.95
+    );
     scene.add(hemiLight);
+    hemiLightRef.current = hemiLight;
 
-    const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
-    dirLight.position.set(200, 400, 200);
+    // Key directional light with high-fidelity VSM soft shadows
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1.35);
+    dirLight.position.set(250, 450, 250);
     dirLight.castShadow = true;
     dirLight.shadow.mapSize.width = 2048;
     dirLight.shadow.mapSize.height = 2048;
-    dirLight.shadow.bias = -0.0005;
+    dirLight.shadow.camera.near = 10;
+    dirLight.shadow.camera.far = 1800;
+    dirLight.shadow.camera.left = -500;
+    dirLight.shadow.camera.right = 500;
+    dirLight.shadow.camera.top = 500;
+    dirLight.shadow.camera.bottom = -500;
+    dirLight.shadow.bias = -0.0001;
+    dirLight.shadow.radius = 4;
+    dirLight.shadow.blurSamples = 16;
     scene.add(dirLight);
 
-    const fillLight = new THREE.DirectionalLight(0x93c5fd, 0.4);
+    const fillLight = new THREE.DirectionalLight(0x93c5fd, 0.45);
     fillLight.position.set(-200, 150, -200);
     scene.add(fillLight);
 
-    // Studio Grid Floor
-    const gridHelper = new THREE.GridHelper(800, 40, 0x334155, 0x1e293b);
-    gridHelper.position.y = 0;
-    scene.add(gridHelper);
-
-    // Floor shadow receiver plane
-    const floorGeo = new THREE.PlaneGeometry(2000, 2000);
-    const floorMat = new THREE.ShadowMaterial({ opacity: 0.35 });
+    // Transparent ground shadow receiver plane (Grid removed per user directive)
+    const floorGeo = new THREE.PlaneGeometry(6000, 6000);
+    const floorMat = new THREE.ShadowMaterial({
+      opacity: isLight ? 0.22 : 0.35,
+      transparent: true,
+      depthWrite: false
+    });
+    floorMatRef.current = floorMat;
     const floorMesh = new THREE.Mesh(floorGeo, floorMat);
     floorMesh.rotation.x = -Math.PI / 2;
+    floorMesh.position.y = -0.05;
     floorMesh.receiveShadow = true;
     scene.add(floorMesh);
 
@@ -145,15 +184,57 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
     scene.add(sourceMeshGroupRef.current);
 
     let animId: number;
+    const yAxis = new THREE.Vector3(0, 1, 0);
+    const savedCameraPosition = new THREE.Vector3();
+    const savedCameraQuaternion = new THREE.Quaternion();
+    let turntableAngle = 0;
+
     const animate = () => {
       animId = requestAnimationFrame(animate);
-      if (controlsRef.current) {
-        controlsRef.current.autoRotate = autoRotate;
-        controlsRef.current.autoRotateSpeed = 1.0;
-        controlsRef.current.update();
-      }
-      if (rendererRef.current && sceneRef.current && cameraRef.current) {
-        rendererRef.current.render(sceneRef.current, cameraRef.current);
+
+      if (controlsRef.current && cameraRef.current && rendererRef.current && sceneRef.current) {
+        const controls = controlsRef.current;
+        const camera = cameraRef.current;
+        const renderer = rendererRef.current;
+        const scene = sceneRef.current;
+        const isAutoRotating = autoRotateRef.current;
+
+        // OrbitControls should never handle autoRotate directly
+        controls.autoRotate = false;
+
+        // Reset turntable angle when requested (e.g. when framing a new model)
+        if (resetTurntableRef.current) {
+          turntableAngle = 0;
+          resetTurntableRef.current = false;
+        }
+
+        // Run OrbitControls update (processes damping, user drag, pan, zoom on clean base coordinates)
+        controls.update();
+
+        // AFTER orbit.controls: save offset/orientation before, apply turntable motion, render, restore after
+        if (isAutoRotating) {
+          // 1. Save unrotated camera state before applying turntable offset
+          savedCameraPosition.copy(camera.position);
+          savedCameraQuaternion.copy(camera.quaternion);
+
+          // 2. Advance turntable angle smoothly
+          turntableAngle += 0.012;
+
+          // 3. Apply turntable rotation around Y-axis relative to controls.target
+          const offset = new THREE.Vector3().subVectors(camera.position, controls.target);
+          offset.applyAxisAngle(yAxis, turntableAngle);
+          camera.position.copy(controls.target).add(offset);
+          camera.lookAt(controls.target);
+
+          // 4. Render frame with rotated turntable view
+          renderer.render(scene, camera);
+
+          // 5. Restore unrotated camera state after render
+          camera.position.copy(savedCameraPosition);
+          camera.quaternion.copy(savedCameraQuaternion);
+        } else {
+          renderer.render(scene, camera);
+        }
       }
     };
     animate();
@@ -199,17 +280,29 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
     };
   }, []);
 
+  // Dynamic Dark/Light Scene Background and Shadow Intensity Update
   useEffect(() => {
-    if (controlsRef.current) {
-      controlsRef.current.autoRotate = autoRotate;
+    if (!sceneRef.current) return;
+    const isLight = themeMode === 'light';
+    sceneRef.current.background = new THREE.Color(isLight ? 0xf8fafc : 0x1e222b);
+    if (floorMatRef.current) {
+      floorMatRef.current.opacity = isLight ? 0.22 : 0.35;
     }
-  }, [autoRotate]);
+    if (hemiLightRef.current) {
+      hemiLightRef.current.groundColor.setHex(isLight ? 0xdbeafe : 0x1e293b);
+      hemiLightRef.current.intensity = isLight ? 1.05 : 0.95;
+    }
+  }, [themeMode]);
 
-  // Auto Zoom to Fit Model whenever grid dimensions change
-  const lastFittedKeyRef = useRef<string>('');
+  // Preserve camera view when changing mesh (don't reset view)
+  const hasInitialFitRef = useRef<boolean>(false);
+  const prevCenterYRef = useRef<number | null>(null);
+  const lastTweenKeyRef = useRef<number>(0);
 
-  const zoomToFit = React.useCallback(() => {
+  // Smoothly tweens camera to 2.5 * bounding sphere radius in the direction of the camera
+  const tweenCameraToBoundingSphere = React.useCallback(() => {
     if (!cameraRef.current || !controlsRef.current || !grid) return;
+    resetTurntableRef.current = true;
 
     const camera = cameraRef.current;
     const controls = controlsRef.current;
@@ -219,32 +312,71 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
     const heightY = grid.numPlatesY * LDU_PLATE_HEIGHT;
 
     const centerY = heightY / 2;
-    controls.target.set(0, centerY, 0);
+    // Circumscribed radius of the model's bounding box
+    const radius = 0.5 * Math.sqrt(widthX * widthX + depthZ * depthZ + heightY * heightY);
+    // 2.5 * bounding sphere radius
+    const targetDistance = 2.5 * Math.max(radius, 40);
 
-    const maxDim = Math.max(widthX, depthZ, heightY, 80);
-    const fov = (camera.fov * Math.PI) / 180;
-    const distance = (maxDim / (2 * Math.tan(fov / 2))) * 1.45;
+    // Direction of the camera relative to model center
+    const dir = new THREE.Vector3().subVectors(camera.position, controls.target);
+    if (dir.lengthSq() < 0.001) {
+      dir.set(1, 0.6, 1);
+    }
+    dir.normalize();
 
-    const angle = Math.PI / 4;
-    const elevation = Math.PI / 6;
-    const camX = distance * Math.cos(elevation) * Math.sin(angle);
-    const camY = centerY + distance * Math.sin(elevation);
-    const camZ = distance * Math.cos(elevation) * Math.cos(angle);
+    // Place camera 2.5 * radius along current direction
+    const targetPos = new THREE.Vector3(0, centerY, 0).addScaledVector(dir, targetDistance);
+    const targetLookAt = new THREE.Vector3(0, centerY, 0);
 
-    camera.position.set(camX, camY, camZ);
-    camera.lookAt(0, centerY, 0);
-    controls.update();
+    const startPos = camera.position.clone();
+    const startTarget = controls.target.clone();
+    const startTime = performance.now();
+    const duration = 750; // ms
+
+    const animateTween = (now: number) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(1, elapsed / duration);
+      // Smooth cubic ease-out
+      const t = 1 - Math.pow(1 - progress, 3);
+
+      camera.position.lerpVectors(startPos, targetPos, t);
+      controls.target.lerpVectors(startTarget, targetLookAt, t);
+      controls.update();
+
+      if (progress < 1) {
+        requestAnimationFrame(animateTween);
+      } else {
+        prevCenterYRef.current = centerY;
+      }
+    };
+
+    requestAnimationFrame(animateTween);
   }, [grid]);
 
-  useEffect(() => {
-    if (!grid) return;
-    const gridKey = `${grid.numStudsX}x${grid.numStudsZ}x${grid.numPlatesY}`;
-    if (lastFittedKeyRef.current === gridKey) return;
-    lastFittedKeyRef.current = gridKey;
-    zoomToFit();
-  }, [grid, zoomToFit]);
+  const zoomToFit = React.useCallback(() => {
+    tweenCameraToBoundingSphere();
+  }, [tweenCameraToBoundingSphere]);
 
-  // Update Source 3D Mesh Overlay Group
+  // Zoom in / frame whenever a mesh is loaded
+  const lastSourceModelRef = useRef<THREE.Object3D | null>(null);
+
+  useEffect(() => {
+    if (!grid || !sourceModel || !cameraRef.current || !controlsRef.current) return;
+    if (lastSourceModelRef.current !== sourceModel) {
+      lastSourceModelRef.current = sourceModel;
+      tweenCameraToBoundingSphere();
+    }
+  }, [sourceModel, grid, tweenCameraToBoundingSphere]);
+
+  // Auto-mode camera placement tween trigger
+  useEffect(() => {
+    if (tweenKey && tweenKey > lastTweenKeyRef.current) {
+      lastTweenKeyRef.current = tweenKey;
+      tweenCameraToBoundingSphere();
+    }
+  }, [tweenKey, tweenCameraToBoundingSphere]);
+
+  // Update Source 3D Mesh Overlay Group (Multi-part colored Ghost View)
   useEffect(() => {
     const group = sourceMeshGroupRef.current;
     group.clear();
@@ -255,44 +387,85 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
     }
 
     group.visible = true;
-    const cloned = sourceModel.clone(true);
+    const isWire = sourceMeshMode === 'wireframe';
 
-    const bbox = new THREE.Box3().setFromObject(cloned);
+    const bbox = new THREE.Box3().setFromObject(sourceModel);
     const size = new THREE.Vector3();
     bbox.getSize(size);
     const center = new THREE.Vector3();
     bbox.getCenter(center);
 
     const maxDim = Math.max(size.x, size.y, size.z);
-    if (maxDim > 0) {
-      const targetHeightLDU = grid.numPlatesY * LDU_PLATE_HEIGHT;
-      const scaleFactor = targetHeightLDU / Math.max(size.y, 0.001);
-      cloned.scale.setScalar(scaleFactor);
+    if (maxDim <= 0) return;
 
-      cloned.position.x = -center.x * scaleFactor;
-      cloned.position.z = -center.z * scaleFactor;
-      cloned.position.y = -bbox.min.y * scaleFactor;
+    const targetHeightLDU = grid.numPlatesY * LDU_PLATE_HEIGHT;
+    const scaleFactor = targetHeightLDU / Math.max(size.y, 0.001);
 
-      const isWire = sourceMeshMode === 'wireframe';
-      const overlayMaterial = new THREE.MeshStandardMaterial({
-        color: 0x38bdf8,
-        wireframe: isWire,
-        transparent: true,
-        opacity: isWire ? 0.6 : 0.22,
-        roughness: 0.3,
-        metalness: 0.1,
-        depthWrite: false
-      });
+    const islandGroup = new THREE.Group();
+    islandGroup.scale.setScalar(scaleFactor);
+    islandGroup.position.x = -center.x * scaleFactor;
+    islandGroup.position.z = -center.z * scaleFactor;
+    islandGroup.position.y = -bbox.min.y * scaleFactor;
 
+    // Check if pre-segmented topological islands are available
+    const islands = (grid as any).islands || [];
+    if (islands.length > 0) {
+      const isSolo = selectedIslandId != null;
+
+      for (const isl of islands) {
+        const isSelected = selectedIslandId === isl.id;
+        const opacity = isWire
+          ? (isSolo ? (isSelected ? 0.85 : 0.08) : 0.6)
+          : (isSolo ? (isSelected ? 0.72 : 0.08) : 0.35);
+
+        // Assign colors to the different parts of the mesh
+        const partColor = (colorMode === 'actual' && isl.originalColorHex)
+          ? isl.originalColorHex
+          : isl.colorHex;
+
+        const partMaterial = new THREE.MeshStandardMaterial({
+          color: new THREE.Color(partColor),
+          wireframe: isWire,
+          transparent: true,
+          opacity,
+          roughness: 0.35,
+          metalness: 0.05,
+          depthWrite: false,
+          side: THREE.DoubleSide
+        });
+
+        const partMesh = new THREE.Mesh(isl.geometry, partMaterial);
+        partMesh.castShadow = true;
+        partMesh.receiveShadow = true;
+        islandGroup.add(partMesh);
+      }
+    } else {
+      // Fallback: Multi-part child mesh traversal from source model
+      const cloned = sourceModel.clone(true);
+      let childIndex = 0;
       cloned.traverse((child) => {
         if ((child as THREE.Mesh).isMesh) {
-          (child as THREE.Mesh).material = overlayMaterial;
+          const mesh = child as THREE.Mesh;
+          const partColor = getIslandColorHex(childIndex++);
+          mesh.material = new THREE.MeshStandardMaterial({
+            color: new THREE.Color(partColor),
+            wireframe: isWire,
+            transparent: true,
+            opacity: isWire ? 0.6 : 0.32,
+            roughness: 0.35,
+            metalness: 0.05,
+            depthWrite: false,
+            side: THREE.DoubleSide
+          });
+          mesh.castShadow = true;
+          mesh.receiveShadow = true;
         }
       });
-
-      group.add(cloned);
+      islandGroup.add(cloned);
     }
-  }, [sourceModel, grid, sourceMeshMode]);
+
+    group.add(islandGroup);
+  }, [sourceModel, grid, sourceMeshMode, selectedIslandId, colorMode]);
 
   // Update Bricks Model Group
   useEffect(() => {
@@ -564,7 +737,7 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
 
           const origin = new THREE.Vector3(posX, posY, posZ);
           const dir = new THREE.Vector3(...cell.normal).normalize();
-          const arrow = new THREE.ArrowHelper(dir, origin, 14, 0x38bdf8, 4, 3);
+          const arrow = new THREE.ArrowHelper(dir, origin, 14, 0x2563eb, 4, 3);
           group.add(arrow);
         }
       }
@@ -575,47 +748,9 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
     <div style={{ width: '100%', height: '100%', position: 'relative' }}>
       <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'absolute', inset: 0 }} />
 
-      {/* Floating Viewport Status Badge */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 16,
-          left: 16,
-          padding: '8px 12px',
-          backgroundColor: 'rgba(15, 23, 42, 0.85)',
-          backdropFilter: 'blur(8px)',
-          border: '1px solid rgba(148, 163, 184, 0.15)',
-          borderRadius: 8,
-          color: '#f8fafc',
-          fontSize: 12,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 4,
-          pointerEvents: 'none',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)'
-        }}
-      >
-        <div style={{ fontWeight: 700, letterSpacing: '0.05em', color: '#38bdf8' }}>
-          VIEWPORT: {mode}
-        </div>
-        {selectedIslandId != null && (
-          <div style={{ color: '#c084fc', fontSize: 11, fontWeight: 600 }}>
-            SOLO: Island #{selectedIslandId}
-          </div>
-        )}
-        {sourceMeshMode !== 'none' && (
-          <div style={{ color: '#94a3b8', fontSize: 11 }}>
-            Source Mesh: {sourceMeshMode.toUpperCase()}
-          </div>
-        )}
-        {mode === 'GROWING_CORE' && (
-          <div style={{ color: '#fbbf24', fontSize: 11 }}>
-            Step {currentStepIndex} ({bricks.length} bricks)
-          </div>
-        )}
-      </div>
 
-      {/* Floating Control Buttons */}
+
+      {/* Floating Audio Toggle Button (Top Right) */}
       <div
         style={{
           position: 'absolute',
@@ -627,38 +762,80 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({
         }}
       >
         <button
-          onClick={zoomToFit}
-          title="Zoom to Fit Model"
+          onClick={onToggleAudio}
+          title={isAudioMuted ? 'Turn Sound On' : 'Turn Sound Off'}
           style={{
             height: 32,
             padding: '0 10px',
             borderRadius: 6,
-            backgroundColor: 'rgba(15, 23, 42, 0.85)',
+            backgroundColor: 'rgba(255, 255, 255, 0.92)',
             backdropFilter: 'blur(8px)',
-            border: '1px solid rgba(148, 163, 184, 0.2)',
-            color: '#f8fafc',
+            border: `1px solid ${isAudioMuted ? '#e2e8f0' : '#bfdbfe'}`,
+            color: isAudioMuted ? '#64748b' : '#2563eb',
             fontSize: 11,
             fontWeight: 600,
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
             gap: 6,
-            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.3)',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
             transition: 'all 0.15s ease'
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(30, 41, 59, 0.95)';
-            e.currentTarget.style.borderColor = '#38bdf8';
+            e.currentTarget.style.backgroundColor = '#eff6ff';
+            e.currentTarget.style.borderColor = '#bfdbfe';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(15, 23, 42, 0.85)';
-            e.currentTarget.style.borderColor = 'rgba(148, 163, 184, 0.2)';
+            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.92)';
+            e.currentTarget.style.borderColor = isAudioMuted ? '#e2e8f0' : '#bfdbfe';
           }}
         >
-          <FocusIcon size={14} color="#38bdf8" />
-          <span>Fit Model</span>
+          {isAudioMuted ? <VolumeXIcon size={14} color="#64748b" /> : <Volume2Icon size={14} color="#2563eb" />}
+          <span>{isAudioMuted ? 'Sound Off' : 'Sound On'}</span>
         </button>
       </div>
+
+      {/* Centered Model Loading Throbber Overlay */}
+      {isLoading && (
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: 'rgba(30, 34, 43, 0.45)',
+            backdropFilter: 'blur(4px)',
+            WebkitBackdropFilter: 'blur(4px)',
+            zIndex: 15,
+            pointerEvents: 'none'
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 14,
+              padding: '14px 22px',
+              borderRadius: 12,
+              backgroundColor: '#ffffff',
+              border: '1px solid #bfdbfe',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+              color: '#0f172a'
+            }}
+          >
+            <SpinnerIcon size={22} color="#2563eb" />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <span style={{ fontSize: 13, fontWeight: 700, color: '#0f172a' }}>
+                Loading 3D Model
+              </span>
+              <span style={{ fontSize: 11, color: '#64748b', maxWidth: 280, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {loadingMessage || 'Fetching geometry & texture buffers...'}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

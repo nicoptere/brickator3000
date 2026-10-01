@@ -14,13 +14,12 @@
 
 import React from 'react';
 import { MarkovEngineOptions } from '../engine/types';
-import { ViewportMode } from './Viewport3D';
 import { ScaleControl } from './controls/ScaleControl';
 import { PlaybackControls } from './controls/PlaybackControls';
 import { OMRCategory } from '../engine/wfcRefinerEngine';
 import { MeshDistanceResult } from '../engine/meshDistanceMetric';
 import { BuildabilityReport, HarmonizationResult } from '../engine/polishHarmonizer';
-import { RefreshIcon, SparklesIcon, CheckCircleIcon, AlertTriangleIcon, PanelRightIcon } from './common/Icons';
+import { SunIcon, MoonIcon, CheckCircleIcon, PanelRightIcon, RefreshIcon } from './common/Icons';
 
 export interface RightDrawerProps {
   isOpen: boolean;
@@ -29,18 +28,12 @@ export interface RightDrawerProps {
   onChangeHeight: (h: number) => void;
   options: MarkovEngineOptions;
   onChangeOptions: (opts: Partial<MarkovEngineOptions>) => void;
-  viewportMode: ViewportMode;
-  onChangeViewportMode: (m: ViewportMode) => void;
   isPlaying: boolean;
   onTogglePlay: () => void;
-  onStep: () => void;
-  onSolveAll: () => void;
   onReset: () => void;
   onExportLDR: () => void;
-  onOpenDatabase: () => void;
-  onOpenGallery: () => void;
-  autoRotate: boolean;
-  onToggleAutoRotate: () => void;
+  themeMode: 'dark' | 'light';
+  onToggleThemeMode: () => void;
   speed: number;
   onChangeSpeed: (s: number) => void;
   isLoading?: boolean;
@@ -62,18 +55,12 @@ export const RightDrawer: React.FC<RightDrawerProps> = ({
   onChangeHeight,
   options,
   onChangeOptions,
-  viewportMode,
-  onChangeViewportMode,
   isPlaying,
   onTogglePlay,
-  onStep,
-  onSolveAll,
   onReset,
   onExportLDR,
-  onOpenDatabase,
-  onOpenGallery,
-  autoRotate,
-  onToggleAutoRotate,
+  themeMode,
+  onToggleThemeMode,
   speed,
   onChangeSpeed,
   isLoading = false,
@@ -97,21 +84,21 @@ export const RightDrawer: React.FC<RightDrawerProps> = ({
         maxWidth: 360,
         flexShrink: 0,
         height: '100%',
-        backgroundColor: '#090a0f',
-        borderLeft: '1px solid #1e293b',
+        backgroundColor: '#ffffff',
+        borderLeft: '1px solid #e2e8f0',
         display: 'flex',
         flexDirection: 'column',
         zIndex: 25,
-        color: '#f8fafc',
-        boxShadow: '-4px 0 24px rgba(0, 0, 0, 0.4)'
+        color: '#0f172a',
+        boxShadow: '-4px 0 24px rgba(0, 0, 0, 0.05)'
       }}
     >
       {/* Header */}
       <div
         style={{
           padding: '12px 16px',
-          borderBottom: '1px solid #1e293b',
-          backgroundColor: '#0f172a',
+          borderBottom: '1px solid #e2e8f0',
+          backgroundColor: '#f8fafc',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between'
@@ -119,37 +106,41 @@ export const RightDrawer: React.FC<RightDrawerProps> = ({
       >
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <PanelRightIcon size={16} color="#38bdf8" />
-            <h1 style={{ fontSize: 14, fontWeight: 800, margin: 0, letterSpacing: '-0.02em', color: '#f8fafc' }}>
-              BRICKATOR<span style={{ color: '#0284c7' }}>3000</span>
+            <PanelRightIcon size={16} color="#2563eb" />
+            <h1 style={{ fontSize: 14, fontWeight: 800, margin: 0, letterSpacing: '-0.02em', color: '#0f172a' }}>
+              BRICKATOR<span style={{ color: '#2563eb' }}>3000</span>
             </h1>
           </div>
-          <div style={{ fontSize: 10, fontWeight: 600, color: '#38bdf8', letterSpacing: '0.05em' }}>
+          <div style={{ fontSize: 10, fontWeight: 600, color: '#2563eb', letterSpacing: '0.05em' }}>
             GENERATION & SOLVER SETTINGS
           </div>
         </div>
 
         <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
           <button
-            onClick={onToggleAutoRotate}
-            title={autoRotate ? 'Disable Auto Rotation' : 'Enable Auto Rotation'}
+            onClick={onToggleThemeMode}
+            title={`Switch to ${themeMode === 'dark' ? 'Light' : 'Dark'} Viewport`}
             style={{
               height: 28,
               padding: '0 8px',
               borderRadius: 5,
-              border: autoRotate ? '1px solid #0284c7' : '1px solid #334155',
-              backgroundColor: autoRotate ? 'rgba(2, 132, 199, 0.2)' : '#1e293b',
-              color: autoRotate ? '#38bdf8' : '#94a3b8',
+              border: '1px solid #e2e8f0',
+              backgroundColor: '#f1f5f9',
+              color: '#0f172a',
               fontSize: 11,
               fontWeight: 600,
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: 4
+              gap: 5
             }}
           >
-            <RefreshIcon size={12} />
-            <span>Rotate</span>
+            {themeMode === 'dark' ? (
+              <SunIcon size={13} color="#2563eb" />
+            ) : (
+              <MoonIcon size={13} color="#2563eb" />
+            )}
+            <span>{themeMode === 'dark' ? 'Light' : 'Dark'}</span>
           </button>
 
           <button
@@ -159,9 +150,9 @@ export const RightDrawer: React.FC<RightDrawerProps> = ({
               height: 28,
               padding: '0 8px',
               borderRadius: 5,
-              border: '1px solid #334155',
-              backgroundColor: '#1e293b',
-              color: '#94a3b8',
+              border: '1px solid #e2e8f0',
+              backgroundColor: '#f1f5f9',
+              color: '#475569',
               fontSize: 11,
               fontWeight: 600,
               cursor: 'pointer'
@@ -177,13 +168,13 @@ export const RightDrawer: React.FC<RightDrawerProps> = ({
         <div
           style={{
             padding: '8px 14px',
-            backgroundColor: 'rgba(2, 132, 199, 0.15)',
-            borderBottom: '1px solid rgba(2, 132, 199, 0.3)',
+            backgroundColor: '#eff6ff',
+            borderBottom: '1px solid #bfdbfe',
             display: 'flex',
             alignItems: 'center',
             gap: 8,
             fontSize: 11,
-            color: '#38bdf8'
+            color: '#2563eb'
           }}
         >
           <div style={{ animation: 'spin 1s linear infinite' }}>
@@ -203,16 +194,16 @@ export const RightDrawer: React.FC<RightDrawerProps> = ({
 
         {/* 2. Discretization Rules */}
         <div>
-          <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 6 }}>
+          <label style={{ fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 6 }}>
             Discretization Rules
           </label>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 11, backgroundColor: '#0f172a', padding: 8, borderRadius: 6, border: '1px solid #1e293b' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 11, backgroundColor: '#f8fafc', padding: 8, borderRadius: 6, border: '1px solid #e2e8f0' }}>
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
               <input
                 type="checkbox"
                 checked={options.staggerRunningBond}
                 onChange={(e) => onChangeOptions({ staggerRunningBond: e.target.checked })}
-                style={{ accentColor: '#0284c7' }}
+                style={{ accentColor: '#2563eb' }}
               />
               Interlocking Running Bond
             </label>
@@ -222,7 +213,7 @@ export const RightDrawer: React.FC<RightDrawerProps> = ({
                 type="checkbox"
                 checked={options.enableModernWeirdParts}
                 onChange={(e) => onChangeOptions({ enableModernWeirdParts: e.target.checked })}
-                style={{ accentColor: '#0284c7' }}
+                style={{ accentColor: '#2563eb' }}
               />
               Curved Slopes, Macaroni & Dishes
             </label>
@@ -232,7 +223,7 @@ export const RightDrawer: React.FC<RightDrawerProps> = ({
                 type="checkbox"
                 checked={options.enableStudlessTopFinish}
                 onChange={(e) => onChangeOptions({ enableStudlessTopFinish: e.target.checked })}
-                style={{ accentColor: '#0284c7' }}
+                style={{ accentColor: '#2563eb' }}
               />
               Studless Top Finish (Smooth Tiles)
             </label>
@@ -242,16 +233,82 @@ export const RightDrawer: React.FC<RightDrawerProps> = ({
                 type="checkbox"
                 checked={options.directRGBSampling}
                 onChange={(e) => onChangeOptions({ directRGBSampling: e.target.checked })}
-                style={{ accentColor: '#0284c7' }}
+                style={{ accentColor: '#2563eb' }}
               />
               Direct RGB Sampling (0x2RRGGBB)
             </label>
+
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={options.enablePolishPass !== false}
+                onChange={(e) => onChangeOptions({ enablePolishPass: e.target.checked })}
+                style={{ accentColor: '#2563eb' }}
+              />
+              Run Polish Pass
+            </label>
+
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={options.enableBuildabilityVerify !== false}
+                onChange={(e) => onChangeOptions({ enableBuildabilityVerify: e.target.checked })}
+                style={{ accentColor: '#2563eb' }}
+              />
+              Verify Buildability
+            </label>
+
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={!!options.enableVerticalPolesToCylinders}
+                onChange={(e) => onChangeOptions({ enableVerticalPolesToCylinders: e.target.checked })}
+                style={{ accentColor: '#2563eb' }}
+              />
+              Pillars (Canisters & Cylinders)
+            </label>
           </div>
+
+          {/* Harmonization & Buildability Status Badge */}
+          {(harmonizationResult || buildabilityReport) && (
+            <div
+              style={{
+                marginTop: 6,
+                padding: '6px 8px',
+                borderRadius: 6,
+                backgroundColor: '#eff6ff',
+                border: '1px solid #bfdbfe',
+                fontSize: 10,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 3
+              }}
+            >
+              {harmonizationResult && (
+                <div style={{ color: '#2563eb' }}>
+                  Curves: {harmonizationResult.mergedContinuousCurvesCount} | Slopes: {harmonizationResult.harmonizedSlopesCount}
+                  {harmonizationResult.replacedCanistersCount > 0 && ` | Canisters: ${harmonizationResult.replacedCanistersCount}`}
+                  {harmonizationResult.replacedCylindersCount > 0 && ` | Cylinders: ${harmonizationResult.replacedCylindersCount}`}
+                </div>
+              )}
+              {buildabilityReport && (
+                <div style={{ color: '#2563eb', display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <CheckCircleIcon size={12} color="#2563eb" />
+                  <span>
+                    {buildabilityReport.is100PercentGrounded
+                      ? '100% Grounded & Buildable'
+                      : `${buildabilityReport.floatingBricksCount} Floating Bricks`}
+                    {' '}| Interlock: {buildabilityReport.interlockRatio}%
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* 3. OMR Knowledge Tensor */}
         <div>
-          <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 6 }}>
+          <label style={{ fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 6 }}>
             OMR Knowledge Profile
           </label>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
@@ -269,12 +326,12 @@ export const RightDrawer: React.FC<RightDrawerProps> = ({
                   style={{
                     height: 30,
                     borderRadius: 6,
-                    border: isSelected ? '1px solid #0284c7' : '1px solid #334155',
+                    border: isSelected ? '1px solid #2563eb' : '1px solid #e2e8f0',
                     fontSize: 11,
                     fontWeight: 600,
                     cursor: 'pointer',
-                    backgroundColor: isSelected ? '#0284c7' : '#1e293b',
-                    color: isSelected ? '#ffffff' : '#94a3b8',
+                    backgroundColor: isSelected ? '#2563eb' : '#f8fafc',
+                    color: isSelected ? '#ffffff' : '#475569',
                     transition: 'all 0.15s ease'
                   }}
                 >
@@ -285,161 +342,10 @@ export const RightDrawer: React.FC<RightDrawerProps> = ({
           </div>
         </div>
 
-        {/* 4. Polish & Structural Buildability */}
-        <div>
-          <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>
-            Polish & Structural Buildability
-          </label>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {/* Toggle 1: Run Polish Pass */}
-            <div
-              onClick={() => onChangeOptions({ enablePolishPass: options.enablePolishPass === false ? true : false })}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '8px 10px',
-                borderRadius: 6,
-                backgroundColor: '#0f172a',
-                border: (options.enablePolishPass !== false) ? '1px solid rgba(168, 85, 247, 0.4)' : '1px solid #1e293b',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <SparklesIcon size={14} color={options.enablePolishPass !== false ? '#c084fc' : '#64748b'} />
-                <div>
-                  <div style={{ fontSize: 11, fontWeight: 600, color: options.enablePolishPass !== false ? '#f8fafc' : '#94a3b8' }}>
-                    Run Polish Pass
-                  </div>
-                  <div style={{ fontSize: 9, color: '#64748b' }}>
-                    Harmonize slopes & merge continuous curves
-                  </div>
-                </div>
-              </div>
-
-              {/* Modern Switch Pill */}
-              <div
-                style={{
-                  width: 34,
-                  height: 18,
-                  borderRadius: 9,
-                  backgroundColor: options.enablePolishPass !== false ? '#9333ea' : '#334155',
-                  position: 'relative',
-                  transition: 'background-color 0.2s',
-                  flexShrink: 0
-                }}
-              >
-                <div
-                  style={{
-                    width: 14,
-                    height: 14,
-                    borderRadius: 7,
-                    backgroundColor: '#ffffff',
-                    position: 'absolute',
-                    top: 2,
-                    left: options.enablePolishPass !== false ? 18 : 2,
-                    transition: 'left 0.2s',
-                    boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
-                  }}
-                />
-              </div>
-            </div>
-
-            {/* Toggle 2: Verify Buildability */}
-            <div
-              onClick={() => onChangeOptions({ enableBuildabilityVerify: options.enableBuildabilityVerify === false ? true : false })}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '8px 10px',
-                borderRadius: 6,
-                backgroundColor: '#0f172a',
-                border: (options.enableBuildabilityVerify !== false) ? '1px solid rgba(245, 158, 11, 0.4)' : '1px solid #1e293b',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <CheckCircleIcon size={14} color={options.enableBuildabilityVerify !== false ? '#fbbf24' : '#64748b'} />
-                <div>
-                  <div style={{ fontSize: 11, fontWeight: 600, color: options.enableBuildabilityVerify !== false ? '#f8fafc' : '#94a3b8' }}>
-                    Verify Buildability
-                  </div>
-                  <div style={{ fontSize: 9, color: '#64748b' }}>
-                    BFS physical grounding & running bond interlock
-                  </div>
-                </div>
-              </div>
-
-              {/* Modern Switch Pill */}
-              <div
-                style={{
-                  width: 34,
-                  height: 18,
-                  borderRadius: 9,
-                  backgroundColor: options.enableBuildabilityVerify !== false ? '#d97706' : '#334155',
-                  position: 'relative',
-                  transition: 'background-color 0.2s',
-                  flexShrink: 0
-                }}
-              >
-                <div
-                  style={{
-                    width: 14,
-                    height: 14,
-                    borderRadius: 7,
-                    backgroundColor: '#ffffff',
-                    position: 'absolute',
-                    top: 2,
-                    left: options.enableBuildabilityVerify !== false ? 18 : 2,
-                    transition: 'left 0.2s',
-                    boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
-                  }}
-                />
-              </div>
-            </div>
-
-            {/* Harmonization & Buildability Status Badge */}
-            {(harmonizationResult || buildabilityReport) && (
-              <div
-                style={{
-                  padding: '8px 10px',
-                  borderRadius: 6,
-                  backgroundColor: '#0f172a',
-                  border: '1px solid #1e293b',
-                  fontSize: 10,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 4
-                }}
-              >
-                {harmonizationResult && (
-                  <div style={{ color: '#c084fc' }}>
-                    Merged Curves: {harmonizationResult.mergedContinuousCurvesCount} | Slopes Aligned: {harmonizationResult.harmonizedSlopesCount}
-                  </div>
-                )}
-                {buildabilityReport && (
-                  <div style={{ color: buildabilityReport.is100PercentGrounded ? '#34d399' : '#f87171', display: 'flex', alignItems: 'center', gap: 5 }}>
-                    {buildabilityReport.is100PercentGrounded ? <CheckCircleIcon size={12} /> : <AlertTriangleIcon size={12} />}
-                    <span>
-                      {buildabilityReport.is100PercentGrounded
-                        ? '100% Grounded & Buildable'
-                        : `${buildabilityReport.floatingBricksCount} Floating Bricks`}
-                      {' '}| Interlock: {buildabilityReport.interlockRatio}%
-                    </span>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* 5. Analytical Mesh Distance Fidelity Metric */}
+        {/* 4. Analytical Mesh Distance Fidelity Metric */}
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-            <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <label style={{ fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               Surface Mesh Fidelity
             </label>
             {onEvaluateDistance && (
@@ -448,7 +354,7 @@ export const RightDrawer: React.FC<RightDrawerProps> = ({
                 style={{
                   background: 'none',
                   border: 'none',
-                  color: '#38bdf8',
+                  color: '#2563eb',
                   fontSize: 11,
                   fontWeight: 600,
                   cursor: 'pointer',
@@ -465,8 +371,8 @@ export const RightDrawer: React.FC<RightDrawerProps> = ({
               style={{
                 padding: '8px 10px',
                 borderRadius: 6,
-                backgroundColor: '#0f172a',
-                border: '1px solid #1e293b',
+                backgroundColor: '#f8fafc',
+                border: '1px solid #e2e8f0',
                 fontSize: 10,
                 display: 'grid',
                 gridTemplateColumns: '1fr 1fr',
@@ -474,79 +380,39 @@ export const RightDrawer: React.FC<RightDrawerProps> = ({
               }}
             >
               <div>
-                <div style={{ color: '#94a3b8' }}>Mean Chamfer:</div>
-                <div style={{ color: '#38bdf8', fontWeight: 700 }}>
+                <div style={{ color: '#64748b' }}>Mean Chamfer:</div>
+                <div style={{ color: '#2563eb', fontWeight: 700 }}>
                   {distanceMetric.meanDistanceMm} mm <span style={{ color: '#64748b', fontSize: 9 }}>({distanceMetric.meanDistanceLDU} LDU)</span>
                 </div>
               </div>
               <div>
-                <div style={{ color: '#94a3b8' }}>RMS Error:</div>
-                <div style={{ color: '#38bdf8', fontWeight: 700 }}>{distanceMetric.rmsDistanceMm} mm</div>
+                <div style={{ color: '#64748b' }}>RMS Error:</div>
+                <div style={{ color: '#2563eb', fontWeight: 700 }}>{distanceMetric.rmsDistanceMm} mm</div>
               </div>
               <div>
-                <div style={{ color: '#94a3b8' }}>Max Hausdorff:</div>
-                <div style={{ color: '#f59e0b', fontWeight: 700 }}>{distanceMetric.maxDistanceMm} mm</div>
+                <div style={{ color: '#64748b' }}>Max Hausdorff:</div>
+                <div style={{ color: '#2563eb', fontWeight: 700 }}>{distanceMetric.maxDistanceMm} mm</div>
               </div>
               <div>
-                <div style={{ color: '#94a3b8' }}>Fidelity Score:</div>
-                <div style={{ color: '#34d399', fontWeight: 700 }}>{distanceMetric.surfaceFidelityScore}%</div>
+                <div style={{ color: '#64748b' }}>Fidelity Score:</div>
+                <div style={{ color: '#2563eb', fontWeight: 700 }}>{distanceMetric.surfaceFidelityScore}%</div>
               </div>
             </div>
           ) : (
-            <div style={{ fontSize: 10, color: '#64748b', fontStyle: 'italic', backgroundColor: '#0f172a', padding: 8, borderRadius: 6, border: '1px solid #1e293b' }}>
+            <div style={{ fontSize: 10, color: '#64748b', fontStyle: 'italic', backgroundColor: '#f8fafc', padding: 8, borderRadius: 6, border: '1px solid #e2e8f0' }}>
               Solve model to calculate Chamfer & Hausdorff surface error.
             </div>
           )}
         </div>
-
-        {/* 6. Viewport Mode Selector */}
-        <div>
-          <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 6 }}>
-            Viewport Mode
-          </label>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-            {[
-              { id: 'GROWING_CORE', label: 'Growing Core' },
-              { id: 'FINAL_MODEL', label: 'Final Model' },
-              { id: 'CORE_HEATMAP', label: 'Core Depth' },
-              { id: 'SLOPE_CURVATURE', label: 'Normals' }
-            ].map((vm) => {
-              const isSelected = viewportMode === vm.id;
-              return (
-                <button
-                  key={vm.id}
-                  onClick={() => onChangeViewportMode(vm.id as ViewportMode)}
-                  style={{
-                    height: 28,
-                    borderRadius: 6,
-                    border: isSelected ? '1px solid #0284c7' : '1px solid #334155',
-                    fontSize: 10,
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    backgroundColor: isSelected ? '#0284c7' : '#1e293b',
-                    color: isSelected ? '#ffffff' : '#cbd5e1',
-                    transition: 'all 0.15s ease'
-                  }}
-                >
-                  {vm.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
       </div>
 
       {/* Action Footer Buttons */}
-      <div style={{ padding: '12px 16px', borderTop: '1px solid #1e293b', backgroundColor: '#0f172a' }}>
+      <div style={{ padding: '12px 16px', borderTop: '1px solid #e2e8f0', backgroundColor: '#f8fafc' }}>
         <PlaybackControls
           isPlaying={isPlaying}
           onTogglePlay={onTogglePlay}
-          onStep={onStep}
-          onSolveAll={onSolveAll}
           onReset={onReset}
           onExportLDR={onExportLDR}
-          onOpenDatabase={onOpenDatabase}
-          onOpenGallery={onOpenGallery}
           speed={speed}
           onChangeSpeed={onChangeSpeed}
           isLoading={isLoading}

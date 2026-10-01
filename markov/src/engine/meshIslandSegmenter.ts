@@ -10,6 +10,7 @@
  */
 
 import * as THREE from 'three';
+import { sampleAnyTexture } from './meshTextureSampler';
 
 export interface MeshIsland {
   id: number;
@@ -19,9 +20,12 @@ export interface MeshIsland {
   geometry: THREE.BufferGeometry;
   mesh: THREE.Mesh;
   colorHex: string;
+  originalColorHex?: string;
   colorCode: number;
   bbox: THREE.Box3;
   center: THREE.Vector3;
+  texture?: THREE.Texture | null;
+  decodedTexture?: any | null;
 }
 
 /**
@@ -77,15 +81,27 @@ export const VIBRANT_ISLAND_PALETTE: string[] = [
 
 export class MeshIslandSegmenter {
   /**
-   * Segments any Three.js Object3D into isolated topological half-edge islands.
+   * Asynchronously segments any Three.js Object3D into isolated topological half-edge islands.
+   * Yields to the event loop at key phases to allow UI progress rendering.
    */
-  public static segmentObject(
+  public static async segmentObjectAsync(
     object: THREE.Object3D,
-    eps: number = 0.0005
-  ): MeshIsland[] {
+    eps: number = 0.0005,
+    onProgress?: (progress0to1: number, statusText: string) => void
+  ): Promise<MeshIsland[]> {
+    onProgress?.(0.05, 'Traversing mesh hierarchy and extracting geometry buffers...');
+    await new Promise((r) => setTimeout(r, 0));
+
     object.updateMatrixWorld(true);
 
-    const geometries: THREE.BufferGeometry[] = [];
+    interface GeometryItem {
+      geometry: THREE.BufferGeometry;
+      materialColor?: THREE.Color;
+      texture?: THREE.Texture | null;
+      decodedTexture?: any;
+    }
+    const geometries: GeometryItem[] = [];
+
     object.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) {
         const mesh = child as THREE.Mesh;
@@ -93,30 +109,48 @@ export class MeshIslandSegmenter {
           ? mesh.geometry.toNonIndexed()
           : mesh.geometry.clone();
         nonIndexed.applyMatrix4(mesh.matrixWorld);
-        geometries.push(nonIndexed);
+
+        let matColor: THREE.Color | undefined;
+        const mat = Array.isArray(mesh.material) ? mesh.material[0] : mesh.material;
+        if (mat && (mat as any).color) {
+          matColor = (mat as any).color;
+        }
+
+        const texture = (mat as any)?.map || (mesh as any).userData?.texture || (object as any)?.userData?.texture || null;
+        const decodedTexture = (mesh as any).userData?.decodedTexture || (mat as any)?.map?.userData?.decodedTexture || (object as any)?.userData?.decodedTexture || null;
+
+        geometries.push({ geometry: nonIndexed, materialColor: matColor, texture, decodedTexture });
       }
     });
 
     if (geometries.length === 0) {
+      onProgress?.(1.0, 'No meshes found.');
       return [];
     }
 
-    // Merge into single non-indexed geometry
     let totalVertices = 0;
-    for (const g of geometries) {
-      totalVertices += g.attributes.position.count;
+    for (const item of geometries) {
+      totalVertices += item.geometry.attributes.position.count;
     }
+
+    onProgress?.(0.2, `Merged ${geometries.length} submesh buffers (${totalVertices} vertices)...`);
+    await new Promise((r) => setTimeout(r, 0));
 
     const posArray = new Float32Array(totalVertices * 3);
     const normArray = new Float32Array(totalVertices * 3);
     const colorArray = new Float32Array(totalVertices * 3);
+    const uvArray = new Float32Array(totalVertices * 2);
+    let hasAnyUv = false;
 
     let offset = 0;
-    for (const g of geometries) {
+    for (const item of geometries) {
+      const g = item.geometry;
       const pos = g.attributes.position;
       const count = pos.count;
       const norm = g.attributes.normal;
       const col = g.attributes.color;
+      const uv = g.attributes.uv;
+      if (uv) hasAnyUv = true;
 
       for (let i = 0; i < count; i++) {
         const dstIdx = (offset + i) * 3;
@@ -134,14 +168,342 @@ export class MeshIslandSegmenter {
           normArray[dstIdx + 2] = 0;
         }
 
+        let sampledColor: THREE.Color | null = null;
         if (col) {
-          colorArray[dstIdx] = col.getX(i);
-          colorArray[dstIdx + 1] = col.getY(i);
-          colorArray[dstIdx + 2] = col.getZ(i);
+          sampledColor = new THREE.Color(col.getX(i), col.getY(i), col.getZ(i));
+        } else if (uv && (item.texture || item.decodedTexture)) {
+          sampledColor = sampleAnyTexture(item.texture || item.decodedTexture, uv.getX(i), uv.getY(i));
+        }
+
+        if (sampledColor) {
+          colorArray[dstIdx] = sampledColor.r;
+          colorArray[dstIdx + 1] = sampledColor.g;
+          colorArray[dstIdx + 2] = sampledColor.b;
+        } else if (item.materialColor) {
+          colorArray[dstIdx] = item.materialColor.r;
+          colorArray[dstIdx + 1] = item.materialColor.g;
+          colorArray[dstIdx + 2] = item.materialColor.b;
         } else {
           colorArray[dstIdx] = 0.9;
           colorArray[dstIdx + 1] = 0.9;
           colorArray[dstIdx + 2] = 0.9;
+        }
+
+        if (uv) {
+          const uvDst = (offset + i) * 2;
+          uvArray[uvDst] = uv.getX(i);
+          uvArray[uvDst + 1] = uv.getY(i);
+        }
+      }
+
+      offset += count;
+    }
+
+    const numTriangles = Math.floor(totalVertices / 3);
+    if (numTriangles === 0) return [];
+
+    onProgress?.(0.4, `Building half-edge topological adjacency map for ${numTriangles} triangles...`);
+    await new Promise((r) => setTimeout(r, 0));
+
+    const vKey = (vx: number, vy: number, vz: number): string =>
+      `${Math.round(vx / eps)}_${Math.round(vy / eps)}_${Math.round(vz / eps)}`;
+
+    const edgeToTris = new Map<string, number[]>();
+
+    for (let t = 0; t < numTriangles; t++) {
+      const i0 = t * 3;
+      const i1 = t * 3 + 1;
+      const i2 = t * 3 + 2;
+
+      const k0 = vKey(posArray[i0 * 3], posArray[i0 * 3 + 1], posArray[i0 * 3 + 2]);
+      const k1 = vKey(posArray[i1 * 3], posArray[i1 * 3 + 1], posArray[i1 * 3 + 2]);
+      const k2 = vKey(posArray[i2 * 3], posArray[i2 * 3 + 1], posArray[i2 * 3 + 2]);
+
+      const e01 = k0 < k1 ? `${k0}:${k1}` : `${k1}:${k0}`;
+      const e12 = k1 < k2 ? `${k1}:${k2}` : `${k2}:${k1}`;
+      const e20 = k2 < k0 ? `${k2}:${k0}` : `${k0}:${k2}`;
+
+      for (const e of [e01, e12, e20]) {
+        let list = edgeToTris.get(e);
+        if (!list) {
+          list = [];
+          edgeToTris.set(e, list);
+        }
+        list.push(t);
+      }
+    }
+
+    onProgress?.(0.65, `Executing Disjoint-Set Union across ${edgeToTris.size} shared edges...`);
+    await new Promise((r) => setTimeout(r, 0));
+
+    const parent = new Int32Array(numTriangles);
+    for (let i = 0; i < numTriangles; i++) parent[i] = i;
+
+    const find = (i: number): number => {
+      let root = i;
+      while (root !== parent[root]) {
+        root = parent[root];
+      }
+      let curr = i;
+      while (curr !== root) {
+        const next = parent[curr];
+        parent[curr] = root;
+        curr = next;
+      }
+      return root;
+    };
+
+    const union = (i: number, j: number): void => {
+      const r1 = find(i);
+      const r2 = find(j);
+      if (r1 !== r2) {
+        parent[r1] = r2;
+      }
+    };
+
+    for (const tris of edgeToTris.values()) {
+      for (let k = 1; k < tris.length; k++) {
+        union(tris[0], tris[k]);
+      }
+    }
+
+    const islandsMap = new Map<number, number[]>();
+    for (let t = 0; t < numTriangles; t++) {
+      const root = find(t);
+      let list = islandsMap.get(root);
+      if (!list) {
+        list = [];
+        islandsMap.set(root, list);
+      }
+      list.push(t);
+    }
+
+    const sortedEntries = Array.from(islandsMap.entries()).sort(
+      (a, b) => b[1].length - a[1].length
+    );
+
+    onProgress?.(0.85, `Detected ${sortedEntries.length} topological islands. Building submesh geometries...`);
+    await new Promise((r) => setTimeout(r, 0));
+
+    const dominantTexture = geometries.find((g) => g.texture)?.texture || null;
+    const dominantDecoded = geometries.find((g) => g.decodedTexture)?.decodedTexture || null;
+
+    const islands: MeshIsland[] = [];
+
+    sortedEntries.forEach(([root, triIndices], idx) => {
+      const triCount = triIndices.length;
+      const vertCount = triCount * 3;
+
+      const subPos = new Float32Array(vertCount * 3);
+      const subNorm = new Float32Array(vertCount * 3);
+      const subCol = new Float32Array(vertCount * 3);
+      const subUv = hasAnyUv ? new Float32Array(vertCount * 2) : null;
+
+      const colorHex = getIslandColorHex(idx);
+      const threeColor = new THREE.Color(colorHex);
+
+      let sumOrigR = 0, sumOrigG = 0, sumOrigB = 0;
+
+      let writeIdx = 0;
+      for (const t of triIndices) {
+        const srcOffset = t * 3;
+        for (let v = 0; v < 3; v++) {
+          const s = (srcOffset + v) * 3;
+          const d = (writeIdx + v) * 3;
+
+          subPos[d] = posArray[s];
+          subPos[d + 1] = posArray[s + 1];
+          subPos[d + 2] = posArray[s + 2];
+
+          subNorm[d] = normArray[s];
+          subNorm[d + 1] = normArray[s + 1];
+          subNorm[d + 2] = normArray[s + 2];
+
+          subCol[d] = colorArray[s];
+          subCol[d + 1] = colorArray[s + 1];
+          subCol[d + 2] = colorArray[s + 2];
+
+          sumOrigR += colorArray[s];
+          sumOrigG += colorArray[s + 1];
+          sumOrigB += colorArray[s + 2];
+
+          if (subUv) {
+            const uSrc = (srcOffset + v) * 2;
+            const uDst = (writeIdx + v) * 2;
+            subUv[uDst] = uvArray[uSrc];
+            subUv[uDst + 1] = uvArray[uSrc + 1];
+          }
+        }
+        writeIdx += 3;
+      }
+
+      const geom = new THREE.BufferGeometry();
+      geom.setAttribute('position', new THREE.BufferAttribute(subPos, 3));
+      geom.setAttribute('normal', new THREE.BufferAttribute(subNorm, 3));
+      geom.setAttribute('color', new THREE.BufferAttribute(subCol, 3));
+      if (subUv) {
+        geom.setAttribute('uv', new THREE.BufferAttribute(subUv, 2));
+      }
+      geom.computeBoundingBox();
+
+      const avgR = vertCount > 0 ? Math.round((sumOrigR / vertCount) * 255) : 240;
+      const avgG = vertCount > 0 ? Math.round((sumOrigG / vertCount) * 255) : 240;
+      const avgB = vertCount > 0 ? Math.round((sumOrigB / vertCount) * 255) : 240;
+      const toHex = (val: number) => Math.max(0, Math.min(255, val)).toString(16).padStart(2, '0');
+      const originalColorHex = `#${toHex(avgR)}${toHex(avgG)}${toHex(avgB)}`;
+
+      const bbox = geom.boundingBox || new THREE.Box3();
+      const center = new THREE.Vector3();
+      bbox.getCenter(center);
+
+      let name = `Island ${idx + 1}`;
+      if (idx === 0) name = 'Main Shell / Body';
+      else if (triCount > 400) name = `Sub-assembly ${idx + 1}`;
+      else if (triCount > 200) name = `Component ${idx + 1}`;
+      else name = `Detail Part ${idx + 1}`;
+
+      const mat = new THREE.MeshStandardMaterial({
+        color: threeColor,
+        roughness: 0.35,
+        metalness: 0.05,
+        side: THREE.DoubleSide
+      });
+      const mesh = new THREE.Mesh(geom, mat);
+
+      if (dominantTexture) {
+        mesh.userData.texture = dominantTexture;
+      }
+      if (dominantDecoded) {
+        mesh.userData.decodedTexture = dominantDecoded;
+      }
+
+      islands.push({
+        id: idx + 1,
+        name,
+        triangleCount: triCount,
+        vertexCount: vertCount,
+        geometry: geom,
+        mesh,
+        colorHex,
+        originalColorHex,
+        colorCode: 15,
+        bbox,
+        center,
+        texture: dominantTexture,
+        decodedTexture: dominantDecoded
+      });
+    });
+
+    onProgress?.(1.0, `Completed extraction: ${islands.length} topological mesh islands.`);
+    return islands;
+  }
+
+  /**
+   * Segments any Three.js Object3D into isolated topological half-edge islands (synchronous).
+   */
+  public static segmentObject(
+    object: THREE.Object3D,
+    eps: number = 0.0005,
+    onProgress?: (progress0to1: number, statusText: string) => void
+  ): MeshIsland[] {
+    object.updateMatrixWorld(true);
+
+    interface GeometryItem {
+      geometry: THREE.BufferGeometry;
+      materialColor?: THREE.Color;
+      texture?: THREE.Texture | null;
+      decodedTexture?: any;
+    }
+    const geometries: GeometryItem[] = [];
+
+    object.traverse((child) => {
+      if ((child as THREE.Mesh).isMesh) {
+        const mesh = child as THREE.Mesh;
+        const nonIndexed = mesh.geometry.index
+          ? mesh.geometry.toNonIndexed()
+          : mesh.geometry.clone();
+        nonIndexed.applyMatrix4(mesh.matrixWorld);
+
+        let matColor: THREE.Color | undefined;
+        const mat = Array.isArray(mesh.material) ? mesh.material[0] : mesh.material;
+        if (mat && (mat as any).color) {
+          matColor = (mat as any).color;
+        }
+
+        const texture = (mat as any)?.map || (mesh as any).userData?.texture || (object as any)?.userData?.texture || null;
+        const decodedTexture = (mesh as any).userData?.decodedTexture || (mat as any)?.map?.userData?.decodedTexture || (object as any)?.userData?.decodedTexture || null;
+
+        geometries.push({ geometry: nonIndexed, materialColor: matColor, texture, decodedTexture });
+      }
+    });
+
+    if (geometries.length === 0) {
+      return [];
+    }
+
+    // Merge into single non-indexed geometry
+    let totalVertices = 0;
+    for (const item of geometries) {
+      totalVertices += item.geometry.attributes.position.count;
+    }
+
+    const posArray = new Float32Array(totalVertices * 3);
+    const normArray = new Float32Array(totalVertices * 3);
+    const colorArray = new Float32Array(totalVertices * 3);
+    const uvArray = new Float32Array(totalVertices * 2);
+    let hasAnyUv = false;
+
+    let offset = 0;
+    for (const item of geometries) {
+      const g = item.geometry;
+      const pos = g.attributes.position;
+      const count = pos.count;
+      const norm = g.attributes.normal;
+      const col = g.attributes.color;
+      const uv = g.attributes.uv;
+      if (uv) hasAnyUv = true;
+
+      for (let i = 0; i < count; i++) {
+        const dstIdx = (offset + i) * 3;
+        posArray[dstIdx] = pos.getX(i);
+        posArray[dstIdx + 1] = pos.getY(i);
+        posArray[dstIdx + 2] = pos.getZ(i);
+
+        if (norm) {
+          normArray[dstIdx] = norm.getX(i);
+          normArray[dstIdx + 1] = norm.getY(i);
+          normArray[dstIdx + 2] = norm.getZ(i);
+        } else {
+          normArray[dstIdx] = 0;
+          normArray[dstIdx + 1] = 1.0;
+          normArray[dstIdx + 2] = 0;
+        }
+
+        let sampledColor: THREE.Color | null = null;
+        if (col) {
+          sampledColor = new THREE.Color(col.getX(i), col.getY(i), col.getZ(i));
+        } else if (uv && (item.texture || item.decodedTexture)) {
+          sampledColor = sampleAnyTexture(item.texture || item.decodedTexture, uv.getX(i), uv.getY(i));
+        }
+
+        if (sampledColor) {
+          colorArray[dstIdx] = sampledColor.r;
+          colorArray[dstIdx + 1] = sampledColor.g;
+          colorArray[dstIdx + 2] = sampledColor.b;
+        } else if (item.materialColor) {
+          colorArray[dstIdx] = item.materialColor.r;
+          colorArray[dstIdx + 1] = item.materialColor.g;
+          colorArray[dstIdx + 2] = item.materialColor.b;
+        } else {
+          colorArray[dstIdx] = 0.9;
+          colorArray[dstIdx + 1] = 0.9;
+          colorArray[dstIdx + 2] = 0.9;
+        }
+
+        if (uv) {
+          const uvDst = (offset + i) * 2;
+          uvArray[uvDst] = uv.getX(i);
+          uvArray[uvDst + 1] = uv.getY(i);
         }
       }
 
@@ -231,6 +593,9 @@ export class MeshIslandSegmenter {
       (a, b) => b[1].length - a[1].length
     );
 
+    const dominantTexture = geometries.find(g => g.texture)?.texture || null;
+    const dominantDecoded = geometries.find(g => g.decodedTexture)?.decodedTexture || null;
+
     const islands: MeshIsland[] = [];
 
     sortedEntries.forEach(([root, triIndices], idx) => {
@@ -240,9 +605,12 @@ export class MeshIslandSegmenter {
       const subPos = new Float32Array(vertCount * 3);
       const subNorm = new Float32Array(vertCount * 3);
       const subCol = new Float32Array(vertCount * 3);
+      const subUv = hasAnyUv ? new Float32Array(vertCount * 2) : null;
 
       const colorHex = getIslandColorHex(idx);
       const threeColor = new THREE.Color(colorHex);
+
+      let sumOrigR = 0, sumOrigG = 0, sumOrigB = 0;
 
       let writeIdx = 0;
       for (const t of triIndices) {
@@ -259,10 +627,21 @@ export class MeshIslandSegmenter {
           subNorm[d + 1] = normArray[s + 1];
           subNorm[d + 2] = normArray[s + 2];
 
-          // Paint vertices with island's assigned distinct color
-          subCol[d] = threeColor.r;
-          subCol[d + 1] = threeColor.g;
-          subCol[d + 2] = threeColor.b;
+          // Retain authentic source mesh colors in subCol
+          subCol[d] = colorArray[s];
+          subCol[d + 1] = colorArray[s + 1];
+          subCol[d + 2] = colorArray[s + 2];
+
+          sumOrigR += colorArray[s];
+          sumOrigG += colorArray[s + 1];
+          sumOrigB += colorArray[s + 2];
+
+          if (subUv) {
+            const uSrc = (srcOffset + v) * 2;
+            const uDst = (writeIdx + v) * 2;
+            subUv[uDst] = uvArray[uSrc];
+            subUv[uDst + 1] = uvArray[uSrc + 1];
+          }
         }
         writeIdx += 3;
       }
@@ -271,7 +650,16 @@ export class MeshIslandSegmenter {
       geom.setAttribute('position', new THREE.BufferAttribute(subPos, 3));
       geom.setAttribute('normal', new THREE.BufferAttribute(subNorm, 3));
       geom.setAttribute('color', new THREE.BufferAttribute(subCol, 3));
+      if (subUv) {
+        geom.setAttribute('uv', new THREE.BufferAttribute(subUv, 2));
+      }
       geom.computeBoundingBox();
+
+      const avgR = vertCount > 0 ? Math.round((sumOrigR / vertCount) * 255) : 240;
+      const avgG = vertCount > 0 ? Math.round((sumOrigG / vertCount) * 255) : 240;
+      const avgB = vertCount > 0 ? Math.round((sumOrigB / vertCount) * 255) : 240;
+      const toHex = (val: number) => Math.max(0, Math.min(255, val)).toString(16).padStart(2, '0');
+      const originalColorHex = `#${toHex(avgR)}${toHex(avgG)}${toHex(avgB)}`;
 
       const bbox = geom.boundingBox || new THREE.Box3();
       const center = new THREE.Vector3();
@@ -292,6 +680,13 @@ export class MeshIslandSegmenter {
       });
       const mesh = new THREE.Mesh(geom, mat);
 
+      if (dominantTexture) {
+        mesh.userData.texture = dominantTexture;
+      }
+      if (dominantDecoded) {
+        mesh.userData.decodedTexture = dominantDecoded;
+      }
+
       islands.push({
         id: idx + 1,
         name,
@@ -300,9 +695,12 @@ export class MeshIslandSegmenter {
         geometry: geom,
         mesh,
         colorHex,
+        originalColorHex,
         colorCode: 15,
         bbox,
-        center
+        center,
+        texture: dominantTexture,
+        decodedTexture: dominantDecoded
       });
     });
 

@@ -32,6 +32,15 @@ description: >-
 - `3068b` / `3069b` / `2431` / `6636`: Flat Tiles (2x2, 1x2, 1x4, 1x6)
 - `2412b`: Tile 1 x 2 Radiator Grille
 
+### Vertical Poles, Struts & Cylinders
+- `3062b`: Brick 1 x 1 Round with Open Stud (Canister / Pole)
+- `6141`: Plate 1 x 1 Round (Strut spacer)
+- `2453b`: Brick 1 x 1 x 5 Tall
+- `3941`: Brick 2 x 2 Round (Cylinder column)
+- `4032a`: Plate 2 x 2 Round with Axle Hole
+- `6222`: Brick 4 x 4 Round with Fins / Dome
+- `60474`: Plate 4 x 4 Round with Pin Hole
+
 ### Vehicle & Technic Functional Elements
 - `3700` (1x2), `3701` (1x4), `3702` (1x8): Technic Bricks with Axle Holes
 - `3704` (2L), `3705` (4L), `3706` (6L): Technic Axles
@@ -52,3 +61,12 @@ In LDraw format, exact 24-bit hex colors are specified using `0x2RRGGBB`:
 1 0x2E6A1B 0 0 0 1 0 0 0 1 0 0 0 1 11477.dat
 ```
 This bypasses palette quantization errors and mirrors the original model's diffuse/vertex colors.
+
+Dual Sampling Pipeline:
+- If `material.map` is present, sample texture buffer at barycentric UV: `u = (1 - fu - fv)*uvA + fu*uvB + fv*uvC`.
+- If `geometry.attributes.color` is present, interpolate vertex RGB: `col = (1 - fu - fv)*colA + fu*colB + fv*colC`.
+
+## 4. Standard Brick Scales
+- Model height scales range from **2 to 32 bricks** (1*1*1 brick grid).
+- Preset buttons: **4, 8, 12, 16, 24, 32** bricks.
+- Default recommended scale: **16 bricks**.

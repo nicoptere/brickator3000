@@ -56,7 +56,7 @@ export const ModelParamsInspector: React.FC<ModelParamsInspectorProps> = ({
           style={{
             fontSize: 11,
             fontWeight: 700,
-            color: '#94a3b8',
+            color: '#475569',
             textTransform: 'uppercase',
             letterSpacing: '0.05em',
             display: 'block',
@@ -79,12 +79,12 @@ export const ModelParamsInspector: React.FC<ModelParamsInspectorProps> = ({
                   height: 30,
                   padding: '0 6px',
                   borderRadius: 6,
-                  border: isSelected ? '1px solid #0284c7' : '1px solid #334155',
+                  border: isSelected ? '1px solid #2563eb' : '1px solid #e2e8f0',
                   fontSize: 11,
                   fontWeight: 600,
                   cursor: 'pointer',
-                  backgroundColor: isSelected ? '#0284c7' : '#1e293b',
-                  color: isSelected ? '#ffffff' : '#94a3b8',
+                  backgroundColor: isSelected ? '#2563eb' : '#f8fafc',
+                  color: isSelected ? '#ffffff' : '#475569',
                   transition: 'all 0.15s ease'
                 }}
               >
@@ -101,7 +101,7 @@ export const ModelParamsInspector: React.FC<ModelParamsInspectorProps> = ({
           style={{
             fontSize: 11,
             fontWeight: 700,
-            color: '#94a3b8',
+            color: '#475569',
             textTransform: 'uppercase',
             letterSpacing: '0.05em',
             display: 'block',
@@ -125,12 +125,12 @@ export const ModelParamsInspector: React.FC<ModelParamsInspectorProps> = ({
                   height: 30,
                   padding: '0 4px',
                   borderRadius: 6,
-                  border: isSelected ? '1px solid #0284c7' : '1px solid #334155',
+                  border: isSelected ? '1px solid #2563eb' : '1px solid #e2e8f0',
                   fontSize: 10,
                   fontWeight: 600,
                   cursor: 'pointer',
-                  backgroundColor: isSelected ? '#0284c7' : '#1e293b',
-                  color: isSelected ? '#ffffff' : '#94a3b8',
+                  backgroundColor: isSelected ? '#2563eb' : '#f8fafc',
+                  color: isSelected ? '#ffffff' : '#475569',
                   transition: 'all 0.15s ease'
                 }}
               >
@@ -145,18 +145,6 @@ export const ModelParamsInspector: React.FC<ModelParamsInspectorProps> = ({
       <ColorModeSelector
         colorMode={colorMode}
         onChangeColorMode={onChangeColorMode}
-      />
-
-      {/* 4. Topological Islands Inspector */}
-      <IslandInspector
-        islands={islands}
-        selectedIslandId={selectedIslandId}
-        onSelectIsland={onSelectIsland}
-        onDiscretizeIsland={onDiscretizeIsland}
-        onDiscretizeAllIndependently={onDiscretizeAllIndependently}
-        onSolveWfcOnIsland={onSolveWfcOnIsland}
-        onRerollColors={onRerollColors}
-        isLoading={isLoading}
       />
     </div>
   );

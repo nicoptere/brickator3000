@@ -11,6 +11,7 @@ interface ModelStatsOverlayProps {
   harmonizationResult: HarmonizationResult | null;
   distanceMetric: MeshDistanceResult | null;
   phase: string;
+  style?: React.CSSProperties;
 }
 
 export const ModelStatsOverlay: React.FC<ModelStatsOverlayProps> = ({
@@ -19,7 +20,8 @@ export const ModelStatsOverlay: React.FC<ModelStatsOverlayProps> = ({
   buildabilityReport,
   harmonizationResult,
   distanceMetric,
-  phase
+  phase,
+  style
 }) => {
   const [isExpanded, setIsExpanded] = useState<boolean>(true);
 
@@ -94,21 +96,20 @@ export const ModelStatsOverlay: React.FC<ModelStatsOverlayProps> = ({
   return (
     <div
       style={{
-        position: 'absolute',
-        bottom: 16,
-        left: 16,
+        position: 'relative',
         zIndex: 25,
-        backgroundColor: 'rgba(15, 23, 42, 0.88)',
+        backgroundColor: 'rgba(255, 255, 255, 0.94)',
         backdropFilter: 'blur(12px)',
-        border: '1px solid rgba(148, 163, 184, 0.2)',
+        border: '1px solid #e2e8f0',
         borderRadius: 8,
-        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.45)',
-        color: '#f8fafc',
+        boxShadow: '0 8px 24px rgba(15, 23, 42, 0.08)',
+        color: '#0f172a',
         fontSize: 11,
         width: isExpanded ? 280 : 'auto',
         overflow: 'hidden',
         transition: 'width 0.2s ease, max-height 0.2s ease',
-        userSelect: 'none'
+        userSelect: 'none',
+        ...style
       }}
     >
       {/* Header bar */}
@@ -120,21 +121,22 @@ export const ModelStatsOverlay: React.FC<ModelStatsOverlayProps> = ({
           justifyContent: 'space-between',
           padding: '8px 12px',
           cursor: 'pointer',
-          backgroundColor: isExpanded ? 'rgba(30, 41, 59, 0.5)' : 'transparent',
-          borderBottom: isExpanded ? '1px solid rgba(148, 163, 184, 0.15)' : 'none',
+          backgroundColor: isExpanded ? '#f8fafc' : 'transparent',
+          borderBottom: isExpanded ? '1px solid #e2e8f0' : 'none',
           gap: 10
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontWeight: 700, letterSpacing: 0.6, fontSize: 10, color: '#94a3b8' }}>
+          <span style={{ fontWeight: 700, letterSpacing: 0.6, fontSize: 10, color: '#475569' }}>
             MODEL STATS
           </span>
           <span
             style={{
               padding: '1px 6px',
               borderRadius: 4,
-              backgroundColor: 'rgba(56, 189, 248, 0.15)',
-              color: '#38bdf8',
+              backgroundColor: '#eff6ff',
+              border: '1px solid #bfdbfe',
+              color: '#2563eb',
               fontSize: 10,
               fontWeight: 600
             }}
@@ -148,14 +150,14 @@ export const ModelStatsOverlay: React.FC<ModelStatsOverlayProps> = ({
             background: 'none',
             border: 'none',
             padding: 0,
-            color: '#94a3b8',
+            color: '#64748b',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center'
           }}
           aria-label={isExpanded ? 'Collapse stats' : 'Expand stats'}
         >
-          {isExpanded ? <ChevronDownIcon size={14} color="#94a3b8" /> : <ChevronRightIcon size={14} color="#94a3b8" />}
+          {isExpanded ? <ChevronDownIcon size={14} color="#64748b" /> : <ChevronRightIcon size={14} color="#64748b" />}
         </button>
       </div>
 
@@ -164,10 +166,12 @@ export const ModelStatsOverlay: React.FC<ModelStatsOverlayProps> = ({
         <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
           {/* Dimensions */}
           <div>
-            <div style={{ color: '#94a3b8', fontSize: 10, marginBottom: 2 }}>DIMENSIONS</div>
+            <div style={{ color: '#64748b', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 2 }}>
+              Dimensions
+            </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ color: '#cbd5e1' }}>Grid:</span>
-              <span style={{ fontWeight: 600, color: '#f8fafc' }}>
+              <span style={{ color: '#64748b' }}>Grid:</span>
+              <span style={{ fontWeight: 600, color: '#0f172a' }}>
                 {stats.studsX} x {stats.studsZ} studs ({stats.bricksY}B / {stats.platesY}P)
               </span>
             </div>
@@ -179,13 +183,15 @@ export const ModelStatsOverlay: React.FC<ModelStatsOverlayProps> = ({
             </div>
           </div>
 
-          <div style={{ height: 1, backgroundColor: 'rgba(148, 163, 184, 0.12)' }} />
+          <div style={{ height: 1, backgroundColor: '#e2e8f0' }} />
 
           {/* Element Breakdown */}
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-              <span style={{ color: '#94a3b8', fontSize: 10 }}>ELEMENT BREAKDOWN</span>
-              <span style={{ fontSize: 10, color: '#a78bfa', fontWeight: 600 }}>
+              <span style={{ color: '#64748b', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                Element Breakdown
+              </span>
+              <span style={{ fontSize: 10, color: '#2563eb', fontWeight: 600 }}>
                 {stats.uniqueParts} unique types
               </span>
             </div>
@@ -199,45 +205,42 @@ export const ModelStatsOverlay: React.FC<ModelStatsOverlayProps> = ({
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: '#94a3b8' }}>Bricks:</span>
-                <span style={{ fontWeight: 600, color: '#38bdf8' }}>{stats.bricksCount}</span>
+                <span style={{ color: '#64748b' }}>Bricks:</span>
+                <span style={{ fontWeight: 600, color: '#0f172a' }}>{stats.bricksCount}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: '#94a3b8' }}>Plates:</span>
-                <span style={{ fontWeight: 600, color: '#cbd5e1' }}>{stats.platesCount}</span>
+                <span style={{ color: '#64748b' }}>Plates:</span>
+                <span style={{ fontWeight: 600, color: '#0f172a' }}>{stats.platesCount}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: '#94a3b8' }}>Slopes:</span>
-                <span style={{ fontWeight: 600, color: '#ec4899' }}>{stats.slopesCount}</span>
+                <span style={{ color: '#64748b' }}>Slopes:</span>
+                <span style={{ fontWeight: 600, color: '#0f172a' }}>{stats.slopesCount}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: '#94a3b8' }}>Canisters:</span>
-                <span style={{ fontWeight: 600, color: '#10b981' }}>{stats.canistersCount}</span>
+                <span style={{ color: '#64748b' }}>Canisters:</span>
+                <span style={{ fontWeight: 600, color: '#0f172a' }}>{stats.canistersCount}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: '#94a3b8' }}>Tiles:</span>
-                <span style={{ fontWeight: 600, color: '#06b6d4' }}>{stats.tilesCount}</span>
+                <span style={{ color: '#64748b' }}>Tiles:</span>
+                <span style={{ fontWeight: 600, color: '#0f172a' }}>{stats.tilesCount}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: '#94a3b8' }}>Macaroni:</span>
-                <span style={{ fontWeight: 600, color: '#f59e0b' }}>{stats.macaroniCount}</span>
+                <span style={{ color: '#64748b' }}>Macaroni:</span>
+                <span style={{ fontWeight: 600, color: '#0f172a' }}>{stats.macaroniCount}</span>
               </div>
             </div>
           </div>
 
           {/* Buildability & Interlocking Clutch */}
-          <div style={{ height: 1, backgroundColor: 'rgba(148, 163, 184, 0.12)' }} />
+          <div style={{ height: 1, backgroundColor: '#e2e8f0' }} />
 
           <div>
-            <div style={{ color: '#94a3b8', fontSize: 10, marginBottom: 2 }}>STRUCTURAL CLUTCH</div>
+            <div style={{ color: '#64748b', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 2 }}>
+              Structural Clutch
+            </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10 }}>
-              <span style={{ color: '#94a3b8' }}>Grounded:</span>
-              <span
-                style={{
-                  fontWeight: 600,
-                  color: buildabilityReport?.is100PercentGrounded !== false ? '#34d399' : '#f87171'
-                }}
-              >
+              <span style={{ color: '#64748b' }}>Grounded:</span>
+              <span style={{ fontWeight: 600, color: '#0f172a' }}>
                 {buildabilityReport
                   ? buildabilityReport.is100PercentGrounded
                     ? '100% Grounded'
@@ -246,8 +249,8 @@ export const ModelStatsOverlay: React.FC<ModelStatsOverlayProps> = ({
               </span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10 }}>
-              <span style={{ color: '#94a3b8' }}>Interlock:</span>
-              <span style={{ fontWeight: 600, color: '#f59e0b' }}>
+              <span style={{ color: '#64748b' }}>Interlock:</span>
+              <span style={{ fontWeight: 600, color: '#0f172a' }}>
                 {buildabilityReport ? `${buildabilityReport.interlockRatio}% Clutch` : 'Running Bond'}
               </span>
             </div>
@@ -256,18 +259,20 @@ export const ModelStatsOverlay: React.FC<ModelStatsOverlayProps> = ({
           {/* Surface Fidelity (if distance evaluated) */}
           {distanceMetric && (
             <>
-              <div style={{ height: 1, backgroundColor: 'rgba(148, 163, 184, 0.12)' }} />
+              <div style={{ height: 1, backgroundColor: '#e2e8f0' }} />
               <div>
-                <div style={{ color: '#94a3b8', fontSize: 10, marginBottom: 2 }}>SURFACE FIDELITY</div>
+                <div style={{ color: '#64748b', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 2 }}>
+                  Surface Fidelity
+                </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10 }}>
-                  <span style={{ color: '#94a3b8' }}>Mean Chamfer:</span>
-                  <span style={{ fontWeight: 600, color: '#38bdf8' }}>
+                  <span style={{ color: '#64748b' }}>Mean Chamfer:</span>
+                  <span style={{ fontWeight: 600, color: '#0f172a' }}>
                     {distanceMetric.meanDistanceMm.toFixed(2)} mm
                   </span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10 }}>
-                  <span style={{ color: '#94a3b8' }}>Score:</span>
-                  <span style={{ fontWeight: 600, color: '#34d399' }}>
+                  <span style={{ color: '#64748b' }}>Score:</span>
+                  <span style={{ fontWeight: 700, color: '#2563eb' }}>
                     {distanceMetric.surfaceFidelityScore}%
                   </span>
                 </div>
@@ -278,8 +283,8 @@ export const ModelStatsOverlay: React.FC<ModelStatsOverlayProps> = ({
           {/* Harmonization summary (if run) */}
           {harmonizationResult && harmonizationResult.totalModifications > 0 && (
             <>
-              <div style={{ height: 1, backgroundColor: 'rgba(148, 163, 184, 0.12)' }} />
-              <div style={{ fontSize: 10, color: '#c084fc', display: 'flex', justifyContent: 'space-between' }}>
+              <div style={{ height: 1, backgroundColor: '#e2e8f0' }} />
+              <div style={{ fontSize: 10, color: '#2563eb', display: 'flex', justifyContent: 'space-between' }}>
                 <span>Polish pass:</span>
                 <span style={{ fontWeight: 600 }}>{harmonizationResult.totalModifications} tuned</span>
               </div>
