@@ -5,3 +5,6 @@ dist/
 public/models/clean/
 public/ldraw/
 public/sounds/
+public/data/
+public/parts_spritesheet.*
+public/models/spearman.glb
