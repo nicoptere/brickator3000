@@ -1,7 +1,10 @@
 // Post-processing on the piece list: merges, pillars, bracing / supports (connectivity), studs finish.
 import { G } from './constants.js';
 
-const K = (i, j, l) => `${i},${j},${l}`;
+// cell keys are packed numbers (string keys made the connectivity passes allocation-bound): i, j in [-1024, 3072), l in [-1, ...)
+const KW = 4096, KO = 1024;
+const K = (i, j, l) => ((l + 1) * KW + (j + KO)) * KW + (i + KO);
+const unK = (k) => { const i = k % KW - KO; k = (k - (k % KW)) / KW; const j = k % KW - KO; return [i, j, (k - (k % KW)) / KW - 1]; };
 const K2 = (i, j) => `${i},${j}`;
 const byId = (cat) => { const m = {}; for (const c of cat) m[c.id] = c; return m; };
 export const close = (a, b, tol = 22) => !!a && !!b && Math.max(Math.abs(a[0] - b[0]), Math.abs(a[1] - b[1]), Math.abs(a[2] - b[2])) <= tol;
@@ -159,6 +162,10 @@ class UF {
   union(a, b) { a = this.find(a); b = this.find(b); if (a !== b) this.p[b] = a; return a !== b; }
   grow(n) { while (this.p.length < n) this.p.push(this.p.length); }
 }
+// absolute stud cells of a piece as packed numbers, cached per object (pieces are never moved in place; copies are new objects)
+const STUDK = new WeakMap();
+const studKeys = (p) => { let x = STUDK.get(p); if (!x) { x = new Set(); for (const [a, b] of p.studs) x.add((p.i + a) * KW + p.j + b); STUDK.set(p, x); } return x; };
+const hasStud = (q, i, j) => studKeys(q).has(i * KW + j);
 function link(P, occ, uf, n) {
   const p = P[n], top = p.b + p.h;
   for (const [a, b] of p.studs) { const m = occ.get(K(p.i + a, p.j + b, top)); if (m !== undefined && m !== n && P[m].b === top) uf.union(n, m); }
@@ -166,8 +173,52 @@ function link(P, occ, uf, n) {
     const m = occ.get(K(p.i + dx, p.j + dz, p.b - 1));
     if (m === undefined || m === n) continue;
     const q = P[m];
-    if (q.b + q.h === p.b && q.studs.some(([a, b]) => q.i + a === p.i + dx && q.j + b === p.j + dz)) uf.union(n, m);
+    if (q.b + q.h === p.b && hasStud(q, p.i + dx, p.j + dz)) uf.union(n, m);
   }
+}
+/** every stud-contact pair (a, b) of the piece list, as a flat Int32Array */
+function linkPairs(P, occ) {
+  const out = [];
+  P.forEach((p, n) => {
+    const top = p.b + p.h;
+    for (const [a, b] of p.studs) { const m = occ.get(K(p.i + a, p.j + b, top)); if (m !== undefined && m !== n && P[m].b === top) out.push(n, m); }
+    if (p.b > 0) for (let dz = 0; dz < p.d; dz++) for (let dx = 0; dx < p.w; dx++) {
+      const m = occ.get(K(p.i + dx, p.j + dz, p.b - 1));
+      if (m === undefined || m === n) continue;
+      const q = P[m];
+      if (q.b + q.h === p.b && hasStud(q, p.i + dx, p.j + dz)) out.push(n, m);
+    }
+  });
+  return Int32Array.from(out);
+}
+/** component count of P with the pieces `ids` replaced by `add`, from the pair list of P (old-old contacts do not change; only the new pieces are linked) */
+function countCompsAfter(P, occ, pairs, ids, add) {
+  const N = P.length, M = add.length, par = new Int32Array(N + M); for (let k = 0; k < N + M; k++) par[k] = k;
+  const find = (a) => { while (par[a] !== a) { par[a] = par[par[a]]; a = par[a]; } return a; };
+  let comps = N - ids.size + M;
+  const union = (a, b) => { a = find(a); b = find(b); if (a !== b) { par[b] = a; comps--; } };
+  for (let k = 0; k < pairs.length; k += 2) { const a = pairs[k], b = pairs[k + 1]; if (!ids.has(a) && !ids.has(b)) union(a, b); }
+  const over = new Map();                                            // cells of the new pieces (override the old occupancy; removed cells fall through to "free")
+  add.forEach((q, t) => { for (let dz = 0; dz < q.d; dz++) for (let dx = 0; dx < q.w; dx++) for (let l = 0; l < q.h; l++) over.set(K(q.i + dx, q.j + dz, q.b + l), N + t); });
+  const at = (key) => { const o = over.get(key); if (o !== undefined) return o; const m = occ.get(key); return m === undefined || ids.has(m) ? undefined : m; };
+  const pieceOf = (m) => (m < N ? P[m] : add[m - N]);
+  add.forEach((p, t) => {
+    const n = N + t, top = p.b + p.h;
+    for (const [a, b] of p.studs) { const m = at(K(p.i + a, p.j + b, top)); if (m !== undefined && m !== n && pieceOf(m).b === top) union(n, m); }
+    if (p.b > 0) for (let dz = 0; dz < p.d; dz++) for (let dx = 0; dx < p.w; dx++) {
+      const m = at(K(p.i + dx, p.j + dz, p.b - 1));
+      if (m === undefined || m === n) continue;
+      const q = pieceOf(m);
+      if (q.b + q.h === p.b && hasStud(q, p.i + dx, p.j + dz)) union(n, m);
+    }
+  });
+  const groundRoot = new Set();
+  for (let k = 0; k < N; k++) if (!ids.has(k) && P[k].b === 0) groundRoot.add(find(k));
+  add.forEach((q, t) => { if (q.b === 0) groundRoot.add(find(N + t)); });
+  let grounded = 0;
+  for (let k = 0; k < N; k++) if (!ids.has(k) && groundRoot.has(find(k))) grounded++;
+  add.forEach((q, t) => { if (groundRoot.has(find(N + t))) grounded++; });
+  return { comps, grounded, pieces: N - ids.size + M };
 }
 export function components(P, occ) { const uf = new UF(P.length); for (let n = 0; n < P.length; n++) link(P, occ, uf, n); return uf; }
 export function connectivity(S) {
@@ -180,43 +231,53 @@ export function connectivity(S) {
 
 const plateOf = (by, len) => by[{ 1: '3024', 2: '3023', 3: '3623', 4: '3710' }[len]];
 const acceptsStuds = (p) => p.kind !== 'inverted';
+const BR_DX = [1, -1, 0, 0], BR_DZ = [0, 0, 1, -1], BR_DL = [0, 1, -1, 2, -2, 3, -3];
 
 /** join neighbouring components with a 1xN plate under (or over) the seam; pad the shorter side with 1x1 plates (= thicken the limb) */
 export function bracing(S, cat, o) {
   const by = byId(cat), one = by['3024']; let added = 0;
+  const P = S.pieces, occ = occupancy(P), uf = components(P, occ);     // kept up to date below as pieces are added, so built once
+  // typed-array mirror of occ for the hot lookups (the Map keeps the iteration order that fixes candidate ties)
+  const NX = S.NXc, NZ = S.NZc, NL = S.NL, grid = new Int32Array(NX * NZ * NL).fill(-1);
+  const gset = (i, j, l, n) => { if (i >= 0 && i < NX && j >= 0 && j < NZ && l >= 0 && l < NL) grid[(l * NZ + j) * NX + i] = n; };
+  const gi = (i, j, l) => (i < 0 || i >= NX || j < 0 || j >= NZ || l < 0 || l >= NL ? -1 : grid[(l * NZ + j) * NX + i]);
+  P.forEach((p, n) => { for (let dz = 0; dz < p.d; dz++) for (let dx = 0; dx < p.w; dx++) for (let l = 0; l < p.h; l++) gset(p.i + dx, p.j + dz, p.b + l, n); });
   for (let round = 0; round < o.braceRounds; round++) {
-    const P = S.pieces, occ = occupancy(P), uf = components(P, occ);
+    const ssCache = new Map(), studSetC = (n) => { let x = ssCache.get(n); if (!x) { const p = P[n]; x = new Set(p.studs.map(([a, b]) => (p.i + a) * KW + p.j + b)); ssCache.set(n, x); } return x; };
+    const NP = P.length, plane = S.NXc * S.NZc;      // seen: Map pair(n, m) -> Set of packed (c1, c2) cells
     const vol = new Map(); P.forEach((p, n) => { const r = uf.find(n); vol.set(r, (vol.get(r) || 0) + p.w * p.d * p.h); });
     if (vol.size <= 1) break;
     let main = null, mv = -1; for (const [r, v] of vol) if (v > mv) { mv = v; main = r; }
-    const cands = [], seen = new Set();
+    const cands = [], seen = new Map();
     for (const [key, n] of occ) {
-      const [i, j, l] = key.split(',').map(Number), pn = P[n];
-      for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const [i, j, l] = unK(key), pn = P[n], rn = uf.find(n);
+      for (let dir = 0; dir < 4; dir++) {
+        const dx = BR_DX[dir], dz = BR_DZ[dir];
         for (let k = 1; k < o.braceMaxSpan; k++) {
-          const c1 = [i, j], c2 = [i + k * dx, j + k * dz];
-          if (c2[0] < 0 || c2[1] < 0 || c2[0] >= S.NXc || c2[1] >= S.NZc) break;
-          const mid = []; for (let t = 1; t < k; t++) mid.push([i + t * dx, j + t * dz]);
+          const c2x = i + k * dx, c2z = j + k * dz;
+          if (c2x < 0 || c2z < 0 || c2x >= S.NXc || c2z >= S.NZc) break;
           let hit = false;
-          for (const dl of [0, 1, -1, 2, -2, 3, -3]) {
-            const m = occ.get(K(c2[0], c2[1], l + dl));
-            if (m === undefined) continue;
+          for (let t = 0; t < BR_DL.length; t++) {
+            const dl = BR_DL[t], m = gi(c2x, c2z, l + dl);
+            if (m < 0) continue;
             hit = true;
-            if (m === n || uf.find(m) === uf.find(n)) continue;
-            const sk = `${n}|${m}|${c1}|${c2}`; if (seen.has(sk)) continue; seen.add(sk);
-            const pm = P[m], jm = main === uf.find(n) || main === uf.find(m) ? 0 : 1;
+            if (m === n || uf.find(m) === rn) continue;
+            const c1 = [i, j], c2 = [c2x, c2z];
+            const pk = n * NP + m, ck = (j * S.NXc + i) * plane + c2z * S.NXc + c2x; let sn = seen.get(pk); if (!sn) { sn = new Set(); seen.set(pk, sn); } if (sn.has(ck)) continue; sn.add(ck);
+            const mid = []; for (let t2 = 1; t2 < k; t2++) mid.push([i + t2 * dx, j + t2 * dz]);
+            const pm = P[m], jm = main === rn || main === uf.find(m) ? 0 : 1;
             if (acceptsStuds(pn) && acceptsStuds(pm)) {
               const L = Math.min(pn.b, pm.b) - 1, ga = pn.b - 1 - L, gb = pm.b - 1 - L;
-              let ok = L >= 0 && Math.max(ga, gb) <= o.braceMaxGap && mid.every(([a, b]) => !occ.has(K(a, b, L)));
-              for (let q = L; ok && q < pn.b; q++) if (occ.has(K(c1[0], c1[1], q))) ok = false;
-              for (let q = L; ok && q < pm.b; q++) if (occ.has(K(c2[0], c2[1], q))) ok = false;
+              let ok = L >= 0 && Math.max(ga, gb) <= o.braceMaxGap && mid.every(([a, b]) => gi(a, b, L) < 0);
+              for (let q = L; ok && q < pn.b; q++) if (gi(c1[0], c1[1], q) >= 0) ok = false;
+              for (let q = L; ok && q < pm.b; q++) if (gi(c2[0], c2[1], q) >= 0) ok = false;
               if (ok) cands.push([jm, k + ga + gb, 0, n, m, c1, c2, L]);
             }
             const ta = pn.b + pn.h, tb = pm.b + pm.h, U = Math.max(ta, tb);
-            const s1 = studSet(pn), s2 = studSet(pm);
-            let ok = U < S.NL && s1.has(K2(...c1)) && s2.has(K2(...c2)) && U - Math.min(ta, tb) <= o.braceMaxGap && mid.every(([a, b]) => !occ.has(K(a, b, U)));
-            for (let q = ta; ok && q <= U; q++) if (occ.has(K(c1[0], c1[1], q))) ok = false;
-            for (let q = tb; ok && q <= U; q++) if (occ.has(K(c2[0], c2[1], q))) ok = false;
+            const s1 = studSetC(n), s2 = studSetC(m);
+            let ok = U < S.NL && s1.has(i * KW + j) && s2.has(c2x * KW + c2z) && U - Math.min(ta, tb) <= o.braceMaxGap && mid.every(([a, b]) => gi(a, b, U) < 0);
+            for (let q = ta; ok && q <= U; q++) if (gi(c1[0], c1[1], q) >= 0) ok = false;
+            for (let q = tb; ok && q <= U; q++) if (gi(c2[0], c2[1], q) >= 0) ok = false;
             if (ok) cands.push([jm, k + (U - ta) + (U - tb), 1, n, m, c1, c2, U]);
           }
           if (hit) break;
@@ -249,7 +310,7 @@ export function bracing(S, cat, o) {
       }
       for (const q of nw) {
         P.push(q); const idx = P.length - 1; uf.grow(P.length);
-        for (let dz = 0; dz < q.d; dz++) for (let dx = 0; dx < q.w; dx++) occ.set(K(q.i + dx, q.j + dz, q.b), idx);
+        for (let dz = 0; dz < q.d; dz++) for (let dx = 0; dx < q.w; dx++) { occ.set(K(q.i + dx, q.j + dz, q.b), idx); gset(q.i + dx, q.j + dz, q.b, idx); }
         addVolume(S, q);
       }
       for (let k = P.length - nw.length; k < P.length; k++) link(P, occ, uf, k);
@@ -389,19 +450,19 @@ function spliceAt(S, cat, P, occ, c1, c2, L) {
   }
   const alongX = c1[1] === c2[1], i0 = Math.min(c1[0], c2[0]), j0 = Math.min(c1[1], c2[1]);
   out.push(mk(by['3023'], alongX ? 2 : 1, alongX ? 1 : 2, i0, j0, L, [...ids].map((n) => P[n].rgb).find(Boolean) || [128, 128, 128], 'X-splice'));
-  return P.filter((_, k) => !ids.has(k)).concat(out);
+  const res = P.filter((_, k) => !ids.has(k)).concat(out); res.ids = ids; res.add = out; return res;
 }
 
 export function splice(S, cat, o) {
   let done = 0; const t0 = Date.now(), budget = o.spliceTime ?? 6000;
   for (let round = 0; round < (o.spliceRounds ?? 200); round++) {
-    const P = S.pieces, occ = occupancy(P), uf = components(P, occ);
+    const P = S.pieces, occ = occupancy(P), uf = components(P, occ), pairs = linkPairs(P, occ);
     let nc = 0; { const r = new Set(); for (let n = 0; n < P.length; n++) r.add(uf.find(n)); nc = r.size; }
     if (nc <= 1 || Date.now() - t0 > budget) break;
     const size = new Map(); P.forEach((p, n) => { const r = uf.find(n); size.set(r, (size.get(r) || 0) + p.w * p.d * p.h); });
     const cands = [];
     for (const [key, n] of occ) {
-      const [i, j, l] = key.split(',').map(Number);
+      const [i, j, l] = unK(key);
       for (const [dx, dz] of [[1, 0], [0, 1]]) {
         const m = occ.get(K(i + dx, j + dz, l));
         if (m === undefined || m === n || uf.find(m) === uf.find(n)) continue;
@@ -418,7 +479,7 @@ export function splice(S, cat, o) {
       let P2 = null;
       for (const L of [l, l + 1, l - 1, l + 2, l - 2]) {
         const cand = spliceAt(S, cat, P, occ, c1, c2, L);
-        if (cand && countComps(cand) < nc) { P2 = cand; break; }
+        if (cand && countCompsAfter(P, occ, pairs, cand.ids, cand.add).comps < nc) { P2 = cand; break; }
       }
       if (!P2) { dead.set(pk, nTried + 1); continue; }
       if (S.mirror) {                                  // twin on the other side of the plane
@@ -445,46 +506,69 @@ export function bridge(S, cat, o) {
   const by = byId(cat), NX = S.NXc, NZ = S.NZc, NL = S.NL, plane = NX * NZ, N = plane * NL, maxCost = o.bridgeMax ?? 10;
   const idx = (x, z, l) => (l * NZ + z) * NX + x;
   let added = 0; const hopeless = new Set(), flattened = new Set();
+  let state = null;                                   // grid / components of the current piece list; rebuilt only after the pieces change
   for (let round = 0; round < (o.bridgeRounds ?? 120); round++) {
+    if (!state) {
     const P = S.pieces, grid = new Int32Array(N).fill(-1);
     P.forEach((p, n) => { for (let l = p.b; l < p.b + p.h; l++) for (let dz = 0; dz < p.d; dz++) for (let dx = 0; dx < p.w; dx++) { const x = p.i + dx, z = p.j + dz; if (x >= 0 && x < NX && z >= 0 && z < NZ && l >= 0 && l < NL) grid[idx(x, z, l)] = n; } });
-    const uf = components(P, occupancy(P)), cnt = new Map(); P.forEach((_, n) => { const r = uf.find(n); cnt.set(r, (cnt.get(r) || 0) + 1); });
+    const uf = components(P, occupancy(P)), cnt = new Map(), members = new Map(); P.forEach((_, n) => { const r = uf.find(n); cnt.set(r, (cnt.get(r) || 0) + 1); let mm = members.get(r); if (!mm) members.set(r, mm = []); mm.push(n); });
+    // per-cell component reachable by a plate placed on (x,z,l): via the stud of the piece below (tb) or the underside of the piece above (ta)
+    const root = new Int32Array(P.length); P.forEach((_, n) => { root[n] = uf.find(n); });
+    const tb = new Int32Array(N).fill(-1), ta = new Int32Array(N).fill(-1);
+    P.forEach((p, n) => {
+      const lt = p.b + p.h;
+      if (lt < NL) for (const [a, c] of p.studs) { const x = p.i + a, z = p.j + c; if (x >= 0 && x < NX && z >= 0 && z < NZ && grid[idx(x, z, lt - 1)] === n) tb[idx(x, z, lt)] = root[n]; }
+      if (p.b > 0 && acceptsStuds(p)) for (let dz = 0; dz < p.d; dz++) for (let dx = 0; dx < p.w; dx++) { const x = p.i + dx, z = p.j + dz; if (x >= 0 && x < NX && z >= 0 && z < NZ && grid[idx(x, z, p.b)] === n) ta[idx(x, z, p.b - 1)] = root[n]; }
+    });
+    state = { P, grid, uf, cnt, members, tb, ta };
+    }
+    const { P, grid, uf, cnt, members, tb, ta } = state;
     if (cnt.size <= 1) break;
     const order = [...cnt].filter(([r]) => !hopeless.has(r)).sort((a, b) => a[1] - b[1]);
     if (!order.length) break;
     const [A] = order[0];
-    const studAt = (q, x, z) => q.studs.some(([a, b]) => q.i + a === x && q.j + b === z);
-    // component reached by a plate placed on (x,z,l): the piece below (its stud) or above (its underside), or -1
-    const touch = (x, z, l, out) => {
-      out.length = 0;
-      if (l > 0) { const m = grid[idx(x, z, l - 1)]; if (m >= 0 && P[m].b + P[m].h === l && studAt(P[m], x, z)) out.push(uf.find(m)); }
-      if (l + 1 < NL) { const m = grid[idx(x, z, l + 1)]; if (m >= 0 && P[m].b === l + 1 && acceptsStuds(P[m])) out.push(uf.find(m)); }
-      return out;
-    };
+    const touch = (x, z, l, out) => { out.length = 0; const v = idx(x, z, l); if (tb[v] >= 0) out.push(tb[v]); if (ta[v] >= 0) out.push(ta[v]); return out; };
     const free = (x, z, l) => x >= 0 && x < NX && z >= 0 && z < NZ && l >= 0 && l < NL && grid[idx(x, z, l)] < 0;
+    // plates are packed as ints: ((cell(x,z,l2) * 4 + dir) * 4 + (len - 1)); no per-step allocation (this BFS used to dominate the whole run)
+    const DX = [1, -1, 0, 0], DZ = [0, 0, 1, -1];
+    const unpack = (code) => { const len = (code & 3) + 1, dir = (code >> 2) & 3, cell = code >> 4, l = (cell / plane) | 0, r = cell - l * plane, z = (r / NX) | 0, x = r - z * NX;
+      const cells = []; for (let k = 0; k < len; k++) cells.push([x + k * DX[dir], z + k * DZ[dir]]); return { l, cells }; };
     let dist, parent, via, goal = -1;
-    for (const rev of [false, true]) {                       // grow from the floating component, else grow from the rest towards it
-      dist = new Int16Array(N).fill(32000); parent = new Int32Array(N).fill(-1); via = new Array(N);
+    // the reverse search (grow from the rest towards A) finds the same chains mirrored and never succeeded where the forward one failed, so it is off by default
+    for (const rev of o.bridgeReverse ? [false, true] : [false]) {
+      dist = new Int16Array(N).fill(32000); parent = new Int32Array(N).fill(-1); via = new Int32Array(N).fill(-1);
       const buckets = Array.from({ length: maxCost + 2 }, () => []), tmp = [];
       const expand = (x, z, l, l2, base, from) => {
-        for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
-          const cells = [];
+        if (l2 < 0 || l2 >= NL) return;
+        const nb = base + 1; if (nb > maxCost) return;
+        const bk = buckets[nb], head = idx(x, z, l2) * 16;
+        for (let dir = 0; dir < 4; dir++) {
+          const dx = DX[dir], dz = DZ[dir];
           for (let k = 0; k < 4; k++) {
             const cx = x + k * dx, cz = z + k * dz;
-            if (!free(cx, cz, l2)) break;
-            cells.push([cx, cz]);
-            const pl = { l: l2, cells: cells.slice() };
-            for (const [px, pz] of pl.cells) {
-              const v = idx(px, pz, l2);
-              if (base + 1 < dist[v] && base + 1 <= maxCost) { dist[v] = base + 1; parent[v] = from; via[v] = pl; buckets[base + 1].push(v); }
-            }
+            if (cx < 0 || cx >= NX || cz < 0 || cz >= NZ) break;
+            const v = idx(cx, cz, l2);
+            if (grid[v] >= 0) break;
+            if (nb < dist[v]) { dist[v] = nb; parent[v] = from; via[v] = head + dir * 4 + k; bk.push(v); }
           }
         }
       };
-      for (let l = 0; l < NL; l++) for (let z = 0; z < NZ; z++) for (let x = 0; x < NX; x++) {
-        if (grid[idx(x, z, l)] >= 0) continue;
-        const t = touch(x, z, l, tmp);
-        if (rev ? t.some((rr) => rr !== A) : t.includes(A)) expand(x, z, l, l, 0, -1);
+      if (rev) {
+        for (let l = 0; l < NL; l++) for (let z = 0; z < NZ; z++) for (let x = 0; x < NX; x++) {
+          if (grid[idx(x, z, l)] >= 0) continue;
+          if (touch(x, z, l, tmp).some((rr) => rr !== A)) expand(x, z, l, l, 0, -1);
+        }
+      } else {
+        // seeds = free cells touching A: taken from A's own pieces, in the same (l, z, x) order as a full scan would visit them
+        const seeds = [];
+        for (const n of members.get(A)) {
+          const p = P[n], lt = p.b + p.h;
+          if (lt < NL) for (const [a, c] of p.studs) { const x = p.i + a, z = p.j + c; if (x >= 0 && x < NX && z >= 0 && z < NZ) { const v = idx(x, z, lt); if (grid[v] < 0 && tb[v] === A) seeds.push(v); } }
+          if (p.b > 0) for (let dz = 0; dz < p.d; dz++) for (let dx = 0; dx < p.w; dx++) { const x = p.i + dx, z = p.j + dz; if (x >= 0 && x < NX && z >= 0 && z < NZ) { const v = idx(x, z, p.b - 1); if (grid[v] < 0 && ta[v] === A) seeds.push(v); } }
+        }
+        seeds.sort((a, b) => a - b);
+        let last = -1;
+        for (const v of seeds) { if (v === last) continue; last = v; const l = (v / plane) | 0, r = v - l * plane, z = (r / NX) | 0, x = r - z * NX; expand(x, z, l, l, 0, -1); }
       }
       for (let c = 1; c <= maxCost && goal < 0; c++) {
         const bk = buckets[c];
@@ -510,15 +594,15 @@ export function bridge(S, cat, o) {
             if (brick) { add.push(mk(brick, brick.w === p.w ? p.w : p.d, brick.w === p.w ? p.d : p.w, p.i, p.j, l, p.rgb, 'T-flatten')); l += 3; }
             else { add.push(...pack(cells, plates, l, 1e9).map((x) => ({ ...x, phase: 'T-flatten' }))); l += 1; } }
         }
-        S.pieces = P.filter((_, n) => !kill.has(n)).concat(add); added += add.length - idsA.length; continue;
+        S.pieces = P.filter((_, n) => !kill.has(n)).concat(add); added += add.length - idsA.length; state = null; continue;
       }
       hopeless.add(A); continue;
     }
     // chain of plates back to the seed; validate (no two plates on the same cell)
-    const chain = []; const used = new Set(); let v = goal, ok = true;
+    const chain = []; const used = new Set(), seenPl = new Set(); let v = goal, ok = true;
     while (v >= 0) {
-      const pl = via[v];
-      if (!chain.includes(pl)) {
+      const code = via[v];
+      if (!seenPl.has(code)) { seenPl.add(code); const pl = unpack(code);
         for (const [x, z] of pl.cells) { const k = K(x, z, pl.l); if (used.has(k)) ok = false; used.add(k); }
         chain.push(pl);
       }
@@ -544,7 +628,7 @@ export function bridge(S, cat, o) {
       nw.push(...tw);
     }
     for (const q of nw) { S.pieces.push(q); addVolume(S, q); }
-    added += nw.length;
+    added += nw.length; state = null;
   }
   return added;
 }
@@ -584,6 +668,67 @@ export function untile(S, cat) {
   }
   S.pieces = keep.concat(add);
   return n;
+}
+
+// ------------------------------------------------------------------ re-tiling merge: three levels of plates -> bricks, whatever the plate footprints
+/** Wherever three consecutive levels are covered by plain plates of close colour, pack the common cells with bricks and re-cut the
+ *  plates that lost cells. Unlike `vertical` the plate footprints need not coincide. Each level triple is committed only if the
+ *  piece count drops and connectivity does not get worse (a re-cut plate could lose its only stud contact). */
+export function retile(S, cat, tol) {
+  const bricks = shapes(cat, 'brick'), plates = shapes(cat, 'plate');
+  const plain = (p) => p.kind === 'plate' && p.h === 1 && p.studs.length === p.w * p.d;
+  let gained = 0;
+  const levels = [...new Set(S.pieces.filter(plain).map((p) => p.b))].sort((a, b) => a - b);
+  for (const b of levels) {
+    const P = S.pieces, cells = [0, 1, 2].map(() => new Map());
+    // working set of plates on the three levels: id -> { l, rgb, cells: Set, piece }; ids < P.length are original pieces, larger ones are re-cuts made here
+    const work = new Map(); let nextId = P.length;
+    P.forEach((p, n) => { if (!plain(p) || p.b < b || p.b > b + 2) return; const l = p.b - b, cs = new Set(); for (let dz = 0; dz < p.d; dz++) for (let dx = 0; dx < p.w; dx++) { const k = K2(p.i + dx, p.j + dz); cells[l].set(k, p.rgb); cs.add(k); } work.set(n, { l, rgb: p.rgb, cells: cs, piece: p }); });
+    if (!cells[0].size || !cells[1].size || !cells[2].size) continue;
+    const triple = new Map();
+    for (const [k, c0] of cells[0]) { const c1 = cells[1].get(k), c2 = cells[2].get(k); if (c1 && c2 && close(c0, c1, tol) && close(c1, c2, tol) && close(c0, c2, tol)) triple.set(k, meanRgb([c0, c1, c2])); }
+    if (!triple.size) continue;
+    // candidates: first bricks with exactly the footprint of a plate of the stack (they swallow that plate whole), largest first; then a generic packing of what is left
+    const brickOf = new Map(); for (const c of bricks) { brickOf.set(`${c.w},${c.d}`, c); brickOf.set(`${c.d},${c.w}`, c); }
+    const cand = [], taken = new Set();
+    const ws = [...work.values()].sort((a, b) => b.cells.size - a.cells.size);
+    for (const w of ws) {
+      const p = w.piece, c = brickOf.get(`${p.w},${p.d}`); if (!c || p.w * p.d < 2) continue;
+      let ok = true; for (const k of w.cells) if (!triple.has(k) || taken.has(k)) { ok = false; break; }
+      if (!ok) continue;
+      cand.push(mk(c, p.w, p.d, p.i, p.j, b, meanRgb([...w.cells].map((k) => triple.get(k))), 'M-retile')); w.cells.forEach((k) => taken.add(k));
+    }
+    const rest = new Map(); for (const [k, c] of triple) if (!taken.has(k)) rest.set(k, c);
+    if (rest.size) cand.push(...pack(rest, bricks, b, tol));
+    if (!cand.length) continue;
+    // every brick is checked on its own against the cumulative edit: fewer pieces, no new component, nothing un-grounded
+    const occ = occupancy(P), pairs = linkPairs(P, occ);
+    let cur = countCompsAfter(P, occ, pairs, new Set(), []);
+    const kill = new Set(), add = [];
+    for (const q of cand) {
+      const qc = []; for (let dz = 0; dz < q.d; dz++) for (let dx = 0; dx < q.w; dx++) qc.push(K2(q.i + dx, q.j + dz));
+      const hit = []; for (const [id, w] of work) if (qc.some((k) => w.cells.has(k))) hit.push(id);
+      const cuts = hit.map((id) => { const w = work.get(id), left = new Map(); for (const k of w.cells) if (!qc.includes(k)) left.set(k, w.rgb); return { id, w, parts: left.size ? pack(left, plates, b + w.l, 1e9) : [] }; });
+      const delta = hit.length - 1 - cuts.reduce((a, c) => a + c.parts.length, 0);
+      if (delta < 1 && !(delta === 0 && q.w * q.d >= 2)) continue;
+      const kill2 = new Set(kill), add2 = add.slice();
+      const brick = { ...q, phase: 'M-retile' }, fresh = [];
+      for (const { id, w, parts } of cuts) {
+        if (id < P.length) kill2.add(id); else add2.splice(add2.indexOf(w.piece), 1);
+        for (const np of parts) { const piece = { ...np, phase: 'M-retile' }; add2.push(piece); fresh.push([w, piece]); }
+      }
+      add2.push(brick);
+      const r = countCompsAfter(P, occ, pairs, kill2, add2);
+      if (r.comps > cur.comps || r.pieces - r.grounded > cur.pieces - cur.grounded) continue;
+      cur = r; kill.clear(); kill2.forEach((x) => kill.add(x)); add.length = 0; add.push(...add2);
+      for (const { id } of cuts) work.delete(id);
+      for (const [w, piece] of fresh) { const cs = new Set(); for (let dz = 0; dz < piece.d; dz++) for (let dx = 0; dx < piece.w; dx++) cs.add(K2(piece.i + dx, piece.j + dz)); work.set(nextId++, { l: w.l, rgb: w.rgb, cells: cs, piece }); }
+    }
+    if (!kill.size) continue;
+    S.pieces = P.filter((_, n) => !kill.has(n)).concat(add);
+    gained += kill.size - add.length;
+  }
+  return gained;
 }
 
 // ------------------------------------------------------------------ safe final merge: only ever UNITES whole pieces (never re-cuts), so connectivity cannot get worse

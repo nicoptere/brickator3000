@@ -2,10 +2,13 @@
 // Muted state is remembered.
 const KEY = 'brickgen.studio.sound';
 const FILES = [1, 2, 3, 4].map((n) => `./sounds/lego_clack_${n}.mp3`);
+let gestured = false;
+if (typeof window !== 'undefined') for (const ev of ['pointerdown', 'keydown', 'touchstart']) window.addEventListener(ev, () => { gestured = true; }, { capture: true, once: false, passive: true });
 export class Sfx {
   constructor() { this.ctx = null; this.buf = []; this.loading = null; this.last = 0; this.k = 0; try { this.on = localStorage.getItem(KEY) !== 'off'; } catch { this.on = true; } }
   setOn(v) { this.on = v; try { localStorage.setItem(KEY, v ? 'on' : 'off'); } catch {} if (v) this.play(0, 1, 0.6); }
   _ctx() {
+    if (!this.ctx && !gestured) return null;                     // browsers refuse to start audio before a click / key: stay silent until then
     if (!this.ctx) { const A = window.AudioContext || window.webkitAudioContext; if (!A) return null; this.ctx = new A(); }
     if (this.ctx.state === 'suspended') this.ctx.resume();
     if (!this.loading) this.loading = Promise.all(FILES.map(async (f, i) => { try { this.buf[i] = await this.ctx.decodeAudioData(await (await fetch(f)).arrayBuffer()); } catch (e) { console.warn('sound', f, e); } }));

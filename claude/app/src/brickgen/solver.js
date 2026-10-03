@@ -97,26 +97,59 @@ export class Solver {
   }
 
   candidates(variants, tol) {
-    const I = this.integral(), at = this.Iat, out = [];
+    const I = this.integral(), at = this.Iat, out = [], G2 = G * G, wErr = tol.w_err ?? this.o.wErr, bonusOf = tol.bonus || {};
+    // variants sharing a box (h, d, w) share the box sum, so the integral is read once per box per position
+    const groups = new Map();
     for (let k = 0; k < variants.length; k++) {
-      const v = variants[k], h = v.h, w = v.w, d = v.d;
-      if (this.NL < h || this.NZc < d || this.NXc < w) continue;
-      const box = h * w * d, vs = v.vsum / (G * G), bonus = (tol.bonus || {})[v.c.kind] || 0;
-      for (let b = 0; b + h <= this.NL; b++) for (let j = 0; j + d <= this.NZc; j++) for (let i = 0; i + w <= this.NXc; i++) {
-        const sw = (I[at(b + h, j + d, i + w)] - I[at(b, j + d, i + w)] - I[at(b + h, j, i + w)] - I[at(b + h, j + d, i)]
-          + I[at(b, j, i + w)] + I[at(b, j + d, i)] + I[at(b + h, j, i)] - I[at(b, j, i)]) / (G * G);
-        if (sw < tol.min_cov * v.vtot - 1e-3 || Math.abs(sw - vs) > tol.max_err * box + 1e-3) continue;
-        // exact test (without the collision / tile rules, re-checked at pop time)
-        const pz = d * G, px = w * G, V = v.V, M = this.M;
-        let ov = 0, over = 0;
-        for (let l = 0; l < h; l++) for (let z = 0; z < pz; z++) {
-          const base = this.idx(b + l, j * G + z, i * G), vb = (l * pz + z) * px;
-          for (let x = 0; x < px; x++) { const vv = V[vb + x], m = M[base + x]; ov += m < vv ? m : vv; over += Math.abs(vv - m); }
+      const v = variants[k];
+      if (this.NL < v.h || this.NZc < v.d || this.NXc < v.w) continue;
+      const key = v.h * 1000000 + v.d * 1000 + v.w;
+      let g = groups.get(key); if (!g) { g = { h: v.h, d: v.d, w: v.w, ks: [], lo: Infinity }; groups.set(key, g); }
+      g.ks.push(k); g.lo = Math.min(g.lo, tol.min_cov * v.vtot - 1e-3);
+    }
+    const Z1 = this.NZc + 1, X1 = this.NXc + 1;
+    for (const g of groups.values()) {
+      const { h, w, d, ks, lo } = g, box = h * w * d, maxErr = tol.max_err * box + 1e-3, pz = d * G, px = w * G, loG = lo * G2;
+      const o1 = h * Z1 * X1, o2 = d * X1, o3 = w, oL = Z1 * X1, wd = w * d * G2, beat = tol.beatFlat ?? this.o.beatFlat ?? 1;        // integral offsets of the box corners from its (b, j, i) corner; oL = one level
+      const levM = new Float64Array(h); let levAt = -1;
+      for (let b = 0; b + h <= this.NL; b++) for (let j = 0; j + d <= this.NZc; j++) {
+        let c0 = (b * Z1 + j) * X1;                        // at(b, j, 0)
+        for (let i = 0; i + w <= this.NXc; i++, c0++) {
+          const swG = I[c0 + o1 + o2 + o3] - I[c0 + o2 + o3] - I[c0 + o1 + o3] - I[c0 + o1 + o2] + I[c0 + o3] + I[c0 + o2] + I[c0 + o1] - I[c0];
+          if (swG < loG) continue;
+          const sw = swG / G2;
+          for (let q = 0; q < ks.length; q++) {
+            const k = ks[q], v = variants[k], vs = v.vsum / G2;
+            if (sw < tol.min_cov * v.vtot - 1e-3 || Math.abs(sw - vs) > maxErr) continue;
+            // exact test (without the collision / tile rules, re-checked at pop time)
+            let ov = 0, over = 0, flatErr = -1;
+            if (v.full) { ov = swG; over = box * G2 - swG; }                   // solid box: min(m, 1) = m and |1 - m| = 1 - m, both already summed by the integral
+            else {
+              // per-level bounds: sum_l min(M_l, V_l) >= ov and sum_l |M_l - V_l| <= over, so a failure here is a failure of the exact test too
+              if (levAt !== c0) { levAt = c0; for (let l = 0, c = c0; l < h; l++, c += oL) levM[l] = I[c + oL + o2 + o3] - I[c + o2 + o3] - I[c + oL + o3] - I[c + oL + o2] + I[c + o3] + I[c + o2] + I[c + oL] - I[c]; }
+              let ub = 0, lb = 0; const lev = v.lev;
+              for (let l = 0; l < h; l++) { const a = levM[l], e = lev[l]; ub += a < e ? a : e; lb += a > e ? a - e : e - a; }
+              if (ub / G2 / v.vtot < tol.min_cov - 1e-6 || lb / G2 / box > tol.max_err + 1e-6) continue;
+              // a shaped part must explain the field better than the best flat stack (0..h full levels) in the same box would; otherwise plates / bricks take it
+              if (beat < 1) {
+                let above = 0; for (let l = 0; l < h; l++) above += levM[l];                       // error of the empty stack = all the mass
+                let flat = above, below = 0;
+                for (let l = 0; l < h; l++) { below += wd - levM[l]; above -= levM[l]; const e = below + above; if (e < flat) flat = e; }
+                flatErr = flat;
+              }
+              const V = v.V, M = this.M;
+              for (let l = 0; l < h; l++) for (let z = 0; z < pz; z++) {
+                const base = this.idx(b + l, j * G + z, i * G), vb = (l * pz + z) * px;
+                for (let x = 0; x < px; x++) { const vv = V[vb + x], m = M[base + x]; ov += m < vv ? m : vv; over += Math.abs(vv - m); }
+              }
+            }
+            if (flatErr >= 0 && over > beat * flatErr) continue;
+            ov /= G2; over /= G2;
+            if (ov / v.vtot < tol.min_cov || over / box > tol.max_err) continue;
+            const net = ov - wErr * over - tol.piece_pen + (bonusOf[v.c.kind] || 0);
+            if (net > 0) out.push([-net, k, b, j, i]);
+          }
         }
-        ov /= G * G; over /= G * G;
-        if (ov / v.vtot < tol.min_cov || over / box > tol.max_err) continue;
-        const net = ov - (tol.w_err ?? this.o.wErr) * over - tol.piece_pen + bonus;
-        if (net > 0) out.push([-net, k, b, j, i]);
       }
     }
     return Heap.from(out);

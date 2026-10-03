@@ -36,20 +36,25 @@ export const DEFAULTS = {
   thin: true, thinBand: [0.3, 0.5], thinPoints: 4,
   technic: true,
   wErr: 3.0,                 // default weight of |V - M| in the score
+  beatFlat: 0.9,             // a shaped part (slope, curve, round, wedge) is only a candidate where its error is below this fraction of the best flat plate / brick stack in the same box (1 = off)
   tileExposure: 0.35,        // a tile is refused if the level above is fuller than this
   // crust: erase the hollow core (voxels deeper than crustDepth LDU below the surface) so only the shell is solved
-  crust: true, crustDepth: 60,
+  crust: true, crustDepth: 40,     // 40 = two studs of wall; 60 only hollows chunky ones
   // islands: MST of thin tubes between the 3D components of the source volume (before solving)
+  decimate: true,            // erase tiny floating components (debris) even when islands are not tube-joined
   islands: true, tubeWidth: 4, islandDrop: 0.002, islandDropMax: 40, islandOcc: 0.25, islandThinPoints: 2,
   // post-process
+  retile: true,              // three levels of plates -> bricks, committed per level only if connectivity holds
   mergeVertical: true, mergeHorizontal: true, colorTol: 22,
   pillars: true, pillarMinLevels: 3,
   bracing: true, braceMaxGap: 3, braceMaxSpan: 4, braceRounds: 40,
   splice: true, spliceRounds: 60, spliceTries: 80,   // re-cut side-by-side pieces of different components so a 1x2 plate spans the seam
   bridge: true, bridgeMax: 10, bridgeRounds: 120,    // shortest plate chain (zig-zag) through free cells between two components
+  vertexNormals: false,      // main-thread pre-step (three.js welded vertex normals): flips reversed triangles before the ray cast
   supports: false, groundSupports: false, supportMinFrac: 0.01, supportSpacing: 24,
   finish: false, finishBricks: 'add', // 'add' (tile on top of exposed bricks) | 'none'
   // colour
   colorK: 10,
+  colorVisible: true,        // colour from surfaces visible from outside only (hidden interior geometry cannot bleed through a shell)
   palette: 'cheat',          // 'cheat' (mean of nearest samples) | 'lego' (snap to the LEGO solid palette)
 };

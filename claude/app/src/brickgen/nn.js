@@ -27,14 +27,15 @@ export class PointGrid {
         if (a < 0 || a >= this.dim[0]) continue;
         for (let b = cy - r; b <= cy + r; b++) {
           if (b < 0 || b >= this.dim[1]) continue;
-          for (let c = cz - r; c <= cz + r; c++) {
+          const inner = Math.abs(a - cx) < r && Math.abs(b - cy) < r;        // shell only: on an interior (a, b) column just the two end cells
+          for (let c = cz - r; c <= cz + r; c += inner ? 2 * r : 1) {
             if (c < 0 || c >= this.dim[2]) continue;
-            if (Math.max(Math.abs(a - cx), Math.abs(b - cy), Math.abs(c - cz)) !== r) continue;   // shell only
             const cell = (a * this.dim[1] + b) * this.dim[2] + c;
             for (let p = this.start[cell]; p < this.start[cell + 1]; p++) {
               const i = this.items[p], dx = P[i * 3] - x, dy = P[i * 3 + 1] - y, dz = P[i * 3 + 2] - z, d2 = dx * dx + dy * dy + dz * dz;
               if (best.length < k || d2 < best[best.length - 1][0]) {
-                best.push([d2, i]); best.sort((u, v) => u[0] - v[0]); if (best.length > k) best.pop();
+                let q = best.length; while (q > 0 && best[q - 1][0] > d2) q--;      // stable insertion (same order as push + stable sort)
+                best.splice(q, 0, [d2, i]); if (best.length > k) best.pop();
               }
             }
           }

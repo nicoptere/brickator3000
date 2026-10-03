@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { template, pieceOrigin, KIND_COL } from '../brickgen/export.js';
 import { STUD, PLATE } from '../brickgen/constants.js';
+import { smoothNormals } from './meshtools.js';
 import { cycloDims, cycloGeometry, cycloMaterial } from './cyclo.js';
 
 const S = 1 / STUD;                                     // LDU -> world units (1 unit = 1 stud pitch)
@@ -50,7 +51,7 @@ export class StudioViewport {
     this.src = new THREE.Group(); this.lego = new THREE.Group(); this.world.add(this.src, this.lego);
     this.gradient = toonGradient(4);
     this.toon = new THREE.MeshToonMaterial({ gradientMap: this.gradient, color: 0xffffff, side: THREE.DoubleSide });
-    this.hullThick = 2.5; this.hulls = [];
+    this.hullThick = 1; this.hulls = [];
     this.hullMat = new THREE.MeshBasicMaterial({ color: 0x05070a, side: THREE.BackSide });
     this.hullMat.onBeforeCompile = (sh) => {            // inverted hull: back faces, pushed out along the smoothed normal, drawn black behind the coloured front faces
       sh.uniforms.uThick = { value: this.hullThick }; this.hullShader = sh;
@@ -97,11 +98,14 @@ export class StudioViewport {
     }
     this.srcPos = t; this.clearVoxels();
     const g = new THREE.BufferGeometry();
-    g.setAttribute('position', new THREE.BufferAttribute(t, 3)); g.setAttribute('color', new THREE.BufferAttribute(cols, 3)); g.computeVertexNormals();
+    g.setAttribute('position', new THREE.BufferAttribute(t, 3)); g.setAttribute('color', new THREE.BufferAttribute(Float32Array.from(cols), 3)); g.computeVertexNormals();
+    this.srcCols = cols;
     this.srcMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.75, metalness: 0, side: THREE.DoubleSide });
-    const m = new THREE.Mesh(g, this.srcMat); m.castShadow = true; m.receiveShadow = true; this.src.add(m);
+    const m = new THREE.Mesh(g, this.srcMat); m.castShadow = true; m.receiveShadow = true; this.src.add(m); this.srcGeo = g;
     if (!raw) { g.computeBoundingBox(); }
-    this.applyMode(); this.frame();
+    this.flatN = Float32Array.from(g.attributes.normal.array); this.smoothN = null;
+    this.paintSource(); this.applySmooth();
+    this.applyMode();
   }
 
 
@@ -152,24 +156,24 @@ export class StudioViewport {
     }
     for (let n = 0; n < N; n++) dist[n] /= dmax;
     this.world.add(mesh);
-    this.vox = { mesh, pos, dist, N, t0: performance.now(), dummy: new THREE.Object3D(), done: false };
+    this.vox = { mesh, pos, dist, N, t0: performance.now(), dummy: new THREE.Object3D() };
   }
   stepVoxels(now) {
     const v = this.vox; if (!v) return;
-    const T = now - v.t0, WAVE = 650, GROW = 380, HOLD = 1500, OUT0 = WAVE + GROW + HOLD, END = OUT0 + WAVE + GROW;
+    // Two waves, both leaving the centre: cells grow in, then shrink away. The out wave starts at
+    // OUT_AT of the fill time, so the centre is already fading while the rim is still arriving.
+    const WAVE = 650, GROW = 380, FILL = WAVE + GROW, OUT_AT = 0.25;
+    const T = now - v.t0, OUT0 = FILL * OUT_AT, END = OUT0 + FILL;
     if (T > END) { this.clearVoxels(); return; }
-    if (v.done && T < OUT0) return;                                                       // static while holding
     const { dummy, mesh, pos, dist, N } = v;
     for (let n = 0; n < N; n++) {
-      const d = dist[n] * WAVE;
-      let s;
-      if (T < OUT0) s = easeOutBack(Math.min(1, Math.max(0, (T - d) / GROW)));
-      else s = 1 - Math.min(1, Math.max(0, (T - OUT0 - d) / GROW)) ** 2;
-      s = Math.max(0, s) * 0.94;
+      const d = dist[n] * WAVE;                                                           // this cell's place in the wave
+      const gi = easeOutBack(Math.min(1, Math.max(0, (T - d) / GROW)));                   // growing in (slight overshoot)
+      const go = Math.min(1, Math.max(0, (T - OUT0 - d) / GROW));                         // shrinking away
+      const s = Math.max(0, Math.min(1.08, gi)) * (1 - go * go) * 0.94;
       dummy.position.set(pos[n * 3], pos[n * 3 + 1], pos[n * 3 + 2]); dummy.scale.setScalar(s); dummy.updateMatrix(); mesh.setMatrixAt(n, dummy.matrix);
     }
     mesh.instanceMatrix.needsUpdate = true;
-    v.done = T > WAVE + GROW && T < OUT0;
   }
 
   // ------------------------------------------------------------- LEGO (instanced)
@@ -209,7 +213,8 @@ export class StudioViewport {
     this.vis = new Uint8Array(P.length).fill(1); this.revealed = P.length;
     this.setColorMode(this.colorMode);
     this.setOutline(this.outline);
-    this.applyMode(); this.frame();
+    this.applyMode();
+    this.zoomToFit(true);
   }
 
   /** black back-face shell sharing the instance matrices of `mesh` (so pop-in / hiding follows for free) */
@@ -218,8 +223,27 @@ export class StudioViewport {
     h.instanceMatrix = mesh.instanceMatrix; h.frustumCulled = false; h.visible = this.outline; h.renderOrder = -1;
     this.lego.add(h); this.hulls.push(h);
   }
+  /** smooth: welded geometry.computeVertexNormals() + smooth shading; off: per-face normals + flat shading */
+  setSmooth(on) { this.smooth = !!on; this.applySmooth(); }
+  applySmooth() {
+    if (!this.srcGeo) return;
+    const on = !!this.smooth;
+    if (on && !this.smoothN) this.smoothN = smoothNormals(this.srcPos);
+    const a = this.srcGeo.getAttribute('normal'), n = on ? this.smoothN : this.flatN;
+    if (a.array.length === n.length) { a.array.set(n); a.needsUpdate = true; }
+    this.srcMat.flatShading = !on; this.srcMat.needsUpdate = true;
+  }
+  /** per-corner colours of the source mesh (linear RGB) used by the 'islands' colour mode */
+  setIslandColors(cols) { this.islandCols = cols; this.paintSource(); }
+  paintSource() {
+    if (!this.srcGeo) return;
+    const isl = this.colorMode === 'islands' && this.islandCols && this.islandCols.length === this.srcCols.length;
+    const a = this.srcGeo.getAttribute('color'), src = isl ? this.islandCols : this.srcCols;
+    if (a.array.length !== src.length) return;
+    a.array.set(src); a.needsUpdate = true;
+  }
   setColorMode(mode) {
-    this.colorMode = mode; if (!this.pieces) return;
+    this.colorMode = mode; this.paintSource(); if (!this.pieces) return;
     const c = new THREE.Color();
     this.pieces.forEach((p, n) => {
       const rgb = mode === 'kind' ? (KIND_COL[p.kind] || [0.6, 0.6, 0.6]).map((x) => x * 255) : (p.rgb || [200, 200, 200]);
@@ -262,7 +286,8 @@ export class StudioViewport {
   }
 
   // ------------------------------------------------------------- layout / camera
-  setMode(mode) { this.mode = mode; this.applyMode(); this.frame(); }
+  setMode(mode) { this.mode = mode; this.applyMode(); }
+  resetView() { this.frame(); }
   applyMode() {
     const m = this.mode, hasL = !!this.pieces;
     this.src.visible = m === 'mesh' || m === 'both' || m === 'split' || (!hasL && m === 'lego');
@@ -283,12 +308,27 @@ export class StudioViewport {
     const d = cycloDims(size); this.maxCam = d.maxCam; this.controls.maxDistance = d.maxCam;   // the camera stays inside the cylinder
     this.scene.fog = null;
   }
-  frame() {
+  zoomToFit(keepOrientation = true) {
     const w = (this.mode === 'split' && this.pieces ? this.W * 2.2 : this.W) * S, d = this.D * S, h = Math.max(this.H * S, 1);
-    const r = Math.hypot(w, d, h) / 2, dist = r / Math.sin(this.camera.fov * Math.PI / 360) * 0.95;
-    this.controls.target.set(0, h / 2, 0);
-    this.camera.position.set(0, h / 2, 0).add(new THREE.Vector3(0.45, 0.55, 1).normalize().multiplyScalar(dist));
-    this.camera.near = Math.max(0.05, dist / 200); this.camera.far = Math.max(dist * 20, this.maxCam * 5); this.camera.updateProjectionMatrix(); this.controls.update();
+    const r = Math.hypot(w, d, h) / 2, dist = r / Math.sin((this.camera.fov * Math.PI) / 360) * 0.95;
+    const target = new THREE.Vector3(0, h / 2, 0);
+    let dir = new THREE.Vector3(0.45, 0.55, 1).normalize();
+    if (keepOrientation) {
+      const curDir = this.camera.position.clone().sub(this.controls.target);
+      if (curDir.lengthSq() > 1e-4) {
+        dir = curDir.normalize();
+        if (dir.y < 0.1) dir.y = 0.1;
+        dir.normalize();
+      }
+    }
+    this.controls.target.copy(target);
+    this.camera.position.copy(target).addScaledVector(dir, dist);
+    if (this.camera.position.y < 0.25) this.camera.position.y = 0.25;
+    this.camera.near = Math.max(0.05, dist / 200); this.camera.far = Math.max(dist * 20, this.maxCam * 5);
+    this.camera.updateProjectionMatrix(); this.controls.update();
+  }
+  frame() {
+    this.zoomToFit(false);
   }
   view(name) {
     const c = this.controls.target.clone(), d = this.camera.position.distanceTo(c);

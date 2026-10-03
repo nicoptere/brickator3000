@@ -8,6 +8,7 @@ import { UploadOutlined, SearchOutlined, ThunderboltOutlined, DownloadOutlined, 
 import './studio.css';
 import { StudioViewport } from './studio/viewport3d.js';
 import { sfx } from './studio/sfx.js';
+import { fixWinding, meshIslands, islandColors } from './studio/meshtools.js';
 import { loadModel, reorient } from './loaders.js';
 import { runMethod, cancel, poolSize } from './engine.js';
 import { DEFAULTS, CATALOG, FULL_CATALOG, catalogFor } from './brickgen/pipeline.js';
@@ -55,22 +56,28 @@ function StudioInner() {
   const [models, setModels] = useState([]);
   const [cat, setCat] = useState(null), [query, setQuery] = useState(''), [modelPath, setModelPath] = useState(null);
   const [model, setModel] = useState(null), [up, setUp] = useState('y');
-  const [busy, setBusy] = useState(false), [stage, setStage] = useState(['', 0]);
+  const [isl, setIsl] = useState(null), [smooth, setSmooth] = useState(false), [busy, setBusy] = useState(false), [stage, setStage] = useState(['', 0]);
   const [res, setRes] = useState(null);
   const [viewMode, setViewMode] = useState('mesh'), [colorMode, setColorMode] = useState('piece'), [outline, setOutline] = useState(true);
   const [step, setStep] = useState(0), [playing, setPlaying] = useState(false), [speed, setSpeed] = useState(1), [autoBuild, setAutoBuild] = useState(true);
   const [sound, setSound] = useState(sfx.on), [rotate, setRotate] = useState(false);
     const [dark, setDark] = useState(() => { try { return localStorage.getItem('brickgen.theme') !== 'light'; } catch { return true; } });
-  const [snapSpp, setSnapSpp] = useState(512), [thick, setThick] = useState(2.5), [expanded, setExpanded] = useState([]);
+  const [snapSpp, setSnapSpp] = useState(128), [thick, setThick] = useState(1), [expanded, setExpanded] = useState([]);
   const [workers, setWorkers] = useState(poolSize);
   const [leftOpen, setLeftOpen] = useState(true), [rightOpen, setRightOpen] = useState(true);
   const [openSrc, setOpenSrc] = useState(true), [openCfg, setOpenCfg] = useState(true), [openRes, setOpenRes] = useState(true), [openRender, setOpenRender] = useState(true), [openReplay, setOpenReplay] = useState(true), [openExport, setOpenExport] = useState(true);
   const [advanced, setAdvanced] = useState(false), [partsOpen, setPartsOpen] = useState(false);
   useEffect(() => { vp.current && vp.current.setTheme(dark); }, [dark]);
   const prevRes = useRef(null);
+  /** cell wave over the coloured source mesh (shown first: model colours, mesh view); also replayed when the same resolution is clicked again */
+  const wave = (studs = opts.studs, ref = opts.ref) => {
+    if (!vp.current || !model) return;
+    setViewMode('mesh'); vp.current.setMode('mesh'); setColorMode('piece'); vp.current.setColorMode('piece');
+    vp.current.voxelPreview(studs, ref);
+  };
   useEffect(() => {                                           // voxel preview of the grid unit whenever the resolution changes
     const k = `${opts.studs}|${opts.ref}`, first = prevRes.current === null; prevRes.current = k;
-    if (!first && vp.current && model) vp.current.voxelPreview(opts.studs, opts.ref);
+    if (!first) wave(opts.studs, opts.ref);
   }, [opts.studs, opts.ref]); // eslint-disable-line
   const stepRef = useRef(0); stepRef.current = step;
 
@@ -98,7 +105,9 @@ function StudioInner() {
 
   const showModel = (mm) => {
     setRes(null); setPlaying(false); setStep(0); setViewMode('mesh'); sfx.click();
-    vp.current.setSource(mm.tris, mm.vcols, { raw: true }); vp.current.setMode('mesh');
+    vp.current.setSource(mm.tris, mm.vcols, { raw: true });
+    const il = meshIslands(mm.tris); setIsl({ count: il.count }); vp.current.setIslandColors(islandColors(il.labels, il.count));
+    vp.current.setMode('mesh');
   };
   const openPath = useCallback(async (p, upAxis = up) => {
     setModelPath(p);
@@ -150,10 +159,17 @@ function StudioInner() {
     if (!model) return message.info('Load a model first');
     sfx.start(); setBusy(true); setPlaying(false); setStage(['Preparing', 0]);
     try {
-      const r = await runMethod({ tris: model.tris, vcols: model.vcols }, opts, { workersWanted: workers, onStage: (s, f) => setStage([s, f]) });
+      let src = { tris: model.tris, vcols: model.vcols };
+      if (opts.vertexNormals) {
+        setStage(['Recomputing vertex normals', 0]); await new Promise((r) => setTimeout(r, 30));
+        const f = fixWinding(model.tris, model.vcols); src = f;
+        message.info(f.flipped ? `vertex normals: ${f.flipped} flipped triangle${f.flipped === 1 ? '' : 's'} corrected` : 'vertex normals: no flipped triangle found');
+      }
+      const r = await runMethod(src, opts, { workersWanted: workers, onStage: (s, f) => setStage([s, f]) });
       setRes(r);
       vp.current.setSource(r.srcTris, r.srcCols); vp.current.setLego(r.pieces, FULL_CATALOG, r.dims); vp.current.setColorMode(colorMode); vp.current.setOutline(outline);
-      setViewMode('lego'); vp.current.setMode('lego');
+      if (colorMode !== 'islands') { setViewMode('lego'); vp.current.setMode('lego'); }
+      vp.current.zoomToFit();
       const lv = Math.max(...r.pieces.map((p) => p.b + p.h)); maxLevelRef.current = lv;
       const g = r.metrics.grounded >= 0.9995;
       message.success(`${r.metrics.pieces} pieces in ${(r.timing.total / 1000).toFixed(1)} s${g ? ', one grounded piece of work' : ''}`);
@@ -170,6 +186,7 @@ function StudioInner() {
   const save = (url) => { const a = document.createElement('a'); a.href = url; a.download = base + '.png'; a.click(); };
   const ptJob = useRef(null), ptHost = useRef(null);
   const dragRef = useRef(null), [ptView, setPtView] = useState({ z: 1, x: 0, y: 0 });
+  const [dof, setDof] = useState({ on: true, px: 16, focus: 0, sharp: 0, span: null });        // depth of field on the finished still
   const [pt, setPt] = useState(null);                              // { n, spp, status: 'running' | 'done' | 'error', err }
   const closePt = () => { if (ptJob.current) { ptJob.current.dispose(); ptJob.current = null; } setPt(null); };
   useEffect(() => { if (!pt) return; const f = (e) => e.key === 'Escape' && closePt(); window.addEventListener('keydown', f); return () => window.removeEventListener('keydown', f); }, [!!pt]); // eslint-disable-line
@@ -184,9 +201,27 @@ function StudioInner() {
       setPt((o) => o && { ...o, ar: job.canvas.width / job.canvas.height });
       for (let i = 0; i < 50 && !ptHost.current; i++) await new Promise((r) => setTimeout(r, 20));
       if (ptHost.current) { ptHost.current.innerHTML = ''; job.canvas.style.cssText = 'width:100%;height:100%;display:block'; ptHost.current.appendChild(job.el); }
-      const ok = await job.run((n, m) => setPt((o) => o && { ...o, n, spp: m }));
-      if (ok) { setPt((o) => o && { ...o, n: spp, status: 'done' }); sfx.done(); }
+      let lastUi = 0;                                                              // progress is repainted at ~5 Hz, off the sample loop: one React commit per frame can pile up into 'maximum update depth'
+      const ok = await job.run((n, m) => { const t = performance.now(); if (n < m && t - lastUi < 200) return; lastUi = t; setTimeout(() => setPt((o) => (o && o.status === 'running' ? { ...o, n, spp: m } : o)), 0); });
+      if (ok) {
+        setPt((o) => o && { ...o, n: spp, status: 'done' }); sfx.done();
+        try {                                                                        // depth pass + first blur, focused mid-range
+          const span = job.prepareDof();
+          const focus = span ? (span.near + span.far) / 2 : 0;
+          setDof((d) => { const n = { ...d, focus, span }; job.applyDof({ on: n.on, focus, maxPx: n.px }); return n; });
+        } catch (e) { console.warn('depth of field unavailable', e); }
+      }
     } catch (e) { console.error(e); setPt((o) => o && { ...o, status: 'error', err: String(e.message || e) }); }
+  };
+
+  /** pick the focus distance from the depth map under the cursor (image coords, allowing for zoom / pan) */
+  const focusFromEvent = (e, frameEl) => {
+    const job = ptJob.current; if (!job || !job.depthAt) return;
+    const r = frameEl.getBoundingClientRect();
+    const u = (e.clientX - r.left - ptView.x) / (r.width * ptView.z), v = (e.clientY - r.top - ptView.y) / (r.height * ptView.z);
+    if (u < 0 || u > 1 || v < 0 || v > 1) return;
+    const z = job.depthAt(u, v); if (!z) return;
+    setDof((d) => { job.applyDof({ on: true, focus: z, maxPx: d.px }); return { ...d, on: true, focus: z }; });
   };
 
   const bom = useMemo(() => {
@@ -310,16 +345,25 @@ function StudioInner() {
               <Tooltip title="which axis of the file points up"><Select size="small" value={up} onChange={(u) => { setUp(u); if (modelPath) openPath(modelPath, u); }} style={{ width: 86 }}
                 options={[['y', 'Y up'], ['z', 'Z up'], ['-z', '-Z up'], ['x', 'X up']].map(([value, label]) => ({ value, label }))} /></Tooltip>
             </div>
+            <div className="grid2">
+              <Tooltip title="welds the mesh, lets three.js compute vertex normals and flips reversed triangles before the LEGO computation"><Checkbox checked={!!opts.vertexNormals} onChange={(e) => setOpt('vertexNormals', e.target.checked)}>Fix flipped faces</Checkbox></Tooltip>
+              <Tooltip title="on: geometry.computeVertexNormals() on the welded mesh, smooth shading. off: flat shading"><Checkbox checked={smooth} onChange={(e) => { setSmooth(e.target.checked); vp.current.setSmooth(e.target.checked); }}>Smooth normals</Checkbox></Tooltip>
+            </div>
           </Section>
           <Divider style={{ margin: '4px 0' }} />
 
           <Section title="2. Discretization" open={openCfg} setOpen={setOpenCfg}>
+            {!busy ? (
+              <Button type="primary" icon={<ThunderboltOutlined />} disabled={!model} onClick={generate} style={{ width: '100%', height: 36, fontWeight: 600 }}>Compute</Button>
+            ) : (
+              <Button danger icon={<StopOutlined />} onClick={stop} style={{ width: '100%', height: 36 }}>Cancel</Button>
+            )}
             <div className="ctl">
               <div className="ctl-h"><span>Resolution</span><b>{opts.studs} studs</b>
                 <Select size="small" value={opts.ref} onChange={(v) => setOpt('ref', v)} style={{ width: 138, marginLeft: 'auto' }}
                   options={[{ value: 'min3', label: 'smallest side' }, { value: 'maxh', label: 'longest side' }]} /></div>
-              <Slider min={4} max={64} step={1} value={Math.min(64, opts.studs)} onChange={(v) => setOpt('studs', v)} marks={{ 4: '4', 16: '16', 32: '32', 48: '48', 64: '64' }} />
-              <div className="presets">{[8, 12, 16, 24, 32, 48, 64].map((v) => <Button key={v} size="small" type={opts.studs === v ? 'primary' : 'default'} onClick={() => { sfx.click(); setOpt('studs', v); }}>{v}</Button>)}</div>
+              <Slider min={4} max={64} step={1} value={Math.min(64, opts.studs)} onChange={(v) => setOpt('studs', v)} onChangeComplete={(v) => wave(v)} marks={{ 4: '4', 16: '16', 32: '32', 48: '48', 64: '64' }} />
+              <div className="presets">{[8, 12, 16, 24, 32, 48, 64].map((v) => <Button key={v} size="small" type={opts.studs === v ? 'primary' : 'default'} onClick={() => { sfx.click(); setOpt('studs', v); wave(v); }}>{v}</Button>)}</div>
             </div>
             <div className="ctl">
               <div className="ctl-h"><span>Precision</span><b>{opts.precision}</b><i>{{ 0: 'draft: 1 try', 4: 'balanced: 4 tries', 8: 'fine: 9 tries', 12: 'best: 16 tries' }[opts.precision]}</i></div>
@@ -343,17 +387,6 @@ function StudioInner() {
                 <Button size="small" type="text" icon={<ReloadOutlined />} onClick={() => { localStorage.removeItem(STORE); setOpts({ ...DEFAULTS }); }}>defaults</Button>
               </div>
             </div>
-            {!busy ? (
-              <Button type="primary" icon={<ThunderboltOutlined />} disabled={!model} onClick={generate} style={{ width: '100%', height: 36, fontWeight: 600 }}>Discretize</Button>
-            ) : (
-              <Button danger icon={<StopOutlined />} onClick={stop} style={{ width: '100%', height: 36 }}>Cancel</Button>
-            )}
-            {busy && (
-              <div style={{ marginTop: 2 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--tx2)' }}><span>{stage[0]}</span><span>{Math.round(stage[1] * 100)}%</span></div>
-                <Progress percent={Math.round(stage[1] * 100)} showInfo={false} size="small" />
-              </div>
-            )}
           </Section>
 
           <div style={{ fontSize: 10, color: 'var(--tx2)', textAlign: 'right' }}><a href="#/dev">dev UI</a></div>
@@ -371,10 +404,12 @@ function StudioInner() {
               {[['mesh', 'Mesh'], ['lego', 'LEGO'], ['both', 'Overlay'], ['split', 'Split']].map(([v, l]) => <Radio.Button key={v} value={v} style={{ flex: 1, textAlign: 'center' }}>{l}</Radio.Button>)}
             </Radio.Group>
             <Text style={{ fontSize: 11, color: 'var(--tx2)' }}>Colours</Text>
-            <Radio.Group size="small" value={colorMode} onChange={(e) => { sfx.click(); setColorMode(e.target.value); vp.current.setColorMode(e.target.value); }} style={{ display: 'flex', width: '100%' }}>
-              <Radio.Button value="piece" style={{ flex: 1, textAlign: 'center' }}>Model colours</Radio.Button>
+            <Radio.Group size="small" value={colorMode} onChange={(e) => { sfx.click(); const v = e.target.value; setColorMode(v); vp.current.setColorMode(v); if (v === 'islands') { setViewMode('mesh'); vp.current.setMode('mesh'); } }} style={{ display: 'flex', width: '100%' }}>
+              <Radio.Button value="piece" style={{ flex: 1, textAlign: 'center' }}>Model</Radio.Button>
+              <Radio.Button value="islands" style={{ flex: 1, textAlign: 'center' }}>Islands</Radio.Button>
               <Radio.Button value="kind" style={{ flex: 1, textAlign: 'center' }}>Part kinds</Radio.Button>
             </Radio.Group>
+            {colorMode === 'islands' && isl && <Text style={{ fontSize: 11, color: 'var(--tx2)' }}>{isl.count} island{isl.count === 1 ? '' : 's'} in the source mesh</Text>}
             {colorMode === 'kind' && resultsBlock}
             <div className="row"><span>Ink outline</span><Switch size="small" checked={outline} onChange={(v) => { setOutline(v); vp.current.setOutline(v); }} /></div>
             <div className="row"><span>Outline thickness</span><Slider min={0.5} max={4} step={0.25} value={thick} onChange={(v) => { setThick(v); vp.current.setHullThickness(v); }} style={{ width: 120, margin: 0 }} /></div>
@@ -384,7 +419,7 @@ function StudioInner() {
             <Section title="Replay" open={openReplay} setOpen={setOpenReplay}>{replay}</Section></>)}
           <Divider style={{ margin: '4px 0' }} />
           <Section title="Export" open={openExport} setOpen={setOpenExport}>
-            {!res && <Text type="secondary" style={{ fontSize: 12 }}>Discretize a model to export it.</Text>}
+            {!res && <Text type="secondary" style={{ fontSize: 12 }}>Compute a model to export it.</Text>}
             <div className="exports">
               <Button size="small" type="primary" icon={<DownloadOutlined />} disabled={!res} onClick={exportLDR}>.ldr (LDraw)</Button>
               <Button size="small" icon={<DownloadOutlined />} disabled={!res} onClick={() => exportGLB('piece')}>.glb</Button>
@@ -403,13 +438,14 @@ function StudioInner() {
         <div className="tools">
           <Tooltip title={sound ? 'Sound on' : 'Sound off'}><Button size="small" type="text" icon={sound ? <SoundOutlined /> : <AudioMutedOutlined />} onClick={() => { const v = !sound; setSound(v); sfx.setOn(v); }} /></Tooltip>
           <Tooltip title="Auto-rotate"><Button size="small" type={rotate ? 'primary' : 'text'} icon={<SyncOutlined />} onClick={() => { setRotate(!rotate); vp.current.setAutoRotate(!rotate); }} /></Tooltip>
-          <Tooltip title="Centre view"><Button size="small" type="text" icon={<AimOutlined />} onClick={() => vp.current.frame()} /></Tooltip>
+          <Tooltip title="Reset view"><Button size="small" type="text" icon={<AimOutlined />} onClick={() => vp.current.frame()} /></Tooltip>
           <Tooltip title="Snapshot"><Button size="small" type="text" icon={<CameraOutlined />} onClick={png} disabled={!model} /></Tooltip>
           <Tooltip title={dark ? 'Light theme' : 'Dark theme'}><Button size="small" type="text" icon={dark ? <BulbOutlined /> : <BulbFilled />} onClick={toggleTheme} /></Tooltip>
         </div>
       </div>
 
-      {busy && <div className="busy" style={{ left: leftOpen ? LW : 0, right: rightOpen ? RW : 0 }}><div className="chip"><div className="spinner" /><span>{stage[0]}</span><div className="pulse" /></div></div>}
+      {busy && <div className="busy" style={{ left: leftOpen ? LW : 0, right: rightOpen ? RW : 0 }}><div className="chip"><div className="chip-row"><div className="spinner" /><span>{stage[0]}</span><div className="pulse" /></div>
+        <div className="chip-bar"><Progress percent={Math.round(stage[1] * 100)} showInfo={false} size="small" /><span>{Math.round(stage[1] * 100)}%</span></div></div></div>}
 
       <Drawer title="All parameters" open={advanced} onClose={() => setAdvanced(false)} size={440} className="adv">
         <Collapse size="small" defaultActiveKey={['Scale & volume']} items={SCHEMA.map((g) => ({ key: g.panel, label: g.panel, children: g.items.map((it) => <Field key={it.key} it={it} opts={opts} setOpt={setOpt} />) }))} />
@@ -423,15 +459,27 @@ function StudioInner() {
               setPtView((v) => { const z2 = Math.max(1, Math.min(4, v.z * Math.exp(-e.deltaY * 0.0015))), k = z2 / v.z;
                 return { z: z2, x: Math.min(0, Math.max(r.width * (1 - z2), cx - (cx - v.x) * k)), y: Math.min(0, Math.max(r.height * (1 - z2), cy - (cy - v.y) * k)) }; });
             }}
-            onPointerDown={(e) => { if (e.target.closest('.ptui')) return; e.currentTarget.setPointerCapture(e.pointerId); dragRef.current = { x: e.clientX, y: e.clientY, v: ptView }; }}
+            onPointerDown={(e) => {
+              if (e.target.closest('.ptui')) return;
+              e.currentTarget.setPointerCapture(e.pointerId);
+              dragRef.current = { x: e.clientX, y: e.clientY, v: ptView, moved: 0, focus: ptView.z === 1 || e.altKey };
+              if (dragRef.current.focus && pt.status === 'done') focusFromEvent(e, e.currentTarget);
+            }}
             onPointerMove={(e) => {
-              const d = dragRef.current; if (!d) return; const r = e.currentTarget.getBoundingClientRect(), z = d.v.z;
+              const d = dragRef.current; if (!d) return;
+              d.moved = Math.max(d.moved, Math.abs(e.clientX - d.x) + Math.abs(e.clientY - d.y));
+              if (d.focus) { if (pt.status === 'done') focusFromEvent(e, e.currentTarget); return; }   // drag scrubs the focus
+              const r = e.currentTarget.getBoundingClientRect(), z = d.v.z;
               setPtView({ z, x: Math.min(0, Math.max(r.width * (1 - z), d.v.x + e.clientX - d.x)), y: Math.min(0, Math.max(r.height * (1 - z), d.v.y + e.clientY - d.y)) });
             }}
-            onPointerUp={() => { dragRef.current = null; }} onDoubleClick={() => setPtView({ z: 1, x: 0, y: 0 })}>
+            onPointerUp={(e) => {
+              const d = dragRef.current; dragRef.current = null;
+              if (d && !d.focus && d.moved < 4 && pt.status === 'done') focusFromEvent(e, e.currentTarget);   // a click focuses even when zoomed in
+            }}
+            onDoubleClick={() => setPtView({ z: 1, x: 0, y: 0 })}>
             {pt.status === 'error'
               ? <Alert type="error" showIcon message="The path tracer could not start" description={pt.err} style={{ margin: 16 }} />
-              : <div ref={ptHost} className="ptpan" style={{ transform: `translate(${ptView.x}px, ${ptView.y}px) scale(${ptView.z})`, cursor: ptView.z > 1 ? 'grab' : 'default' }} />}
+              : <div ref={ptHost} className="ptpan" style={{ transform: `translate(${ptView.x}px, ${ptView.y}px) scale(${ptView.z})`, cursor: pt.status === 'done' && ptView.z === 1 ? 'crosshair' : ptView.z > 1 ? 'grab' : 'default' }} />}
             <div className="ptui top">
               {pt.status === 'error' && <Button size="small" onClick={() => { save(vp.current.snapshot()); closePt(); }}>Save plain capture</Button>}
               <Button size="small" type="primary" icon={<DownloadOutlined />} disabled={pt.status === 'error'} onClick={() => save(ptJob.current.url())}>PNG{pt.status === 'running' ? ` · ${pt.n} spp` : ''}</Button>
@@ -439,7 +487,30 @@ function StudioInner() {
             </div>
             <div className="ptui bottom">
               <Progress percent={Math.round((100 * pt.n) / pt.spp)} size="small" showInfo={false} />
-              <span>{pt.n} / {pt.spp} spp · {ptView.z.toFixed(1)}x · wheel to zoom, drag to pan, double-click to reset</span>
+              {pt.status === 'done' && dof.span && (
+                <>
+                <div className="ptdof">
+                  <span>Focus distance</span>
+                  <Slider min={dof.span.near} max={dof.span.far} step={(dof.span.far - dof.span.near) / 400} value={Math.min(dof.span.far, Math.max(dof.span.near, dof.focus))} style={{ flex: 1, minWidth: 90 }} tooltip={{ open: false }}
+                    onChange={(f) => setDof((d) => { ptJob.current.applyDof({ on: true, focus: f, maxPx: d.px }); return { ...d, on: true, focus: f }; })} />
+                  <b>{Math.round(100 * (Math.min(dof.span.far, Math.max(dof.span.near, dof.focus)) - dof.span.near) / Math.max(1e-9, dof.span.far - dof.span.near))}%</b>
+                </div>
+                <div className="ptdof">
+                  <span>Focal depth</span>
+                  <Slider min={0} max={0.6} step={0.005} value={dof.sharp} style={{ flex: 1, minWidth: 90 }} tooltip={{ open: false }}
+                    onChange={(sharp) => setDof((d) => { ptJob.current.applyDof({ on: true, focus: d.focus, maxPx: d.px, sharp }); return { ...d, on: true, sharp }; })} />
+                  <b>{Math.round(dof.sharp * 100)}%</b>
+                </div>
+                <div className="ptdof">
+                  <Switch size="small" checked={dof.on} onChange={(on) => setDof((d) => { ptJob.current.applyDof({ on, focus: d.focus, maxPx: d.px }); return { ...d, on }; })} />
+                  <span>Depth of field</span>
+                  <Slider min={0} max={256} step={1} value={dof.px} style={{ flex: 1, minWidth: 90 }} tooltip={{ open: false }}
+                    onChange={(px) => setDof((d) => { ptJob.current.applyDof({ on: true, focus: d.focus, maxPx: px }); return { ...d, on: true, px }; })} />
+                  <b>{dof.px}px</b>
+                </div>
+                </>
+              )}
+              <span>{pt.n} / {pt.spp} spp · {ptView.z.toFixed(1)}x · wheel to zoom{pt.status === 'done' ? ', click the image to focus there' : ''}{ptView.z > 1 ? ', drag to pan' : ''}, double-click to reset</span>
             </div>
           </div>
         </div>
@@ -452,7 +523,7 @@ function StudioInner() {
               { title: 'part', dataIndex: 'id', width: 80 }, { title: 'name', dataIndex: 'name' }, { title: 'kind', dataIndex: 'kind', width: 80 },
               { title: 'colour', dataIndex: 'color', width: 160, render: (c, r) => <span><i className="sw" style={{ background: `rgb(${r.rgb})` }} />{c}</span> },
               { title: 'qty', dataIndex: 'count', width: 70, sorter: (a, b) => a.count - b.count, defaultSortOrder: 'descend' }]} />
-          ) : <Alert message="Discretize a model first" type="info" /> },
+          ) : <Alert message="Compute a model first" type="info" /> },
           { key: 'cat', label: `Catalogue (${catalogFor(opts).length} parts)`, children: (
             <Table size="small" pagination={{ pageSize: 10, size: 'small' }} dataSource={catalogFor(opts).map((c) => ({ key: c.id, id: c.id, name: c.name, kind: c.kind, size: `${c.w} x ${c.d} x ${c.h}`, studs: (c.stud_cells || []).length }))} columns={[
               { title: 'part', dataIndex: 'id', width: 90 }, { title: 'name', dataIndex: 'name' },

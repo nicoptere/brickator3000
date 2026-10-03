@@ -41,12 +41,13 @@ export class Viewer {
     this.srcMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.75, metalness: 0, side: THREE.DoubleSide, transparent: false, opacity: 1 });
     this.src.add(new THREE.Mesh(g, this.srcMat));
     g.computeBoundingBox(); this.srcBox = g.boundingBox.clone();
-    this.applyLayout(); this.frame();
+    this.applyLayout();
   }
 
   setLego(pieces, cat) {
     this.pieces = pieces.map((p, n) => ({ p, n })).sort((a, b) => a.p.b - b.p.b || a.n - b.n).map((x) => x.p);
-    this.cat = cat; this.rebuildLego(); this.applyLayout(); this.frame();
+    this.cat = cat; this.rebuildLego(); this.applyLayout();
+    this.zoomToFit(true);
   }
   rebuildLego() {
     this.clear(this.lego); if (!this.pieces) return;
@@ -84,7 +85,8 @@ export class Viewer {
   }
   setEdges(on) { this.showEdges = on; this.setLevel(this.level); }
   setColorMode(mode) { this.colorMode = mode; this.rebuildLego(); }
-  setLayout(mode) { this.layout = mode; this.applyLayout(); this.frame(); }
+  setLayout(mode) { this.layout = mode; this.applyLayout(); }
+  resetView() { this.frame(); }
   applyLayout() {
     const sb = this.srcBox, lb = this.legoBox;
     const w = Math.max(sb ? sb.max.x - sb.min.x : 0, lb ? lb.max.x - lb.min.x : 0);
@@ -93,15 +95,30 @@ export class Viewer {
     if (this.srcMat) { this.srcMat.transparent = this.layout === 'overlay'; this.srcMat.opacity = this.layout === 'overlay' ? 0.35 : 1; this.srcMat.depthWrite = this.layout !== 'overlay'; this.srcMat.needsUpdate = true; }
     if (this.layout === 'side') this.lego.position.x = w * 1.15 + 40;
   }
-  frame() {
+  zoomToFit(keepOrientation = true) {
     const box = new THREE.Box3();
     for (const g of [this.src, this.lego]) if (g.visible && g.children.length) box.expandByObject(g);
     if (box.isEmpty()) return;
     const c = box.getCenter(new THREE.Vector3()), r = box.getSize(new THREE.Vector3()).length() / 2;
-    const dist = r / Math.sin((this.camera.fov * Math.PI) / 360) * 0.8;
-    const dir = new THREE.Vector3(0.18, 0.55, 1).normalize();
-    this.camera.position.copy(c).addScaledVector(dir, dist); this.camera.near = dist / 100; this.camera.far = dist * 20; this.camera.updateProjectionMatrix();
-    this.controls.target.copy(c); this.controls.update();
+    const dist = (r / Math.sin((this.camera.fov * Math.PI) / 360)) * 0.8;
+    let dir = new THREE.Vector3(0.18, 0.55, 1).normalize();
+    if (keepOrientation) {
+      const curDir = this.camera.position.clone().sub(this.controls.target);
+      if (curDir.lengthSq() > 1e-4) {
+        dir = curDir.normalize();
+        if (dir.y < 0.1) dir.y = 0.1;
+        dir.normalize();
+      }
+    }
+    this.camera.position.copy(c).addScaledVector(dir, dist);
+    this.camera.near = dist / 100;
+    this.camera.far = dist * 20;
+    this.camera.updateProjectionMatrix();
+    this.controls.target.copy(c);
+    this.controls.update();
+  }
+  frame() {
+    this.zoomToFit(false);
   }
   view(name) {
     const c = this.controls.target.clone(), d = this.camera.position.distanceTo(c);

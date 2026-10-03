@@ -46,9 +46,10 @@ export function partVariants(cat, kinds) {
       const r = rotate(vol, h, c, rot);
       const sig = `${r.w},${r.d},${Array.from(r.V).map((v) => v.toFixed(4)).join(',')}|${r.studs.map((s) => s.join(':')).sort().join(';')}`;
       if (seen.has(sig)) continue; seen.add(sig);
-      let sum = 0; for (const v of r.V) sum += v;
+      let sum = 0, full = true; const lev = new Float64Array(h), per = r.V.length / h;
+      for (let q = 0; q < r.V.length; q++) { const x = r.V[q]; sum += x; lev[(q / per) | 0] += x; if (x !== 1) full = false; }
       if (sum / (G * G) < 0.3) continue;
-      out.push({ c, rot, V: r.V, studs: r.studs, w: r.w, d: r.d, h, vtot: sum / (G * G), vsum: sum });
+      out.push({ c, rot, V: r.V, studs: r.studs, w: r.w, d: r.d, h, vtot: sum / (G * G), vsum: sum, full, lev });   // lev: per-level sums; full: the volume is a solid box of ones (brick / plate / tile)
     }
   }
   cache.set(key, out);

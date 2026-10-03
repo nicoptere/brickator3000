@@ -16,6 +16,7 @@ export function solve(pre, cat, ox, oz, o, log = () => {}) {
     mirror = [pre.mirror.ax === 0 ? 'x' : 'z', c2];
   }
   const S = new Solver(M, nl, NZ, NX, o, mirror); S.log = log;
+  if (pre.Mfull) { let F = window(pre, ox, oz, 'Mfull').arr; if (pre.mirror) F = symmetrize(F, nl, NZ, NX, pre.mirror.ax, mirror[1]); S.Mfull = F; }   // hollow core: the full solid, so filling the core is not counted as overfill
   S.nxc = nxc; S.nzc = nzc;
   const tb = o.technic ? { technic: 0.02 } : {};
   const withBonus = (t, extra) => ({ ...t, bonus: { ...(t.bonus || {}), ...extra } });
@@ -87,7 +88,8 @@ export function solve(pre, cat, ox, oz, o, log = () => {}) {
 
 export function metrics(S) {
   let matched = 0, total = 0, over = 0;
-  for (let k = 0; k < S.M0.length; k++) { const m = S.M0[k], c = S.C[k]; matched += Math.min(m, c); total += m; if (c > m) over += c - m; }
+  const F = S.Mfull || S.M0;
+  for (let k = 0; k < S.M0.length; k++) { const m = S.M0[k], c = S.C[k], f = F[k]; matched += Math.min(m, c); total += m; if (c > f) over += c - f; }
   const kinds = {}, ids = {};
   for (const p of S.pieces) { kinds[p.kind] = (kinds[p.kind] || 0) + 1; ids[p.id] = (ids[p.id] || 0) + 1; }
   return { pieces: S.pieces.length, recall: matched / total, overfill: over / total, iou: matched / (total + over), kinds, ids,

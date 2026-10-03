@@ -4,7 +4,7 @@
 import * as THREE from 'three';
 import { RectAreaLight } from 'three';
 
-export const CYCLO = { lightK: 2.6, radiusK: 1.45, coveK: 0.32, heightK: 2.2, camK: 0.9 };
+export const CYCLO = { lightK: 2.6, radiusK: 1.45, coveK: 0.32, heightK: 2.2, camK: 0.9, gain: 0.7, ceilK: 0.55 };   // gain scales the area lights (path tracer only); ceilK = radius of the fillet that closes the ceiling
 
 /** world units: `size` = the largest dimension of the model. returns the geometry numbers used by the camera limits as well */
 export function cycloDims(size) {
@@ -13,10 +13,15 @@ export function cycloDims(size) {
 }
 
 export function cycloGeometry(size, seg = 96) {
-  const { R, cove, H } = cycloDims(size), pts = [new THREE.Vector2(0, 0)];
+  // A closed vessel, not an open dish: floor -> cove -> wall -> filleted ceiling -> apex on the axis.
+  // Closing the top means a camera inside can never see past a rim, so the flat scene background never
+  // shows and there is no horizon line from any angle — which is the whole point of a cyclorama.
+  const { R, cove, H } = cycloDims(size), top = R * CYCLO.ceilK, pts = [new THREE.Vector2(0, 0)];
   pts.push(new THREE.Vector2(R - cove, 0));
   for (let i = 1; i <= 24; i++) { const a = (i / 24) * Math.PI / 2; pts.push(new THREE.Vector2(R - cove + Math.sin(a) * cove, cove - Math.cos(a) * cove)); }   // quarter circle from the floor to the wall
-  pts.push(new THREE.Vector2(R, H));
+  pts.push(new THREE.Vector2(R, H - top));
+  for (let i = 1; i <= 24; i++) { const a = (i / 24) * Math.PI / 2; pts.push(new THREE.Vector2(R - top + Math.cos(a) * top, H - top + Math.sin(a) * top)); }   // quarter circle from the wall to the ceiling
+  pts.push(new THREE.Vector2(0, H));
   const g = new THREE.LatheGeometry(pts, seg);
   g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(g.getAttribute('position').count * 4).fill(1), 4));   // same attributes as the other path-traced meshes
   return g;
@@ -33,7 +38,7 @@ export function areaLights(size) {
     [165, 34, 0.8 * s, 0.5 * s, 8, 0xffffff],     // rim
   ];
   const lights = spec.map(([az, el, w, h, i, c]) => {
-    const l = new RectAreaLight(c, i, w, h), a = az * Math.PI / 180, e = el * Math.PI / 180;
+    const l = new RectAreaLight(c, i * CYCLO.gain, w, h), a = az * Math.PI / 180, e = el * Math.PI / 180;
     l.position.set(Math.sin(a) * Math.cos(e) * L, Math.sin(e) * L + 0.2 * s, Math.cos(a) * Math.cos(e) * L); l.lookAt(0, 0.4 * s, 0); g.add(l); return l;
   });
   return { lights, group: g };

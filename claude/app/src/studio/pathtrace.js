@@ -1,13 +1,19 @@
 // Snapshot with the GPU path tracer (three-gpu-pathtracer, as in the original app's pathTracerEngine): an offscreen renderer, the pieces as ONE merged
-// indexed mesh (export.buildMesh, per-vertex colours) in glossy ABS plastic, a gradient environment, a key light and a floor, accumulated to `spp` samples.
+// indexed mesh (export.buildMesh, per-vertex colours) in glossy ABS plastic, an EXR studio environment, three soft area lights and a closed cyclo, accumulated to `spp` samples.
 import * as THREE from 'three';
-import { WebGLPathTracer, GradientEquirectTexture } from 'three-gpu-pathtracer';
+import { WebGLPathTracer } from 'three-gpu-pathtracer';
+import { EXRLoader } from 'three/examples/jsm/loaders/EXRLoader.js';
+import { cycloGeometry, cycloMaterial, areaLights } from './cyclo.js';
+import { createDof } from './dof.js';
 import { buildMesh } from '../brickgen/export.js';
 
 const s2l = (c) => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
 
 /** builds the offscreen scene and returns { el (the canvas, show it while it converges), run(onProgress) , url(), dispose() }. `vp` = the StudioViewport (camera, lego group transform) */
-export function createPathTrace(vp, { pieces, cat, colorMode = 'piece', dark = true, spp = 512, maxSide = 1600, source = false, live = false } = {}) {
+let envPromise = null;
+const loadEnv = () => envPromise || (envPromise = new EXRLoader().loadAsync(new URL('/env/studio.exr', location.href).href).then((t) => { t.mapping = THREE.EquirectangularReflectionMapping; t.minFilter = t.magFilter = THREE.LinearFilter; return t; }));
+
+export async function createPathTrace(vp, { pieces, cat, colorMode = 'piece', dark = true, spp = 512, maxSide = 1600, source = false, live = false } = {}) {
   const cw = vp.el.clientWidth || 1000, ch = vp.el.clientHeight || 700, k = Math.min(2, maxSide / Math.max(cw, ch));
   const W = Math.max(2, Math.round(cw * k)), H = Math.max(2, Math.round(ch * k));
   const renderer = new THREE.WebGLRenderer({ antialias: false, preserveDrawingBuffer: true, powerPreference: 'high-performance' });
@@ -43,14 +49,11 @@ export function createPathTrace(vp, { pieces, cat, colorMode = 'piece', dark = t
 
     const scene = new THREE.Scene(); scene.background = new THREE.Color(dark ? 0x1e222b : 0xe9edf3);
     scene.add(mesh);
-    const fg = new THREE.PlaneGeometry(400, 400); fg.setAttribute('color', new THREE.BufferAttribute(new Float32Array(16).fill(1), 4));
-    const floor = new THREE.Mesh(fg, new THREE.MeshStandardMaterial({ color: dark ? 0x232834 : 0xdfe4ec, roughness: 0.45, metalness: 0 }));
-    floor.rotation.x = -Math.PI / 2; floor.position.y = -0.002; scene.add(floor);
-    const sz = Math.max(vp.W, vp.D, vp.H) / 20 || 20;
-    const key = new THREE.DirectionalLight(0xfff6e8, 3); key.position.set(sz * 0.9, sz * 1.6, sz * 1.1); scene.add(key);
-    const fill = new THREE.DirectionalLight(0xdbeafe, 1); fill.position.set(-sz, sz * 0.8, sz * 0.5); scene.add(fill);
-    const env = new GradientEquirectTexture(); env.topColor.set(dark ? 0x3a4660 : 0xffffff); env.bottomColor.set(dark ? 0x10131a : 0xaab3c2); env.update(); scene.environment = env;
-
+    // photo-studio cyclo: floor + wall of a filleted cylinder wider than the lights, three soft area lights, EXR studio environment
+    const size = Math.max(vp.W, vp.D, vp.H) / 20 || 20;
+    const cy = new THREE.Mesh(cycloGeometry(size), cycloMaterial(dark)); cy.position.y = -0.002; scene.add(cy);
+    const al = areaLights(size); scene.add(al.group);
+    const env = await loadEnv(); scene.environment = env; scene.environmentIntensity = dark ? 0.3 : 0.45;
     const cam = vp.camera.clone();                                  // own camera (live mode re-syncs it with the viewport camera on every move)
     const P = flat.getAttribute('position'), step = Math.max(1, Math.floor(P.count / 200000)), tv = new THREE.Vector3();
     const outH = live ? Math.min(1080, Math.round(ch * (window.devicePixelRatio || 1))) : 1080;
@@ -81,8 +84,28 @@ export function createPathTrace(vp, { pieces, cat, colorMode = 'piece', dark = t
       host = document.createElement('div'); host.style.cssText = `position:absolute;inset:0;z-index:2;pointer-events:none;display:flex;align-items:center;justify-content:center;background:${dark ? '#1e222b' : '#e9edf3'}`;
       cv.style.cssText = 'max-width:100%;max-height:100%;object-fit:contain'; host.appendChild(cv);
     } else cv.style.cssText = 'max-width:100%;max-height:72vh;display:block;margin:0 auto;border-radius:6px';
+    let dof = null, dofState = { on: false, focus: 0, maxPx: 16, sharp: 0, span: null };
     const job = {
       el: host, canvas: cv, pt,
+      /** after the samples are in: keep the image, render the depth pass, and report what depths are in frame */
+      prepareDof() {
+        if (!dof) dof = createDof(renderer);
+        dof.grab(cv);
+        const r = dof.capture(scene, cam);
+        dofState.span = r;
+        if (r && !dofState.focus) dofState.focus = (r.near + r.far) / 2;
+        return r;
+      },
+      /** view-space depth under a normalised image point (0,0 = top left) */
+      depthAt: (u, v) => (dof ? dof.depthAt(u, v) : null),
+      dofState: () => ({ ...dofState }),
+      /** redraw the canvas: blurred when `on`, the untouched accumulation when not */
+      applyDof(next = {}) {
+        Object.assign(dofState, next);
+        if (!dof || !dof.hasBase()) return false;
+        const { on, focus, maxPx, span, sharp } = dofState;
+        return dof.compose({ focus, maxPx: on ? maxPx : 0, sharp: span ? (sharp || 0) * (span.far - span.near) : 0, range: span ? Math.max(1e-3, (span.far - span.near) * 0.28) : null });
+      },
       async run(onProgress) {
         while (!stop) {
           if (pt.samples < spp) { pt.renderSample(); onProgress && onProgress(Math.floor(pt.samples), spp); await new Promise((r) => requestAnimationFrame(r)); }
@@ -91,10 +114,10 @@ export function createPathTrace(vp, { pieces, cat, colorMode = 'piece', dark = t
         }
         return !stop;
       },
-      reset() { try { frame(); pt.updateCamera ? pt.updateCamera() : pt.reset(); } catch { pt.reset(); } },
+      reset() { if (dof) { dof.dispose(); dof = null; } try { frame(); pt.updateCamera ? pt.updateCamera() : pt.reset(); } catch { pt.reset(); } },
       url: () => cv.toDataURL('image/png'),
       stop() { stop = true; },
-      dispose() { stop = true; try { if (pt) { if (!pt._renderQuad && pt._quad) pt._renderQuad = pt._quad; pt.dispose(); } } catch {} renderer.dispose(); if (host.parentNode) host.parentNode.removeChild(host); },
+      dispose() { stop = true; if (dof) { dof.dispose(); dof = null; } try { if (pt) { if (!pt._renderQuad && pt._quad) pt._renderQuad = pt._quad; pt.dispose(); } } catch {} renderer.dispose(); if (host.parentNode) host.parentNode.removeChild(host); },
     };
     return job;
   } catch (e) { renderer.dispose(); throw e; }

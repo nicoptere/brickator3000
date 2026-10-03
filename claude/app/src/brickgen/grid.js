@@ -1,7 +1,7 @@
 // Fractional volume field M[level][z][x] (5x5 samples per stud, one level per plate) from exact vertical ray hits.
 import { STUD, PLATE, G, SAMP, PAD } from './constants.js';
 import { bounds } from './mesh.js';
-import { connectIslands } from './islands.js';
+import { connectIslands, decimateFloaters } from './islands.js';
 
 /** scale so the reference side = n studs; returns shifted copies (x += ox, z += oz) */
 export function normalize(tris, pts, n, ox, oz, ref = 'min3') {
@@ -70,8 +70,10 @@ export function columnHits(tris, NX, NZ) {
   return { start, Y, F };
 }
 
-/** column hits -> solid intervals -> fractional slab volume. "hollow": intervals from surface orientation (keeps the air between
- * biplane wings and under bellies); columns without a clean in/out alternation fall back to the envelope (lowest..highest hit). */
+/** column hits -> solid intervals -> fractional slab volume. "hollow": intervals from enter/exit hit pairs in position order
+ * (the standard even-odd point-in-solid rule) — keeps the air between biplane wings and under bellies, AND keeps a concave
+ * interior (a cup, a bowl) hollow, regardless of face winding. "envelope": always solid from the lowest to the highest hit
+ * (the crude, deliberate opt-in for when a shape is known-simple and robustness against noisy geometry matters more). */
 export function spansVolume(tris, nxc, nzc, nl, o) {
   const NX = nxc * G, NZ = nzc * G;
   const { start, Y, F } = columnHits(tris, NX, NZ);
@@ -93,7 +95,12 @@ export function spansVolume(tris, nxc, nzc, nl, o) {
     const a = start[c], b = start[c + 1]; if (a === b) continue;
     const iz = Math.floor(c / NX), ix = c % NX;
     let pairs = [];
-    if (o.mode === 'hollow' && alt(a, b, first)) for (let p = a; p < b; p += 2) pairs.push([Y[p], Y[p + 1]]);
+    // 'hollow' pairs consecutive hits by position (enter/exit/enter/exit...), independent of face orientation: this is the
+    // standard even-odd solid test, so it keeps a concave interior (a cup, a bowl) hollow even on a mesh whose winding is
+    // locally scrambled (flipped faces, near-duplicate surfaces, stray non-manifold geometry — common on generated/scanned
+    // assets) and does not pass the stricter `alt()` orientation check. A trailing unpaired hit (odd count) is dropped.
+    // `alt`/`first` above are kept only to report `bad` (diagnostic); they no longer gate which pairing rule is used.
+    if (o.mode === 'hollow') { const m = b - a - ((b - a) % 2); for (let p = a; p < a + m; p += 2) pairs.push([Y[p], Y[p + 1]]); }
     else pairs.push([Y[a], Y[b - 1]]);
     const merged = [];
     for (const [lo, hi] of pairs) {
@@ -139,16 +146,20 @@ export function prepare(model, n, o, sym = null) {
     const il = Math.min(nl - 1, Math.max(0, Math.floor(nm.pts[k + 1] / PLATE)));
     const idx = (il * NZ + iz) * NX + ix; if (P[idx] < 65535) P[idx]++;
   }
+  let crust = null, Mfull = null;
+  if (o.crust) { Mfull = M.slice(); crust = carveCrust(M, nl, NZ, NX, o.crustDepth ?? 40); if (!crust.voxels) Mfull = null; }
   let T = null, islands = null;
   if (o.islands) { const r = connectIslands(M, P, nl, NZ, NX, o); T = r.T; islands = r.stats; }
-  return { M, P, T, islands, nl, NX, NZ, ext0: [hi[0] - PAD, hi[1], hi[2] - PAD], s: nm.s, bad, shift, mirror };
+  else if (o.decimate ?? true) { islands = decimateFloaters(M, P, nl, NZ, NX, o).stats; }
+  return { M, Mfull, P, T, islands, crust, nl, NX, NZ, ext0: [hi[0] - PAD, hi[1], hi[2] - PAD], s: nm.s, bad, shift, mirror };
 }
 
 /** crop of the padded field for grid phase (ox, oz) */
 export function window(pre, ox, oz, key = 'M') {
   const a = Math.round((PAD - ox) / SAMP), b = Math.round((PAD - oz) / SAMP);
   const nxo = Math.ceil((pre.ext0[0] + ox) / STUD), nzo = Math.ceil((pre.ext0[2] + oz) / STUD);
-  const src = pre[key], nx = nxo * G, nz = nzo * G, nl = pre.nl;
+  const src = pre[key]; if (!src) return { arr: null, nxc: nxo, nzc: nzo };
+  const nx = nxo * G, nz = nzo * G, nl = pre.nl;
   const out = new (key === 'P' ? Uint16Array : key === 'T' ? Uint8Array : Float32Array)(nl * nz * nx);
   for (let l = 0; l < nl; l++) for (let z = 0; z < nz; z++) {
     const sz = z + b; if (sz >= pre.NZ) continue;
@@ -170,4 +181,37 @@ export function symmetrize(M, nl, nz, nx, ax, c2) {
     out[idx] = (M[idx] + m) / 2;
   }
   return out;
+}
+
+/** hollow core: erase every solid voxel deeper than `depth` LDU from the nearest air (or the grid boundary, the ground included),
+ *  so the solver only fills a shell. Multi-source Dijkstra from the air voxels, steps cost 4 LDU in x / z and 8 LDU in level. */
+export function carveCrust(M, nl, NZ, NX, depth) {
+  const N = nl * NZ * NX, plane = NZ * NX, solid = new Uint8Array(N);
+  let fill = 0; for (let k = 0; k < N; k++) { if (M[k] > 0.5) solid[k] = 1; fill += M[k]; }
+  const INF = 1 << 30, dist = new Int32Array(N).fill(INF), unit = SAMP, maxD = Math.ceil(depth / unit);
+  const buckets = Array.from({ length: maxD + 3 }, () => []);
+  const push = (v, d) => { if (d < dist[v]) { dist[v] = d; if (d <= maxD + 1) buckets[d].push(v); } };
+  // sources: solid voxels touching air or the boundary start at one step (4 LDU sideways, 8 LDU vertically)
+  for (let v = 0; v < N; v++) {
+    if (!solid[v]) continue;
+    const l = (v / plane) | 0, r = v - l * plane, z = (r / NX) | 0, x = r - z * NX;
+    if (x === 0 || x === NX - 1 || !solid[v - 1] || !solid[v + 1] || z === 0 || z === NZ - 1 || !solid[v - NX] || !solid[v + NX]) push(v, 1);
+    else if (l === 0 || l === nl - 1 || !solid[v - plane] || !solid[v + plane]) push(v, 2);
+  }
+  for (let c = 0; c < buckets.length; c++) {
+    const bk = buckets[c];
+    for (let q = 0; q < bk.length; q++) {
+      const v = bk[q]; if (dist[v] !== c) continue;
+      const l = (v / plane) | 0, r = v - l * plane, z = (r / NX) | 0, x = r - z * NX;
+      if (x + 1 < NX && solid[v + 1]) push(v + 1, c + 1);
+      if (x > 0 && solid[v - 1]) push(v - 1, c + 1);
+      if (z + 1 < NZ && solid[v + NX]) push(v + NX, c + 1);
+      if (z > 0 && solid[v - NX]) push(v - NX, c + 1);
+      if (l + 1 < nl && solid[v + plane]) push(v + plane, c + 2);
+      if (l > 0 && solid[v - plane]) push(v - plane, c + 2);
+    }
+  }
+  let removed = 0, voxels = 0;
+  for (let v = 0; v < N; v++) if (solid[v] && dist[v] > maxD) { removed += M[v]; M[v] = 0; voxels++; }
+  return { depth, voxels, frac: fill ? removed / fill : 0 };
 }

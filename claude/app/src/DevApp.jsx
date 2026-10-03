@@ -76,6 +76,7 @@ export default function DevApp() {
       viewer.current.setSource(r.srcTris, r.srcCols);
       viewer.current.colorMode = colorMode; viewer.current.showEdges = edges; viewer.current.level = Infinity;
       viewer.current.setLego(r.pieces, CATALOG); viewer.current.setLayout(layout);
+      viewer.current.zoomToFit();
     } catch (e) { if (busy !== 'cancelled') message.error(String(e.message || e)); console.error(e); }
     setBusy(false);
   }
