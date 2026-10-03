@@ -22,9 +22,12 @@ export function solve(pre, cat, ox, oz, o, log = () => {}) {
   if (o.rounds) S.runPhase(S.attachMirrors(partVariants(cat, new Set(['round']))), o.roundTol, 'A0-round');
   if (o.skin) {
     const kinds = new Set(['slope', 'curved', 'cheese', 'tile']); if (o.inverted) kinds.add('inverted');
-    S.runPhase(S.attachMirrors(partVariants(cat, kinds)), o.skinTol, 'A-skin');
+    const skinV = partVariants(cat, kinds);
+    // core slopes / inverted slopes first, so the extended shapes only fill what they leave (never crowd them out)
+    S.runPhase(S.attachMirrors(skinV.filter((v) => !v.c.ext)), o.skinTol, 'A-skin');
+    if (skinV.some((v) => v.c.ext)) S.runPhase(S.attachMirrors(skinV.filter((v) => v.c.ext)), o.skinTol, 'A2-skin-ext');
   }
-  const flat = new Set(['brick', 'plate']); if (o.technic) flat.add('technic');
+  const flat = new Set(['brick', 'plate', 'shaped']); if (o.technic) flat.add('technic');
   const solid = S.attachMirrors(partVariants(cat, flat));
   S.runPhase(solid, withBonus(o.fillTol, tb), 'B-fill');
   if (o.fill2) S.runPhase(solid, withBonus(o.fill2Tol, tb), 'B2-fill');

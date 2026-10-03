@@ -29,6 +29,7 @@ export const SCHEMA = [
     { key: 'thinBand', label: 'thin band (leftover fill)', type: 'range', min: 0, max: 1, step: 0.05, when: 'thin' },
     { key: 'thinPoints', label: 'thin: min surface points / cell', type: 'int', min: 0, max: 50, step: 1, when: 'thin' },
     { key: 'technic', label: 'Technic bricks (instead of bricks)', type: 'bool' },
+    { key: 'partSet', label: 'Part set', type: 'select', options: [['limited', 'limited (core set)'], ['extended', 'extended (+ extra LDraw shapes: slopes, wedges, corners, more sizes)']], help: 'extended adds many more shapes; the solver evaluates each one at every cell, so it is slower' },
     { key: 'wErr', label: 'Default error weight', type: 'num', min: 0, max: 6, step: 0.1 },
     { key: 'tileExposure', label: 'Tile: max fill above', type: 'num', min: 0, max: 1, step: 0.05 },
   ] },

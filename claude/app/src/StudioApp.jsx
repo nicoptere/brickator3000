@@ -1,7 +1,7 @@
 // Studio: the layout and the look of the original app (full-screen dark stage, floating white card with collapsible sections,
 // results card, step scrubber, instanced cell-shaded bricks, HUD) driven by the brickgen JS engine.
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ConfigProvider, App as AntApp, Select, Input, Button, Upload, Typography, Tag, Divider, Slider, Radio, Checkbox, Progress, Drawer, Modal, Table, Tooltip, Switch, Tabs, Collapse, Alert, Tree, theme as antTheme } from 'antd';
+import { ConfigProvider, App as AntApp, Select, Input, Button, Upload, Typography, Tag, Divider, Slider, Radio, Checkbox, Progress, Drawer, Modal, Table, Tooltip, Switch, Tabs, Collapse, Alert, Tree, Segmented, theme as antTheme } from 'antd';
 import { UploadOutlined, SearchOutlined, ThunderboltOutlined, DownloadOutlined, EyeOutlined, CheckCircleOutlined, AppstoreOutlined, MenuFoldOutlined, MenuUnfoldOutlined,
   DownOutlined, RightOutlined, CaretRightOutlined, PauseOutlined, StepBackwardOutlined, StepForwardOutlined, SoundOutlined, AudioMutedOutlined, AimOutlined,
   SettingOutlined, StopOutlined, CameraOutlined, SyncOutlined, ReloadOutlined, BulbOutlined, BulbFilled } from '@ant-design/icons';
@@ -10,13 +10,13 @@ import { StudioViewport } from './studio/viewport3d.js';
 import { sfx } from './studio/sfx.js';
 import { loadModel, reorient } from './loaders.js';
 import { runMethod, cancel, poolSize } from './engine.js';
-import { DEFAULTS, CATALOG } from './brickgen/pipeline.js';
+import { DEFAULTS, CATALOG, FULL_CATALOG, catalogFor } from './brickgen/pipeline.js';
 import { buildMesh, toGLB, toLDR, KIND_COL } from './brickgen/export.js';
 import { SCHEMA } from './schema.js';
 import { Field } from './fields.jsx';
 
 const { Text, Title } = Typography;
-const STORE = 'brickgen.studio.v1';
+const STORE = 'brickgen.studio.v3';
 const loadOpts = () => { try { return { ...DEFAULTS, ...JSON.parse(localStorage.getItem(STORE) || '{}') }; } catch { return { ...DEFAULTS }; } };
 const download = (data, name, type) => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([data], { type })); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 5000); };
 const fmt = (v, d = 3) => (typeof v === 'number' ? +v.toFixed(d) : v);
@@ -36,17 +36,20 @@ function Section({ title, open, setOpen, color = 'var(--tx)', children }) {
 
 // quick toggles shown in the card (everything else is in the "all parameters" drawer)
 const QUICK = [
-  ['rounds', 'Round parts / poles'], ['skin', 'Slopes, curves, cheese'], ['inverted', 'Inverted slopes'], ['technic', 'Technic bricks'],
+  ['rounds', 'Round parts / poles'], ['skin', 'Slopes, curves, cheese'], ['inverted', 'Inverted slopes'],
   ['symmetry', 'Mirror symmetry', (o) => o.symmetry !== 'off', (o, v) => ({ symmetry: v ? 'auto' : 'off' })],
   ['crust', 'Hollow core (crust only)'],
   ['islands', 'Join islands (MST tubes)'], ['bracing', 'Bracing / thickening'], ['splice', 'Splice seams'], ['bridge', 'Bridge gaps'],
   ['supports', 'Support columns'], ['groundSupports', 'Allow ground contact'],
   ['finish', 'Flat tiles on top (finish)'],
-  ['palette', 'Snap to LEGO colours', (o) => o.palette === 'lego', (o, v) => ({ palette: v ? 'lego' : 'cheat' })],
 ];
 
 function StudioInner() {
-  const { message } = AntApp.useApp();
+  const { notification } = AntApp.useApp();
+  const message = useMemo(() => {                                    // toasts: antd notifications, anchored bottom-centre
+    const t = (type) => (content) => notification[type]({ title: content, placement: 'bottom', duration: type === 'error' ? 6 : 3, showProgress: false });
+    return { info: t('info'), success: t('success'), error: t('error'), warning: t('warning') };
+  }, [notification]);
   const vEl = useRef(null), vp = useRef(null);
   const [opts, setOpts] = useState(loadOpts);
   const [models, setModels] = useState([]);
@@ -57,21 +60,25 @@ function StudioInner() {
   const [viewMode, setViewMode] = useState('mesh'), [colorMode, setColorMode] = useState('piece'), [outline, setOutline] = useState(true);
   const [step, setStep] = useState(0), [playing, setPlaying] = useState(false), [speed, setSpeed] = useState(1), [autoBuild, setAutoBuild] = useState(true);
   const [sound, setSound] = useState(sfx.on), [rotate, setRotate] = useState(false);
-  const [hover, setHover] = useState(null);
-  const [dark, setDark] = useState(() => { try { return localStorage.getItem('brickgen.theme') !== 'light'; } catch { return true; } });
-  const [thick, setThick] = useState(2.5), [expanded, setExpanded] = useState([]);
+    const [dark, setDark] = useState(() => { try { return localStorage.getItem('brickgen.theme') !== 'light'; } catch { return true; } });
+  const [snapSpp, setSnapSpp] = useState(512), [thick, setThick] = useState(2.5), [expanded, setExpanded] = useState([]);
   const [workers, setWorkers] = useState(poolSize);
   const [leftOpen, setLeftOpen] = useState(true), [rightOpen, setRightOpen] = useState(true);
   const [openSrc, setOpenSrc] = useState(true), [openCfg, setOpenCfg] = useState(true), [openRes, setOpenRes] = useState(true), [openRender, setOpenRender] = useState(true), [openReplay, setOpenReplay] = useState(true), [openExport, setOpenExport] = useState(true);
   const [advanced, setAdvanced] = useState(false), [partsOpen, setPartsOpen] = useState(false);
   useEffect(() => { vp.current && vp.current.setTheme(dark); }, [dark]);
+  const prevRes = useRef(null);
+  useEffect(() => {                                           // voxel preview of the grid unit whenever the resolution changes
+    const k = `${opts.studs}|${opts.ref}`, first = prevRes.current === null; prevRes.current = k;
+    if (!first && vp.current && model) vp.current.voxelPreview(opts.studs, opts.ref);
+  }, [opts.studs, opts.ref]); // eslint-disable-line
   const stepRef = useRef(0); stepRef.current = step;
 
   const setOpt = (k, v) => setOpts((o) => { const n = { ...o, [k]: v }; try { localStorage.setItem(STORE, JSON.stringify(n)); } catch {} return n; });
   const patchOpts = (p) => setOpts((o) => { const n = { ...o, ...p }; try { localStorage.setItem(STORE, JSON.stringify(n)); } catch {} return n; });
 
   useEffect(() => {
-    vp.current = new StudioViewport(vEl.current, { onHover: (p, e) => setHover(p ? { p, x: e.clientX, y: e.clientY } : null) });
+    vp.current = new StudioViewport(vEl.current);
     vp.current.setTheme(dark);
     fetch('/api/models').then((r) => r.json()).then((d) => setModels((d.models || []).sort((a, b) => a.path.localeCompare(b.path)))).catch(() => setModels([]));
     return () => vp.current && vp.current.dispose();
@@ -95,6 +102,7 @@ function StudioInner() {
   };
   const openPath = useCallback(async (p, upAxis = up) => {
     setModelPath(p);
+    { const d = p.replace(/^clean\//, '').split('/').slice(0, -1); setExpanded((e) => [...new Set([...e, ...d.map((_, i) => d.slice(0, i + 1).join('/'))])]); }
     try {
       const buf = await (await fetch('/models/' + p)).arrayBuffer();
       const m = await loadModel(p, buf), mm = { name: p.split('/').pop(), ...reorient(m, upAxis) };
@@ -144,7 +152,7 @@ function StudioInner() {
     try {
       const r = await runMethod({ tris: model.tris, vcols: model.vcols }, opts, { workersWanted: workers, onStage: (s, f) => setStage([s, f]) });
       setRes(r);
-      vp.current.setSource(r.srcTris, r.srcCols); vp.current.setLego(r.pieces, CATALOG, r.dims); vp.current.setColorMode(colorMode); vp.current.setOutline(outline);
+      vp.current.setSource(r.srcTris, r.srcCols); vp.current.setLego(r.pieces, FULL_CATALOG, r.dims); vp.current.setColorMode(colorMode); vp.current.setOutline(outline);
       setViewMode('lego'); vp.current.setMode('lego');
       const lv = Math.max(...r.pieces.map((p) => p.b + p.h)); maxLevelRef.current = lv;
       const g = r.metrics.grounded >= 0.9995;
@@ -156,10 +164,30 @@ function StudioInner() {
   const stop = () => { cancel(); setBusy(false); setStage(['', 0]); sfx.click(); };
 
   const base = model ? model.name.replace(/\.[^.]+$/, '') + '_' + opts.studs : 'model';
-  const exportLDR = () => download(toLDR(res.pieces, CATALOG, base), base + '.ldr', 'text/plain');
-  const exportGLB = (mode) => { const m = buildMesh(res.pieces, CATALOG, mode); download(toGLB(m), base + (mode === 'kind' ? '_kinds' : '') + '.glb', 'model/gltf-binary'); };
+  const exportLDR = () => download(toLDR(res.pieces, FULL_CATALOG, base), base + '.ldr', 'text/plain');
+  const exportGLB = (mode) => { const m = buildMesh(res.pieces, FULL_CATALOG, mode); download(toGLB(m), base + (mode === 'kind' ? '_kinds' : '') + '.glb', 'model/gltf-binary'); };
   const exportJSON = () => download(JSON.stringify({ model: model.name, options: res.options, metrics: res.metrics, post: res.post, islands: res.islands, symmetry: res.symmetry, timing: res.timing, dims: res.dims, pieces: res.pieces }, null, 1), base + '_report.json', 'application/json');
-  const png = () => { const a = document.createElement('a'); a.href = vp.current.snapshot(); a.download = base + '.png'; a.click(); };
+  const save = (url) => { const a = document.createElement('a'); a.href = url; a.download = base + '.png'; a.click(); };
+  const ptJob = useRef(null), ptHost = useRef(null);
+  const dragRef = useRef(null), [ptView, setPtView] = useState({ z: 1, x: 0, y: 0 });
+  const [pt, setPt] = useState(null);                              // { n, spp, status: 'running' | 'done' | 'error', err }
+  const closePt = () => { if (ptJob.current) { ptJob.current.dispose(); ptJob.current = null; } setPt(null); };
+  useEffect(() => { if (!pt) return; const f = (e) => e.key === 'Escape' && closePt(); window.addEventListener('keydown', f); return () => window.removeEventListener('keydown', f); }, [!!pt]); // eslint-disable-line
+  const png = async () => {
+    if (!model) return;
+    const source = !res || viewMode === 'mesh';                                       // what is on screen is what gets traced
+    sfx.click(); const spp = snapSpp; setPtView({ z: 1, x: 0, y: 0 }); setPt({ n: 0, spp, status: 'running' });
+    try {
+      const { createPathTrace } = await import('./studio/pathtrace.js');
+      const job = await createPathTrace(vp.current, { pieces: res ? res.pieces : [], cat: FULL_CATALOG, colorMode, dark, spp, source }); ptJob.current = job;
+      for (let i = 0; i < 50 && !ptHost.current; i++) await new Promise((r) => setTimeout(r, 20));
+      setPt((o) => o && { ...o, ar: job.canvas.width / job.canvas.height });
+      for (let i = 0; i < 50 && !ptHost.current; i++) await new Promise((r) => setTimeout(r, 20));
+      if (ptHost.current) { ptHost.current.innerHTML = ''; job.canvas.style.cssText = 'width:100%;height:100%;display:block'; ptHost.current.appendChild(job.el); }
+      const ok = await job.run((n, m) => setPt((o) => o && { ...o, n, spp: m }));
+      if (ok) { setPt((o) => o && { ...o, n: spp, status: 'done' }); sfx.done(); }
+    } catch (e) { console.error(e); setPt((o) => o && { ...o, status: 'error', err: String(e.message || e) }); }
+  };
 
   const bom = useMemo(() => {
     if (!res) return [];
@@ -192,18 +220,48 @@ function StudioInner() {
     const q = query.trim().toLowerCase(), root = { children: new Map() };
     for (const m of models) {
       if (q && !m.path.toLowerCase().includes(q)) continue;
-      const parts = m.path.split('/'); let n = root;
+      if (/^spearman\./i.test(m.path)) continue;                      // retired root-level model
+      const parts = m.path.split('/'); if (parts.length > 1 && parts[0] === 'clean') parts.shift();     // categories are the top level
+      let n = root;
       parts.forEach((part, i) => {
-        if (!n.children.has(part)) n.children.set(part, { key: parts.slice(0, i + 1).join('/'), part, leaf: i === parts.length - 1, size: m.size, children: new Map() });
+        if (!n.children.has(part)) n.children.set(part, { key: i === parts.length - 1 ? m.path : parts.slice(0, i + 1).join('/'), part, leaf: i === parts.length - 1, size: m.size, children: new Map() });
         n = n.children.get(part);
       });
     }
     const conv = (n) => [...n.children.values()].sort((a, b) => (a.leaf - b.leaf) || a.part.localeCompare(b.part)).map((c) => (c.leaf
       ? { key: c.key, isLeaf: true, title: <span className="tl">{c.part.replace(/\.[^.]+$/, '')}<i>{(c.size / 1e6).toFixed(1)} MB</i></span> }
       : { key: c.key, title: c.part, children: conv(c) }));
-    const t = conv(root); return t.length === 1 && !t[0].isLeaf && t[0].key === 'clean' ? t[0].children : t;   // the "clean" wrapper adds nothing
+    return conv(root);
   }, [models, query]);
-  const allDirs = useMemo(() => { const s = new Set(); for (const m of models) { const p = m.path.split('/'); for (let i = 1; i < p.length; i++) s.add(p.slice(0, i).join('/')); } return [...s]; }, [models]);
+  const allDirs = useMemo(() => { const s = new Set(); for (const m of models) { const p = m.path.split('/'); if (p[0] === 'clean' && p.length > 1) p.shift(); for (let i = 1; i < p.length; i++) s.add(p.slice(0, i).join('/')); } return [...s]; }, [models]);
+
+  const resultsBlock = res && (
+    <div className="result">
+                      <div>
+                        {mt.grounded >= 0.9995 && mt.components === 1
+                          ? <Tag color="success" icon={<CheckCircleOutlined />} style={{ margin: 0, fontSize: 11 }}>1 piece of work, 100% grounded</Tag>
+                          : <Tag color="warning" style={{ margin: 0, fontSize: 11 }}>{Math.round(mt.grounded * 100)}% grounded · {mt.components} parts</Tag>}
+                      </div>
+                      <div className="grid2" style={{ fontSize: 12 }}>
+                        <div className="kv"><span>Pieces:</span><b>{mt.pieces.toLocaleString()}</b></div>
+                        <div className="kv"><span>Part types:</span><b>{distinct}</b></div>
+                        <div className="kv"><span>Volume IoU:</span><b>{fmt(mt.iou, 3)}</b></div>
+                        <div className="kv"><span>Recall:</span><b>{fmt(mt.recall, 3)}</b></div>
+                        <div className="kv"><span>Overfill:</span><b>{fmt(mt.overfill, 3)}</b></div>
+                        <div className="kv"><span>Execution:</span><b>{(res.timing.total / 1000).toFixed(1)} s</b></div>
+                        <div className="kv" style={{ gridColumn: '1 / 3' }}><span>Grid:</span><b>{res.dims[0]} x {res.dims[1]} studs, {res.dims[2]} plates</b></div>
+                      </div>
+                      <div>
+                        {Object.entries(mt.kinds).map(([k, c]) => <Tag key={k} style={{ background: kindRgb(k), color: '#111', border: 0, fontSize: 10 }}>{k} {c}</Tag>)}
+                        {res.symmetry && <Tag style={{ fontSize: 10 }}>{res.symmetry.used ? `mirror ${res.symmetry.axis} · ${res.symmetry.parity} · ${Math.round(100 * (res.symmetry.mirrored || 0))}%` : 'no symmetry'}</Tag>}
+                      </div>
+                      <div style={{ fontSize: 11, color: 'var(--tx2)' }}>
+                        Connectivity: {res.islands ? <>islands {res.islands.islands} (dropped {res.islands.dropped}, tubes {res.islands.tubes}) · </> : null}
+                        braces {res.post.brace ?? 0} · splices {res.post.splice ?? 0} · bridges {res.post.bridge ?? 0} · columns {res.post.supports ?? 0}{res.post.finish ? ` · tiles ${res.post.finish.platesToTiles + res.post.finish.bricksCapped}` : ''}
+                        {res.crust ? ` · crust ${Math.round(100 * res.crust.frac)}% hollowed` : ''}
+                      </div>
+                    </div>
+  );
 
   const replay = res && (
     <div className="replay">
@@ -227,7 +285,7 @@ function StudioInner() {
 
   return (
     <div className={'studio ' + (dark ? 'dark' : 'light')}>
-      <div className="vp" ref={vEl} style={{ left: leftOpen ? LW : 0, right: rightOpen ? RW : 0 }} onPointerLeave={() => setHover(null)} />
+      <div className="vp" ref={vEl} style={{ left: leftOpen ? LW : 0, right: rightOpen ? RW : 0 }} />
 
       {/* ---------------------------------------------------------------- left drawer */}
       <aside className={'dock left' + (leftOpen ? '' : ' closed')} style={{ width: LW }}>
@@ -252,28 +310,27 @@ function StudioInner() {
               <Tooltip title="which axis of the file points up"><Select size="small" value={up} onChange={(u) => { setUp(u); if (modelPath) openPath(modelPath, u); }} style={{ width: 86 }}
                 options={[['y', 'Y up'], ['z', 'Z up'], ['-z', '-Z up'], ['x', 'X up']].map(([value, label]) => ({ value, label }))} /></Tooltip>
             </div>
-            {model && (
-              <div className="card-soft">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 6 }}>
-                  <Text strong style={{ fontSize: 12 }} ellipsis>{model.name}</Text>
-                  <span>{model.hasColor && <Tag color="magenta" style={{ margin: 0, fontSize: 10 }}>vertex colours</Tag>}</span>
-                </div>
-                <div className="grid2">
-                  <div><Text type="secondary">Triangles: </Text><Text strong>{(model.tris.length / 9).toLocaleString()}</Text></div>
-                  {bbox && <div><Text type="secondary">Size: </Text><Text strong>{bbox.map((v) => +v.toPrecision(3)).join(' x ')}</Text></div>}
-                </div>
-              </div>
-            )}
           </Section>
           <Divider style={{ margin: '4px 0' }} />
 
           <Section title="2. Discretization" open={openCfg} setOpen={setOpenCfg}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Text style={{ fontSize: 12, fontWeight: 500 }}>Resolution: {opts.studs} studs</Text>
-              <Select size="small" value={opts.ref} onChange={(v) => setOpt('ref', v)} style={{ width: 150 }}
-                options={[{ value: 'min3', label: 'on the smallest side' }, { value: 'maxh', label: 'on the longest side' }]} />
+            <div className="ctl">
+              <div className="ctl-h"><span>Resolution</span><b>{opts.studs} studs</b>
+                <Select size="small" value={opts.ref} onChange={(v) => setOpt('ref', v)} style={{ width: 138, marginLeft: 'auto' }}
+                  options={[{ value: 'min3', label: 'smallest side' }, { value: 'maxh', label: 'longest side' }]} /></div>
+              <Slider min={4} max={64} step={1} value={Math.min(64, opts.studs)} onChange={(v) => setOpt('studs', v)} marks={{ 4: '4', 16: '16', 32: '32', 48: '48', 64: '64' }} />
+              <div className="presets">{[8, 12, 16, 24, 32, 48, 64].map((v) => <Button key={v} size="small" type={opts.studs === v ? 'primary' : 'default'} onClick={() => { sfx.click(); setOpt('studs', v); }}>{v}</Button>)}</div>
             </div>
-            <Slider min={4} max={96} step={1} value={opts.studs} onChange={(v) => setOpt('studs', v)} marks={{ 8: '8', 16: '16', 32: '32', 64: '64' }} style={{ margin: '0 6px 14px 6px' }} />
+            <div className="ctl">
+              <div className="ctl-h"><span>Precision</span><b>{opts.precision}</b><i>{{ 0: 'draft: 1 try', 4: 'balanced: 4 tries', 8: 'fine: 9 tries', 12: 'best: 16 tries' }[opts.precision]}</i></div>
+              <Slider min={0} max={12} step={null} value={opts.precision} tooltip={{ open: false }}
+                onChange={(v) => patchOpts({ precision: v, offsets: [0, 4, 8, 12].filter((x) => x <= v) })} marks={{ 0: '0', 4: '4', 8: '8', 12: '12' }} />
+            </div>
+            <div className="ctl">
+              <div className="ctl-h"><span>Parts</span><b>{catalogFor(opts).length}</b><i>{opts.partSet === 'extended' ? 'extended: more shapes, slower' : 'limited: core set, fastest'}</i></div>
+              <Segmented block size="small" value={opts.partSet || 'limited'} onChange={(v) => { sfx.click(); setOpt('partSet', v); }}
+                options={[{ value: 'limited', label: 'Limited set' }, { value: 'extended', label: 'Extended set' }]} style={{ margin: '8px 0 10px' }} />
+            </div>
             <div className="grid2">
               {QUICK.map(([k, label, get, set]) => (
                 <Checkbox key={k} checked={get ? get(opts) : !!opts[k]} onChange={(e) => (set ? patchOpts(set(opts, e.target.checked)) : setOpt(k, e.target.checked))}>{label}</Checkbox>
@@ -299,38 +356,6 @@ function StudioInner() {
             )}
           </Section>
 
-          {res && (
-            <>
-              <Divider style={{ margin: '4px 0' }} />
-              <Section title="Results" open={openRes} setOpen={setOpenRes}>
-                <div className="result">
-                  <div>
-                    {mt.grounded >= 0.9995 && mt.components === 1
-                      ? <Tag color="success" icon={<CheckCircleOutlined />} style={{ margin: 0, fontSize: 11 }}>1 piece of work, 100% grounded</Tag>
-                      : <Tag color="warning" style={{ margin: 0, fontSize: 11 }}>{Math.round(mt.grounded * 100)}% grounded · {mt.components} parts</Tag>}
-                  </div>
-                  <div className="grid2" style={{ fontSize: 12 }}>
-                    <div className="kv"><span>Pieces:</span><b>{mt.pieces.toLocaleString()}</b></div>
-                    <div className="kv"><span>Part types:</span><b>{distinct}</b></div>
-                    <div className="kv"><span>Volume IoU:</span><b>{fmt(mt.iou, 3)}</b></div>
-                    <div className="kv"><span>Recall:</span><b>{fmt(mt.recall, 3)}</b></div>
-                    <div className="kv"><span>Overfill:</span><b>{fmt(mt.overfill, 3)}</b></div>
-                    <div className="kv"><span>Execution:</span><b>{(res.timing.total / 1000).toFixed(1)} s</b></div>
-                    <div className="kv" style={{ gridColumn: '1 / 3' }}><span>Grid:</span><b>{res.dims[0]} x {res.dims[1]} studs, {res.dims[2]} plates</b></div>
-                  </div>
-                  <div>
-                    {Object.entries(mt.kinds).map(([k, c]) => <Tag key={k} style={{ background: kindRgb(k), color: '#111', border: 0, fontSize: 10 }}>{k} {c}</Tag>)}
-                    {res.symmetry && <Tag style={{ fontSize: 10 }}>{res.symmetry.used ? `mirror ${res.symmetry.axis} · ${res.symmetry.parity} · ${Math.round(100 * (res.symmetry.mirrored || 0))}%` : 'no symmetry'}</Tag>}
-                  </div>
-                  <div style={{ fontSize: 11, color: 'var(--tx2)' }}>
-                    Connectivity: {res.islands ? <>islands {res.islands.islands} (dropped {res.islands.dropped}, tubes {res.islands.tubes}) · </> : null}
-                    braces {res.post.brace ?? 0} · splices {res.post.splice ?? 0} · bridges {res.post.bridge ?? 0} · columns {res.post.supports ?? 0}{res.post.finish ? ` · tiles ${res.post.finish.platesToTiles + res.post.finish.bricksCapped}` : ''}
-                    {res.crust ? ` · crust ${Math.round(100 * res.crust.frac)}% hollowed` : ''}
-                  </div>
-                </div>
-              </Section>
-            </>
-          )}
           <div style={{ fontSize: 10, color: 'var(--tx2)', textAlign: 'right' }}><a href="#/dev">dev UI</a></div>
         </div>
       </aside>
@@ -350,6 +375,7 @@ function StudioInner() {
               <Radio.Button value="piece" style={{ flex: 1, textAlign: 'center' }}>Model colours</Radio.Button>
               <Radio.Button value="kind" style={{ flex: 1, textAlign: 'center' }}>Part kinds</Radio.Button>
             </Radio.Group>
+            {colorMode === 'kind' && resultsBlock}
             <div className="row"><span>Ink outline</span><Switch size="small" checked={outline} onChange={(v) => { setOutline(v); vp.current.setOutline(v); }} /></div>
             <div className="row"><span>Outline thickness</span><Slider min={0.5} max={4} step={0.25} value={thick} onChange={(v) => { setThick(v); vp.current.setHullThickness(v); }} style={{ width: 120, margin: 0 }} /></div>
             <div className="row"><span>Animate the build</span><Switch size="small" checked={autoBuild} onChange={setAutoBuild} /></div>
@@ -365,6 +391,7 @@ function StudioInner() {
               <Button size="small" icon={<DownloadOutlined />} disabled={!res} onClick={() => exportGLB('kind')}>.glb by kind</Button>
               <Button size="small" icon={<DownloadOutlined />} disabled={!res} onClick={exportJSON}>report .json</Button>
               <Button size="small" icon={<CameraOutlined />} disabled={!model} onClick={png}>snapshot .png</Button>
+              <Select size="small" value={snapSpp} onChange={setSnapSpp} options={[64, 128, 256, 512, 1024].map((v) => ({ value: v, label: `${v} spp` }))} />
               <Button size="small" icon={<AppstoreOutlined />} onClick={() => { sfx.click(); setPartsOpen(true); }}>Parts list</Button>
             </div>
           </Section>
@@ -384,13 +411,39 @@ function StudioInner() {
 
       {busy && <div className="busy" style={{ left: leftOpen ? LW : 0, right: rightOpen ? RW : 0 }}><div className="chip"><div className="spinner" /><span>{stage[0]}</span><div className="pulse" /></div></div>}
 
-      {res && colorMode === 'kind' && <div className="legend" style={{ left: (leftOpen ? LW : 0) + 16 }}>{Object.entries(mt.kinds).map(([k, c]) => <span key={k}><i style={{ background: kindRgb(k) }} />{k} {c}</span>)}</div>}
-
-      {hover && <div className="hover" style={{ left: hover.x + 14, top: hover.y + 10 }}><b>{hover.p.id}</b> {hover.p.name}<br />{hover.p.kind} · level {hover.p.b} · {hover.p.phase}{hover.p.colorName ? ' · ' + hover.p.colorName : ''}</div>}
-
       <Drawer title="All parameters" open={advanced} onClose={() => setAdvanced(false)} size={440} className="adv">
         <Collapse size="small" defaultActiveKey={['Scale & volume']} items={SCHEMA.map((g) => ({ key: g.panel, label: g.panel, children: g.items.map((it) => <Field key={it.key} it={it} opts={opts} setOpt={setOpt} />) }))} />
       </Drawer>
+
+      {pt && (
+        <div className="ptwin" onPointerDown={(e) => { if (e.target === e.currentTarget) closePt(); }}>
+          <div className="ptframe" style={{ '--ar': pt.ar || 1.2, height: 'min(100vh, calc(100vw / var(--ar)))', aspectRatio: pt.ar || 1.2 }}
+            onWheel={(e) => {                                              // zoom 1-4x about the cursor
+              const r = e.currentTarget.getBoundingClientRect(), cx = e.clientX - r.left, cy = e.clientY - r.top;
+              setPtView((v) => { const z2 = Math.max(1, Math.min(4, v.z * Math.exp(-e.deltaY * 0.0015))), k = z2 / v.z;
+                return { z: z2, x: Math.min(0, Math.max(r.width * (1 - z2), cx - (cx - v.x) * k)), y: Math.min(0, Math.max(r.height * (1 - z2), cy - (cy - v.y) * k)) }; });
+            }}
+            onPointerDown={(e) => { if (e.target.closest('.ptui')) return; e.currentTarget.setPointerCapture(e.pointerId); dragRef.current = { x: e.clientX, y: e.clientY, v: ptView }; }}
+            onPointerMove={(e) => {
+              const d = dragRef.current; if (!d) return; const r = e.currentTarget.getBoundingClientRect(), z = d.v.z;
+              setPtView({ z, x: Math.min(0, Math.max(r.width * (1 - z), d.v.x + e.clientX - d.x)), y: Math.min(0, Math.max(r.height * (1 - z), d.v.y + e.clientY - d.y)) });
+            }}
+            onPointerUp={() => { dragRef.current = null; }} onDoubleClick={() => setPtView({ z: 1, x: 0, y: 0 })}>
+            {pt.status === 'error'
+              ? <Alert type="error" showIcon message="The path tracer could not start" description={pt.err} style={{ margin: 16 }} />
+              : <div ref={ptHost} className="ptpan" style={{ transform: `translate(${ptView.x}px, ${ptView.y}px) scale(${ptView.z})`, cursor: ptView.z > 1 ? 'grab' : 'default' }} />}
+            <div className="ptui top">
+              {pt.status === 'error' && <Button size="small" onClick={() => { save(vp.current.snapshot()); closePt(); }}>Save plain capture</Button>}
+              <Button size="small" type="primary" icon={<DownloadOutlined />} disabled={pt.status === 'error'} onClick={() => save(ptJob.current.url())}>PNG{pt.status === 'running' ? ` · ${pt.n} spp` : ''}</Button>
+              <Button size="small" icon={<StopOutlined />} onClick={closePt}>{pt.status === 'done' ? 'Close' : 'Cancel'}</Button>
+            </div>
+            <div className="ptui bottom">
+              <Progress percent={Math.round((100 * pt.n) / pt.spp)} size="small" showInfo={false} />
+              <span>{pt.n} / {pt.spp} spp · {ptView.z.toFixed(1)}x · wheel to zoom, drag to pan, double-click to reset</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Modal title="Parts" open={partsOpen} onCancel={() => setPartsOpen(false)} footer={null} width={760}>
         <Tabs items={[
@@ -400,10 +453,10 @@ function StudioInner() {
               { title: 'colour', dataIndex: 'color', width: 160, render: (c, r) => <span><i className="sw" style={{ background: `rgb(${r.rgb})` }} />{c}</span> },
               { title: 'qty', dataIndex: 'count', width: 70, sorter: (a, b) => a.count - b.count, defaultSortOrder: 'descend' }]} />
           ) : <Alert message="Discretize a model first" type="info" /> },
-          { key: 'cat', label: `Catalogue (${CATALOG.length} parts)`, children: (
-            <Table size="small" pagination={{ pageSize: 10, size: 'small' }} dataSource={CATALOG.map((c) => ({ key: c.id, id: c.id, name: c.name, kind: c.kind, size: `${c.w} x ${c.d} x ${c.h}`, studs: (c.stud_cells || []).length }))} columns={[
+          { key: 'cat', label: `Catalogue (${catalogFor(opts).length} parts)`, children: (
+            <Table size="small" pagination={{ pageSize: 10, size: 'small' }} dataSource={catalogFor(opts).map((c) => ({ key: c.id, id: c.id, name: c.name, kind: c.kind, size: `${c.w} x ${c.d} x ${c.h}`, studs: (c.stud_cells || []).length }))} columns={[
               { title: 'part', dataIndex: 'id', width: 90 }, { title: 'name', dataIndex: 'name' },
-              { title: 'kind', dataIndex: 'kind', width: 90, filters: [...new Set(CATALOG.map((c) => c.kind))].map((k) => ({ text: k, value: k })), onFilter: (v, r) => r.kind === v },
+              { title: 'kind', dataIndex: 'kind', width: 90, filters: [...new Set(catalogFor(opts).map((c) => c.kind))].map((k) => ({ text: k, value: k })), onFilter: (v, r) => r.kind === v },
               { title: 'size (studs x studs x plates)', dataIndex: 'size', width: 190 }, { title: 'studs', dataIndex: 'studs', width: 70 }]} />
           ) },
         ]} />

@@ -8,7 +8,11 @@ import { detectSymmetry } from './symmetry.js';
 import { PointGrid } from './nn.js';
 import { snapToPalette } from './colors.js';
 import CATALOG from './catalog.js';
+import EXT from './catalog_ext.js';
 
+/** limited = the hand-picked core set; extended = core + every extra solid shape measured from LDraw */
+export const FULL_CATALOG = [...CATALOG, ...EXT];
+export const catalogFor = (o) => (o && o.partSet === 'extended' ? FULL_CATALOG : CATALOG);
 export { DEFAULTS, CATALOG };
 const now = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
 
@@ -36,7 +40,7 @@ export function setup(model, opts) {
 }
 
 /** score of one grid phase (used to pick the best phase; cheap enough to run in several workers) */
-export function scoreJob(ctx, job, cat = CATALOG) {
+export function scoreJob(ctx, job, cat = catalogFor(ctx.o)) {
   const [par, ox, oz] = job;
   const S = solve(ctx.pres[par], cat, ox, oz, ctx.o);
   const mt = metrics(S);
@@ -44,7 +48,7 @@ export function scoreJob(ctx, job, cat = CATALOG) {
 }
 
 /** finish the best job: colours, merges, pillars, connectivity post-process, studs finish, palette, stats */
-export function finishJob(ctx, job, cat = CATALOG, log = () => {}) {
+export function finishJob(ctx, job, cat = catalogFor(ctx.o), log = () => {}) {
   const { o, m, sym, symOk } = ctx, T = { ...ctx.T };
   let t = now();
   const [par, ox, oz] = job, pre = ctx.pres[par];
@@ -84,7 +88,7 @@ export function finishJob(ctx, job, cat = CATALOG, log = () => {}) {
   const srcTris = normalize(m.tris, null, o.studs, off[0], off[1], o.ref).tris;
   return {
     pieces: S.pieces, dims: S.dims, offset: off, scale: nm.s, srcTris, srcCols: m.vcols,
-    metrics: { ...mt, ...con }, post, timing: T, islands: pre.islands,
+    metrics: { ...mt, ...con }, post, timing: T, islands: pre.islands, crust: pre.crust,
     symmetry: sym ? { axis: sym.axis, err: sym.err, used: symOk, parity: symOk ? par : null, plane: S.mirror ? S.mirror[1] : null, mirrored } : null,
   };
 }
@@ -97,7 +101,7 @@ function colourAt(grid, cols, p, k) {
 }
 
 /** single-thread convenience: the whole method */
-export function generate(model, opts = {}, { cat = CATALOG, progress = () => {}, log = () => {} } = {}) {
+export function generate(model, opts = {}, { cat = catalogFor({ ...DEFAULTS, ...opts }), progress = () => {}, log = () => {} } = {}) {
   const t0 = now();
   progress('setup', 0);
   const ctx = setup(model, opts);

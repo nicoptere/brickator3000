@@ -116,7 +116,7 @@ export function toLDR(pieces, cat, name) {
 }
 
 export const KIND_COL = { slope: [0.145, 0.388, 0.922], curved: [0.031, 0.569, 0.698], cheese: [0.576, 0.2, 0.918], inverted: [0.9, 0.3, 0.3],
-  tile: [0.8, 0.84, 0.88], plate: [0.55, 0.6, 0.67], brick: [0.35, 0.4, 0.48], round: [0.95, 0.6, 0.1], technic: [0.2, 0.7, 0.35], support: [0.75, 0.2, 0.75] };
+  tile: [0.8, 0.84, 0.88], plate: [0.55, 0.6, 0.67], brick: [0.35, 0.4, 0.48], round: [0.95, 0.6, 0.1], technic: [0.2, 0.7, 0.35], shaped: [0.9, 0.78, 0.15], support: [0.75, 0.2, 0.75] };
 
 /** indexed mesh of all pieces: positions, sRGB colours (Uint8 RGB per vertex), indices, edges, piece index per triangle.
  * Studs covered by another piece are dropped (they are invisible and are most of the triangles). */

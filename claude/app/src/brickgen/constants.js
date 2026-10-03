@@ -18,7 +18,9 @@ export const DEFAULTS = {
   surfaceSamples: 200000,
   seed: 1,
   // grid phase search
-  offsets: [0, 8, 16],       // LDU, tried on both axes (multiples of 4)
+  offsets: [0, 4, 8],        // LDU, tried on both axes (multiples of 4); the Precision slider (0/4/8/12) sets it to every multiple of 4 up to its value
+  precision: 8,
+  partSet: 'limited',   // 'limited' (core catalogue) | 'extended' (+ extra LDraw shapes)
   // symmetry
   symmetry: 'off',           // 'auto' | 'off'
   symThreshold: 0.006,       // mean mirror distance / bbox diagonal
