@@ -1,119 +1,20 @@
 {
-  "generatedAt": "2026-09-30T19:29:03.853Z",
+  "generatedAt": "2026-10-03T09:50:02.667Z",
   "categories": [
     {
       "name": "airplanes",
       "title": "Airplanes",
-      "icon": "✈️",
-      "count": 64,
+      "icon": "",
+      "count": 8,
       "models": [
-        {
-          "id": "airplanes/b_25j.glb",
-          "name": "B 25j",
-          "filename": "b_25j.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/b_25j.glb",
-          "sizeBytes": 768628,
-          "sizeFormatted": "750.6 KB"
-        },
-        {
-          "id": "airplanes/b2.glb",
-          "name": "B2",
-          "filename": "b2.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/b2.glb",
-          "sizeBytes": 1195476,
-          "sizeFormatted": "1.1 MB"
-        },
-        {
-          "id": "airplanes/badger.glb",
-          "name": "Badger",
-          "filename": "badger.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/badger.glb",
-          "sizeBytes": 919008,
-          "sizeFormatted": "897.5 KB"
-        },
         {
           "id": "airplanes/be2.glb",
           "name": "Be2",
           "filename": "be2.glb",
           "category": "airplanes",
           "path": "models/clean/airplanes/be2.glb",
-          "sizeBytes": 910488,
-          "sizeFormatted": "889.1 KB"
-        },
-        {
-          "id": "airplanes/bf109b.glb",
-          "name": "Bf109b",
-          "filename": "bf109b.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/bf109b.glb",
-          "sizeBytes": 810500,
-          "sizeFormatted": "791.5 KB"
-        },
-        {
-          "id": "airplanes/bf109e.glb",
-          "name": "Bf109e",
-          "filename": "bf109e.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/bf109e.glb",
-          "sizeBytes": 1266392,
-          "sizeFormatted": "1.2 MB"
-        },
-        {
-          "id": "airplanes/bf109g.glb",
-          "name": "Bf109g",
-          "filename": "bf109g.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/bf109g.glb",
-          "sizeBytes": 871140,
-          "sizeFormatted": "850.7 KB"
-        },
-        {
-          "id": "airplanes/bf110f.glb",
-          "name": "Bf110f",
-          "filename": "bf110f.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/bf110f.glb",
-          "sizeBytes": 1429840,
-          "sizeFormatted": "1.4 MB"
-        },
-        {
-          "id": "airplanes/bf110g2.glb",
-          "name": "Bf110g2",
-          "filename": "bf110g2.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/bf110g2.glb",
-          "sizeBytes": 1509068,
-          "sizeFormatted": "1.4 MB"
-        },
-        {
-          "id": "airplanes/cg4a.glb",
-          "name": "Cg4a",
-          "filename": "cg4a.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/cg4a.glb",
-          "sizeBytes": 2148060,
-          "sizeFormatted": "2 MB"
-        },
-        {
-          "id": "airplanes/clipper.glb",
-          "name": "Clipper",
-          "filename": "clipper.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/clipper.glb",
-          "sizeBytes": 1449736,
-          "sizeFormatted": "1.4 MB"
-        },
-        {
-          "id": "airplanes/concord.glb",
-          "name": "Concord",
-          "filename": "concord.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/concord.glb",
-          "sizeBytes": 866048,
-          "sizeFormatted": "845.8 KB"
+          "sizeBytes": 327848,
+          "sizeFormatted": "320.2 KB"
         },
         {
           "id": "airplanes/f117.glb",
@@ -121,17 +22,8 @@
           "filename": "f117.glb",
           "category": "airplanes",
           "path": "models/clean/airplanes/f117.glb",
-          "sizeBytes": 21297480,
-          "sizeFormatted": "20.3 MB"
-        },
-        {
-          "id": "airplanes/fencerc.glb",
-          "name": "Fencerc",
-          "filename": "fencerc.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/fencerc.glb",
-          "sizeBytes": 734372,
-          "sizeFormatted": "717.2 KB"
+          "sizeBytes": 8039684,
+          "sizeFormatted": "7.7 MB"
         },
         {
           "id": "airplanes/fw189.glb",
@@ -139,8 +31,8 @@
           "filename": "fw189.glb",
           "category": "airplanes",
           "path": "models/clean/airplanes/fw189.glb",
-          "sizeBytes": 27829704,
-          "sizeFormatted": "26.5 MB"
+          "sizeBytes": 12600964,
+          "sizeFormatted": "12 MB"
         },
         {
           "id": "airplanes/g4m11.glb",
@@ -148,89 +40,8 @@
           "filename": "g4m11.glb",
           "category": "airplanes",
           "path": "models/clean/airplanes/g4m11.glb",
-          "sizeBytes": 1258804,
-          "sizeFormatted": "1.2 MB"
-        },
-        {
-          "id": "airplanes/h8emily.glb",
-          "name": "H8emily",
-          "filename": "h8emily.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/h8emily.glb",
-          "sizeBytes": 1056524,
-          "sizeFormatted": "1 MB"
-        },
-        {
-          "id": "airplanes/heracles.glb",
-          "name": "Heracles",
-          "filename": "heracles.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/heracles.glb",
-          "sizeBytes": 2914012,
-          "sizeFormatted": "2.8 MB"
-        },
-        {
-          "id": "airplanes/ho229.glb",
-          "name": "Ho229",
-          "filename": "ho229.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/ho229.glb",
-          "sizeBytes": 2007196,
-          "sizeFormatted": "1.9 MB"
-        },
-        {
-          "id": "airplanes/hurrimk1.glb",
-          "name": "Hurrimk1",
-          "filename": "hurrimk1.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/hurrimk1.glb",
-          "sizeBytes": 347904,
-          "sizeFormatted": "339.8 KB"
-        },
-        {
-          "id": "airplanes/ju52g5.glb",
-          "name": "Ju52g5",
-          "filename": "ju52g5.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/ju52g5.glb",
-          "sizeBytes": 979428,
-          "sizeFormatted": "956.5 KB"
-        },
-        {
-          "id": "airplanes/ju52g9.glb",
-          "name": "Ju52g9",
-          "filename": "ju52g9.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/ju52g9.glb",
-          "sizeBytes": 925692,
-          "sizeFormatted": "904 KB"
-        },
-        {
-          "id": "airplanes/jug24.glb",
-          "name": "Jug24",
-          "filename": "jug24.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/jug24.glb",
-          "sizeBytes": 1417040,
-          "sizeFormatted": "1.4 MB"
-        },
-        {
-          "id": "airplanes/junker88.glb",
-          "name": "Junker88",
-          "filename": "junker88.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/junker88.glb",
-          "sizeBytes": 1225116,
-          "sizeFormatted": "1.2 MB"
-        },
-        {
-          "id": "airplanes/kfirc_7.glb",
-          "name": "Kfirc 7",
-          "filename": "kfirc_7.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/kfirc_7.glb",
-          "sizeBytes": 771056,
-          "sizeFormatted": "753 KB"
+          "sizeBytes": 1906604,
+          "sizeFormatted": "1.8 MB"
         },
         {
           "id": "airplanes/kitty.glb",
@@ -238,134 +49,8 @@
           "filename": "kitty.glb",
           "category": "airplanes",
           "path": "models/clean/airplanes/kitty.glb",
-          "sizeBytes": 2785408,
-          "sizeFormatted": "2.7 MB"
-        },
-        {
-          "id": "airplanes/kyofu.glb",
-          "name": "Kyofu",
-          "filename": "kyofu.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/kyofu.glb",
-          "sizeBytes": 382492,
-          "sizeFormatted": "373.5 KB"
-        },
-        {
-          "id": "airplanes/lilien.glb",
-          "name": "Lilien",
-          "filename": "lilien.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/lilien.glb",
-          "sizeBytes": 1103320,
-          "sizeFormatted": "1.1 MB"
-        },
-        {
-          "id": "airplanes/lippisch.glb",
-          "name": "Lippisch",
-          "filename": "lippisch.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/lippisch.glb",
-          "sizeBytes": 640776,
-          "sizeFormatted": "625.8 KB"
-        },
-        {
-          "id": "airplanes/m262.glb",
-          "name": "M262",
-          "filename": "m262.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/m262.glb",
-          "sizeBytes": 1472192,
-          "sizeFormatted": "1.4 MB"
-        },
-        {
-          "id": "airplanes/me163b.glb",
-          "name": "Me163b",
-          "filename": "me163b.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/me163b.glb",
-          "sizeBytes": 1093764,
-          "sizeFormatted": "1 MB"
-        },
-        {
-          "id": "airplanes/me163s.glb",
-          "name": "Me163s",
-          "filename": "me163s.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/me163s.glb",
-          "sizeBytes": 1178800,
-          "sizeFormatted": "1.1 MB"
-        },
-        {
-          "id": "airplanes/mig29a.glb",
-          "name": "Mig29a",
-          "filename": "mig29a.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/mig29a.glb",
-          "sizeBytes": 1822172,
-          "sizeFormatted": "1.7 MB"
-        },
-        {
-          "id": "airplanes/mirage2.glb",
-          "name": "Mirage2",
-          "filename": "mirage2.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/mirage2.glb",
-          "sizeBytes": 682624,
-          "sizeFormatted": "666.6 KB"
-        },
-        {
-          "id": "airplanes/mosquitc.glb",
-          "name": "Mosquitc",
-          "filename": "mosquitc.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/mosquitc.glb",
-          "sizeBytes": 20099244,
-          "sizeFormatted": "19.2 MB"
-        },
-        {
-          "id": "airplanes/mp51.glb",
-          "name": "Mp51",
-          "filename": "mp51.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/mp51.glb",
-          "sizeBytes": 1186592,
-          "sizeFormatted": "1.1 MB"
-        },
-        {
-          "id": "airplanes/mulligan.glb",
-          "name": "Mulligan",
-          "filename": "mulligan.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/mulligan.glb",
-          "sizeBytes": 603532,
-          "sizeFormatted": "589.4 KB"
-        },
-        {
-          "id": "airplanes/norat.glb",
-          "name": "Norat",
-          "filename": "norat.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/norat.glb",
-          "sizeBytes": 3352472,
-          "sizeFormatted": "3.2 MB"
-        },
-        {
-          "id": "airplanes/orion.glb",
-          "name": "Orion",
-          "filename": "orion.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/orion.glb",
-          "sizeBytes": 979572,
-          "sizeFormatted": "956.6 KB"
-        },
-        {
-          "id": "airplanes/oscar.glb",
-          "name": "Oscar",
-          "filename": "oscar.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/oscar.glb",
-          "sizeBytes": 1096968,
-          "sizeFormatted": "1 MB"
+          "sizeBytes": 671748,
+          "sizeFormatted": "656 KB"
         },
         {
           "id": "airplanes/osprey.glb",
@@ -373,7 +58,7 @@
           "filename": "osprey.glb",
           "category": "airplanes",
           "path": "models/clean/airplanes/osprey.glb",
-          "sizeBytes": 1204552,
+          "sizeBytes": 1145900,
           "sizeFormatted": "1.1 MB"
         },
         {
@@ -382,35 +67,8 @@
           "filename": "p_38_lig.glb",
           "category": "airplanes",
           "path": "models/clean/airplanes/p_38_lig.glb",
-          "sizeBytes": 911808,
-          "sizeFormatted": "890.4 KB"
-        },
-        {
-          "id": "airplanes/p61.glb",
-          "name": "P61",
-          "filename": "p61.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/p61.glb",
-          "sizeBytes": 1556308,
-          "sizeFormatted": "1.5 MB"
-        },
-        {
-          "id": "airplanes/p61b.glb",
-          "name": "P61b",
-          "filename": "p61b.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/p61b.glb",
-          "sizeBytes": 29726008,
-          "sizeFormatted": "28.3 MB"
-        },
-        {
-          "id": "airplanes/phantom.glb",
-          "name": "Phantom",
-          "filename": "phantom.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/phantom.glb",
-          "sizeBytes": 377480,
-          "sizeFormatted": "368.6 KB"
+          "sizeBytes": 986472,
+          "sizeFormatted": "963.4 KB"
         },
         {
           "id": "airplanes/rafs5.glb",
@@ -418,178 +76,16 @@
           "filename": "rafs5.glb",
           "category": "airplanes",
           "path": "models/clean/airplanes/rafs5.glb",
-          "sizeBytes": 1179568,
-          "sizeFormatted": "1.1 MB"
-        },
-        {
-          "id": "airplanes/schoend.glb",
-          "name": "Schoend",
-          "filename": "schoend.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/schoend.glb",
-          "sizeBytes": 914364,
-          "sizeFormatted": "892.9 KB"
-        },
-        {
-          "id": "airplanes/seversky.glb",
-          "name": "Seversky",
-          "filename": "seversky.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/seversky.glb",
-          "sizeBytes": 1153640,
-          "sizeFormatted": "1.1 MB"
-        },
-        {
-          "id": "airplanes/sfury.glb",
-          "name": "Sfury",
-          "filename": "sfury.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/sfury.glb",
-          "sizeBytes": 429552,
-          "sizeFormatted": "419.5 KB"
-        },
-        {
-          "id": "airplanes/shinden.glb",
-          "name": "Shinden",
-          "filename": "shinden.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/shinden.glb",
-          "sizeBytes": 785092,
-          "sizeFormatted": "766.7 KB"
-        },
-        {
-          "id": "airplanes/skyhawk.glb",
-          "name": "Skyhawk",
-          "filename": "skyhawk.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/skyhawk.glb",
-          "sizeBytes": 21748288,
-          "sizeFormatted": "20.7 MB"
-        },
-        {
-          "id": "airplanes/stuka.glb",
-          "name": "Stuka",
-          "filename": "stuka.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/stuka.glb",
-          "sizeBytes": 612348,
-          "sizeFormatted": "598 KB"
-        },
-        {
-          "id": "airplanes/su25.glb",
-          "name": "Su25",
-          "filename": "su25.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/su25.glb",
-          "sizeBytes": 1042152,
-          "sizeFormatted": "1017.7 KB"
-        },
-        {
-          "id": "airplanes/sukhoi.glb",
-          "name": "Sukhoi",
-          "filename": "sukhoi.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/sukhoi.glb",
-          "sizeBytes": 1248400,
-          "sizeFormatted": "1.2 MB"
-        },
-        {
-          "id": "airplanes/sunderla.glb",
-          "name": "Sunderla",
-          "filename": "sunderla.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/sunderla.glb",
-          "sizeBytes": 969556,
-          "sizeFormatted": "946.8 KB"
-        },
-        {
-          "id": "airplanes/t_poli.glb",
-          "name": "T Poli",
-          "filename": "t_poli.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/t_poli.glb",
-          "sizeBytes": 911932,
-          "sizeFormatted": "890.6 KB"
-        },
-        {
-          "id": "airplanes/t33a.glb",
-          "name": "T33a",
-          "filename": "t33a.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/t33a.glb",
-          "sizeBytes": 885572,
-          "sizeFormatted": "864.8 KB"
-        },
-        {
-          "id": "airplanes/thunder1.glb",
-          "name": "Thunder1",
-          "filename": "thunder1.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/thunder1.glb",
-          "sizeBytes": 1109180,
-          "sizeFormatted": "1.1 MB"
-        },
-        {
-          "id": "airplanes/thunder2.glb",
-          "name": "Thunder2",
-          "filename": "thunder2.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/thunder2.glb",
-          "sizeBytes": 953396,
-          "sizeFormatted": "931.1 KB"
-        },
-        {
-          "id": "airplanes/tu95bear.glb",
-          "name": "Tu95bear",
-          "filename": "tu95bear.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/tu95bear.glb",
-          "sizeBytes": 1206468,
-          "sizeFormatted": "1.2 MB"
-        },
-        {
-          "id": "airplanes/veltro.glb",
-          "name": "Veltro",
-          "filename": "veltro.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/veltro.glb",
-          "sizeBytes": 1318032,
-          "sizeFormatted": "1.3 MB"
-        },
-        {
-          "id": "airplanes/victork.glb",
-          "name": "Victork",
-          "filename": "victork.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/victork.glb",
-          "sizeBytes": 1929988,
-          "sizeFormatted": "1.8 MB"
-        },
-        {
-          "id": "airplanes/yf22.glb",
-          "name": "Yf22",
-          "filename": "yf22.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/yf22.glb",
-          "sizeBytes": 1087304,
-          "sizeFormatted": "1 MB"
-        },
-        {
-          "id": "airplanes/zero.glb",
-          "name": "Zero",
-          "filename": "zero.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/zero.glb",
-          "sizeBytes": 458556,
-          "sizeFormatted": "447.8 KB"
+          "sizeBytes": 688344,
+          "sizeFormatted": "672.2 KB"
         }
       ]
     },
     {
       "name": "airports",
       "title": "Airports",
-      "icon": "🛫",
-      "count": 18,
+      "icon": "",
+      "count": 3,
       "models": [
         {
           "id": "airports/airsg1.glb",
@@ -597,53 +93,8 @@
           "filename": "airsg1.glb",
           "category": "airports",
           "path": "models/clean/airports/airsg1.glb",
-          "sizeBytes": 951060,
-          "sizeFormatted": "928.8 KB"
-        },
-        {
-          "id": "airports/airsg2.glb",
-          "name": "Airsg2",
-          "filename": "airsg2.glb",
-          "category": "airports",
-          "path": "models/clean/airports/airsg2.glb",
-          "sizeBytes": 664580,
-          "sizeFormatted": "649 KB"
-        },
-        {
-          "id": "airports/airsg3.glb",
-          "name": "Airsg3",
-          "filename": "airsg3.glb",
-          "category": "airports",
-          "path": "models/clean/airports/airsg3.glb",
-          "sizeBytes": 1261352,
-          "sizeFormatted": "1.2 MB"
-        },
-        {
-          "id": "airports/apollo.glb",
-          "name": "Apollo",
-          "filename": "apollo.glb",
-          "category": "airports",
-          "path": "models/clean/airports/apollo.glb",
-          "sizeBytes": 1148384,
-          "sizeFormatted": "1.1 MB"
-        },
-        {
-          "id": "airports/ariane4.glb",
-          "name": "Ariane4",
-          "filename": "ariane4.glb",
-          "category": "airports",
-          "path": "models/clean/airports/ariane4.glb",
-          "sizeBytes": 628288,
-          "sizeFormatted": "613.6 KB"
-        },
-        {
-          "id": "airports/crane.glb",
-          "name": "Crane",
-          "filename": "crane.glb",
-          "category": "airports",
-          "path": "models/clean/airports/crane.glb",
-          "sizeBytes": 2821032,
-          "sizeFormatted": "2.7 MB"
+          "sizeBytes": 470572,
+          "sizeFormatted": "459.5 KB"
         },
         {
           "id": "airports/eagle.glb",
@@ -651,8 +102,8 @@
           "filename": "eagle.glb",
           "category": "airports",
           "path": "models/clean/airports/eagle.glb",
-          "sizeBytes": 1670860,
-          "sizeFormatted": "1.6 MB"
+          "sizeBytes": 863664,
+          "sizeFormatted": "843.4 KB"
         },
         {
           "id": "airports/f15s.glb",
@@ -660,133 +111,25 @@
           "filename": "f15s.glb",
           "category": "airports",
           "path": "models/clean/airports/f15s.glb",
-          "sizeBytes": 462940,
-          "sizeFormatted": "452.1 KB"
-        },
-        {
-          "id": "airports/n_ocart.glb",
-          "name": "N Ocart",
-          "filename": "n_ocart.glb",
-          "category": "airports",
-          "path": "models/clean/airports/n_ocart.glb",
-          "sizeBytes": 1595004,
-          "sizeFormatted": "1.5 MB"
-        },
-        {
-          "id": "airports/nas1.glb",
-          "name": "Nas1",
-          "filename": "nas1.glb",
-          "category": "airports",
-          "path": "models/clean/airports/nas1.glb",
-          "sizeBytes": 682548,
-          "sizeFormatted": "666.6 KB"
-        },
-        {
-          "id": "airports/nas2.glb",
-          "name": "Nas2",
-          "filename": "nas2.glb",
-          "category": "airports",
-          "path": "models/clean/airports/nas2.glb",
-          "sizeBytes": 1042236,
-          "sizeFormatted": "1017.8 KB"
-        },
-        {
-          "id": "airports/nas3.glb",
-          "name": "Nas3",
-          "filename": "nas3.glb",
-          "category": "airports",
-          "path": "models/clean/airports/nas3.glb",
-          "sizeBytes": 1089504,
-          "sizeFormatted": "1 MB"
-        },
-        {
-          "id": "airports/nas4.glb",
-          "name": "Nas4",
-          "filename": "nas4.glb",
-          "category": "airports",
-          "path": "models/clean/airports/nas4.glb",
-          "sizeBytes": 1091972,
-          "sizeFormatted": "1 MB"
-        },
-        {
-          "id": "airports/nas5.glb",
-          "name": "Nas5",
-          "filename": "nas5.glb",
-          "category": "airports",
-          "path": "models/clean/airports/nas5.glb",
-          "sizeBytes": 1232228,
-          "sizeFormatted": "1.2 MB"
-        },
-        {
-          "id": "airports/nas6.glb",
-          "name": "Nas6",
-          "filename": "nas6.glb",
-          "category": "airports",
-          "path": "models/clean/airports/nas6.glb",
-          "sizeBytes": 1237024,
-          "sizeFormatted": "1.2 MB"
-        },
-        {
-          "id": "airports/satur.glb",
-          "name": "Satur",
-          "filename": "satur.glb",
-          "category": "airports",
-          "path": "models/clean/airports/satur.glb",
-          "sizeBytes": 1110868,
-          "sizeFormatted": "1.1 MB"
-        },
-        {
-          "id": "airports/shuttle.glb",
-          "name": "Shuttle",
-          "filename": "shuttle.glb",
-          "category": "airports",
-          "path": "models/clean/airports/shuttle.glb",
-          "sizeBytes": 3405052,
-          "sizeFormatted": "3.2 MB"
-        },
-        {
-          "id": "airports/ucart.glb",
-          "name": "Ucart",
-          "filename": "ucart.glb",
-          "category": "airports",
-          "path": "models/clean/airports/ucart.glb",
-          "sizeBytes": 1000552,
-          "sizeFormatted": "977.1 KB"
+          "sizeBytes": 234652,
+          "sizeFormatted": "229.2 KB"
         }
       ]
     },
     {
       "name": "animals",
       "title": "Animals",
-      "icon": "🐾",
-      "count": 32,
+      "icon": "",
+      "count": 22,
       "models": [
-        {
-          "id": "animals/compsogn.glb",
-          "name": "Compsogn",
-          "filename": "compsogn.glb",
-          "category": "animals",
-          "path": "models/clean/animals/compsogn.glb",
-          "sizeBytes": 1232772,
-          "sizeFormatted": "1.2 MB"
-        },
-        {
-          "id": "animals/deinonic.glb",
-          "name": "Deinonic",
-          "filename": "deinonic.glb",
-          "category": "animals",
-          "path": "models/clean/animals/deinonic.glb",
-          "sizeBytes": 1473196,
-          "sizeFormatted": "1.4 MB"
-        },
         {
           "id": "animals/delfin.glb",
           "name": "Delfin",
           "filename": "delfin.glb",
           "category": "animals",
           "path": "models/clean/animals/delfin.glb",
-          "sizeBytes": 152416,
-          "sizeFormatted": "148.8 KB"
+          "sizeBytes": 510580,
+          "sizeFormatted": "498.6 KB"
         },
         {
           "id": "animals/devilfis.glb",
@@ -794,8 +137,8 @@
           "filename": "devilfis.glb",
           "category": "animals",
           "path": "models/clean/animals/devilfis.glb",
-          "sizeBytes": 150956,
-          "sizeFormatted": "147.4 KB"
+          "sizeBytes": 856460,
+          "sizeFormatted": "836.4 KB"
         },
         {
           "id": "animals/dromedar.glb",
@@ -803,17 +146,8 @@
           "filename": "dromedar.glb",
           "category": "animals",
           "path": "models/clean/animals/dromedar.glb",
-          "sizeBytes": 1245640,
-          "sizeFormatted": "1.2 MB"
-        },
-        {
-          "id": "animals/dudo.glb",
-          "name": "Dudo",
-          "filename": "dudo.glb",
-          "category": "animals",
-          "path": "models/clean/animals/dudo.glb",
-          "sizeBytes": 93020,
-          "sizeFormatted": "90.8 KB"
+          "sizeBytes": 829744,
+          "sizeFormatted": "810.3 KB"
         },
         {
           "id": "animals/ghop.glb",
@@ -821,26 +155,8 @@
           "filename": "ghop.glb",
           "category": "animals",
           "path": "models/clean/animals/ghop.glb",
-          "sizeBytes": 237940,
-          "sizeFormatted": "232.4 KB"
-        },
-        {
-          "id": "animals/hippopot.glb",
-          "name": "Hippopot",
-          "filename": "hippopot.glb",
-          "category": "animals",
-          "path": "models/clean/animals/hippopot.glb",
-          "sizeBytes": 1524156,
-          "sizeFormatted": "1.5 MB"
-        },
-        {
-          "id": "animals/horse2.glb",
-          "name": "Horse2",
-          "filename": "horse2.glb",
-          "category": "animals",
-          "path": "models/clean/animals/horse2.glb",
-          "sizeBytes": 122140,
-          "sizeFormatted": "119.3 KB"
+          "sizeBytes": 1262612,
+          "sizeFormatted": "1.2 MB"
         },
         {
           "id": "animals/kangaro.glb",
@@ -848,8 +164,8 @@
           "filename": "kangaro.glb",
           "category": "animals",
           "path": "models/clean/animals/kangaro.glb",
-          "sizeBytes": 7716920,
-          "sizeFormatted": "7.4 MB"
+          "sizeBytes": 2683136,
+          "sizeFormatted": "2.6 MB"
         },
         {
           "id": "animals/kwha.glb",
@@ -857,8 +173,8 @@
           "filename": "kwha.glb",
           "category": "animals",
           "path": "models/clean/animals/kwha.glb",
-          "sizeBytes": 172116,
-          "sizeFormatted": "168.1 KB"
+          "sizeBytes": 652668,
+          "sizeFormatted": "637.4 KB"
         },
         {
           "id": "animals/lebis.glb",
@@ -866,8 +182,8 @@
           "filename": "lebis.glb",
           "category": "animals",
           "path": "models/clean/animals/lebis.glb",
-          "sizeBytes": 770516,
-          "sizeFormatted": "752.5 KB"
+          "sizeBytes": 724972,
+          "sizeFormatted": "708 KB"
         },
         {
           "id": "animals/lion.glb",
@@ -875,8 +191,8 @@
           "filename": "lion.glb",
           "category": "animals",
           "path": "models/clean/animals/lion.glb",
-          "sizeBytes": 2424356,
-          "sizeFormatted": "2.3 MB"
+          "sizeBytes": 3262792,
+          "sizeFormatted": "3.1 MB"
         },
         {
           "id": "animals/lobster1.glb",
@@ -884,8 +200,8 @@
           "filename": "lobster1.glb",
           "category": "animals",
           "path": "models/clean/animals/lobster1.glb",
-          "sizeBytes": 1278376,
-          "sizeFormatted": "1.2 MB"
+          "sizeBytes": 565756,
+          "sizeFormatted": "552.5 KB"
         },
         {
           "id": "animals/lobster2.glb",
@@ -893,8 +209,8 @@
           "filename": "lobster2.glb",
           "category": "animals",
           "path": "models/clean/animals/lobster2.glb",
-          "sizeBytes": 1296864,
-          "sizeFormatted": "1.2 MB"
+          "sizeBytes": 468732,
+          "sizeFormatted": "457.7 KB"
         },
         {
           "id": "animals/mantis.glb",
@@ -902,17 +218,8 @@
           "filename": "mantis.glb",
           "category": "animals",
           "path": "models/clean/animals/mantis.glb",
-          "sizeBytes": 266348,
-          "sizeFormatted": "260.1 KB"
-        },
-        {
-          "id": "animals/mliz.glb",
-          "name": "Mliz",
-          "filename": "mliz.glb",
-          "category": "animals",
-          "path": "models/clean/animals/mliz.glb",
-          "sizeBytes": 1383112,
-          "sizeFormatted": "1.3 MB"
+          "sizeBytes": 647940,
+          "sizeFormatted": "632.8 KB"
         },
         {
           "id": "animals/mosquito.glb",
@@ -920,17 +227,8 @@
           "filename": "mosquito.glb",
           "category": "animals",
           "path": "models/clean/animals/mosquito.glb",
-          "sizeBytes": 1294948,
-          "sizeFormatted": "1.2 MB"
-        },
-        {
-          "id": "animals/murae.glb",
-          "name": "Murae",
-          "filename": "murae.glb",
-          "category": "animals",
-          "path": "models/clean/animals/murae.glb",
-          "sizeBytes": 122300,
-          "sizeFormatted": "119.4 KB"
+          "sizeBytes": 469764,
+          "sizeFormatted": "458.8 KB"
         },
         {
           "id": "animals/ootter.glb",
@@ -938,17 +236,8 @@
           "filename": "ootter.glb",
           "category": "animals",
           "path": "models/clean/animals/ootter.glb",
-          "sizeBytes": 146876,
-          "sizeFormatted": "143.4 KB"
-        },
-        {
-          "id": "animals/ori.glb",
-          "name": "Ori",
-          "filename": "ori.glb",
-          "category": "animals",
-          "path": "models/clean/animals/ori.glb",
-          "sizeBytes": 182848,
-          "sizeFormatted": "178.6 KB"
+          "sizeBytes": 452804,
+          "sizeFormatted": "442.2 KB"
         },
         {
           "id": "animals/parasau.glb",
@@ -956,8 +245,8 @@
           "filename": "parasau.glb",
           "category": "animals",
           "path": "models/clean/animals/parasau.glb",
-          "sizeBytes": 138284,
-          "sizeFormatted": "135 KB"
+          "sizeBytes": 430948,
+          "sizeFormatted": "420.8 KB"
         },
         {
           "id": "animals/pig.glb",
@@ -965,8 +254,8 @@
           "filename": "pig.glb",
           "category": "animals",
           "path": "models/clean/animals/pig.glb",
-          "sizeBytes": 1176244,
-          "sizeFormatted": "1.1 MB"
+          "sizeBytes": 894060,
+          "sizeFormatted": "873.1 KB"
         },
         {
           "id": "animals/poecil.glb",
@@ -974,17 +263,8 @@
           "filename": "poecil.glb",
           "category": "animals",
           "path": "models/clean/animals/poecil.glb",
-          "sizeBytes": 145892,
-          "sizeFormatted": "142.5 KB"
-        },
-        {
-          "id": "animals/ptero.glb",
-          "name": "Ptero",
-          "filename": "ptero.glb",
-          "category": "animals",
-          "path": "models/clean/animals/ptero.glb",
-          "sizeBytes": 1455280,
-          "sizeFormatted": "1.4 MB"
+          "sizeBytes": 575384,
+          "sizeFormatted": "561.9 KB"
         },
         {
           "id": "animals/reindeer.glb",
@@ -992,8 +272,8 @@
           "filename": "reindeer.glb",
           "category": "animals",
           "path": "models/clean/animals/reindeer.glb",
-          "sizeBytes": 156844,
-          "sizeFormatted": "153.2 KB"
+          "sizeBytes": 579112,
+          "sizeFormatted": "565.5 KB"
         },
         {
           "id": "animals/rhino.glb",
@@ -1001,8 +281,8 @@
           "filename": "rhino.glb",
           "category": "animals",
           "path": "models/clean/animals/rhino.glb",
-          "sizeBytes": 121944,
-          "sizeFormatted": "119.1 KB"
+          "sizeBytes": 728436,
+          "sizeFormatted": "711.4 KB"
         },
         {
           "id": "animals/seahorse.glb",
@@ -1010,8 +290,8 @@
           "filename": "seahorse.glb",
           "category": "animals",
           "path": "models/clean/animals/seahorse.glb",
-          "sizeBytes": 16755316,
-          "sizeFormatted": "16 MB"
+          "sizeBytes": 3778344,
+          "sizeFormatted": "3.6 MB"
         },
         {
           "id": "animals/snail.glb",
@@ -1019,8 +299,8 @@
           "filename": "snail.glb",
           "category": "animals",
           "path": "models/clean/animals/snail.glb",
-          "sizeBytes": 1236948,
-          "sizeFormatted": "1.2 MB"
+          "sizeBytes": 1322316,
+          "sizeFormatted": "1.3 MB"
         },
         {
           "id": "animals/stagbee.glb",
@@ -1028,8 +308,8 @@
           "filename": "stagbee.glb",
           "category": "animals",
           "path": "models/clean/animals/stagbee.glb",
-          "sizeBytes": 8022112,
-          "sizeFormatted": "7.7 MB"
+          "sizeBytes": 2142240,
+          "sizeFormatted": "2 MB"
         },
         {
           "id": "animals/wasp.glb",
@@ -1037,79 +317,25 @@
           "filename": "wasp.glb",
           "category": "animals",
           "path": "models/clean/animals/wasp.glb",
-          "sizeBytes": 1265536,
-          "sizeFormatted": "1.2 MB"
-        },
-        {
-          "id": "animals/whale.glb",
-          "name": "Whale",
-          "filename": "whale.glb",
-          "category": "animals",
-          "path": "models/clean/animals/whale.glb",
-          "sizeBytes": 113740,
-          "sizeFormatted": "111.1 KB"
+          "sizeBytes": 782804,
+          "sizeFormatted": "764.5 KB"
         }
       ]
     },
     {
       "name": "architecture",
       "title": "Architecture",
-      "icon": "🏛️",
-      "count": 26,
+      "icon": "",
+      "count": 8,
       "models": [
-        {
-          "id": "architecture/1half.glb",
-          "name": "1half",
-          "filename": "1half.glb",
-          "category": "architecture",
-          "path": "models/clean/architecture/1half.glb",
-          "sizeBytes": 1098604,
-          "sizeFormatted": "1 MB"
-        },
-        {
-          "id": "architecture/casita.glb",
-          "name": "Casita",
-          "filename": "casita.glb",
-          "category": "architecture",
-          "path": "models/clean/architecture/casita.glb",
-          "sizeBytes": 578208,
-          "sizeFormatted": "564.7 KB"
-        },
-        {
-          "id": "architecture/corncrib.glb",
-          "name": "Corncrib",
-          "filename": "corncrib.glb",
-          "category": "architecture",
-          "path": "models/clean/architecture/corncrib.glb",
-          "sizeBytes": 92764,
-          "sizeFormatted": "90.6 KB"
-        },
-        {
-          "id": "architecture/darmst.glb",
-          "name": "Darmst",
-          "filename": "darmst.glb",
-          "category": "architecture",
-          "path": "models/clean/architecture/darmst.glb",
-          "sizeBytes": 424124,
-          "sizeFormatted": "414.2 KB"
-        },
-        {
-          "id": "architecture/edaux.glb",
-          "name": "Edaux",
-          "filename": "edaux.glb",
-          "category": "architecture",
-          "path": "models/clean/architecture/edaux.glb",
-          "sizeBytes": 537916,
-          "sizeFormatted": "525.3 KB"
-        },
         {
           "id": "architecture/firest.glb",
           "name": "Firest",
           "filename": "firest.glb",
           "category": "architecture",
           "path": "models/clean/architecture/firest.glb",
-          "sizeBytes": 831296,
-          "sizeFormatted": "811.8 KB"
+          "sizeBytes": 2060700,
+          "sizeFormatted": "2 MB"
         },
         {
           "id": "architecture/grand.glb",
@@ -1117,53 +343,8 @@
           "filename": "grand.glb",
           "category": "architecture",
           "path": "models/clean/architecture/grand.glb",
-          "sizeBytes": 287492,
-          "sizeFormatted": "280.8 KB"
-        },
-        {
-          "id": "architecture/hikone.glb",
-          "name": "Hikone",
-          "filename": "hikone.glb",
-          "category": "architecture",
-          "path": "models/clean/architecture/hikone.glb",
-          "sizeBytes": 4183408,
-          "sizeFormatted": "4 MB"
-        },
-        {
-          "id": "architecture/hotel.glb",
-          "name": "Hotel",
-          "filename": "hotel.glb",
-          "category": "architecture",
-          "path": "models/clean/architecture/hotel.glb",
-          "sizeBytes": 2026764,
-          "sizeFormatted": "1.9 MB"
-        },
-        {
-          "id": "architecture/icehouse.glb",
-          "name": "Icehouse",
-          "filename": "icehouse.glb",
-          "category": "architecture",
-          "path": "models/clean/architecture/icehouse.glb",
-          "sizeBytes": 15540,
-          "sizeFormatted": "15.2 KB"
-        },
-        {
-          "id": "architecture/iglesia2.glb",
-          "name": "Iglesia2",
-          "filename": "iglesia2.glb",
-          "category": "architecture",
-          "path": "models/clean/architecture/iglesia2.glb",
-          "sizeBytes": 1213316,
-          "sizeFormatted": "1.2 MB"
-        },
-        {
-          "id": "architecture/machine.glb",
-          "name": "Machine",
-          "filename": "machine.glb",
-          "category": "architecture",
-          "path": "models/clean/architecture/machine.glb",
-          "sizeBytes": 480340,
-          "sizeFormatted": "469.1 KB"
+          "sizeBytes": 375892,
+          "sizeFormatted": "367.1 KB"
         },
         {
           "id": "architecture/nordstad.glb",
@@ -1171,8 +352,8 @@
           "filename": "nordstad.glb",
           "category": "architecture",
           "path": "models/clean/architecture/nordstad.glb",
-          "sizeBytes": 842852,
-          "sizeFormatted": "823.1 KB"
+          "sizeBytes": 356976,
+          "sizeFormatted": "348.6 KB"
         },
         {
           "id": "architecture/observ.glb",
@@ -1180,35 +361,8 @@
           "filename": "observ.glb",
           "category": "architecture",
           "path": "models/clean/architecture/observ.glb",
-          "sizeBytes": 580992,
-          "sizeFormatted": "567.4 KB"
-        },
-        {
-          "id": "architecture/piggery.glb",
-          "name": "Piggery",
-          "filename": "piggery.glb",
-          "category": "architecture",
-          "path": "models/clean/architecture/piggery.glb",
-          "sizeBytes": 41008,
-          "sizeFormatted": "40 KB"
-        },
-        {
-          "id": "architecture/reloj.glb",
-          "name": "Reloj",
-          "filename": "reloj.glb",
-          "category": "architecture",
-          "path": "models/clean/architecture/reloj.glb",
-          "sizeBytes": 482248,
-          "sizeFormatted": "470.9 KB"
-        },
-        {
-          "id": "architecture/repsol.glb",
-          "name": "Repsol",
-          "filename": "repsol.glb",
-          "category": "architecture",
-          "path": "models/clean/architecture/repsol.glb",
-          "sizeBytes": 28064,
-          "sizeFormatted": "27.4 KB"
+          "sizeBytes": 274716,
+          "sizeFormatted": "268.3 KB"
         },
         {
           "id": "architecture/sjeronim.glb",
@@ -1216,17 +370,8 @@
           "filename": "sjeronim.glb",
           "category": "architecture",
           "path": "models/clean/architecture/sjeronim.glb",
-          "sizeBytes": 114026900,
-          "sizeFormatted": "108.7 MB"
-        },
-        {
-          "id": "architecture/stjuli.glb",
-          "name": "Stjuli",
-          "filename": "stjuli.glb",
-          "category": "architecture",
-          "path": "models/clean/architecture/stjuli.glb",
-          "sizeBytes": 853504,
-          "sizeFormatted": "833.5 KB"
+          "sizeBytes": 42575728,
+          "sizeFormatted": "40.6 MB"
         },
         {
           "id": "architecture/store.glb",
@@ -1234,8 +379,8 @@
           "filename": "store.glb",
           "category": "architecture",
           "path": "models/clean/architecture/store.glb",
-          "sizeBytes": 806096,
-          "sizeFormatted": "787.2 KB"
+          "sizeBytes": 315212,
+          "sizeFormatted": "307.8 KB"
         },
         {
           "id": "architecture/t_lich.glb",
@@ -1243,8 +388,8 @@
           "filename": "t_lich.glb",
           "category": "architecture",
           "path": "models/clean/architecture/t_lich.glb",
-          "sizeBytes": 437968,
-          "sizeFormatted": "427.7 KB"
+          "sizeBytes": 3596920,
+          "sizeFormatted": "3.4 MB"
         },
         {
           "id": "architecture/townhou1.glb",
@@ -1252,123 +397,25 @@
           "filename": "townhou1.glb",
           "category": "architecture",
           "path": "models/clean/architecture/townhou1.glb",
-          "sizeBytes": 1164224,
-          "sizeFormatted": "1.1 MB"
-        },
-        {
-          "id": "architecture/townhou3.glb",
-          "name": "Townhou3",
-          "filename": "townhou3.glb",
-          "category": "architecture",
-          "path": "models/clean/architecture/townhou3.glb",
-          "sizeBytes": 448016,
-          "sizeFormatted": "437.5 KB"
-        },
-        {
-          "id": "architecture/trainc.glb",
-          "name": "Trainc",
-          "filename": "trainc.glb",
-          "category": "architecture",
-          "path": "models/clean/architecture/trainc.glb",
-          "sizeBytes": 450600,
-          "sizeFormatted": "440 KB"
-        },
-        {
-          "id": "architecture/victhouh.glb",
-          "name": "Victhouh",
-          "filename": "victhouh.glb",
-          "category": "architecture",
-          "path": "models/clean/architecture/victhouh.glb",
-          "sizeBytes": 550040,
-          "sizeFormatted": "537.1 KB"
-        },
-        {
-          "id": "architecture/water_t3.glb",
-          "name": "Water T3",
-          "filename": "water_t3.glb",
-          "category": "architecture",
-          "path": "models/clean/architecture/water_t3.glb",
-          "sizeBytes": 64116,
-          "sizeFormatted": "62.6 KB"
-        }
-      ]
-    },
-    {
-      "name": "bathroom",
-      "title": "Bathroom",
-      "icon": "🛁",
-      "count": 5,
-      "models": [
-        {
-          "id": "bathroom/bath.glb",
-          "name": "Bath",
-          "filename": "bath.glb",
-          "category": "bathroom",
-          "path": "models/clean/bathroom/bath.glb",
-          "sizeBytes": 2642048,
-          "sizeFormatted": "2.5 MB"
-        },
-        {
-          "id": "bathroom/bidet.glb",
-          "name": "Bidet",
-          "filename": "bidet.glb",
-          "category": "bathroom",
-          "path": "models/clean/bathroom/bidet.glb",
-          "sizeBytes": 1236400,
-          "sizeFormatted": "1.2 MB"
-        },
-        {
-          "id": "bathroom/toilet.glb",
-          "name": "Toilet",
-          "filename": "toilet.glb",
-          "category": "bathroom",
-          "path": "models/clean/bathroom/toilet.glb",
-          "sizeBytes": 1571292,
-          "sizeFormatted": "1.5 MB"
-        },
-        {
-          "id": "bathroom/vicbath.glb",
-          "name": "Vicbath",
-          "filename": "vicbath.glb",
-          "category": "bathroom",
-          "path": "models/clean/bathroom/vicbath.glb",
-          "sizeBytes": 7524492,
-          "sizeFormatted": "7.2 MB"
-        },
-        {
-          "id": "bathroom/washbasi.glb",
-          "name": "Washbasi",
-          "filename": "washbasi.glb",
-          "category": "bathroom",
-          "path": "models/clean/bathroom/washbasi.glb",
-          "sizeBytes": 2471316,
-          "sizeFormatted": "2.4 MB"
+          "sizeBytes": 679088,
+          "sizeFormatted": "663.2 KB"
         }
       ]
     },
     {
       "name": "cars",
       "title": "Cars",
-      "icon": "🚗",
-      "count": 38,
+      "icon": "",
+      "count": 20,
       "models": [
-        {
-          "id": "cars/37ford.glb",
-          "name": "37ford",
-          "filename": "37ford.glb",
-          "category": "cars",
-          "path": "models/clean/cars/37ford.glb",
-          "sizeBytes": 901188,
-          "sizeFormatted": "880.1 KB"
-        },
         {
           "id": "cars/diablo.glb",
           "name": "Diablo",
           "filename": "diablo.glb",
           "category": "cars",
           "path": "models/clean/cars/diablo.glb",
-          "sizeBytes": 1211084,
-          "sizeFormatted": "1.2 MB"
+          "sizeBytes": 582004,
+          "sizeFormatted": "568.4 KB"
         },
         {
           "id": "cars/drag.glb",
@@ -1376,8 +423,8 @@
           "filename": "drag.glb",
           "category": "cars",
           "path": "models/clean/cars/drag.glb",
-          "sizeBytes": 981720,
-          "sizeFormatted": "958.7 KB"
+          "sizeBytes": 854356,
+          "sizeFormatted": "834.3 KB"
         },
         {
           "id": "cars/fordv8.glb",
@@ -1385,17 +432,8 @@
           "filename": "fordv8.glb",
           "category": "cars",
           "path": "models/clean/cars/fordv8.glb",
-          "sizeBytes": 786280,
-          "sizeFormatted": "767.9 KB"
-        },
-        {
-          "id": "cars/fx4.glb",
-          "name": "Fx4",
-          "filename": "fx4.glb",
-          "category": "cars",
-          "path": "models/clean/cars/fx4.glb",
-          "sizeBytes": 7659656,
-          "sizeFormatted": "7.3 MB"
+          "sizeBytes": 334552,
+          "sizeFormatted": "326.7 KB"
         },
         {
           "id": "cars/gto.glb",
@@ -1403,17 +441,8 @@
           "filename": "gto.glb",
           "category": "cars",
           "path": "models/clean/cars/gto.glb",
-          "sizeBytes": 6869380,
-          "sizeFormatted": "6.6 MB"
-        },
-        {
-          "id": "cars/hdj80.glb",
-          "name": "Hdj80",
-          "filename": "hdj80.glb",
-          "category": "cars",
-          "path": "models/clean/cars/hdj80.glb",
-          "sizeBytes": 510860,
-          "sizeFormatted": "498.9 KB"
+          "sizeBytes": 2333000,
+          "sizeFormatted": "2.2 MB"
         },
         {
           "id": "cars/isetta.glb",
@@ -1421,8 +450,8 @@
           "filename": "isetta.glb",
           "category": "cars",
           "path": "models/clean/cars/isetta.glb",
-          "sizeBytes": 911156,
-          "sizeFormatted": "889.8 KB"
+          "sizeBytes": 302472,
+          "sizeFormatted": "295.4 KB"
         },
         {
           "id": "cars/jaguar.glb",
@@ -1430,26 +459,8 @@
           "filename": "jaguar.glb",
           "category": "cars",
           "path": "models/clean/cars/jaguar.glb",
-          "sizeBytes": 9252096,
-          "sizeFormatted": "8.8 MB"
-        },
-        {
-          "id": "cars/jof1.glb",
-          "name": "Jof1",
-          "filename": "jof1.glb",
-          "category": "cars",
-          "path": "models/clean/cars/jof1.glb",
-          "sizeBytes": 1212100,
-          "sizeFormatted": "1.2 MB"
-        },
-        {
-          "id": "cars/karmann.glb",
-          "name": "Karmann",
-          "filename": "karmann.glb",
-          "category": "cars",
-          "path": "models/clean/cars/karmann.glb",
-          "sizeBytes": 67676,
-          "sizeFormatted": "66.1 KB"
+          "sizeBytes": 3269788,
+          "sizeFormatted": "3.1 MB"
         },
         {
           "id": "cars/lambcoun.glb",
@@ -1457,8 +468,8 @@
           "filename": "lambcoun.glb",
           "category": "cars",
           "path": "models/clean/cars/lambcoun.glb",
-          "sizeBytes": 1049136,
-          "sizeFormatted": "1 MB"
+          "sizeBytes": 505256,
+          "sizeFormatted": "493.4 KB"
         },
         {
           "id": "cars/lanc_b24.glb",
@@ -1466,8 +477,8 @@
           "filename": "lanc_b24.glb",
           "category": "cars",
           "path": "models/clean/cars/lanc_b24.glb",
-          "sizeBytes": 1164400,
-          "sizeFormatted": "1.1 MB"
+          "sizeBytes": 466208,
+          "sizeFormatted": "455.3 KB"
         },
         {
           "id": "cars/lincoln.glb",
@@ -1475,8 +486,8 @@
           "filename": "lincoln.glb",
           "category": "cars",
           "path": "models/clean/cars/lincoln.glb",
-          "sizeBytes": 1363968,
-          "sizeFormatted": "1.3 MB"
+          "sizeBytes": 825672,
+          "sizeFormatted": "806.3 KB"
         },
         {
           "id": "cars/lotus107.glb",
@@ -1484,26 +495,8 @@
           "filename": "lotus107.glb",
           "category": "cars",
           "path": "models/clean/cars/lotus107.glb",
-          "sizeBytes": 1243572,
-          "sizeFormatted": "1.2 MB"
-        },
-        {
-          "id": "cars/mbenz5.glb",
-          "name": "Mbenz5",
-          "filename": "mbenz5.glb",
-          "category": "cars",
-          "path": "models/clean/cars/mbenz5.glb",
-          "sizeBytes": 1188256,
-          "sizeFormatted": "1.1 MB"
-        },
-        {
-          "id": "cars/mclaren.glb",
-          "name": "Mclaren",
-          "filename": "mclaren.glb",
-          "category": "cars",
-          "path": "models/clean/cars/mclaren.glb",
-          "sizeBytes": 766236,
-          "sizeFormatted": "748.3 KB"
+          "sizeBytes": 1811648,
+          "sizeFormatted": "1.7 MB"
         },
         {
           "id": "cars/mer300sl.glb",
@@ -1511,8 +504,8 @@
           "filename": "mer300sl.glb",
           "category": "cars",
           "path": "models/clean/cars/mer300sl.glb",
-          "sizeBytes": 695268,
-          "sizeFormatted": "679 KB"
+          "sizeBytes": 230428,
+          "sizeFormatted": "225 KB"
         },
         {
           "id": "cars/mercedes.glb",
@@ -1520,8 +513,8 @@
           "filename": "mercedes.glb",
           "category": "cars",
           "path": "models/clean/cars/mercedes.glb",
-          "sizeBytes": 1203120,
-          "sizeFormatted": "1.1 MB"
+          "sizeBytes": 554044,
+          "sizeFormatted": "541.1 KB"
         },
         {
           "id": "cars/mes.glb",
@@ -1529,8 +522,8 @@
           "filename": "mes.glb",
           "category": "cars",
           "path": "models/clean/cars/mes.glb",
-          "sizeBytes": 594880,
-          "sizeFormatted": "580.9 KB"
+          "sizeBytes": 222384,
+          "sizeFormatted": "217.2 KB"
         },
         {
           "id": "cars/mgtc.glb",
@@ -1538,35 +531,8 @@
           "filename": "mgtc.glb",
           "category": "cars",
           "path": "models/clean/cars/mgtc.glb",
-          "sizeBytes": 946216,
-          "sizeFormatted": "924 KB"
-        },
-        {
-          "id": "cars/mini.glb",
-          "name": "Mini",
-          "filename": "mini.glb",
-          "category": "cars",
-          "path": "models/clean/cars/mini.glb",
-          "sizeBytes": 5398140,
-          "sizeFormatted": "5.1 MB"
-        },
-        {
-          "id": "cars/mustm3.glb",
-          "name": "Mustm3",
-          "filename": "mustm3.glb",
-          "category": "cars",
-          "path": "models/clean/cars/mustm3.glb",
-          "sizeBytes": 1260092,
-          "sizeFormatted": "1.2 MB"
-        },
-        {
-          "id": "cars/npatrol.glb",
-          "name": "Npatrol",
-          "filename": "npatrol.glb",
-          "category": "cars",
-          "path": "models/clean/cars/npatrol.glb",
-          "sizeBytes": 12906640,
-          "sizeFormatted": "12.3 MB"
+          "sizeBytes": 403620,
+          "sizeFormatted": "394.2 KB"
         },
         {
           "id": "cars/olds_c.glb",
@@ -1574,8 +540,8 @@
           "filename": "olds_c.glb",
           "category": "cars",
           "path": "models/clean/cars/olds_c.glb",
-          "sizeBytes": 13121904,
-          "sizeFormatted": "12.5 MB"
+          "sizeBytes": 6030340,
+          "sizeFormatted": "5.8 MB"
         },
         {
           "id": "cars/op1909.glb",
@@ -1583,8 +549,8 @@
           "filename": "op1909.glb",
           "category": "cars",
           "path": "models/clean/cars/op1909.glb",
-          "sizeBytes": 1191660,
-          "sizeFormatted": "1.1 MB"
+          "sizeBytes": 1093744,
+          "sizeFormatted": "1 MB"
         },
         {
           "id": "cars/renault.glb",
@@ -1592,8 +558,8 @@
           "filename": "renault.glb",
           "category": "cars",
           "path": "models/clean/cars/renault.glb",
-          "sizeBytes": 1113256,
-          "sizeFormatted": "1.1 MB"
+          "sizeBytes": 432056,
+          "sizeFormatted": "421.9 KB"
         },
         {
           "id": "cars/rolls.glb",
@@ -1601,17 +567,8 @@
           "filename": "rolls.glb",
           "category": "cars",
           "path": "models/clean/cars/rolls.glb",
-          "sizeBytes": 1537116,
-          "sizeFormatted": "1.5 MB"
-        },
-        {
-          "id": "cars/skyline.glb",
-          "name": "Skyline",
-          "filename": "skyline.glb",
-          "category": "cars",
-          "path": "models/clean/cars/skyline.glb",
-          "sizeBytes": 8932124,
-          "sizeFormatted": "8.5 MB"
+          "sizeBytes": 311488,
+          "sizeFormatted": "304.2 KB"
         },
         {
           "id": "cars/t_chevy.glb",
@@ -1619,35 +576,8 @@
           "filename": "t_chevy.glb",
           "category": "cars",
           "path": "models/clean/cars/t_chevy.glb",
-          "sizeBytes": 692832,
-          "sizeFormatted": "676.6 KB"
-        },
-        {
-          "id": "cars/ta_lago.glb",
-          "name": "Ta Lago",
-          "filename": "ta_lago.glb",
-          "category": "cars",
-          "path": "models/clean/cars/ta_lago.glb",
-          "sizeBytes": 965180,
-          "sizeFormatted": "942.6 KB"
-        },
-        {
-          "id": "cars/trabant.glb",
-          "name": "Trabant",
-          "filename": "trabant.glb",
-          "category": "cars",
-          "path": "models/clean/cars/trabant.glb",
-          "sizeBytes": 501736,
-          "sizeFormatted": "490 KB"
-        },
-        {
-          "id": "cars/tyot.glb",
-          "name": "Tyot",
-          "filename": "tyot.glb",
-          "category": "cars",
-          "path": "models/clean/cars/tyot.glb",
-          "sizeBytes": 999660,
-          "sizeFormatted": "976.2 KB"
+          "sizeBytes": 343204,
+          "sizeFormatted": "335.2 KB"
         },
         {
           "id": "cars/tyrrel.glb",
@@ -1655,187 +585,25 @@
           "filename": "tyrrel.glb",
           "category": "cars",
           "path": "models/clean/cars/tyrrel.glb",
-          "sizeBytes": 827724,
-          "sizeFormatted": "808.3 KB"
-        },
-        {
-          "id": "cars/vwbeetle.glb",
-          "name": "Vwbeetle",
-          "filename": "vwbeetle.glb",
-          "category": "cars",
-          "path": "models/clean/cars/vwbeetle.glb",
-          "sizeBytes": 936344,
-          "sizeFormatted": "914.4 KB"
-        },
-        {
-          "id": "cars/vwcmb.glb",
-          "name": "Vwcmb",
-          "filename": "vwcmb.glb",
-          "category": "cars",
-          "path": "models/clean/cars/vwcmb.glb",
-          "sizeBytes": 1067412,
-          "sizeFormatted": "1 MB"
-        },
-        {
-          "id": "cars/vwgolf.glb",
-          "name": "Vwgolf",
-          "filename": "vwgolf.glb",
-          "category": "cars",
-          "path": "models/clean/cars/vwgolf.glb",
-          "sizeBytes": 1250672,
-          "sizeFormatted": "1.2 MB"
-        },
-        {
-          "id": "cars/woods.glb",
-          "name": "Woods",
-          "filename": "woods.glb",
-          "category": "cars",
-          "path": "models/clean/cars/woods.glb",
-          "sizeBytes": 17984900,
-          "sizeFormatted": "17.2 MB"
+          "sizeBytes": 1199908,
+          "sizeFormatted": "1.1 MB"
         }
       ]
     },
     {
       "name": "contemporary_furniture",
       "title": "Contemporary Furniture",
-      "icon": "🛋️",
-      "count": 24,
+      "icon": "",
+      "count": 2,
       "models": [
-        {
-          "id": "contemporary_furniture/armchair.glb",
-          "name": "Armchair",
-          "filename": "armchair.glb",
-          "category": "contemporary_furniture",
-          "path": "models/clean/contemporary_furniture/armchair.glb",
-          "sizeBytes": 3558296,
-          "sizeFormatted": "3.4 MB"
-        },
-        {
-          "id": "contemporary_furniture/bookcase.glb",
-          "name": "Bookcase",
-          "filename": "bookcase.glb",
-          "category": "contemporary_furniture",
-          "path": "models/clean/contemporary_furniture/bookcase.glb",
-          "sizeBytes": 5653164,
-          "sizeFormatted": "5.4 MB"
-        },
-        {
-          "id": "contemporary_furniture/chiffo.glb",
-          "name": "Chiffo",
-          "filename": "chiffo.glb",
-          "category": "contemporary_furniture",
-          "path": "models/clean/contemporary_furniture/chiffo.glb",
-          "sizeBytes": 1216180,
-          "sizeFormatted": "1.2 MB"
-        },
-        {
-          "id": "contemporary_furniture/childbed.glb",
-          "name": "Childbed",
-          "filename": "childbed.glb",
-          "category": "contemporary_furniture",
-          "path": "models/clean/contemporary_furniture/childbed.glb",
-          "sizeBytes": 8512320,
-          "sizeFormatted": "8.1 MB"
-        },
-        {
-          "id": "contemporary_furniture/chromech.glb",
-          "name": "Chromech",
-          "filename": "chromech.glb",
-          "category": "contemporary_furniture",
-          "path": "models/clean/contemporary_furniture/chromech.glb",
-          "sizeBytes": 34132204,
-          "sizeFormatted": "32.6 MB"
-        },
-        {
-          "id": "contemporary_furniture/coffetab.glb",
-          "name": "Coffetab",
-          "filename": "coffetab.glb",
-          "category": "contemporary_furniture",
-          "path": "models/clean/contemporary_furniture/coffetab.glb",
-          "sizeBytes": 2983412,
-          "sizeFormatted": "2.8 MB"
-        },
-        {
-          "id": "contemporary_furniture/constanz.glb",
-          "name": "Constanz",
-          "filename": "constanz.glb",
-          "category": "contemporary_furniture",
-          "path": "models/clean/contemporary_furniture/constanz.glb",
-          "sizeBytes": 6385892,
-          "sizeFormatted": "6.1 MB"
-        },
-        {
-          "id": "contemporary_furniture/convch.glb",
-          "name": "Convch",
-          "filename": "convch.glb",
-          "category": "contemporary_furniture",
-          "path": "models/clean/contemporary_furniture/convch.glb",
-          "sizeBytes": 668044,
-          "sizeFormatted": "652.4 KB"
-        },
-        {
-          "id": "contemporary_furniture/convtab.glb",
-          "name": "Convtab",
-          "filename": "convtab.glb",
-          "category": "contemporary_furniture",
-          "path": "models/clean/contemporary_furniture/convtab.glb",
-          "sizeBytes": 628348,
-          "sizeFormatted": "613.6 KB"
-        },
-        {
-          "id": "contemporary_furniture/ctable.glb",
-          "name": "Ctable",
-          "filename": "ctable.glb",
-          "category": "contemporary_furniture",
-          "path": "models/clean/contemporary_furniture/ctable.glb",
-          "sizeBytes": 669700,
-          "sizeFormatted": "654 KB"
-        },
-        {
-          "id": "contemporary_furniture/feiba.glb",
-          "name": "Feiba",
-          "filename": "feiba.glb",
-          "category": "contemporary_furniture",
-          "path": "models/clean/contemporary_furniture/feiba.glb",
-          "sizeBytes": 534824,
-          "sizeFormatted": "522.3 KB"
-        },
-        {
-          "id": "contemporary_furniture/filing.glb",
-          "name": "Filing",
-          "filename": "filing.glb",
-          "category": "contemporary_furniture",
-          "path": "models/clean/contemporary_furniture/filing.glb",
-          "sizeBytes": 740308,
-          "sizeFormatted": "723 KB"
-        },
-        {
-          "id": "contemporary_furniture/hille.glb",
-          "name": "Hille",
-          "filename": "hille.glb",
-          "category": "contemporary_furniture",
-          "path": "models/clean/contemporary_furniture/hille.glb",
-          "sizeBytes": 460208,
-          "sizeFormatted": "449.4 KB"
-        },
         {
           "id": "contemporary_furniture/officec2.glb",
           "name": "Officec2",
           "filename": "officec2.glb",
           "category": "contemporary_furniture",
           "path": "models/clean/contemporary_furniture/officec2.glb",
-          "sizeBytes": 6678156,
-          "sizeFormatted": "6.4 MB"
-        },
-        {
-          "id": "contemporary_furniture/officec3.glb",
-          "name": "Officec3",
-          "filename": "officec3.glb",
-          "category": "contemporary_furniture",
-          "path": "models/clean/contemporary_furniture/officec3.glb",
-          "sizeBytes": 666592,
-          "sizeFormatted": "651 KB"
+          "sizeBytes": 1604288,
+          "sizeFormatted": "1.5 MB"
         },
         {
           "id": "contemporary_furniture/officech.glb",
@@ -1843,88 +611,16 @@
           "filename": "officech.glb",
           "category": "contemporary_furniture",
           "path": "models/clean/contemporary_furniture/officech.glb",
-          "sizeBytes": 507140,
-          "sizeFormatted": "495.3 KB"
-        },
-        {
-          "id": "contemporary_furniture/ofilamp.glb",
-          "name": "Ofilamp",
-          "filename": "ofilamp.glb",
-          "category": "contemporary_furniture",
-          "path": "models/clean/contemporary_furniture/ofilamp.glb",
-          "sizeBytes": 10079056,
-          "sizeFormatted": "9.6 MB"
-        },
-        {
-          "id": "contemporary_furniture/ofisup.glb",
-          "name": "Ofisup",
-          "filename": "ofisup.glb",
-          "category": "contemporary_furniture",
-          "path": "models/clean/contemporary_furniture/ofisup.glb",
-          "sizeBytes": 1209164,
-          "sizeFormatted": "1.2 MB"
-        },
-        {
-          "id": "contemporary_furniture/ofisup2.glb",
-          "name": "Ofisup2",
-          "filename": "ofisup2.glb",
-          "category": "contemporary_furniture",
-          "path": "models/clean/contemporary_furniture/ofisup2.glb",
-          "sizeBytes": 169756,
-          "sizeFormatted": "165.8 KB"
-        },
-        {
-          "id": "contemporary_furniture/pouff.glb",
-          "name": "Pouff",
-          "filename": "pouff.glb",
-          "category": "contemporary_furniture",
-          "path": "models/clean/contemporary_furniture/pouff.glb",
-          "sizeBytes": 799284,
-          "sizeFormatted": "780.6 KB"
-        },
-        {
-          "id": "contemporary_furniture/silla.glb",
-          "name": "Silla",
-          "filename": "silla.glb",
-          "category": "contemporary_furniture",
-          "path": "models/clean/contemporary_furniture/silla.glb",
-          "sizeBytes": 224168,
-          "sizeFormatted": "218.9 KB"
-        },
-        {
-          "id": "contemporary_furniture/typist.glb",
-          "name": "Typist",
-          "filename": "typist.glb",
-          "category": "contemporary_furniture",
-          "path": "models/clean/contemporary_furniture/typist.glb",
-          "sizeBytes": 3781668,
-          "sizeFormatted": "3.6 MB"
-        },
-        {
-          "id": "contemporary_furniture/workben2.glb",
-          "name": "Workben2",
-          "filename": "workben2.glb",
-          "category": "contemporary_furniture",
-          "path": "models/clean/contemporary_furniture/workben2.glb",
-          "sizeBytes": 469768,
-          "sizeFormatted": "458.8 KB"
-        },
-        {
-          "id": "contemporary_furniture/workbenc.glb",
-          "name": "Workbenc",
-          "filename": "workbenc.glb",
-          "category": "contemporary_furniture",
-          "path": "models/clean/contemporary_furniture/workbenc.glb",
-          "sizeBytes": 768720,
-          "sizeFormatted": "750.7 KB"
+          "sizeBytes": 156348,
+          "sizeFormatted": "152.7 KB"
         }
       ]
     },
     {
       "name": "electronics",
       "title": "Electronics",
-      "icon": "💻",
-      "count": 25,
+      "icon": "",
+      "count": 5,
       "models": [
         {
           "id": "electronics/aiwa2.glb",
@@ -1932,53 +628,8 @@
           "filename": "aiwa2.glb",
           "category": "electronics",
           "path": "models/clean/electronics/aiwa2.glb",
-          "sizeBytes": 1980768,
-          "sizeFormatted": "1.9 MB"
-        },
-        {
-          "id": "electronics/alcatel.glb",
-          "name": "Alcatel",
-          "filename": "alcatel.glb",
-          "category": "electronics",
-          "path": "models/clean/electronics/alcatel.glb",
-          "sizeBytes": 7038856,
-          "sizeFormatted": "6.7 MB"
-        },
-        {
-          "id": "electronics/aspes2.glb",
-          "name": "Aspes2",
-          "filename": "aspes2.glb",
-          "category": "electronics",
-          "path": "models/clean/electronics/aspes2.glb",
-          "sizeBytes": 5809124,
-          "sizeFormatted": "5.5 MB"
-        },
-        {
-          "id": "electronics/aspirado.glb",
-          "name": "Aspirado",
-          "filename": "aspirado.glb",
-          "category": "electronics",
-          "path": "models/clean/electronics/aspirado.glb",
-          "sizeBytes": 201852,
-          "sizeFormatted": "197.1 KB"
-        },
-        {
-          "id": "electronics/autosola.glb",
-          "name": "Autosola",
-          "filename": "autosola.glb",
-          "category": "electronics",
-          "path": "models/clean/electronics/autosola.glb",
-          "sizeBytes": 9127384,
-          "sizeFormatted": "8.7 MB"
-        },
-        {
-          "id": "electronics/bond.glb",
-          "name": "Bond",
-          "filename": "bond.glb",
-          "category": "electronics",
-          "path": "models/clean/electronics/bond.glb",
-          "sizeBytes": 1835568,
-          "sizeFormatted": "1.8 MB"
+          "sizeBytes": 1047992,
+          "sizeFormatted": "1023.4 KB"
         },
         {
           "id": "electronics/camara.glb",
@@ -1986,8 +637,8 @@
           "filename": "camara.glb",
           "category": "electronics",
           "path": "models/clean/electronics/camara.glb",
-          "sizeBytes": 6846084,
-          "sizeFormatted": "6.5 MB"
+          "sizeBytes": 4453156,
+          "sizeFormatted": "4.2 MB"
         },
         {
           "id": "electronics/flexo.glb",
@@ -1995,98 +646,8 @@
           "filename": "flexo.glb",
           "category": "electronics",
           "path": "models/clean/electronics/flexo.glb",
-          "sizeBytes": 1046888,
-          "sizeFormatted": "1022.4 KB"
-        },
-        {
-          "id": "electronics/foco.glb",
-          "name": "Foco",
-          "filename": "foco.glb",
-          "category": "electronics",
-          "path": "models/clean/electronics/foco.glb",
-          "sizeBytes": 13328,
-          "sizeFormatted": "13 KB"
-        },
-        {
-          "id": "electronics/hair_f.glb",
-          "name": "Hair F",
-          "filename": "hair_f.glb",
-          "category": "electronics",
-          "path": "models/clean/electronics/hair_f.glb",
-          "sizeBytes": 1602216,
-          "sizeFormatted": "1.5 MB"
-        },
-        {
-          "id": "electronics/mcpu.glb",
-          "name": "Mcpu",
-          "filename": "mcpu.glb",
-          "category": "electronics",
-          "path": "models/clean/electronics/mcpu.glb",
-          "sizeBytes": 1703940,
-          "sizeFormatted": "1.6 MB"
-        },
-        {
-          "id": "electronics/mouse.glb",
-          "name": "Mouse",
-          "filename": "mouse.glb",
-          "category": "electronics",
-          "path": "models/clean/electronics/mouse.glb",
-          "sizeBytes": 936908,
-          "sizeFormatted": "914.9 KB"
-        },
-        {
-          "id": "electronics/multic.glb",
-          "name": "Multic",
-          "filename": "multic.glb",
-          "category": "electronics",
-          "path": "models/clean/electronics/multic.glb",
-          "sizeBytes": 1073340,
-          "sizeFormatted": "1 MB"
-        },
-        {
-          "id": "electronics/phil.glb",
-          "name": "Phil",
-          "filename": "phil.glb",
-          "category": "electronics",
-          "path": "models/clean/electronics/phil.glb",
-          "sizeBytes": 1010996,
-          "sizeFormatted": "987.3 KB"
-        },
-        {
-          "id": "electronics/phillips.glb",
-          "name": "Phillips",
-          "filename": "phillips.glb",
-          "category": "electronics",
-          "path": "models/clean/electronics/phillips.glb",
-          "sizeBytes": 259548,
-          "sizeFormatted": "253.5 KB"
-        },
-        {
-          "id": "electronics/r_bali.glb",
-          "name": "R Bali",
-          "filename": "r_bali.glb",
-          "category": "electronics",
-          "path": "models/clean/electronics/r_bali.glb",
-          "sizeBytes": 131100,
-          "sizeFormatted": "128 KB"
-        },
-        {
-          "id": "electronics/radiocas.glb",
-          "name": "Radiocas",
-          "filename": "radiocas.glb",
-          "category": "electronics",
-          "path": "models/clean/electronics/radiocas.glb",
-          "sizeBytes": 1247300,
-          "sizeFormatted": "1.2 MB"
-        },
-        {
-          "id": "electronics/refri.glb",
-          "name": "Refri",
-          "filename": "refri.glb",
-          "category": "electronics",
-          "path": "models/clean/electronics/refri.glb",
-          "sizeBytes": 1213020,
-          "sizeFormatted": "1.2 MB"
+          "sizeBytes": 402280,
+          "sizeFormatted": "392.9 KB"
         },
         {
           "id": "electronics/sanyo.glb",
@@ -2094,17 +655,8 @@
           "filename": "sanyo.glb",
           "category": "electronics",
           "path": "models/clean/electronics/sanyo.glb",
-          "sizeBytes": 938512,
-          "sizeFormatted": "916.5 KB"
-        },
-        {
-          "id": "electronics/telefon1.glb",
-          "name": "Telefon1",
-          "filename": "telefon1.glb",
-          "category": "electronics",
-          "path": "models/clean/electronics/telefon1.glb",
-          "sizeBytes": 4688052,
-          "sizeFormatted": "4.5 MB"
+          "sizeBytes": 415632,
+          "sizeFormatted": "405.9 KB"
         },
         {
           "id": "electronics/telefon2.glb",
@@ -2112,149 +664,25 @@
           "filename": "telefon2.glb",
           "category": "electronics",
           "path": "models/clean/electronics/telefon2.glb",
-          "sizeBytes": 2832616,
-          "sizeFormatted": "2.7 MB"
-        },
-        {
-          "id": "electronics/tlamp1.glb",
-          "name": "Tlamp1",
-          "filename": "tlamp1.glb",
-          "category": "electronics",
-          "path": "models/clean/electronics/tlamp1.glb",
-          "sizeBytes": 527000,
-          "sizeFormatted": "514.6 KB"
-        },
-        {
-          "id": "electronics/toast.glb",
-          "name": "Toast",
-          "filename": "toast.glb",
-          "category": "electronics",
-          "path": "models/clean/electronics/toast.glb",
-          "sizeBytes": 6584728,
-          "sizeFormatted": "6.3 MB"
-        },
-        {
-          "id": "electronics/walkie.glb",
-          "name": "Walkie",
-          "filename": "walkie.glb",
-          "category": "electronics",
-          "path": "models/clean/electronics/walkie.glb",
-          "sizeBytes": 808764,
-          "sizeFormatted": "789.8 KB"
-        },
-        {
-          "id": "electronics/washm.glb",
-          "name": "Washm",
-          "filename": "washm.glb",
-          "category": "electronics",
-          "path": "models/clean/electronics/washm.glb",
-          "sizeBytes": 631596,
-          "sizeFormatted": "616.8 KB"
+          "sizeBytes": 722500,
+          "sizeFormatted": "705.6 KB"
         }
       ]
     },
     {
-      "name": "environments",
-      "title": "Environments",
-      "icon": "🌲",
-      "count": 0,
-      "models": []
-    },
-    {
       "name": "furniture",
       "title": "Furniture",
-      "icon": "🪑",
-      "count": 40,
+      "icon": "",
+      "count": 7,
       "models": [
-        {
-          "id": "furniture/bar.glb",
-          "name": "Bar",
-          "filename": "bar.glb",
-          "category": "furniture",
-          "path": "models/clean/furniture/bar.glb",
-          "sizeBytes": 830604,
-          "sizeFormatted": "811.1 KB"
-        },
         {
           "id": "furniture/bi8ed4.glb",
           "name": "Bi8ed4",
           "filename": "bi8ed4.glb",
           "category": "furniture",
           "path": "models/clean/furniture/bi8ed4.glb",
-          "sizeBytes": 842500,
-          "sizeFormatted": "822.8 KB"
-        },
-        {
-          "id": "furniture/bie_bu.glb",
-          "name": "Bie Bu",
-          "filename": "bie_bu.glb",
-          "category": "furniture",
-          "path": "models/clean/furniture/bie_bu.glb",
-          "sizeBytes": 314424,
-          "sizeFormatted": "307.1 KB"
-        },
-        {
-          "id": "furniture/bie_di.glb",
-          "name": "Bie Di",
-          "filename": "bie_di.glb",
-          "category": "furniture",
-          "path": "models/clean/furniture/bie_di.glb",
-          "sizeBytes": 179928,
-          "sizeFormatted": "175.7 KB"
-        },
-        {
-          "id": "furniture/bie_di2.glb",
-          "name": "Bie Di2",
-          "filename": "bie_di2.glb",
-          "category": "furniture",
-          "path": "models/clean/furniture/bie_di2.glb",
-          "sizeBytes": 136560,
-          "sizeFormatted": "133.4 KB"
-        },
-        {
-          "id": "furniture/bieder.glb",
-          "name": "Bieder",
-          "filename": "bieder.glb",
-          "category": "furniture",
-          "path": "models/clean/furniture/bieder.glb",
-          "sizeBytes": 352364,
-          "sizeFormatted": "344.1 KB"
-        },
-        {
-          "id": "furniture/bieder2.glb",
-          "name": "Bieder2",
-          "filename": "bieder2.glb",
-          "category": "furniture",
-          "path": "models/clean/furniture/bieder2.glb",
-          "sizeBytes": 166504,
-          "sizeFormatted": "162.6 KB"
-        },
-        {
-          "id": "furniture/bieder3.glb",
-          "name": "Bieder3",
-          "filename": "bieder3.glb",
-          "category": "furniture",
-          "path": "models/clean/furniture/bieder3.glb",
-          "sizeBytes": 167940,
-          "sizeFormatted": "164 KB"
-        },
-        {
-          "id": "furniture/bieder4.glb",
-          "name": "Bieder4",
-          "filename": "bieder4.glb",
-          "category": "furniture",
-          "path": "models/clean/furniture/bieder4.glb",
-          "sizeBytes": 967848,
-          "sizeFormatted": "945.2 KB"
-        },
-        {
-          "id": "furniture/booksh.glb",
-          "name": "Booksh",
-          "filename": "booksh.glb",
-          "category": "furniture",
-          "path": "models/clean/furniture/booksh.glb",
-          "sizeBytes": 1721224,
-          "sizeFormatted": "1.6 MB"
+          "sizeBytes": 9898876,
+          "sizeFormatted": "9.4 MB"
         },
         {
           "id": "furniture/ca5fec2.glb",
@@ -2262,107 +690,8 @@
           "filename": "ca5fec2.glb",
           "category": "furniture",
           "path": "models/clean/furniture/ca5fec2.glb",
-          "sizeBytes": 31352,
-          "sizeFormatted": "30.6 KB"
-        },
-        {
-          "id": "furniture/candle2.glb",
-          "name": "Candle2",
-          "filename": "candle2.glb",
-          "category": "furniture",
-          "path": "models/clean/furniture/candle2.glb",
-          "sizeBytes": 28752,
-          "sizeFormatted": "28.1 KB"
-        },
-        {
-          "id": "furniture/candle3.glb",
-          "name": "Candle3",
-          "filename": "candle3.glb",
-          "category": "furniture",
-          "path": "models/clean/furniture/candle3.glb",
-          "sizeBytes": 39032,
-          "sizeFormatted": "38.1 KB"
-        },
-        {
-          "id": "furniture/chip_m.glb",
-          "name": "Chip M",
-          "filename": "chip_m.glb",
-          "category": "furniture",
-          "path": "models/clean/furniture/chip_m.glb",
-          "sizeBytes": 397220,
-          "sizeFormatted": "387.9 KB"
-        },
-        {
-          "id": "furniture/chip_s.glb",
-          "name": "Chip S",
-          "filename": "chip_s.glb",
-          "category": "furniture",
-          "path": "models/clean/furniture/chip_s.glb",
-          "sizeBytes": 78624,
-          "sizeFormatted": "76.8 KB"
-        },
-        {
-          "id": "furniture/chip_s2.glb",
-          "name": "Chip S2",
-          "filename": "chip_s2.glb",
-          "category": "furniture",
-          "path": "models/clean/furniture/chip_s2.glb",
-          "sizeBytes": 319092,
-          "sizeFormatted": "311.6 KB"
-        },
-        {
-          "id": "furniture/chipp.glb",
-          "name": "Chipp",
-          "filename": "chipp.glb",
-          "category": "furniture",
-          "path": "models/clean/furniture/chipp.glb",
-          "sizeBytes": 396844,
-          "sizeFormatted": "387.5 KB"
-        },
-        {
-          "id": "furniture/chipp2.glb",
-          "name": "Chipp2",
-          "filename": "chipp2.glb",
-          "category": "furniture",
-          "path": "models/clean/furniture/chipp2.glb",
-          "sizeBytes": 121456,
-          "sizeFormatted": "118.6 KB"
-        },
-        {
-          "id": "furniture/chipp4.glb",
-          "name": "Chipp4",
-          "filename": "chipp4.glb",
-          "category": "furniture",
-          "path": "models/clean/furniture/chipp4.glb",
-          "sizeBytes": 207408,
-          "sizeFormatted": "202.5 KB"
-        },
-        {
-          "id": "furniture/cutboard.glb",
-          "name": "Cutboard",
-          "filename": "cutboard.glb",
-          "category": "furniture",
-          "path": "models/clean/furniture/cutboard.glb",
-          "sizeBytes": 279368,
-          "sizeFormatted": "272.8 KB"
-        },
-        {
-          "id": "furniture/egip_cha.glb",
-          "name": "Egip Cha",
-          "filename": "egip_cha.glb",
-          "category": "furniture",
-          "path": "models/clean/furniture/egip_cha.glb",
-          "sizeBytes": 252368,
-          "sizeFormatted": "246.5 KB"
-        },
-        {
-          "id": "furniture/english.glb",
-          "name": "English",
-          "filename": "english.glb",
-          "category": "furniture",
-          "path": "models/clean/furniture/english.glb",
-          "sizeBytes": 182944,
-          "sizeFormatted": "178.7 KB"
+          "sizeBytes": 824448,
+          "sizeFormatted": "805.1 KB"
         },
         {
           "id": "furniture/english2.glb",
@@ -2370,26 +699,8 @@
           "filename": "english2.glb",
           "category": "furniture",
           "path": "models/clean/furniture/english2.glb",
-          "sizeBytes": 414840,
-          "sizeFormatted": "405.1 KB"
-        },
-        {
-          "id": "furniture/folk.glb",
-          "name": "Folk",
-          "filename": "folk.glb",
-          "category": "furniture",
-          "path": "models/clean/furniture/folk.glb",
-          "sizeBytes": 232796,
-          "sizeFormatted": "227.3 KB"
-        },
-        {
-          "id": "furniture/folkt.glb",
-          "name": "Folkt",
-          "filename": "folkt.glb",
-          "category": "furniture",
-          "path": "models/clean/furniture/folkt.glb",
-          "sizeBytes": 116532,
-          "sizeFormatted": "113.8 KB"
+          "sizeBytes": 3343536,
+          "sizeFormatted": "3.2 MB"
         },
         {
           "id": "furniture/garden.glb",
@@ -2397,35 +708,8 @@
           "filename": "garden.glb",
           "category": "furniture",
           "path": "models/clean/furniture/garden.glb",
-          "sizeBytes": 688540,
-          "sizeFormatted": "672.4 KB"
-        },
-        {
-          "id": "furniture/garden2.glb",
-          "name": "Garden2",
-          "filename": "garden2.glb",
-          "category": "furniture",
-          "path": "models/clean/furniture/garden2.glb",
-          "sizeBytes": 753864,
-          "sizeFormatted": "736.2 KB"
-        },
-        {
-          "id": "furniture/hangin.glb",
-          "name": "Hangin",
-          "filename": "hangin.glb",
-          "category": "furniture",
-          "path": "models/clean/furniture/hangin.glb",
-          "sizeBytes": 1248000,
-          "sizeFormatted": "1.2 MB"
-        },
-        {
-          "id": "furniture/rosewood.glb",
-          "name": "Rosewood",
-          "filename": "rosewood.glb",
-          "category": "furniture",
-          "path": "models/clean/furniture/rosewood.glb",
-          "sizeBytes": 997468,
-          "sizeFormatted": "974.1 KB"
+          "sizeBytes": 735148,
+          "sizeFormatted": "717.9 KB"
         },
         {
           "id": "furniture/roundta.glb",
@@ -2433,17 +717,8 @@
           "filename": "roundta.glb",
           "category": "furniture",
           "path": "models/clean/furniture/roundta.glb",
-          "sizeBytes": 101572,
-          "sizeFormatted": "99.2 KB"
-        },
-        {
-          "id": "furniture/satinwoo.glb",
-          "name": "Satinwoo",
-          "filename": "satinwoo.glb",
-          "category": "furniture",
-          "path": "models/clean/furniture/satinwoo.glb",
-          "sizeBytes": 609580,
-          "sizeFormatted": "595.3 KB"
+          "sizeBytes": 555064,
+          "sizeFormatted": "542.1 KB"
         },
         {
           "id": "furniture/sheraton.glb",
@@ -2451,26 +726,8 @@
           "filename": "sheraton.glb",
           "category": "furniture",
           "path": "models/clean/furniture/sheraton.glb",
-          "sizeBytes": 877524,
-          "sizeFormatted": "857 KB"
-        },
-        {
-          "id": "furniture/sidebo.glb",
-          "name": "Sidebo",
-          "filename": "sidebo.glb",
-          "category": "furniture",
-          "path": "models/clean/furniture/sidebo.glb",
-          "sizeBytes": 154568,
-          "sizeFormatted": "150.9 KB"
-        },
-        {
-          "id": "furniture/sillag.glb",
-          "name": "Sillag",
-          "filename": "sillag.glb",
-          "category": "furniture",
-          "path": "models/clean/furniture/sillag.glb",
-          "sizeBytes": 172568,
-          "sizeFormatted": "168.5 KB"
+          "sizeBytes": 1943976,
+          "sizeFormatted": "1.9 MB"
         },
         {
           "id": "furniture/table.glb",
@@ -2478,61 +735,16 @@
           "filename": "table.glb",
           "category": "furniture",
           "path": "models/clean/furniture/table.glb",
-          "sizeBytes": 152316,
-          "sizeFormatted": "148.7 KB"
-        },
-        {
-          "id": "furniture/tableii.glb",
-          "name": "Tableii",
-          "filename": "tableii.glb",
-          "category": "furniture",
-          "path": "models/clean/furniture/tableii.glb",
-          "sizeBytes": 114308,
-          "sizeFormatted": "111.6 KB"
-        },
-        {
-          "id": "furniture/trono.glb",
-          "name": "Trono",
-          "filename": "trono.glb",
-          "category": "furniture",
-          "path": "models/clean/furniture/trono.glb",
-          "sizeBytes": 218964,
-          "sizeFormatted": "213.8 KB"
-        },
-        {
-          "id": "furniture/utility.glb",
-          "name": "Utility",
-          "filename": "utility.glb",
-          "category": "furniture",
-          "path": "models/clean/furniture/utility.glb",
-          "sizeBytes": 13108,
-          "sizeFormatted": "12.8 KB"
-        },
-        {
-          "id": "furniture/windso.glb",
-          "name": "Windso",
-          "filename": "windso.glb",
-          "category": "furniture",
-          "path": "models/clean/furniture/windso.glb",
-          "sizeBytes": 4308040,
-          "sizeFormatted": "4.1 MB"
-        },
-        {
-          "id": "furniture/windso2.glb",
-          "name": "Windso2",
-          "filename": "windso2.glb",
-          "category": "furniture",
-          "path": "models/clean/furniture/windso2.glb",
-          "sizeBytes": 1072692,
-          "sizeFormatted": "1 MB"
+          "sizeBytes": 813460,
+          "sizeFormatted": "794.4 KB"
         }
       ]
     },
     {
       "name": "helicopters",
       "title": "Helicopters",
-      "icon": "🚁",
-      "count": 15,
+      "icon": "",
+      "count": 4,
       "models": [
         {
           "id": "helicopters/aloue2.glb",
@@ -2540,26 +752,8 @@
           "filename": "aloue2.glb",
           "category": "helicopters",
           "path": "models/clean/helicopters/aloue2.glb",
-          "sizeBytes": 1347260,
-          "sizeFormatted": "1.3 MB"
-        },
-        {
-          "id": "helicopters/frelon.glb",
-          "name": "Frelon",
-          "filename": "frelon.glb",
-          "category": "helicopters",
-          "path": "models/clean/helicopters/frelon.glb",
-          "sizeBytes": 1101000,
-          "sizeFormatted": "1 MB"
-        },
-        {
-          "id": "helicopters/gazelle.glb",
-          "name": "Gazelle",
-          "filename": "gazelle.glb",
-          "category": "helicopters",
-          "path": "models/clean/helicopters/gazelle.glb",
-          "sizeBytes": 1334796,
-          "sizeFormatted": "1.3 MB"
+          "sizeBytes": 1299984,
+          "sizeFormatted": "1.2 MB"
         },
         {
           "id": "helicopters/ka27.glb",
@@ -2567,8 +761,8 @@
           "filename": "ka27.glb",
           "category": "helicopters",
           "path": "models/clean/helicopters/ka27.glb",
-          "sizeBytes": 1225904,
-          "sizeFormatted": "1.2 MB"
+          "sizeBytes": 1518052,
+          "sizeFormatted": "1.4 MB"
         },
         {
           "id": "helicopters/mi_8.glb",
@@ -2576,26 +770,8 @@
           "filename": "mi_8.glb",
           "category": "helicopters",
           "path": "models/clean/helicopters/mi_8.glb",
-          "sizeBytes": 804404,
-          "sizeFormatted": "785.6 KB"
-        },
-        {
-          "id": "helicopters/oh_6a.glb",
-          "name": "Oh 6a",
-          "filename": "oh_6a.glb",
-          "category": "helicopters",
-          "path": "models/clean/helicopters/oh_6a.glb",
-          "sizeBytes": 1310492,
-          "sizeFormatted": "1.2 MB"
-        },
-        {
-          "id": "helicopters/puma.glb",
-          "name": "Puma",
-          "filename": "puma.glb",
-          "category": "helicopters",
-          "path": "models/clean/helicopters/puma.glb",
-          "sizeBytes": 2183216,
-          "sizeFormatted": "2.1 MB"
+          "sizeBytes": 726304,
+          "sizeFormatted": "709.3 KB"
         },
         {
           "id": "helicopters/sh3hnavy.glb",
@@ -2603,79 +779,16 @@
           "filename": "sh3hnavy.glb",
           "category": "helicopters",
           "path": "models/clean/helicopters/sh3hnavy.glb",
-          "sizeBytes": 1255132,
-          "sizeFormatted": "1.2 MB"
-        },
-        {
-          "id": "helicopters/sikoch53.glb",
-          "name": "Sikoch53",
-          "filename": "sikoch53.glb",
-          "category": "helicopters",
-          "path": "models/clean/helicopters/sikoch53.glb",
-          "sizeBytes": 3152392,
-          "sizeFormatted": "3 MB"
-        },
-        {
-          "id": "helicopters/sikorsky.glb",
-          "name": "Sikorsky",
-          "filename": "sikorsky.glb",
-          "category": "helicopters",
-          "path": "models/clean/helicopters/sikorsky.glb",
-          "sizeBytes": 726212,
-          "sizeFormatted": "709.2 KB"
-        },
-        {
-          "id": "helicopters/uh_1h.glb",
-          "name": "Uh 1h",
-          "filename": "uh_1h.glb",
-          "category": "helicopters",
-          "path": "models/clean/helicopters/uh_1h.glb",
-          "sizeBytes": 622760,
-          "sizeFormatted": "608.2 KB"
-        },
-        {
-          "id": "helicopters/uh34.glb",
-          "name": "Uh34",
-          "filename": "uh34.glb",
-          "category": "helicopters",
-          "path": "models/clean/helicopters/uh34.glb",
-          "sizeBytes": 1249328,
-          "sizeFormatted": "1.2 MB"
-        },
-        {
-          "id": "helicopters/vh3dpres.glb",
-          "name": "Vh3dpres",
-          "filename": "vh3dpres.glb",
-          "category": "helicopters",
-          "path": "models/clean/helicopters/vh3dpres.glb",
-          "sizeBytes": 1333284,
-          "sizeFormatted": "1.3 MB"
-        },
-        {
-          "id": "helicopters/westland.glb",
-          "name": "Westland",
-          "filename": "westland.glb",
-          "category": "helicopters",
-          "path": "models/clean/helicopters/westland.glb",
-          "sizeBytes": 1336824,
-          "sizeFormatted": "1.3 MB"
-        },
-        {
-          "id": "helicopters/workhors.glb",
-          "name": "Workhors",
-          "filename": "workhors.glb",
-          "category": "helicopters",
-          "path": "models/clean/helicopters/workhors.glb",
-          "sizeBytes": 1217344,
-          "sizeFormatted": "1.2 MB"
+          "sizeBytes": 1198740,
+          "sizeFormatted": "1.1 MB"
         }
       ]
     },
     {
       "name": "military",
       "title": "Military",
-      "icon": "🎖️",
-      "count": 38,
+      "icon": "",
+      "count": 6,
       "models": [
         {
           "id": "military/amx13.glb",
@@ -2683,44 +796,8 @@
           "filename": "amx13.glb",
           "category": "military",
           "path": "models/clean/military/amx13.glb",
-          "sizeBytes": 1598928,
-          "sizeFormatted": "1.5 MB"
-        },
-        {
-          "id": "military/ansa_iz.glb",
-          "name": "Ansa Iz",
-          "filename": "ansa_iz.glb",
-          "category": "military",
-          "path": "models/clean/military/ansa_iz.glb",
-          "sizeBytes": 2483552,
-          "sizeFormatted": "2.4 MB"
-        },
-        {
-          "id": "military/ba20.glb",
-          "name": "Ba20",
-          "filename": "ba20.glb",
-          "category": "military",
-          "path": "models/clean/military/ba20.glb",
-          "sizeBytes": 1925520,
-          "sizeFormatted": "1.8 MB"
-        },
-        {
-          "id": "military/bedf.glb",
-          "name": "Bedf",
-          "filename": "bedf.glb",
-          "category": "military",
-          "path": "models/clean/military/bedf.glb",
-          "sizeBytes": 1507212,
-          "sizeFormatted": "1.4 MB"
-        },
-        {
-          "id": "military/bmp_1.glb",
-          "name": "Bmp 1",
-          "filename": "bmp_1.glb",
-          "category": "military",
-          "path": "models/clean/military/bmp_1.glb",
-          "sizeBytes": 1298648,
-          "sizeFormatted": "1.2 MB"
+          "sizeBytes": 729644,
+          "sizeFormatted": "712.5 KB"
         },
         {
           "id": "military/elefant.glb",
@@ -2728,8 +805,8 @@
           "filename": "elefant.glb",
           "category": "military",
           "path": "models/clean/military/elefant.glb",
-          "sizeBytes": 11821128,
-          "sizeFormatted": "11.3 MB"
+          "sizeBytes": 5563376,
+          "sizeFormatted": "5.3 MB"
         },
         {
           "id": "military/gaskin.glb",
@@ -2737,98 +814,8 @@
           "filename": "gaskin.glb",
           "category": "military",
           "path": "models/clean/military/gaskin.glb",
-          "sizeBytes": 1679780,
-          "sizeFormatted": "1.6 MB"
-        },
-        {
-          "id": "military/lrdg.glb",
-          "name": "Lrdg",
-          "filename": "lrdg.glb",
-          "category": "military",
-          "path": "models/clean/military/lrdg.glb",
-          "sizeBytes": 1395080,
-          "sizeFormatted": "1.3 MB"
-        },
-        {
-          "id": "military/m_113.glb",
-          "name": "M 113",
-          "filename": "m_113.glb",
-          "category": "military",
-          "path": "models/clean/military/m_113.glb",
-          "sizeBytes": 1165064,
-          "sizeFormatted": "1.1 MB"
-        },
-        {
-          "id": "military/m15a2.glb",
-          "name": "M15a2",
-          "filename": "m15a2.glb",
-          "category": "military",
-          "path": "models/clean/military/m15a2.glb",
-          "sizeBytes": 1094940,
-          "sizeFormatted": "1 MB"
-        },
-        {
-          "id": "military/m2ab.glb",
-          "name": "M2ab",
-          "filename": "m2ab.glb",
-          "category": "military",
-          "path": "models/clean/military/m2ab.glb",
-          "sizeBytes": 1211908,
-          "sizeFormatted": "1.2 MB"
-        },
-        {
-          "id": "military/m3_a.glb",
-          "name": "M3 A",
-          "filename": "m3_a.glb",
-          "category": "military",
-          "path": "models/clean/military/m3_a.glb",
-          "sizeBytes": 1157368,
-          "sizeFormatted": "1.1 MB"
-        },
-        {
-          "id": "military/male.glb",
-          "name": "Male",
-          "filename": "male.glb",
-          "category": "military",
-          "path": "models/clean/military/male.glb",
-          "sizeBytes": 967240,
-          "sizeFormatted": "944.6 KB"
-        },
-        {
-          "id": "military/mowag.glb",
-          "name": "Mowag",
-          "filename": "mowag.glb",
-          "category": "military",
-          "path": "models/clean/military/mowag.glb",
-          "sizeBytes": 1227292,
-          "sizeFormatted": "1.2 MB"
-        },
-        {
-          "id": "military/pantenn.glb",
-          "name": "Pantenn",
-          "filename": "pantenn.glb",
-          "category": "military",
-          "path": "models/clean/military/pantenn.glb",
-          "sizeBytes": 1937232,
-          "sizeFormatted": "1.8 MB"
-        },
-        {
-          "id": "military/panz3.glb",
-          "name": "Panz3",
-          "filename": "panz3.glb",
-          "category": "military",
-          "path": "models/clean/military/panz3.glb",
-          "sizeBytes": 1224056,
-          "sizeFormatted": "1.2 MB"
-        },
-        {
-          "id": "military/pink_ro.glb",
-          "name": "Pink Ro",
-          "filename": "pink_ro.glb",
-          "category": "military",
-          "path": "models/clean/military/pink_ro.glb",
-          "sizeBytes": 903560,
-          "sizeFormatted": "882.4 KB"
+          "sizeBytes": 4620452,
+          "sizeFormatted": "4.4 MB"
         },
         {
           "id": "military/pmissile.glb",
@@ -2836,26 +823,8 @@
           "filename": "pmissile.glb",
           "category": "military",
           "path": "models/clean/military/pmissile.glb",
-          "sizeBytes": 2139268,
-          "sizeFormatted": "2 MB"
-        },
-        {
-          "id": "military/quadfin.glb",
-          "name": "Quadfin",
-          "filename": "quadfin.glb",
-          "category": "military",
-          "path": "models/clean/military/quadfin.glb",
-          "sizeBytes": 1341696,
-          "sizeFormatted": "1.3 MB"
-        },
-        {
-          "id": "military/rammtige.glb",
-          "name": "Rammtige",
-          "filename": "rammtige.glb",
-          "category": "military",
-          "path": "models/clean/military/rammtige.glb",
-          "sizeBytes": 4022260,
-          "sizeFormatted": "3.8 MB"
+          "sizeBytes": 4833364,
+          "sizeFormatted": "4.6 MB"
         },
         {
           "id": "military/rf8.glb",
@@ -2863,107 +832,8 @@
           "filename": "rf8.glb",
           "category": "military",
           "path": "models/clean/military/rf8.glb",
-          "sizeBytes": 3680436,
-          "sizeFormatted": "3.5 MB"
-        },
-        {
-          "id": "military/roy1.glb",
-          "name": "Roy1",
-          "filename": "roy1.glb",
-          "category": "military",
-          "path": "models/clean/military/roy1.glb",
-          "sizeBytes": 928292,
-          "sizeFormatted": "906.5 KB"
-        },
-        {
-          "id": "military/roy2.glb",
-          "name": "Roy2",
-          "filename": "roy2.glb",
-          "category": "military",
-          "path": "models/clean/military/roy2.glb",
-          "sizeBytes": 968344,
-          "sizeFormatted": "945.6 KB"
-        },
-        {
-          "id": "military/scorpio.glb",
-          "name": "Scorpio",
-          "filename": "scorpio.glb",
-          "category": "military",
-          "path": "models/clean/military/scorpio.glb",
-          "sizeBytes": 2437556,
-          "sizeFormatted": "2.3 MB"
-        },
-        {
-          "id": "military/scud_b.glb",
-          "name": "Scud B",
-          "filename": "scud_b.glb",
-          "category": "military",
-          "path": "models/clean/military/scud_b.glb",
-          "sizeBytes": 603328,
-          "sizeFormatted": "589.2 KB"
-        },
-        {
-          "id": "military/sdkfz23.glb",
-          "name": "Sdkfz23",
-          "filename": "sdkfz23.glb",
-          "category": "military",
-          "path": "models/clean/military/sdkfz23.glb",
-          "sizeBytes": 1618216,
-          "sizeFormatted": "1.5 MB"
-        },
-        {
-          "id": "military/sdkfz7.glb",
-          "name": "Sdkfz7",
-          "filename": "sdkfz7.glb",
-          "category": "military",
-          "path": "models/clean/military/sdkfz7.glb",
-          "sizeBytes": 5238260,
-          "sizeFormatted": "5 MB"
-        },
-        {
-          "id": "military/stalin.glb",
-          "name": "Stalin",
-          "filename": "stalin.glb",
-          "category": "military",
-          "path": "models/clean/military/stalin.glb",
-          "sizeBytes": 1230664,
-          "sizeFormatted": "1.2 MB"
-        },
-        {
-          "id": "military/steyr.glb",
-          "name": "Steyr",
-          "filename": "steyr.glb",
-          "category": "military",
-          "path": "models/clean/military/steyr.glb",
-          "sizeBytes": 2699188,
-          "sizeFormatted": "2.6 MB"
-        },
-        {
-          "id": "military/supply.glb",
-          "name": "Supply",
-          "filename": "supply.glb",
-          "category": "military",
-          "path": "models/clean/military/supply.glb",
-          "sizeBytes": 1038496,
-          "sizeFormatted": "1014.2 KB"
-        },
-        {
-          "id": "military/t_horc.glb",
-          "name": "T Horc",
-          "filename": "t_horc.glb",
-          "category": "military",
-          "path": "models/clean/military/t_horc.glb",
-          "sizeBytes": 1218564,
-          "sizeFormatted": "1.2 MB"
-        },
-        {
-          "id": "military/t_lvpt7.glb",
-          "name": "T Lvpt7",
-          "filename": "t_lvpt7.glb",
-          "category": "military",
-          "path": "models/clean/military/t_lvpt7.glb",
-          "sizeBytes": 983336,
-          "sizeFormatted": "960.3 KB"
+          "sizeBytes": 1863568,
+          "sizeFormatted": "1.8 MB"
         },
         {
           "id": "military/t62a.glb",
@@ -2971,160 +841,25 @@
           "filename": "t62a.glb",
           "category": "military",
           "path": "models/clean/military/t62a.glb",
-          "sizeBytes": 1199228,
-          "sizeFormatted": "1.1 MB"
-        },
-        {
-          "id": "military/t74.glb",
-          "name": "T74",
-          "filename": "t74.glb",
-          "category": "military",
-          "path": "models/clean/military/t74.glb",
-          "sizeBytes": 875644,
-          "sizeFormatted": "855.1 KB"
-        },
-        {
-          "id": "military/tadpo.glb",
-          "name": "Tadpo",
-          "filename": "tadpo.glb",
-          "category": "military",
-          "path": "models/clean/military/tadpo.glb",
-          "sizeBytes": 973324,
-          "sizeFormatted": "950.5 KB"
-        },
-        {
-          "id": "military/watetank.glb",
-          "name": "Watetank",
-          "filename": "watetank.glb",
-          "category": "military",
-          "path": "models/clean/military/watetank.glb",
-          "sizeBytes": 913696,
-          "sizeFormatted": "892.3 KB"
-        },
-        {
-          "id": "military/willtrai.glb",
-          "name": "Willtrai",
-          "filename": "willtrai.glb",
-          "category": "military",
-          "path": "models/clean/military/willtrai.glb",
-          "sizeBytes": 845380,
-          "sizeFormatted": "825.6 KB"
-        },
-        {
-          "id": "military/zsu23.glb",
-          "name": "Zsu23",
-          "filename": "zsu23.glb",
-          "category": "military",
-          "path": "models/clean/military/zsu23.glb",
-          "sizeBytes": 1081344,
-          "sizeFormatted": "1 MB"
+          "sizeBytes": 3911196,
+          "sizeFormatted": "3.7 MB"
         }
       ]
     },
     {
       "name": "miscellaneous",
       "title": "Miscellaneous",
-      "icon": "📦",
-      "count": 41,
+      "icon": "",
+      "count": 10,
       "models": [
-        {
-          "id": "miscellaneous/boca.glb",
-          "name": "Boca",
-          "filename": "boca.glb",
-          "category": "miscellaneous",
-          "path": "models/clean/miscellaneous/boca.glb",
-          "sizeBytes": 263964,
-          "sizeFormatted": "257.8 KB"
-        },
-        {
-          "id": "miscellaneous/brush.glb",
-          "name": "Brush",
-          "filename": "brush.glb",
-          "category": "miscellaneous",
-          "path": "models/clean/miscellaneous/brush.glb",
-          "sizeBytes": 1190088,
-          "sizeFormatted": "1.1 MB"
-        },
-        {
-          "id": "miscellaneous/candel2.glb",
-          "name": "Candel2",
-          "filename": "candel2.glb",
-          "category": "miscellaneous",
-          "path": "models/clean/miscellaneous/candel2.glb",
-          "sizeBytes": 180716,
-          "sizeFormatted": "176.5 KB"
-        },
-        {
-          "id": "miscellaneous/candel3.glb",
-          "name": "Candel3",
-          "filename": "candel3.glb",
-          "category": "miscellaneous",
-          "path": "models/clean/miscellaneous/candel3.glb",
-          "sizeBytes": 736724,
-          "sizeFormatted": "719.5 KB"
-        },
-        {
-          "id": "miscellaneous/card.glb",
-          "name": "Card",
-          "filename": "card.glb",
-          "category": "miscellaneous",
-          "path": "models/clean/miscellaneous/card.glb",
-          "sizeBytes": 436488,
-          "sizeFormatted": "426.3 KB"
-        },
-        {
-          "id": "miscellaneous/casta.glb",
-          "name": "Casta",
-          "filename": "casta.glb",
-          "category": "miscellaneous",
-          "path": "models/clean/miscellaneous/casta.glb",
-          "sizeBytes": 4044828,
-          "sizeFormatted": "3.9 MB"
-        },
         {
           "id": "miscellaneous/cofcup.glb",
           "name": "Cofcup",
           "filename": "cofcup.glb",
           "category": "miscellaneous",
           "path": "models/clean/miscellaneous/cofcup.glb",
-          "sizeBytes": 507356,
-          "sizeFormatted": "495.5 KB"
-        },
-        {
-          "id": "miscellaneous/cubo.glb",
-          "name": "Cubo",
-          "filename": "cubo.glb",
-          "category": "miscellaneous",
-          "path": "models/clean/miscellaneous/cubo.glb",
-          "sizeBytes": 194804,
-          "sizeFormatted": "190.2 KB"
-        },
-        {
-          "id": "miscellaneous/cuca.glb",
-          "name": "Cuca",
-          "filename": "cuca.glb",
-          "category": "miscellaneous",
-          "path": "models/clean/miscellaneous/cuca.glb",
-          "sizeBytes": 3530376,
-          "sizeFormatted": "3.4 MB"
-        },
-        {
-          "id": "miscellaneous/deposito.glb",
-          "name": "Deposito",
-          "filename": "deposito.glb",
-          "category": "miscellaneous",
-          "path": "models/clean/miscellaneous/deposito.glb",
-          "sizeBytes": 754772,
-          "sizeFormatted": "737.1 KB"
-        },
-        {
-          "id": "miscellaneous/disk35.glb",
-          "name": "Disk35",
-          "filename": "disk35.glb",
-          "category": "miscellaneous",
-          "path": "models/clean/miscellaneous/disk35.glb",
-          "sizeBytes": 253372,
-          "sizeFormatted": "247.4 KB"
+          "sizeBytes": 121624,
+          "sizeFormatted": "118.8 KB"
         },
         {
           "id": "miscellaneous/extiisle.glb",
@@ -3132,8 +867,8 @@
           "filename": "extiisle.glb",
           "category": "miscellaneous",
           "path": "models/clean/miscellaneous/extiisle.glb",
-          "sizeBytes": 203712,
-          "sizeFormatted": "198.9 KB"
+          "sizeBytes": 156164,
+          "sizeFormatted": "152.5 KB"
         },
         {
           "id": "miscellaneous/extinto2.glb",
@@ -3141,35 +876,8 @@
           "filename": "extinto2.glb",
           "category": "miscellaneous",
           "path": "models/clean/miscellaneous/extinto2.glb",
-          "sizeBytes": 152228,
-          "sizeFormatted": "148.7 KB"
-        },
-        {
-          "id": "miscellaneous/fagor.glb",
-          "name": "Fagor",
-          "filename": "fagor.glb",
-          "category": "miscellaneous",
-          "path": "models/clean/miscellaneous/fagor.glb",
-          "sizeBytes": 447044,
-          "sizeFormatted": "436.6 KB"
-        },
-        {
-          "id": "miscellaneous/fagor2.glb",
-          "name": "Fagor2",
-          "filename": "fagor2.glb",
-          "category": "miscellaneous",
-          "path": "models/clean/miscellaneous/fagor2.glb",
-          "sizeBytes": 462676,
-          "sizeFormatted": "451.8 KB"
-        },
-        {
-          "id": "miscellaneous/fagor3.glb",
-          "name": "Fagor3",
-          "filename": "fagor3.glb",
-          "category": "miscellaneous",
-          "path": "models/clean/miscellaneous/fagor3.glb",
-          "sizeBytes": 381932,
-          "sizeFormatted": "373 KB"
+          "sizeBytes": 532372,
+          "sizeFormatted": "519.9 KB"
         },
         {
           "id": "miscellaneous/fender.glb",
@@ -3177,17 +885,8 @@
           "filename": "fender.glb",
           "category": "miscellaneous",
           "path": "models/clean/miscellaneous/fender.glb",
-          "sizeBytes": 9259456,
-          "sizeFormatted": "8.8 MB"
-        },
-        {
-          "id": "miscellaneous/film.glb",
-          "name": "Film",
-          "filename": "film.glb",
-          "category": "miscellaneous",
-          "path": "models/clean/miscellaneous/film.glb",
-          "sizeBytes": 414596,
-          "sizeFormatted": "404.9 KB"
+          "sizeBytes": 5354164,
+          "sizeFormatted": "5.1 MB"
         },
         {
           "id": "miscellaneous/lamp5.glb",
@@ -3195,17 +894,8 @@
           "filename": "lamp5.glb",
           "category": "miscellaneous",
           "path": "models/clean/miscellaneous/lamp5.glb",
-          "sizeBytes": 1784396,
-          "sizeFormatted": "1.7 MB"
-        },
-        {
-          "id": "miscellaneous/lampara2.glb",
-          "name": "Lampara2",
-          "filename": "lampara2.glb",
-          "category": "miscellaneous",
-          "path": "models/clean/miscellaneous/lampara2.glb",
-          "sizeBytes": 521580,
-          "sizeFormatted": "509.4 KB"
+          "sizeBytes": 617928,
+          "sizeFormatted": "603.4 KB"
         },
         {
           "id": "miscellaneous/packard.glb",
@@ -3213,35 +903,8 @@
           "filename": "packard.glb",
           "category": "miscellaneous",
           "path": "models/clean/miscellaneous/packard.glb",
-          "sizeBytes": 19969120,
-          "sizeFormatted": "19 MB"
-        },
-        {
-          "id": "miscellaneous/pen.glb",
-          "name": "Pen",
-          "filename": "pen.glb",
-          "category": "miscellaneous",
-          "path": "models/clean/miscellaneous/pen.glb",
-          "sizeBytes": 190504,
-          "sizeFormatted": "186 KB"
-        },
-        {
-          "id": "miscellaneous/place.glb",
-          "name": "Place",
-          "filename": "place.glb",
-          "category": "miscellaneous",
-          "path": "models/clean/miscellaneous/place.glb",
-          "sizeBytes": 484332,
-          "sizeFormatted": "473 KB"
-        },
-        {
-          "id": "miscellaneous/poknife.glb",
-          "name": "Poknife",
-          "filename": "poknife.glb",
-          "category": "miscellaneous",
-          "path": "models/clean/miscellaneous/poknife.glb",
-          "sizeBytes": 476928,
-          "sizeFormatted": "465.8 KB"
+          "sizeBytes": 7052432,
+          "sizeFormatted": "6.7 MB"
         },
         {
           "id": "miscellaneous/racer.glb",
@@ -3249,17 +912,8 @@
           "filename": "racer.glb",
           "category": "miscellaneous",
           "path": "models/clean/miscellaneous/racer.glb",
-          "sizeBytes": 16809964,
-          "sizeFormatted": "16 MB"
-        },
-        {
-          "id": "miscellaneous/racer2.glb",
-          "name": "Racer2",
-          "filename": "racer2.glb",
-          "category": "miscellaneous",
-          "path": "models/clean/miscellaneous/racer2.glb",
-          "sizeBytes": 19500468,
-          "sizeFormatted": "18.6 MB"
+          "sizeBytes": 5218892,
+          "sizeFormatted": "5 MB"
         },
         {
           "id": "miscellaneous/racer3.glb",
@@ -3267,62 +921,8 @@
           "filename": "racer3.glb",
           "category": "miscellaneous",
           "path": "models/clean/miscellaneous/racer3.glb",
-          "sizeBytes": 19260208,
-          "sizeFormatted": "18.4 MB"
-        },
-        {
-          "id": "miscellaneous/radiator.glb",
-          "name": "Radiator",
-          "filename": "radiator.glb",
-          "category": "miscellaneous",
-          "path": "models/clean/miscellaneous/radiator.glb",
-          "sizeBytes": 1296732,
-          "sizeFormatted": "1.2 MB"
-        },
-        {
-          "id": "miscellaneous/renltue.glb",
-          "name": "Renltue",
-          "filename": "renltue.glb",
-          "category": "miscellaneous",
-          "path": "models/clean/miscellaneous/renltue.glb",
-          "sizeBytes": 26084312,
-          "sizeFormatted": "24.9 MB"
-        },
-        {
-          "id": "miscellaneous/sfh18.glb",
-          "name": "Sfh18",
-          "filename": "sfh18.glb",
-          "category": "miscellaneous",
-          "path": "models/clean/miscellaneous/sfh18.glb",
-          "sizeBytes": 25423456,
-          "sizeFormatted": "24.2 MB"
-        },
-        {
-          "id": "miscellaneous/spray.glb",
-          "name": "Spray",
-          "filename": "spray.glb",
-          "category": "miscellaneous",
-          "path": "models/clean/miscellaneous/spray.glb",
-          "sizeBytes": 135480,
-          "sizeFormatted": "132.3 KB"
-        },
-        {
-          "id": "miscellaneous/statio.glb",
-          "name": "Statio",
-          "filename": "statio.glb",
-          "category": "miscellaneous",
-          "path": "models/clean/miscellaneous/statio.glb",
-          "sizeBytes": 150276,
-          "sizeFormatted": "146.8 KB"
-        },
-        {
-          "id": "miscellaneous/stopcock.glb",
-          "name": "Stopcock",
-          "filename": "stopcock.glb",
-          "category": "miscellaneous",
-          "path": "models/clean/miscellaneous/stopcock.glb",
-          "sizeBytes": 1247432,
-          "sizeFormatted": "1.2 MB"
+          "sizeBytes": 5436500,
+          "sizeFormatted": "5.2 MB"
         },
         {
           "id": "miscellaneous/stshoe.glb",
@@ -3330,35 +930,8 @@
           "filename": "stshoe.glb",
           "category": "miscellaneous",
           "path": "models/clean/miscellaneous/stshoe.glb",
-          "sizeBytes": 767600,
-          "sizeFormatted": "749.6 KB"
-        },
-        {
-          "id": "miscellaneous/surtid.glb",
-          "name": "Surtid",
-          "filename": "surtid.glb",
-          "category": "miscellaneous",
-          "path": "models/clean/miscellaneous/surtid.glb",
-          "sizeBytes": 10847600,
-          "sizeFormatted": "10.3 MB"
-        },
-        {
-          "id": "miscellaneous/swissc.glb",
-          "name": "Swissc",
-          "filename": "swissc.glb",
-          "category": "miscellaneous",
-          "path": "models/clean/miscellaneous/swissc.glb",
-          "sizeBytes": 352540,
-          "sizeFormatted": "344.3 KB"
-        },
-        {
-          "id": "miscellaneous/toothb.glb",
-          "name": "Toothb",
-          "filename": "toothb.glb",
-          "category": "miscellaneous",
-          "path": "models/clean/miscellaneous/toothb.glb",
-          "sizeBytes": 1192776,
-          "sizeFormatted": "1.1 MB"
+          "sizeBytes": 529532,
+          "sizeFormatted": "517.1 KB"
         },
         {
           "id": "miscellaneous/torb.glb",
@@ -3366,88 +939,25 @@
           "filename": "torb.glb",
           "category": "miscellaneous",
           "path": "models/clean/miscellaneous/torb.glb",
-          "sizeBytes": 1330424,
-          "sizeFormatted": "1.3 MB"
-        },
-        {
-          "id": "miscellaneous/victor3.glb",
-          "name": "Victor3",
-          "filename": "victor3.glb",
-          "category": "miscellaneous",
-          "path": "models/clean/miscellaneous/victor3.glb",
-          "sizeBytes": 1228932,
-          "sizeFormatted": "1.2 MB"
-        },
-        {
-          "id": "miscellaneous/wb.glb",
-          "name": "Wb",
-          "filename": "wb.glb",
-          "category": "miscellaneous",
-          "path": "models/clean/miscellaneous/wb.glb",
-          "sizeBytes": 625636,
-          "sizeFormatted": "611 KB"
-        },
-        {
-          "id": "miscellaneous/xb70.glb",
-          "name": "Xb70",
-          "filename": "xb70.glb",
-          "category": "miscellaneous",
-          "path": "models/clean/miscellaneous/xb70.glb",
-          "sizeBytes": 16312744,
-          "sizeFormatted": "15.6 MB"
+          "sizeBytes": 525132,
+          "sizeFormatted": "512.8 KB"
         }
       ]
     },
     {
       "name": "motorcycles",
       "title": "Motorcycles",
-      "icon": "🏍️",
-      "count": 15,
+      "icon": "",
+      "count": 6,
       "models": [
-        {
-          "id": "motorcycles/c600003.glb",
-          "name": "C600003",
-          "filename": "c600003.glb",
-          "category": "motorcycles",
-          "path": "models/clean/motorcycles/c600003.glb",
-          "sizeBytes": 1257348,
-          "sizeFormatted": "1.2 MB"
-        },
         {
           "id": "motorcycles/guzzi_1.glb",
           "name": "Guzzi 1",
           "filename": "guzzi_1.glb",
           "category": "motorcycles",
           "path": "models/clean/motorcycles/guzzi_1.glb",
-          "sizeBytes": 1580516,
-          "sizeFormatted": "1.5 MB"
-        },
-        {
-          "id": "motorcycles/guzzi.glb",
-          "name": "Guzzi",
-          "filename": "guzzi.glb",
-          "category": "motorcycles",
-          "path": "models/clean/motorcycles/guzzi.glb",
-          "sizeBytes": 1615780,
-          "sizeFormatted": "1.5 MB"
-        },
-        {
-          "id": "motorcycles/indian.glb",
-          "name": "Indian",
-          "filename": "indian.glb",
-          "category": "motorcycles",
-          "path": "models/clean/motorcycles/indian.glb",
-          "sizeBytes": 8870876,
-          "sizeFormatted": "8.5 MB"
-        },
-        {
-          "id": "motorcycles/jawa.glb",
-          "name": "Jawa",
-          "filename": "jawa.glb",
-          "category": "motorcycles",
-          "path": "models/clean/motorcycles/jawa.glb",
-          "sizeBytes": 750076,
-          "sizeFormatted": "732.5 KB"
+          "sizeBytes": 1195904,
+          "sizeFormatted": "1.1 MB"
         },
         {
           "id": "motorcycles/katana.glb",
@@ -3455,8 +965,8 @@
           "filename": "katana.glb",
           "category": "motorcycles",
           "path": "models/clean/motorcycles/katana.glb",
-          "sizeBytes": 953064,
-          "sizeFormatted": "930.7 KB"
+          "sizeBytes": 614284,
+          "sizeFormatted": "599.9 KB"
         },
         {
           "id": "motorcycles/mguzzica.glb",
@@ -3464,17 +974,8 @@
           "filename": "mguzzica.glb",
           "category": "motorcycles",
           "path": "models/clean/motorcycles/mguzzica.glb",
-          "sizeBytes": 4102792,
-          "sizeFormatted": "3.9 MB"
-        },
-        {
-          "id": "motorcycles/milano.glb",
-          "name": "Milano",
-          "filename": "milano.glb",
-          "category": "motorcycles",
-          "path": "models/clean/motorcycles/milano.glb",
-          "sizeBytes": 1354764,
-          "sizeFormatted": "1.3 MB"
+          "sizeBytes": 1827292,
+          "sizeFormatted": "1.7 MB"
         },
         {
           "id": "motorcycles/mjeln.glb",
@@ -3482,8 +983,8 @@
           "filename": "mjeln.glb",
           "category": "motorcycles",
           "path": "models/clean/motorcycles/mjeln.glb",
-          "sizeBytes": 1312312,
-          "sizeFormatted": "1.3 MB"
+          "sizeBytes": 779564,
+          "sizeFormatted": "761.3 KB"
         },
         {
           "id": "motorcycles/shadow.glb",
@@ -3491,35 +992,8 @@
           "filename": "shadow.glb",
           "category": "motorcycles",
           "path": "models/clean/motorcycles/shadow.glb",
-          "sizeBytes": 6916152,
-          "sizeFormatted": "6.6 MB"
-        },
-        {
-          "id": "motorcycles/suz_walt.glb",
-          "name": "Suz Walt",
-          "filename": "suz_walt.glb",
-          "category": "motorcycles",
-          "path": "models/clean/motorcycles/suz_walt.glb",
-          "sizeBytes": 644996,
-          "sizeFormatted": "629.9 KB"
-        },
-        {
-          "id": "motorcycles/trek.glb",
-          "name": "Trek",
-          "filename": "trek.glb",
-          "category": "motorcycles",
-          "path": "models/clean/motorcycles/trek.glb",
-          "sizeBytes": 917724,
-          "sizeFormatted": "896.2 KB"
-        },
-        {
-          "id": "motorcycles/vespa1.glb",
-          "name": "Vespa1",
-          "filename": "vespa1.glb",
-          "category": "motorcycles",
-          "path": "models/clean/motorcycles/vespa1.glb",
-          "sizeBytes": 753832,
-          "sizeFormatted": "736.2 KB"
+          "sizeBytes": 3569388,
+          "sizeFormatted": "3.4 MB"
         },
         {
           "id": "motorcycles/vintage.glb",
@@ -3527,97 +1001,150 @@
           "filename": "vintage.glb",
           "category": "motorcycles",
           "path": "models/clean/motorcycles/vintage.glb",
-          "sizeBytes": 1401596,
-          "sizeFormatted": "1.3 MB"
+          "sizeBytes": 494528,
+          "sizeFormatted": "482.9 KB"
+        }
+      ]
+    },
+    {
+      "name": "objaverse",
+      "title": "Objaverse",
+      "icon": "",
+      "count": 13,
+      "models": [
+        {
+          "id": "objaverse/00781a2bfbcc426b8db901d37409461b.glb",
+          "name": "Costume",
+          "filename": "00781a2bfbcc426b8db901d37409461b.glb",
+          "category": "objaverse",
+          "path": "models/clean/objaverse/00781a2bfbcc426b8db901d37409461b.glb",
+          "sizeBytes": 17256892,
+          "sizeFormatted": "16.5 MB"
         },
         {
-          "id": "motorcycles/yfzr750r.glb",
-          "name": "Yfzr750r",
-          "filename": "yfzr750r.glb",
-          "category": "motorcycles",
-          "path": "models/clean/motorcycles/yfzr750r.glb",
-          "sizeBytes": 2472088,
-          "sizeFormatted": "2.4 MB"
+          "id": "objaverse/0098586123fc435f86c7f5cb3d3b8a79.glb",
+          "name": "Chicken",
+          "filename": "0098586123fc435f86c7f5cb3d3b8a79.glb",
+          "category": "objaverse",
+          "path": "models/clean/objaverse/0098586123fc435f86c7f5cb3d3b8a79.glb",
+          "sizeBytes": 39056,
+          "sizeFormatted": "38.1 KB"
+        },
+        {
+          "id": "objaverse/03592149579946dfa921c23c05304737.glb",
+          "name": "Mascot",
+          "filename": "03592149579946dfa921c23c05304737.glb",
+          "category": "objaverse",
+          "path": "models/clean/objaverse/03592149579946dfa921c23c05304737.glb",
+          "sizeBytes": 530120,
+          "sizeFormatted": "517.7 KB"
+        },
+        {
+          "id": "objaverse/040143111d264848949bee737058b83c.glb",
+          "name": "Owl",
+          "filename": "040143111d264848949bee737058b83c.glb",
+          "category": "objaverse",
+          "path": "models/clean/objaverse/040143111d264848949bee737058b83c.glb",
+          "sizeBytes": 928964,
+          "sizeFormatted": "907.2 KB"
+        },
+        {
+          "id": "objaverse/045d9ad885b749b1bb826e2e801b57dd.glb",
+          "name": "Ice Cream",
+          "filename": "045d9ad885b749b1bb826e2e801b57dd.glb",
+          "category": "objaverse",
+          "path": "models/clean/objaverse/045d9ad885b749b1bb826e2e801b57dd.glb",
+          "sizeBytes": 905608,
+          "sizeFormatted": "884.4 KB"
+        },
+        {
+          "id": "objaverse/04f51877ba25493d94d05f6086492f37.glb",
+          "name": "Teddy Bear",
+          "filename": "04f51877ba25493d94d05f6086492f37.glb",
+          "category": "objaverse",
+          "path": "models/clean/objaverse/04f51877ba25493d94d05f6086492f37.glb",
+          "sizeBytes": 2265212,
+          "sizeFormatted": "2.2 MB"
+        },
+        {
+          "id": "objaverse/05197c7001b343e183e561c66134c951.glb",
+          "name": "Gourd",
+          "filename": "05197c7001b343e183e561c66134c951.glb",
+          "category": "objaverse",
+          "path": "models/clean/objaverse/05197c7001b343e183e561c66134c951.glb",
+          "sizeBytes": 916696,
+          "sizeFormatted": "895.2 KB"
+        },
+        {
+          "id": "objaverse/05528d3792b944309e005d36652a30c4.glb",
+          "name": "Cape",
+          "filename": "05528d3792b944309e005d36652a30c4.glb",
+          "category": "objaverse",
+          "path": "models/clean/objaverse/05528d3792b944309e005d36652a30c4.glb",
+          "sizeBytes": 4225160,
+          "sizeFormatted": "4 MB"
+        },
+        {
+          "id": "objaverse/07aefdcb6d6e41feb2890373caf83c9d.glb",
+          "name": "Pony",
+          "filename": "07aefdcb6d6e41feb2890373caf83c9d.glb",
+          "category": "objaverse",
+          "path": "models/clean/objaverse/07aefdcb6d6e41feb2890373caf83c9d.glb",
+          "sizeBytes": 1064120,
+          "sizeFormatted": "1 MB"
+        },
+        {
+          "id": "objaverse/2b814e91374444c5bcc2dd4bc002ec69.glb",
+          "name": "Barn Owl",
+          "filename": "2b814e91374444c5bcc2dd4bc002ec69.glb",
+          "category": "objaverse",
+          "path": "models/clean/objaverse/2b814e91374444c5bcc2dd4bc002ec69.glb",
+          "sizeBytes": 1789172,
+          "sizeFormatted": "1.7 MB"
+        },
+        {
+          "id": "objaverse/326494dbe70441d790fd74d06e5b5a39.glb",
+          "name": "Rodent",
+          "filename": "326494dbe70441d790fd74d06e5b5a39.glb",
+          "category": "objaverse",
+          "path": "models/clean/objaverse/326494dbe70441d790fd74d06e5b5a39.glb",
+          "sizeBytes": 1435032,
+          "sizeFormatted": "1.4 MB"
+        },
+        {
+          "id": "objaverse/3d442e50799b43e98d5fa5e3c81e8b2c.glb",
+          "name": "Remote Control",
+          "filename": "3d442e50799b43e98d5fa5e3c81e8b2c.glb",
+          "category": "objaverse",
+          "path": "models/clean/objaverse/3d442e50799b43e98d5fa5e3c81e8b2c.glb",
+          "sizeBytes": 1003092,
+          "sizeFormatted": "979.6 KB"
+        },
+        {
+          "id": "objaverse/47e3fc610c2d487c98f37d6932a8ae87.glb",
+          "name": "Game Controller",
+          "filename": "47e3fc610c2d487c98f37d6932a8ae87.glb",
+          "category": "objaverse",
+          "path": "models/clean/objaverse/47e3fc610c2d487c98f37d6932a8ae87.glb",
+          "sizeBytes": 328712,
+          "sizeFormatted": "321 KB"
         }
       ]
     },
     {
       "name": "old_army",
       "title": "Old Army",
-      "icon": "🛡️",
-      "count": 22,
+      "icon": "",
+      "count": 4,
       "models": [
-        {
-          "id": "old_army/105m.glb",
-          "name": "105m",
-          "filename": "105m.glb",
-          "category": "old_army",
-          "path": "models/clean/old_army/105m.glb",
-          "sizeBytes": 1206096,
-          "sizeFormatted": "1.2 MB"
-        },
-        {
-          "id": "old_army/155m1.glb",
-          "name": "155m1",
-          "filename": "155m1.glb",
-          "category": "old_army",
-          "path": "models/clean/old_army/155m1.glb",
-          "sizeBytes": 1127724,
-          "sizeFormatted": "1.1 MB"
-        },
-        {
-          "id": "old_army/40mmbofo.glb",
-          "name": "40mmbofo",
-          "filename": "40mmbofo.glb",
-          "category": "old_army",
-          "path": "models/clean/old_army/40mmbofo.glb",
-          "sizeBytes": 2870136,
-          "sizeFormatted": "2.7 MB"
-        },
-        {
-          "id": "old_army/antitank.glb",
-          "name": "Antitank",
-          "filename": "antitank.glb",
-          "category": "old_army",
-          "path": "models/clean/old_army/antitank.glb",
-          "sizeBytes": 716836,
-          "sizeFormatted": "700 KB"
-        },
-        {
-          "id": "old_army/bazooka.glb",
-          "name": "Bazooka",
-          "filename": "bazooka.glb",
-          "category": "old_army",
-          "path": "models/clean/old_army/bazooka.glb",
-          "sizeBytes": 664224,
-          "sizeFormatted": "648.7 KB"
-        },
-        {
-          "id": "old_army/brit12lb.glb",
-          "name": "Brit12lb",
-          "filename": "brit12lb.glb",
-          "category": "old_army",
-          "path": "models/clean/old_army/brit12lb.glb",
-          "sizeBytes": 2575484,
-          "sizeFormatted": "2.5 MB"
-        },
-        {
-          "id": "old_army/brit24lb.glb",
-          "name": "Brit24lb",
-          "filename": "brit24lb.glb",
-          "category": "old_army",
-          "path": "models/clean/old_army/brit24lb.glb",
-          "sizeBytes": 980084,
-          "sizeFormatted": "957.1 KB"
-        },
         {
           "id": "old_army/buccan.glb",
           "name": "Buccan",
           "filename": "buccan.glb",
           "category": "old_army",
           "path": "models/clean/old_army/buccan.glb",
-          "sizeBytes": 7378860,
-          "sizeFormatted": "7 MB"
+          "sizeBytes": 5457768,
+          "sizeFormatted": "5.2 MB"
         },
         {
           "id": "old_army/cannon2.glb",
@@ -3625,26 +1152,8 @@
           "filename": "cannon2.glb",
           "category": "old_army",
           "path": "models/clean/old_army/cannon2.glb",
-          "sizeBytes": 347448,
-          "sizeFormatted": "339.3 KB"
-        },
-        {
-          "id": "old_army/canon149.glb",
-          "name": "Canon149",
-          "filename": "canon149.glb",
-          "category": "old_army",
-          "path": "models/clean/old_army/canon149.glb",
-          "sizeBytes": 1287740,
-          "sizeFormatted": "1.2 MB"
-        },
-        {
-          "id": "old_army/dagger.glb",
-          "name": "Dagger",
-          "filename": "dagger.glb",
-          "category": "old_army",
-          "path": "models/clean/old_army/dagger.glb",
-          "sizeBytes": 300856,
-          "sizeFormatted": "293.8 KB"
+          "sizeBytes": 1660872,
+          "sizeFormatted": "1.6 MB"
         },
         {
           "id": "old_army/doglh.glb",
@@ -3652,17 +1161,8 @@
           "filename": "doglh.glb",
           "category": "old_army",
           "path": "models/clean/old_army/doglh.glb",
-          "sizeBytes": 1334680,
-          "sizeFormatted": "1.3 MB"
-        },
-        {
-          "id": "old_army/grenade1.glb",
-          "name": "Grenade1",
-          "filename": "grenade1.glb",
-          "category": "old_army",
-          "path": "models/clean/old_army/grenade1.glb",
-          "sizeBytes": 891620,
-          "sizeFormatted": "870.7 KB"
+          "sizeBytes": 1031912,
+          "sizeFormatted": "1007.7 KB"
         },
         {
           "id": "old_army/grenade2.glb",
@@ -3670,187 +1170,25 @@
           "filename": "grenade2.glb",
           "category": "old_army",
           "path": "models/clean/old_army/grenade2.glb",
-          "sizeBytes": 3302920,
+          "sizeBytes": 3275380,
           "sizeFormatted": "3.1 MB"
-        },
-        {
-          "id": "old_army/gtlg1860.glb",
-          "name": "Gtlg1860",
-          "filename": "gtlg1860.glb",
-          "category": "old_army",
-          "path": "models/clean/old_army/gtlg1860.glb",
-          "sizeBytes": 165912,
-          "sizeFormatted": "162 KB"
-        },
-        {
-          "id": "old_army/karl.glb",
-          "name": "Karl",
-          "filename": "karl.glb",
-          "category": "old_army",
-          "path": "models/clean/old_army/karl.glb",
-          "sizeBytes": 7804064,
-          "sizeFormatted": "7.4 MB"
-        },
-        {
-          "id": "old_army/leopold.glb",
-          "name": "Leopold",
-          "filename": "leopold.glb",
-          "category": "old_army",
-          "path": "models/clean/old_army/leopold.glb",
-          "sizeBytes": 1618412,
-          "sizeFormatted": "1.5 MB"
-        },
-        {
-          "id": "old_army/m47drag.glb",
-          "name": "M47drag",
-          "filename": "m47drag.glb",
-          "category": "old_army",
-          "path": "models/clean/old_army/m47drag.glb",
-          "sizeBytes": 824084,
-          "sizeFormatted": "804.8 KB"
-        },
-        {
-          "id": "old_army/nb15.glb",
-          "name": "Nb15",
-          "filename": "nb15.glb",
-          "category": "old_army",
-          "path": "models/clean/old_army/nb15.glb",
-          "sizeBytes": 969100,
-          "sizeFormatted": "946.4 KB"
-        },
-        {
-          "id": "old_army/peppeb.glb",
-          "name": "Peppeb",
-          "filename": "peppeb.glb",
-          "category": "old_army",
-          "path": "models/clean/old_army/peppeb.glb",
-          "sizeBytes": 1795472,
-          "sizeFormatted": "1.7 MB"
-        },
-        {
-          "id": "old_army/piat.glb",
-          "name": "Piat",
-          "filename": "piat.glb",
-          "category": "old_army",
-          "path": "models/clean/old_army/piat.glb",
-          "sizeBytes": 885336,
-          "sizeFormatted": "864.6 KB"
-        },
-        {
-          "id": "old_army/rpg7.glb",
-          "name": "Rpg7",
-          "filename": "rpg7.glb",
-          "category": "old_army",
-          "path": "models/clean/old_army/rpg7.glb",
-          "sizeBytes": 565792,
-          "sizeFormatted": "552.5 KB"
         }
       ]
     },
     {
       "name": "plants",
       "title": "Plants",
-      "icon": "🌱",
-      "count": 16,
+      "icon": "",
+      "count": 6,
       "models": [
-        {
-          "id": "plants/acacia.glb",
-          "name": "Acacia",
-          "filename": "acacia.glb",
-          "category": "plants",
-          "path": "models/clean/plants/acacia.glb",
-          "sizeBytes": 4235564,
-          "sizeFormatted": "4 MB"
-        },
-        {
-          "id": "plants/albicia.glb",
-          "name": "Albicia",
-          "filename": "albicia.glb",
-          "category": "plants",
-          "path": "models/clean/plants/albicia.glb",
-          "sizeBytes": 1249504,
-          "sizeFormatted": "1.2 MB"
-        },
-        {
-          "id": "plants/bamboa.glb",
-          "name": "Bamboa",
-          "filename": "bamboa.glb",
-          "category": "plants",
-          "path": "models/clean/plants/bamboa.glb",
-          "sizeBytes": 2359336,
-          "sizeFormatted": "2.3 MB"
-        },
-        {
-          "id": "plants/cherry.glb",
-          "name": "Cherry",
-          "filename": "cherry.glb",
-          "category": "plants",
-          "path": "models/clean/plants/cherry.glb",
-          "sizeBytes": 682580,
-          "sizeFormatted": "666.6 KB"
-        },
         {
           "id": "plants/drosera.glb",
           "name": "Drosera",
           "filename": "drosera.glb",
           "category": "plants",
           "path": "models/clean/plants/drosera.glb",
-          "sizeBytes": 1920144,
-          "sizeFormatted": "1.8 MB"
-        },
-        {
-          "id": "plants/golden.glb",
-          "name": "Golden",
-          "filename": "golden.glb",
-          "category": "plants",
-          "path": "models/clean/plants/golden.glb",
-          "sizeBytes": 1137732,
-          "sizeFormatted": "1.1 MB"
-        },
-        {
-          "id": "plants/hedera.glb",
-          "name": "Hedera",
-          "filename": "hedera.glb",
-          "category": "plants",
-          "path": "models/clean/plants/hedera.glb",
-          "sizeBytes": 1154704,
-          "sizeFormatted": "1.1 MB"
-        },
-        {
-          "id": "plants/laburnum.glb",
-          "name": "Laburnum",
-          "filename": "laburnum.glb",
-          "category": "plants",
-          "path": "models/clean/plants/laburnum.glb",
-          "sizeBytes": 1114064,
-          "sizeFormatted": "1.1 MB"
-        },
-        {
-          "id": "plants/olive.glb",
-          "name": "Olive",
-          "filename": "olive.glb",
-          "category": "plants",
-          "path": "models/clean/plants/olive.glb",
-          "sizeBytes": 1327864,
-          "sizeFormatted": "1.3 MB"
-        },
-        {
-          "id": "plants/populus.glb",
-          "name": "Populus",
-          "filename": "populus.glb",
-          "category": "plants",
-          "path": "models/clean/plants/populus.glb",
-          "sizeBytes": 1249248,
-          "sizeFormatted": "1.2 MB"
-        },
-        {
-          "id": "plants/prunus.glb",
-          "name": "Prunus",
-          "filename": "prunus.glb",
-          "category": "plants",
-          "path": "models/clean/plants/prunus.glb",
-          "sizeBytes": 1110752,
-          "sizeFormatted": "1.1 MB"
+          "sizeBytes": 802088,
+          "sizeFormatted": "783.3 KB"
         },
         {
           "id": "plants/rose1.glb",
@@ -3858,8 +1196,8 @@
           "filename": "rose1.glb",
           "category": "plants",
           "path": "models/clean/plants/rose1.glb",
-          "sizeBytes": 235124,
-          "sizeFormatted": "229.6 KB"
+          "sizeBytes": 149692,
+          "sizeFormatted": "146.2 KB"
         },
         {
           "id": "plants/rose2.glb",
@@ -3867,8 +1205,8 @@
           "filename": "rose2.glb",
           "category": "plants",
           "path": "models/clean/plants/rose2.glb",
-          "sizeBytes": 308704,
-          "sizeFormatted": "301.5 KB"
+          "sizeBytes": 145464,
+          "sizeFormatted": "142.1 KB"
         },
         {
           "id": "plants/saguaro.glb",
@@ -3876,8 +1214,8 @@
           "filename": "saguaro.glb",
           "category": "plants",
           "path": "models/clean/plants/saguaro.glb",
-          "sizeBytes": 2112004,
-          "sizeFormatted": "2 MB"
+          "sizeBytes": 811176,
+          "sizeFormatted": "792.2 KB"
         },
         {
           "id": "plants/salixa.glb",
@@ -3885,8 +1223,8 @@
           "filename": "salixa.glb",
           "category": "plants",
           "path": "models/clean/plants/salixa.glb",
-          "sizeBytes": 1230044,
-          "sizeFormatted": "1.2 MB"
+          "sizeBytes": 670980,
+          "sizeFormatted": "655.3 KB"
         },
         {
           "id": "plants/styrax.glb",
@@ -3894,34 +1232,25 @@
           "filename": "styrax.glb",
           "category": "plants",
           "path": "models/clean/plants/styrax.glb",
-          "sizeBytes": 1245340,
-          "sizeFormatted": "1.2 MB"
+          "sizeBytes": 616028,
+          "sizeFormatted": "601.6 KB"
         }
       ]
     },
     {
       "name": "public_works",
       "title": "Public Works",
-      "icon": "🚧",
-      "count": 12,
+      "icon": "",
+      "count": 6,
       "models": [
-        {
-          "id": "public_works/charger.glb",
-          "name": "Charger",
-          "filename": "charger.glb",
-          "category": "public_works",
-          "path": "models/clean/public_works/charger.glb",
-          "sizeBytes": 18793996,
-          "sizeFormatted": "17.9 MB"
-        },
         {
           "id": "public_works/dumper.glb",
           "name": "Dumper",
           "filename": "dumper.glb",
           "category": "public_works",
           "path": "models/clean/public_works/dumper.glb",
-          "sizeBytes": 24881588,
-          "sizeFormatted": "23.7 MB"
+          "sizeBytes": 11961612,
+          "sizeFormatted": "11.4 MB"
         },
         {
           "id": "public_works/excava.glb",
@@ -3929,8 +1258,8 @@
           "filename": "excava.glb",
           "category": "public_works",
           "path": "models/clean/public_works/excava.glb",
-          "sizeBytes": 1011188,
-          "sizeFormatted": "987.5 KB"
+          "sizeBytes": 9619352,
+          "sizeFormatted": "9.2 MB"
         },
         {
           "id": "public_works/fall.glb",
@@ -3938,8 +1267,8 @@
           "filename": "fall.glb",
           "category": "public_works",
           "path": "models/clean/public_works/fall.glb",
-          "sizeBytes": 1158420,
-          "sizeFormatted": "1.1 MB"
+          "sizeBytes": 478172,
+          "sizeFormatted": "467 KB"
         },
         {
           "id": "public_works/fd14e.glb",
@@ -3947,8 +1276,8 @@
           "filename": "fd14e.glb",
           "category": "public_works",
           "path": "models/clean/public_works/fd14e.glb",
-          "sizeBytes": 434784,
-          "sizeFormatted": "424.6 KB"
+          "sizeBytes": 305292,
+          "sizeFormatted": "298.1 KB"
         },
         {
           "id": "public_works/fh2000.glb",
@@ -3956,44 +1285,8 @@
           "filename": "fh2000.glb",
           "category": "public_works",
           "path": "models/clean/public_works/fh2000.glb",
-          "sizeBytes": 1271156,
-          "sizeFormatted": "1.2 MB"
-        },
-        {
-          "id": "public_works/harvest.glb",
-          "name": "Harvest",
-          "filename": "harvest.glb",
-          "category": "public_works",
-          "path": "models/clean/public_works/harvest.glb",
-          "sizeBytes": 508560,
-          "sizeFormatted": "496.6 KB"
-        },
-        {
-          "id": "public_works/jbc.glb",
-          "name": "Jbc",
-          "filename": "jbc.glb",
-          "category": "public_works",
-          "path": "models/clean/public_works/jbc.glb",
-          "sizeBytes": 2227008,
-          "sizeFormatted": "2.1 MB"
-        },
-        {
-          "id": "public_works/panelaa.glb",
-          "name": "Panelaa",
-          "filename": "panelaa.glb",
-          "category": "public_works",
-          "path": "models/clean/public_works/panelaa.glb",
-          "sizeBytes": 11240,
-          "sizeFormatted": "11 KB"
-        },
-        {
-          "id": "public_works/scraper.glb",
-          "name": "Scraper",
-          "filename": "scraper.glb",
-          "category": "public_works",
-          "path": "models/clean/public_works/scraper.glb",
-          "sizeBytes": 1165384,
-          "sizeFormatted": "1.1 MB"
+          "sizeBytes": 1321204,
+          "sizeFormatted": "1.3 MB"
         },
         {
           "id": "public_works/torocat.glb",
@@ -4001,52 +1294,25 @@
           "filename": "torocat.glb",
           "category": "public_works",
           "path": "models/clean/public_works/torocat.glb",
-          "sizeBytes": 629924,
-          "sizeFormatted": "615.2 KB"
-        },
-        {
-          "id": "public_works/tractor.glb",
-          "name": "Tractor",
-          "filename": "tractor.glb",
-          "category": "public_works",
-          "path": "models/clean/public_works/tractor.glb",
-          "sizeBytes": 1250668,
-          "sizeFormatted": "1.2 MB"
+          "sizeBytes": 260376,
+          "sizeFormatted": "254.3 KB"
         }
       ]
     },
     {
       "name": "sculptures",
       "title": "Sculptures",
-      "icon": "🗿",
-      "count": 15,
+      "icon": "",
+      "count": 4,
       "models": [
-        {
-          "id": "sculptures/angel.glb",
-          "name": "Angel",
-          "filename": "angel.glb",
-          "category": "sculptures",
-          "path": "models/clean/sculptures/angel.glb",
-          "sizeBytes": 389912,
-          "sizeFormatted": "380.8 KB"
-        },
         {
           "id": "sculptures/angel2.glb",
           "name": "Angel2",
           "filename": "angel2.glb",
           "category": "sculptures",
           "path": "models/clean/sculptures/angel2.glb",
-          "sizeBytes": 636308,
-          "sizeFormatted": "621.4 KB"
-        },
-        {
-          "id": "sculptures/atenea.glb",
-          "name": "Atenea",
-          "filename": "atenea.glb",
-          "category": "sculptures",
-          "path": "models/clean/sculptures/atenea.glb",
-          "sizeBytes": 1174588,
-          "sizeFormatted": "1.1 MB"
+          "sizeBytes": 704508,
+          "sizeFormatted": "688 KB"
         },
         {
           "id": "sculptures/athene.glb",
@@ -4054,17 +1320,8 @@
           "filename": "athene.glb",
           "category": "sculptures",
           "path": "models/clean/sculptures/athene.glb",
-          "sizeBytes": 10900860,
-          "sizeFormatted": "10.4 MB"
-        },
-        {
-          "id": "sculptures/christ.glb",
-          "name": "Christ",
-          "filename": "christ.glb",
-          "category": "sculptures",
-          "path": "models/clean/sculptures/christ.glb",
-          "sizeBytes": 3737792,
-          "sizeFormatted": "3.6 MB"
+          "sizeBytes": 6343136,
+          "sizeFormatted": "6 MB"
         },
         {
           "id": "sculptures/dama.glb",
@@ -4072,44 +1329,8 @@
           "filename": "dama.glb",
           "category": "sculptures",
           "path": "models/clean/sculptures/dama.glb",
-          "sizeBytes": 1956108,
-          "sizeFormatted": "1.9 MB"
-        },
-        {
-          "id": "sculptures/face1.glb",
-          "name": "Face1",
-          "filename": "face1.glb",
-          "category": "sculptures",
-          "path": "models/clean/sculptures/face1.glb",
-          "sizeBytes": 373008,
-          "sizeFormatted": "364.3 KB"
-        },
-        {
-          "id": "sculptures/hebe.glb",
-          "name": "Hebe",
-          "filename": "hebe.glb",
-          "category": "sculptures",
-          "path": "models/clean/sculptures/hebe.glb",
-          "sizeBytes": 1213548,
-          "sizeFormatted": "1.2 MB"
-        },
-        {
-          "id": "sculptures/horse.glb",
-          "name": "Horse",
-          "filename": "horse.glb",
-          "category": "sculptures",
-          "path": "models/clean/sculptures/horse.glb",
-          "sizeBytes": 907428,
-          "sizeFormatted": "886.2 KB"
-        },
-        {
-          "id": "sculptures/itvirgin.glb",
-          "name": "Itvirgin",
-          "filename": "itvirgin.glb",
-          "category": "sculptures",
-          "path": "models/clean/sculptures/itvirgin.glb",
-          "sizeBytes": 1071700,
-          "sizeFormatted": "1 MB"
+          "sizeBytes": 476164,
+          "sizeFormatted": "465 KB"
         },
         {
           "id": "sculptures/mercury.glb",
@@ -4117,115 +1338,25 @@
           "filename": "mercury.glb",
           "category": "sculptures",
           "path": "models/clean/sculptures/mercury.glb",
-          "sizeBytes": 3336452,
-          "sizeFormatted": "3.2 MB"
-        },
-        {
-          "id": "sculptures/rrelief.glb",
-          "name": "Rrelief",
-          "filename": "rrelief.glb",
-          "category": "sculptures",
-          "path": "models/clean/sculptures/rrelief.glb",
-          "sizeBytes": 1261416,
-          "sizeFormatted": "1.2 MB"
-        },
-        {
-          "id": "sculptures/satyr.glb",
-          "name": "Satyr",
-          "filename": "satyr.glb",
-          "category": "sculptures",
-          "path": "models/clean/sculptures/satyr.glb",
-          "sizeBytes": 4435592,
-          "sizeFormatted": "4.2 MB"
-        },
-        {
-          "id": "sculptures/venus.glb",
-          "name": "Venus",
-          "filename": "venus.glb",
-          "category": "sculptures",
-          "path": "models/clean/sculptures/venus.glb",
-          "sizeBytes": 1445492,
-          "sizeFormatted": "1.4 MB"
-        },
-        {
-          "id": "sculptures/verdi.glb",
-          "name": "Verdi",
-          "filename": "verdi.glb",
-          "category": "sculptures",
-          "path": "models/clean/sculptures/verdi.glb",
-          "sizeBytes": 314840,
-          "sizeFormatted": "307.5 KB"
+          "sizeBytes": 1344900,
+          "sizeFormatted": "1.3 MB"
         }
       ]
     },
     {
       "name": "ships",
       "title": "Ships",
-      "icon": "🚢",
-      "count": 22,
+      "icon": "",
+      "count": 7,
       "models": [
-        {
-          "id": "ships/e_boat.glb",
-          "name": "E Boat",
-          "filename": "e_boat.glb",
-          "category": "ships",
-          "path": "models/clean/ships/e_boat.glb",
-          "sizeBytes": 1209760,
-          "sizeFormatted": "1.2 MB"
-        },
-        {
-          "id": "ships/fletcher.glb",
-          "name": "Fletcher",
-          "filename": "fletcher.glb",
-          "category": "ships",
-          "path": "models/clean/ships/fletcher.glb",
-          "sizeBytes": 20920920,
-          "sizeFormatted": "20 MB"
-        },
         {
           "id": "ships/ix_b.glb",
           "name": "Ix B",
           "filename": "ix_b.glb",
           "category": "ships",
           "path": "models/clean/ships/ix_b.glb",
-          "sizeBytes": 1105080,
-          "sizeFormatted": "1.1 MB"
-        },
-        {
-          "id": "ships/kgeorge.glb",
-          "name": "Kgeorge",
-          "filename": "kgeorge.glb",
-          "category": "ships",
-          "path": "models/clean/ships/kgeorge.glb",
-          "sizeBytes": 16217480,
-          "sizeFormatted": "15.5 MB"
-        },
-        {
-          "id": "ships/lif.glb",
-          "name": "Lif",
-          "filename": "lif.glb",
-          "category": "ships",
-          "path": "models/clean/ships/lif.glb",
-          "sizeBytes": 230164,
-          "sizeFormatted": "224.8 KB"
-        },
-        {
-          "id": "ships/nedlloyd.glb",
-          "name": "Nedlloyd",
-          "filename": "nedlloyd.glb",
-          "category": "ships",
-          "path": "models/clean/ships/nedlloyd.glb",
-          "sizeBytes": 811816,
-          "sizeFormatted": "792.8 KB"
-        },
-        {
-          "id": "ships/ninia.glb",
-          "name": "Ninia",
-          "filename": "ninia.glb",
-          "category": "ships",
-          "path": "models/clean/ships/ninia.glb",
-          "sizeBytes": 1208968,
-          "sizeFormatted": "1.2 MB"
+          "sizeBytes": 498860,
+          "sizeFormatted": "487.2 KB"
         },
         {
           "id": "ships/offshore.glb",
@@ -4233,17 +1364,8 @@
           "filename": "offshore.glb",
           "category": "ships",
           "path": "models/clean/ships/offshore.glb",
-          "sizeBytes": 419696,
-          "sizeFormatted": "409.9 KB"
-        },
-        {
-          "id": "ships/outracer.glb",
-          "name": "Outracer",
-          "filename": "outracer.glb",
-          "category": "ships",
-          "path": "models/clean/ships/outracer.glb",
-          "sizeBytes": 1330280,
-          "sizeFormatted": "1.3 MB"
+          "sizeBytes": 335144,
+          "sizeFormatted": "327.3 KB"
         },
         {
           "id": "ships/pinta.glb",
@@ -4251,17 +1373,8 @@
           "filename": "pinta.glb",
           "category": "ships",
           "path": "models/clean/ships/pinta.glb",
-          "sizeBytes": 1094808,
-          "sizeFormatted": "1 MB"
-        },
-        {
-          "id": "ships/rdgoethe.glb",
-          "name": "Rdgoethe",
-          "filename": "rdgoethe.glb",
-          "category": "ships",
-          "path": "models/clean/ships/rdgoethe.glb",
-          "sizeBytes": 4772496,
-          "sizeFormatted": "4.6 MB"
+          "sizeBytes": 3591564,
+          "sizeFormatted": "3.4 MB"
         },
         {
           "id": "ships/sanjuan.glb",
@@ -4269,26 +1382,8 @@
           "filename": "sanjuan.glb",
           "category": "ships",
           "path": "models/clean/ships/sanjuan.glb",
-          "sizeBytes": 20081320,
-          "sizeFormatted": "19.2 MB"
-        },
-        {
-          "id": "ships/sberry.glb",
-          "name": "Sberry",
-          "filename": "sberry.glb",
-          "category": "ships",
-          "path": "models/clean/ships/sberry.glb",
-          "sizeBytes": 3640428,
-          "sizeFormatted": "3.5 MB"
-        },
-        {
-          "id": "ships/scharhor.glb",
-          "name": "Scharhor",
-          "filename": "scharhor.glb",
-          "category": "ships",
-          "path": "models/clean/ships/scharhor.glb",
-          "sizeBytes": 26193412,
-          "sizeFormatted": "25 MB"
+          "sizeBytes": 7384396,
+          "sizeFormatted": "7 MB"
         },
         {
           "id": "ships/shrimp.glb",
@@ -4296,8 +1391,8 @@
           "filename": "shrimp.glb",
           "category": "ships",
           "path": "models/clean/ships/shrimp.glb",
-          "sizeBytes": 1341484,
-          "sizeFormatted": "1.3 MB"
+          "sizeBytes": 1869260,
+          "sizeFormatted": "1.8 MB"
         },
         {
           "id": "ships/smit.glb",
@@ -4305,8 +1400,8 @@
           "filename": "smit.glb",
           "category": "ships",
           "path": "models/clean/ships/smit.glb",
-          "sizeBytes": 954408,
-          "sizeFormatted": "932 KB"
+          "sizeBytes": 454016,
+          "sizeFormatted": "443.4 KB"
         },
         {
           "id": "ships/thonie1.glb",
@@ -4314,88 +1409,25 @@
           "filename": "thonie1.glb",
           "category": "ships",
           "path": "models/clean/ships/thonie1.glb",
-          "sizeBytes": 1180792,
-          "sizeFormatted": "1.1 MB"
-        },
-        {
-          "id": "ships/toyama.glb",
-          "name": "Toyama",
-          "filename": "toyama.glb",
-          "category": "ships",
-          "path": "models/clean/ships/toyama.glb",
-          "sizeBytes": 1297508,
-          "sizeFormatted": "1.2 MB"
-        },
-        {
-          "id": "ships/trin.glb",
-          "name": "Trin",
-          "filename": "trin.glb",
-          "category": "ships",
-          "path": "models/clean/ships/trin.glb",
-          "sizeBytes": 2216036,
-          "sizeFormatted": "2.1 MB"
-        },
-        {
-          "id": "ships/tunaclip.glb",
-          "name": "Tunaclip",
-          "filename": "tunaclip.glb",
-          "category": "ships",
-          "path": "models/clean/ships/tunaclip.glb",
-          "sizeBytes": 2242756,
-          "sizeFormatted": "2.1 MB"
-        },
-        {
-          "id": "ships/waho.glb",
-          "name": "Waho",
-          "filename": "waho.glb",
-          "category": "ships",
-          "path": "models/clean/ships/waho.glb",
-          "sizeBytes": 1161612,
-          "sizeFormatted": "1.1 MB"
-        },
-        {
-          "id": "ships/wick40.glb",
-          "name": "Wick40",
-          "filename": "wick40.glb",
-          "category": "ships",
-          "path": "models/clean/ships/wick40.glb",
-          "sizeBytes": 5002620,
-          "sizeFormatted": "4.8 MB"
+          "sizeBytes": 625288,
+          "sizeFormatted": "610.6 KB"
         }
       ]
     },
     {
       "name": "sports",
       "title": "Sports",
-      "icon": "⚽",
-      "count": 20,
+      "icon": "",
+      "count": 2,
       "models": [
-        {
-          "id": "sports/basket.glb",
-          "name": "Basket",
-          "filename": "basket.glb",
-          "category": "sports",
-          "path": "models/clean/sports/basket.glb",
-          "sizeBytes": 460612,
-          "sizeFormatted": "449.8 KB"
-        },
         {
           "id": "sports/basketac.glb",
           "name": "Basketac",
           "filename": "basketac.glb",
           "category": "sports",
           "path": "models/clean/sports/basketac.glb",
-          "sizeBytes": 634140,
-          "sizeFormatted": "619.3 KB"
-        },
-        {
-          "id": "sports/diving.glb",
-          "name": "Diving",
-          "filename": "diving.glb",
-          "category": "sports",
-          "path": "models/clean/sports/diving.glb",
-          "sizeBytes": 1179132,
-          "sizeFormatted": "1.1 MB"
+          "sizeBytes": 356764,
+          "sizeFormatted": "348.4 KB"
         },
         {
           "id": "sports/ecycle.glb",
@@ -4403,273 +1435,13 @@
           "filename": "ecycle.glb",
           "category": "sports",
           "path": "models/clean/sports/ecycle.glb",
-          "sizeBytes": 1109832,
-          "sizeFormatted": "1.1 MB"
-        },
-        {
-          "id": "sports/horbar.glb",
-          "name": "Horbar",
-          "filename": "horbar.glb",
-          "category": "sports",
-          "path": "models/clean/sports/horbar.glb",
-          "sizeBytes": 865908,
-          "sizeFormatted": "845.6 KB"
-        },
-        {
-          "id": "sports/incline.glb",
-          "name": "Incline",
-          "filename": "incline.glb",
-          "category": "sports",
-          "path": "models/clean/sports/incline.glb",
-          "sizeBytes": 946488,
-          "sizeFormatted": "924.3 KB"
-        },
-        {
-          "id": "sports/jumping.glb",
-          "name": "Jumping",
-          "filename": "jumping.glb",
-          "category": "sports",
-          "path": "models/clean/sports/jumping.glb",
-          "sizeBytes": 235196,
-          "sizeFormatted": "229.7 KB"
-        },
-        {
-          "id": "sports/lanecart.glb",
-          "name": "Lanecart",
-          "filename": "lanecart.glb",
-          "category": "sports",
-          "path": "models/clean/sports/lanecart.glb",
-          "sizeBytes": 270420,
-          "sizeFormatted": "264.1 KB"
-        },
-        {
-          "id": "sports/lift30.glb",
-          "name": "Lift30",
-          "filename": "lift30.glb",
-          "category": "sports",
-          "path": "models/clean/sports/lift30.glb",
-          "sizeBytes": 1205600,
-          "sizeFormatted": "1.1 MB"
-        },
-        {
-          "id": "sports/lumbar.glb",
-          "name": "Lumbar",
-          "filename": "lumbar.glb",
-          "category": "sports",
-          "path": "models/clean/sports/lumbar.glb",
-          "sizeBytes": 1123300,
-          "sizeFormatted": "1.1 MB"
-        },
-        {
-          "id": "sports/n1wood.glb",
-          "name": "N1wood",
-          "filename": "n1wood.glb",
-          "category": "sports",
-          "path": "models/clean/sports/n1wood.glb",
-          "sizeBytes": 97360,
-          "sizeFormatted": "95.1 KB"
-        },
-        {
-          "id": "sports/piram.glb",
-          "name": "Piram",
-          "filename": "piram.glb",
-          "category": "sports",
-          "path": "models/clean/sports/piram.glb",
-          "sizeBytes": 290912,
-          "sizeFormatted": "284.1 KB"
-        },
-        {
-          "id": "sports/pressben.glb",
-          "name": "Pressben",
-          "filename": "pressben.glb",
-          "category": "sports",
-          "path": "models/clean/sports/pressben.glb",
-          "sizeBytes": 1146600,
-          "sizeFormatted": "1.1 MB"
-        },
-        {
-          "id": "sports/sandwedg.glb",
-          "name": "Sandwedg",
-          "filename": "sandwedg.glb",
-          "category": "sports",
-          "path": "models/clean/sports/sandwedg.glb",
-          "sizeBytes": 109772,
-          "sizeFormatted": "107.2 KB"
-        },
-        {
-          "id": "sports/shoei.glb",
-          "name": "Shoei",
-          "filename": "shoei.glb",
-          "category": "sports",
-          "path": "models/clean/sports/shoei.glb",
-          "sizeBytes": 972032,
-          "sizeFormatted": "949.3 KB"
-        },
-        {
-          "id": "sports/swewall.glb",
-          "name": "Swewall",
-          "filename": "swewall.glb",
-          "category": "sports",
-          "path": "models/clean/sports/swewall.glb",
-          "sizeBytes": 532824,
-          "sizeFormatted": "520.3 KB"
-        },
-        {
-          "id": "sports/tennis.glb",
-          "name": "Tennis",
-          "filename": "tennis.glb",
-          "category": "sports",
-          "path": "models/clean/sports/tennis.glb",
-          "sizeBytes": 2455976,
-          "sizeFormatted": "2.3 MB"
-        },
-        {
-          "id": "sports/umpire.glb",
-          "name": "Umpire",
-          "filename": "umpire.glb",
-          "category": "sports",
-          "path": "models/clean/sports/umpire.glb",
-          "sizeBytes": 165116,
-          "sizeFormatted": "161.2 KB"
-        },
-        {
-          "id": "sports/vaultin.glb",
-          "name": "Vaultin",
-          "filename": "vaultin.glb",
-          "category": "sports",
-          "path": "models/clean/sports/vaultin.glb",
-          "sizeBytes": 1521488,
-          "sizeFormatted": "1.5 MB"
-        },
-        {
-          "id": "sports/vaultin2.glb",
-          "name": "Vaultin2",
-          "filename": "vaultin2.glb",
-          "category": "sports",
-          "path": "models/clean/sports/vaultin2.glb",
-          "sizeBytes": 847032,
-          "sizeFormatted": "827.2 KB"
-        }
-      ]
-    },
-    {
-      "name": "trains",
-      "title": "Trains",
-      "icon": "🚆",
-      "count": 12,
-      "models": [
-        {
-          "id": "trains/ave_vagc.glb",
-          "name": "Ave Vagc",
-          "filename": "ave_vagc.glb",
-          "category": "trains",
-          "path": "models/clean/trains/ave_vagc.glb",
-          "sizeBytes": 1724812,
-          "sizeFormatted": "1.6 MB"
-        },
-        {
-          "id": "trains/ave_vagt.glb",
-          "name": "Ave Vagt",
-          "filename": "ave_vagt.glb",
-          "category": "trains",
-          "path": "models/clean/trains/ave_vagt.glb",
-          "sizeBytes": 1798300,
-          "sizeFormatted": "1.7 MB"
-        },
-        {
-          "id": "trains/carra.glb",
-          "name": "Carra",
-          "filename": "carra.glb",
-          "category": "trains",
-          "path": "models/clean/trains/carra.glb",
-          "sizeBytes": 830580,
-          "sizeFormatted": "811.1 KB"
-        },
-        {
-          "id": "trains/coach1.glb",
-          "name": "Coach1",
-          "filename": "coach1.glb",
-          "category": "trains",
-          "path": "models/clean/trains/coach1.glb",
-          "sizeBytes": 1101380,
-          "sizeFormatted": "1.1 MB"
-        },
-        {
-          "id": "trains/gg1.glb",
-          "name": "Gg1",
-          "filename": "gg1.glb",
-          "category": "trains",
-          "path": "models/clean/trains/gg1.glb",
-          "sizeBytes": 2998640,
-          "sizeFormatted": "2.9 MB"
-        },
-        {
-          "id": "trains/kumoha.glb",
-          "name": "Kumoha",
-          "filename": "kumoha.glb",
-          "category": "trains",
-          "path": "models/clean/trains/kumoha.glb",
-          "sizeBytes": 1077720,
-          "sizeFormatted": "1 MB"
-        },
-        {
-          "id": "trains/sakura.glb",
-          "name": "Sakura",
-          "filename": "sakura.glb",
-          "category": "trains",
-          "path": "models/clean/trains/sakura.glb",
-          "sizeBytes": 6009316,
-          "sizeFormatted": "5.7 MB"
-        },
-        {
-          "id": "trains/snowplow.glb",
-          "name": "Snowplow",
-          "filename": "snowplow.glb",
-          "category": "trains",
-          "path": "models/clean/trains/snowplow.glb",
-          "sizeBytes": 980356,
-          "sizeFormatted": "957.4 KB"
-        },
-        {
-          "id": "trains/upwag.glb",
-          "name": "Upwag",
-          "filename": "upwag.glb",
-          "category": "trains",
-          "path": "models/clean/trains/upwag.glb",
-          "sizeBytes": 1497844,
-          "sizeFormatted": "1.4 MB"
-        },
-        {
-          "id": "trains/wagc2.glb",
-          "name": "Wagc2",
-          "filename": "wagc2.glb",
-          "category": "trains",
-          "path": "models/clean/trains/wagc2.glb",
-          "sizeBytes": 3928164,
-          "sizeFormatted": "3.7 MB"
-        },
-        {
-          "id": "trains/wagon.glb",
-          "name": "Wagon",
-          "filename": "wagon.glb",
-          "category": "trains",
-          "path": "models/clean/trains/wagon.glb",
-          "sizeBytes": 1434716,
-          "sizeFormatted": "1.4 MB"
-        },
-        {
-          "id": "trains/wagon2.glb",
-          "name": "Wagon2",
-          "filename": "wagon2.glb",
-          "category": "trains",
-          "path": "models/clean/trains/wagon2.glb",
-          "sizeBytes": 1435672,
-          "sizeFormatted": "1.4 MB"
+          "sizeBytes": 548164,
+          "sizeFormatted": "535.3 KB"
         }
       ]
     }
   ],
-  "totalModels": 500,
-  "totalBytes": 1316738204,
-  "totalBytesFormatted": "1.2 GB"
+  "totalModels": 143,
+  "totalBytes": 307893912,
+  "totalBytesFormatted": "293.6 MB"
 }

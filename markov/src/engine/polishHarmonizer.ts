@@ -309,7 +309,7 @@ export class PolishHarmonizer {
       replacedMacaroniCount: 0
     };
 
-    if (options?.enableVerticalPolesToCylinders) {
+    if (options?.enableVerticalPolesToCylinders !== false) {
       poleHarmonization = this.harmonizePolesAndCylinders(
         placedBricks,
         occupiedCellToBrickId,
