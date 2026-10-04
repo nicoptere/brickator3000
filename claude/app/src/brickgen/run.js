@@ -7,6 +7,7 @@ import { mirrorMask } from './islands.js';
 import { partVariants } from './variants.js';
 import { Solver } from './solver.js';
 import { motifVariants } from '../motifs/library.js';
+import { snotVariants } from '../motifs/snot.js';
 
 export function solve(pre, cat, ox, oz, o, log = () => {}) {
   const win = window(pre, ox, oz); let M = win.arr; const nxc = win.nxc, nzc = win.nzc, nl = pre.nl;
@@ -39,7 +40,22 @@ export function solve(pre, cat, ox, oz, o, log = () => {}) {
   }
   // broad phase: assemblies mined from human-built models (several parts at once), before any single part is considered
   if (o.motifs) { const lib = motifVariants(cat, o); S.runPhase(S.attachMirrors(lib.variants), o.motifTol, 'M-motif'); }
-  if (o.rounds) S.runPhase(S.attachMirrors(partVariants(cat, new Set(['round']))), o.roundTol, 'A0-round');
+  // the round family before or after the sloped skin (docs/CURVES.md round 7): on a model whose top surface is mostly sloped
+  // (an animal, a dome) the slopes have priority and the quarter-round plates take what they leave; on a model of flat tops and
+  // vertical walls (a table, a rounded box) the round family goes first, as before. 'auto' decides by the sloped share of the top
+  // surface (`roundsSlopedShare`); true / false force one order.
+  const roundPhase = () => { if (o.rounds) S.runPhase(S.attachMirrors(partVariants(cat, new Set(['round']))), o.roundTol, 'A0-round'); };
+  let roundsAfter = o.roundsAfterSkin === true;
+  if (o.roundsAfterSkin === 'auto' || o.roundsAfterSkin === undefined) {
+    const g = S.gradients().top; let sloped = 0, tops = 0;
+    for (let cz = 0; cz < nzc; cz++) for (let cx = 0; cx < nxc; cx++) {
+      let has = false; for (let l = nl - 1; l >= 0 && !has; l--) for (let dz = 0; dz < G && !has; dz++) for (let dx = 0; dx < G; dx++) if (M[S.idx(l, cz * G + dz, cx * G + dx)] > 0.05) { has = true; break; }
+      if (!has) continue; tops++; if (Math.hypot(g.gx[cz * nxc + cx], g.gz[cz * nxc + cx]) >= 0.07) sloped++;
+    }
+    roundsAfter = tops > 0 && sloped / tops >= (o.roundsSlopedShare ?? 0.5);
+    log(`round family ${roundsAfter ? 'after' : 'before'} the skin: ${(100 * sloped / Math.max(1, tops)).toFixed(0)} % of the top surface is sloped`);
+  }
+  if (!roundsAfter) roundPhase();
   if (o.skin) {
     const kinds = new Set(['slope', 'curved', 'cheese', 'tile']); if (o.inverted) kinds.add('inverted');
     const skinV = partVariants(cat, kinds);
@@ -52,6 +68,11 @@ export function solve(pre, cat, ox, oz, o, log = () => {}) {
     S.runPhase(S.attachMirrors(skinV.filter((v) => !v.c.ext)), o.skinTol, 'A-skin');
     if (skinV.some((v) => v.c.ext)) S.runPhase(S.attachMirrors(skinV.filter((v) => v.c.ext)), o.skinTol, 'A2-skin-ext');
   }
+  if (roundsAfter) roundPhase();
+  // sideways parts on side studs (motifs/snot.js): every catalogue part of a footprint that an official set hung on a headlight
+  // brick / side-stud brick / bracket, as one rigid assembly with its host - a disc on a wall, a curved slope rounding a
+  // vertical edge. After the upright skin, before the fill: they take only what no upright part explained
+  if (o.snot) { const sv = snotVariants(cat, o); S.runPhase(S.attachMirrors(sv.variants), o.snotTol, 'S-snot'); }
   const flat = new Set(['brick', 'plate', 'shaped']); if (o.technic) flat.add('technic');
   const solid = S.attachMirrors(partVariants(cat, flat));
   S.runPhase(solid, withBonus(o.fillTol, tb), 'B-fill');

@@ -98,3 +98,41 @@ export function cylinderX(R = 120, L = 400, nu = 96) {
   return { tris: t, vcols: new Float32Array(t.length).fill(0.6) };
 }
 export const CURVED = { dome, sphere, egg, cone, cylinderX };
+
+// ---------------------------------------------------------------------------------- SNOT test shapes (docs/CURVES.md round 7)
+/** a closed axis-aligned box [x0,x1] x [y0,y1] x [z0,z1] as triangles (outward) */
+function boxTris(x0, y0, z0, x1, y1, z1) {
+  const q = (a, b, c, d) => [...a, ...b, ...c, ...a, ...c, ...d];
+  const A = [x0, y0, z0], B = [x1, y0, z0], C = [x1, y1, z0], D = [x0, y1, z0], E = [x0, y0, z1], F = [x1, y0, z1], Gp = [x1, y1, z1], H = [x0, y1, z1];
+  return [...q(A, D, C, B), ...q(E, F, Gp, H), ...q(A, B, F, E), ...q(D, H, Gp, C), ...q(A, E, H, D), ...q(B, C, Gp, F)];
+}
+/** a box of W x H x D LDU with a cylindrical boss (radius R, height T) standing proud of its +x face: the disc on a wall */
+export function boxBoss(W = 160, H = 120, D = 160, R = 30, T = 8, nu = 48) {
+  const tris = boxTris(0, 0, 0, W, H, D), cy = H / 2, cz = D / 2;
+  for (let i = 0; i < nu; i++) {
+    const a0 = 2 * Math.PI * i / nu, a1 = 2 * Math.PI * (i + 1) / nu;
+    const p0 = [W, cy + R * Math.cos(a0), cz + R * Math.sin(a0)], p1 = [W, cy + R * Math.cos(a1), cz + R * Math.sin(a1)];
+    const q0 = [W + T, p0[1], p0[2]], q1 = [W + T, p1[1], p1[2]];
+    tris.push(...p0, ...p1, ...q1, ...p0, ...q1, ...q0);                     // side of the boss (outward)
+    tris.push(W + T, cy, cz, ...q0, ...q1);                                  // its face
+    tris.push(W, cy, cz, ...p1, ...p0);                                      // the ring on the wall faces inward (the box face is there too; the solid is the union)
+  }
+  const t = new Float32Array(tris); return { tris: t, vcols: new Float32Array(t.length).fill(0.6) };
+}
+/** a box of W x H x D with its +x/+z vertical edge rounded to radius R: the sideways-curved-slope corner */
+export function boxRoundEdge(W = 160, H = 120, D = 160, R = 40, nu = 24) {
+  const tris = [];
+  const q = (a, b, c, d) => tris.push(...a, ...b, ...c, ...a, ...c, ...d);
+  // outline of the footprint, counter-clockwise seen from above (+y): start at (0,0), go along +x, round the (W, D) corner, back along -x at z = D, down the x = 0 edge
+  const ring = [[0, 0], [W, 0], [W, D - R]];
+  for (let i = 1; i < nu; i++) { const a = Math.PI / 2 * i / nu; ring.push([W - R + R * Math.cos(a), D - R + R * Math.sin(a)]); }
+  ring.push([W - R, D], [0, D]);
+  for (let k = 0; k < ring.length; k++) {
+    const [x0, z0] = ring[k], [x1, z1] = ring[(k + 1) % ring.length];
+    q([x0, 0, z0], [x0, H, z0], [x1, H, z1], [x1, 0, z1]);                  // wall segment, outward normal = right-hand of the walk
+  }
+  const cx = W / 2, cz = D / 2;                                              // caps as fans
+  for (let k = 0; k < ring.length; k++) { const [x0, z0] = ring[k], [x1, z1] = ring[(k + 1) % ring.length]; tris.push(cx, H, cz, x0, H, z0, x1, H, z1); tris.push(cx, 0, cz, x1, 0, z1, x0, 0, z0); }
+  const t = new Float32Array(tris); return { tris: t, vcols: new Float32Array(t.length).fill(0.6) };
+}
+CURVED.boxBoss = boxBoss; CURVED.boxRoundEdge = boxRoundEdge; CURVED.boxRoundEdge24 = () => boxRoundEdge(160, 120, 160, 24);

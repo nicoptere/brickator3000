@@ -53,10 +53,14 @@ export const DEFAULTS = {
   motifShapedMin: 0,         // min share of an assembly's volume in shaped parts (0 = off): .5 drops "a slope on a long brick"; +.8 IoU on the chair for +26 % pieces, so off (docs/CURVES.md)
   motifScoring: false,       // also run the motif phase while scoring the grid phases (9x slower); off = only the final solve uses motifs
   motifVerify: true, motifGain: 0.01,   // the final field is also solved without the assemblies; they are kept only if they gain this much IoU (docs/CURVES.md)
+  // SNOT synthesis (motifs/snot.js, docs/CURVES.md round 7): sideways parts on side-stud hosts, every part of an observed footprint
+  snot: false, snotTol: { min_cov: 0.85, max_err: 0.06, piece_pen: 0.3, beatFlat: 0.8 }, snotMinCount: 5, snotMaxThick: 3, snotBonus: 0.2,
   // phases
   dropLoose: 1,              // post: components of at most this many pieces that touch nothing are removed (a cheese on a wing tip); 0 = keep
   roundCorners: true,        // after finish: exposed 1x1 tiles on convex corners become quarter-round tiles (post.roundCorners); IoU unchanged, table 12 / duck 56 corners
   discs: true, discMinR: 2, discRms: 0.45, discIoU: 0.85, discsExposed: true, discRing: 1.5,   // disc layers (discs.js, phase A1 before the motifs): a level whose solid component is a circle of radius >= discMinR studs is laid as rows of plates, direction alternating per level. Measured: table 660 -> 609 pieces, IoU .789 -> .799; duck -19 pieces; the others untouched (no round layer). discsExposed limits it to layers whose top shows (table tops, rims); laying every layer of a sphere overfills (table rim: IoU .727)
+  roundsAfterSkin: 'auto', roundsSlopedShare: 0.3,   // 'auto': the round family runs after the sloped skin when at least this share of the top surface is sloped (an animal, a dome); before it otherwise (a table, a rounded box). true / false force the order
+  roundBand: null,           // optional [lo, hi] top-surface steepness (plates / sample) inside which round parts are not candidates (solver.roundOk); measured below the ordering rule, off
   rounds: true, roundTol: { min_cov: 0.85, max_err: 0.12, piece_pen: 0.5, bonus: { round: 0.4 } },
   skin: true, skinTol: { min_cov: 0.65, max_err: 0.14, piece_pen: 0.3, bonus: { slope: 0.7, curved: 0.6, cheese: 0.5, inverted: 0.6 } },
   inverted: true,
@@ -89,6 +93,7 @@ export const DEFAULTS = {
   bracing: true, braceMaxGap: 3, braceMaxSpan: 4, braceRounds: 40,
   splice: true, spliceRounds: 60, spliceTries: 80, spliceTime: 6000,   // re-cut side-by-side pieces of different components so a 1x2 plate spans the seam
   bridge: true, bridgeMax: 10, bridgeRounds: 120,    // shortest plate chain (zig-zag) through free cells between two components
+  bridgeOutside: false, bridgeFill: 0.3,             // chains stay inside the source volume (a cell with mean fill < bridgeFill is blocked); true = the old search through any empty cell
   vertexNormals: false,      // main-thread pre-step (three.js welded vertex normals): flips reversed triangles before the ray cast
   supports: false, groundSupports: false, supportMinFrac: 0.01, supportSpacing: 24,
   finish: false, finishBricks: 'add', // 'add' (tile on top of exposed bricks) | 'none'

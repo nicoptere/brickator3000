@@ -122,10 +122,25 @@ export class Solver {
     return k * steep * (gx * sv[0] + gz * sv[1]) / (Math.hypot(gx, gz) * Math.hypot(sv[0], sv[1]));
   }
 
+  /**
+   * the round family (discs, quarter-round plates, poles) belongs on vertical curved walls (a cylinder, a rounded edge, a rim)
+   * and on flat tops (a disc lying on a table), not on the sloped skin in between, where stacked quarter-round plates are a
+   * staircase and the slopes do better (docs/CURVES.md round 7). roundBand = [lo, hi] of the top-surface steepness (plates per
+   * sample; tan 15 deg = .07, tan 55 deg = .36) inside which a round part is not a candidate.
+   */
+  roundOk(v, j, i) {
+    const band = this.o.roundBand; if (!band || v.c.kind !== 'round') return true;
+    const g = this.gradients().top, Xc = this.NXc; let m = 0;
+    for (let dz = 0; dz < v.d; dz++) for (let dx = 0; dx < v.w; dx++) { const q = (j + dz) * Xc + i + dx; m += Math.hypot(g.gx[q], g.gz[q]); }
+    m /= v.w * v.d;
+    return !(m > band[0] && m < band[1]);
+  }
+
   /** exact fit of variant v at (level b, cell j, cell i): [net, matched, symdiff] or null */
   evaluate(v, b, j, i, tol) {
     if (b + v.h > this.NL || (j + v.d) * G > this.NZs || (i + v.w) * G > this.NXs || b < 0 || j < 0 || i < 0) return null;
     if (this.mirror && this.straddles(v, b, j, i)) return null;
+    if (!this.roundOk(v, j, i)) return null;
     const pz = v.d * G, px = v.w * G, V = v.V, M = this.M, C = this.C;
     let ov = 0, over = 0;
     for (let l = 0; l < v.h; l++) for (let z = 0; z < pz; z++) {
@@ -176,6 +191,7 @@ export class Solver {
     const Z1 = this.NZc + 1, X1 = this.NXc + 1;
     for (const g of groups.values()) {
       const { h, w, d, ks, lo } = g, box = h * w * d, maxErr = tol.max_err * box + 1e-3, pz = d * G, px = w * G, loG = lo * G2;
+      const roundGroup = !!this.o.roundBand && ks.every((k) => variants[k].c.kind === 'round');
       const o1 = h * Z1 * X1, o2 = d * X1, o3 = w, oL = Z1 * X1, wd = w * d * G2, beat = tol.beatFlat ?? this.o.beatFlat ?? 1;        // integral offsets of the box corners from its (b, j, i) corner; oL = one level
       const levM = new Float64Array(h); let levAt = -1;
       for (let b = 0; b + h <= this.NL; b++) for (let j = 0; j + d <= this.NZc; j++) {
@@ -183,6 +199,7 @@ export class Solver {
         for (let i = 0; i + w <= this.NXc; i++, c0++) {
           const swG = I[c0 + o1 + o2 + o3] - I[c0 + o2 + o3] - I[c0 + o1 + o3] - I[c0 + o1 + o2] + I[c0 + o3] + I[c0 + o2] + I[c0 + o1] - I[c0];
           if (swG < loG) continue;
+          if (roundGroup && !this.roundOk(variants[ks[0]], j, i)) continue;
           const sw = swG / G2;
           for (let q = 0; q < ks.length; q++) {
             const k = ks[q], v = variants[k], vs = v.vsum / G2;

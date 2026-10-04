@@ -196,3 +196,21 @@ Performance: post passes dominated; packed-number keys etc. gave 7-15x, bit-iden
 - Generator traps: `lego_catalog.py` rendered stud sub-files into the profiles when the LDraw copy has them (fixed: studs are
   positions only); regenerating the whole core catalogue from another LDraw copy changes 61678 / 88930 - append, never replace.
 - Not started: discs on a wall (design written in CURVES.md §11), the handmade small-model dataset.
+
+## 12. Round 7 (2026-10-04, night): bridges in the air, hollow shapes, round order, SNOT synthesis. Write-up: `docs/CURVES.md` §12
+- **`post.bridge` ran through the air**: "free" meant unoccupied, not inside the model; the chains went around the outside (skirt
+  under a dome, an L of plates hanging off a controller, sitting on the real surface). Now a cell with field fill < `bridgeFill`
+  (.3) is blocked (`bridgeOutside: false`). Zero air plates on every model, IoU +.2..+.5; components go up where the air chain
+  was the only link (be2 strut columns).
+- **The measured shapes (catalog_shapes.js) were hollow**: the bottom profile of a LDraw brick is its cavity ceiling; 30357 was
+  50 % full, 60474 63 %. Undersides filled solid (not arches / inverted): rounded box .939 -> .957 with 30357 stacks, table .809
+  -> .820. This is why the round family "never fired" in round 4 and why shapeParts measured negative in round 3.
+- **Round family order** `roundsAfterSkin: 'auto'` (after the skin when >= 30 % of the top surface is sloped): duck .866 -> .874
+  with real round templates; table / rounded box keep rounds first. `roundBand` gate tried, off.
+- **SNOT synthesis** `motifs/snot.js` (option `snot`, OFF): 48 side-stud points recovered from the mined SNOT motifs (4070,
+  87087 ...), every plate / tile / slope / curved / round plate hung by every underside cell -> 548 assemblies / 2192 variants,
+  phase S-snot after the skin, rigid, exports and round-trips. Field-driven selection hangs bits on partial cells (duck -1.7
+  IoU), so off. The design that makes it a feature - "a wall is a floor turned on its side" (resample the field per facing, run
+  the aligned narrow skin there, turn the pieces back into sideways ones over side-stud hosts) - is written in CURVES.md §12.
+- `library.assemblyVariants` factored out (shared by motifs and snot.js); `test/synthetic.mjs` has `boxBoss` (disc on a wall)
+  and `boxRoundEdge` / `boxRoundEdge24` (rounded vertical edge) as SNOT test shapes.

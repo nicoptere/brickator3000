@@ -650,6 +650,13 @@ export function splice(S, cat, o) {
 export function bridge(S, cat, o) {
   const by = byId(cat), NX = S.NXc, NZ = S.NZc, NL = S.NL, plane = NX * NZ, N = plane * NL, maxCost = o.bridgeMax ?? 10;
   const idx = (x, z, l) => (l * NZ + z) * NX + x;
+  // A chain stays inside the source volume: a cell whose mean field fill is below `bridgeFill` is as blocked as an occupied one
+  // (unless `bridgeOutside`). The old search ran through any empty cell and found its shortest chains around the OUTSIDE of the
+  // model - a skirt of plates under a dome, an L of plates hanging off a controller - where they also sat on top of the real
+  // surface and kept the skin from being laid. A component that cannot be reached through the solid is left to the supports
+  // and, when it is a single piece, to dropLoose.
+  const fillMin = o.bridgeFill ?? 0.3, cellFill = o.bridgeOutside ? null : S.leftoverCells(S.Mfull || S.M0);
+  const inside = (x, z, l) => !cellFill || cellFill[idx(x, z, l)] >= fillMin;
   let added = 0; const hopeless = new Set(), flattened = new Set();
   let state = null;                                   // grid / components of the current piece list; rebuilt only after the pieces change
   for (let round = 0; round < (o.bridgeRounds ?? 120); round++) {
@@ -685,15 +692,16 @@ export function bridge(S, cat, o) {
       const buckets = Array.from({ length: maxCost + 2 }, () => []), tmp = [];
       const expand = (x, z, l, l2, base, from) => {
         if (l2 < 0 || l2 >= NL) return;
-        const nb = base + 1; if (nb > maxCost) return;
-        const bk = buckets[nb], head = idx(x, z, l2) * 16;
+        if (base + 1 > maxCost) return;
+        const head = idx(x, z, l2) * 16;
+        const nb = base + 1, bk = buckets[nb];
         for (let dir = 0; dir < 4; dir++) {
           const dx = DX[dir], dz = DZ[dir];
           for (let k = 0; k < 4; k++) {
             const cx = x + k * dx, cz = z + k * dz;
             if (cx < 0 || cx >= NX || cz < 0 || cz >= NZ) break;
             const v = idx(cx, cz, l2);
-            if (grid[v] >= 0) break;
+            if (grid[v] >= 0 || !inside(cx, cz, l2)) break;
             if (nb < dist[v]) { dist[v] = nb; parent[v] = from; via[v] = head + dir * 4 + k; bk.push(v); }
           }
         }

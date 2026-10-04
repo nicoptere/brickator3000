@@ -81,6 +81,8 @@ function mirror(parts, w, by) {
 }
 
 const libCache = new Map();
+// parts that offer studs on a vertical face, by their LDraw description (headlight bricks, side-stud bricks, brackets)
+const HOST_RE = /stud(s)? on .{0,20}side|headlight|^bracket/i;
 /**
  * compound variants for a catalogue: { variants, kept, dropped }. Options: minModels (motif seen in at least this many source models),
  * minCount, maxParts, solid (keep solid-box motifs), bonusLog (per-variant score bonus = base + bonusLog * log2(models))
@@ -88,9 +90,7 @@ const libCache = new Map();
 export function motifVariants(cat, { motifMinModels = 2, motifMinCount = 3, motifMaxParts = 12, motifSolid = false, motifBonus = 0.2, motifBonusLog = 0.1, motifMinPartH = 2, motifShapedOnly = true, motifShapedMin = 0, motifMirror = true, motifStretch = true, motifStretchMax = 8, motifStretchCells = 512, motifSnot = true, motifLibrary = null } = {}) {
   const LIB = motifLibrary || MOTIFS;         // motifLibrary: another mined list (tools/mine_motifs.mjs output) in place of the built-in one
   const key = `${LIB === MOTIFS ? 'builtin' : 'custom' + LIB.length}|${cat.length}|${motifMinModels}|${motifMinCount}|${motifMaxParts}|${motifSolid}|${motifBonus}|${motifBonusLog}|${motifMinPartH}|${motifShapedOnly}|${motifShapedMin}|${motifMirror}|${motifStretch}|${motifStretchMax}|${motifStretchCells}|${motifSnot}`;
-  const FLAT = new Set(['brick', 'plate', 'tile', 'technic']);
-  // parts that offer studs on a vertical face, by their LDraw description (headlight bricks, side-stud bricks, brackets)
-  const HOST = /stud(s)? on .{0,20}side|headlight|^bracket/i;
+  const FLAT = new Set(['brick', 'plate', 'tile', 'technic']), HOST = HOST_RE;
   if (libCache.has(key)) return libCache.get(key);
   const by = new Map(cat.map((c) => [c.id, c]));
   // ids the library was mined with that the catalogue has since replaced by the same part under its other LDraw name
@@ -124,27 +124,37 @@ export function motifVariants(cat, { motifMinModels = 2, motifMinCount = 3, moti
   const synth = motifStretch ? stretch(mined, dims, { max: motifStretchMax, maxParts: motifMaxParts, maxCells: motifStretchCells, studded }) : [];
   for (const m of [...mined, ...synth]) {
     const bonus = (motifBonus + motifBonusLog * Math.log2(m.models)) * (m.synth ? 0.8 : 1);   // synthesised lengths were not observed as such
-    const seen = new Set(); let solid = false, n0 = variants.length;
-    // the 4 yaws of the motif and of its x-mirror image (a roof edge sloping left is also one sloping right); identical volumes are merged
-    const mirrored = motifMirror ? mirror(m.parts, m.w, by) : null;
-    for (const start of mirrored ? [m.parts, mirrored] : [m.parts]) {
-      let parts = start, w = m.w, d = m.d;
-      for (let r = 0; r < 4 && !solid; r++) {
-        const resolved = parts.map((p) => { const v = oriented(by.get(p.id), oriOf(p)); return { v, studs: v.studs, di: p.i, dj: p.j, db: p.b }; });
-        const V = rasterise(resolved, w, d, m.h);
-        const sig = `${w},${d},${Array.from(V).map((x) => x.toFixed(4)).join(',')}`;
-        if (!seen.has(sig)) {
-          seen.add(sig);
-          let sum = 0, full = true; const lev = new Float64Array(m.h), per = V.length / m.h;
-          for (let q = 0; q < V.length; q++) { const x = V[q]; sum += x; lev[(q / per) | 0] += x; if (x !== 1) full = false; }
-          if (full && !motifSolid) { solid = true; break; }
-          variants.push({ c: { id: `motif:${m.key}`, name: `motif ${m.parts.length} parts ${w}x${d}x${m.h}`, kind: 'motif', motif: m }, rot: r * 90, V, studs: [], w, d, h: m.h, vtot: sum / (G * G), vsum: sum, full: false, lev, parts: resolved, bonus, npieces: m.parts.length });
-        }
-        parts = turn(parts, w, by); [w, d] = [d, w];
-      }
-    }
-    if (solid) { variants.length = n0; dropped++; } else kept++;
+    if (assemblyVariants(by, m, bonus, variants, { mirror: motifMirror, solid: motifSolid })) kept++; else dropped++;
   }
   const out = { variants, kept, dropped };
   libCache.set(key, out); return out;
 }
+
+/**
+ * the solver variants of one assembly { key, parts: [{ id, ori | rot, i, j, b }], w, d, h } - its 4 yaws and, with `mirror`, those
+ * of its x-mirror image, identical volumes merged - appended to `out`. Returns false when the assembly is a solid box and `solid`
+ * is off (a single part already does that job). Shared by the mined motifs and the synthesised SNOT assemblies (snot.js).
+ */
+export function assemblyVariants(by, m, bonus, out, { mirror: doMirror = true, solid = false, kind = 'motif', seen = new Set() } = {}) {
+  let isSolid = false; const n0 = out.length;
+  const mirrored = doMirror ? mirror(m.parts, m.w, by) : null;
+  for (const start of mirrored ? [m.parts, mirrored] : [m.parts]) {
+    let parts = start, w = m.w, d = m.d;
+    for (let r = 0; r < 4 && !isSolid; r++) {
+      const resolved = parts.map((p) => { const v = oriented(by.get(p.id), oriOf(p)); return { v, studs: v.studs, di: p.i, dj: p.j, db: p.b }; });
+      const V = rasterise(resolved, w, d, m.h);
+      const sig = `${w},${d},${Array.from(V).map((x) => x.toFixed(4)).join(',')}`;
+      if (!seen.has(sig)) {
+        seen.add(sig);
+        let sum = 0, full = true; const lev = new Float64Array(m.h), per = V.length / m.h;
+        for (let q = 0; q < V.length; q++) { const x = V[q]; sum += x; lev[(q / per) | 0] += x; if (x !== 1) full = false; }
+        if (full && !solid) { isSolid = true; break; }
+        out.push({ c: { id: `${kind}:${m.key}`, name: `${kind} ${m.parts.length} parts ${w}x${d}x${m.h}`, kind, motif: m }, rot: r * 90, V, studs: [], w, d, h: m.h, vtot: sum / (G * G), vsum: sum, full: false, lev, parts: resolved, bonus, npieces: m.parts.length });
+      }
+      parts = turn(parts, w, by); [w, d] = [d, w];
+    }
+  }
+  if (isSolid) { out.length = n0; return false; }
+  return out.length > n0;
+}
+export { oriented, HOST_RE as HOST };
