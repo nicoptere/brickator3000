@@ -13,7 +13,7 @@ const s2l = (c) => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4
 let envPromise = null;
 const loadEnv = () => envPromise || (envPromise = new EXRLoader().loadAsync(new URL('/env/studio.exr', location.href).href).then((t) => { t.mapping = THREE.EquirectangularReflectionMapping; t.minFilter = t.magFilter = THREE.LinearFilter; return t; }));
 
-export async function createPathTrace(vp, { pieces, cat, colorMode = 'piece', dark = true, spp = 512, maxSide = 1600, source = false, live = false } = {}) {
+export async function createPathTrace(vp, { pieces, cat, colorMode = 'piece', dark = true, spp = 512, maxSide = 1600, source = undefined, viewMode = undefined, live = false } = {}) {
   const cw = vp.el.clientWidth || 1000, ch = vp.el.clientHeight || 700, k = Math.min(2, maxSide / Math.max(cw, ch));
   const W = Math.max(2, Math.round(cw * k)), H = Math.max(2, Math.round(ch * k));
   const renderer = new THREE.WebGLRenderer({ antialias: false, preserveDrawingBuffer: true, powerPreference: 'high-performance' });
@@ -23,47 +23,186 @@ export async function createPathTrace(vp, { pieces, cat, colorMode = 'piece', da
   renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05; renderer.outputColorSpace = THREE.SRGBColorSpace;
   let pt = null, stop = false;
   try {
-    let flat, root;
-    if (source) {                                       // the source mesh as shown (per-corner linear colours already in its colour attribute)
-      const sm = vp.src.children.find((c) => c.isMesh); if (!sm) throw new Error('no mesh to render');
-      const pos = sm.geometry.getAttribute('position'), col = sm.geometry.getAttribute('color'), n = pos.count, c4 = new Float32Array(n * 4);
-      for (let i = 0; i < n; i++) { c4[i * 4] = col ? col.getX(i) : 0.7; c4[i * 4 + 1] = col ? col.getY(i) : 0.7; c4[i * 4 + 2] = col ? col.getZ(i) : 0.7; c4[i * 4 + 3] = 1; }
-      flat = new THREE.BufferGeometry(); flat.setAttribute('position', new THREE.BufferAttribute(new Float32Array(pos.array), 3)); flat.setAttribute('color', new THREE.BufferAttribute(c4, 4));
-      root = vp.src;
-    } else {
-      const m = buildMesh(pieces, cat, colorMode);
-      const g = new THREE.BufferGeometry();
-      g.setAttribute('position', new THREE.BufferAttribute(m.pos, 3)); g.setIndex(new THREE.BufferAttribute(m.idx, 1));
-      const lin = new Float32Array(m.col.length), lut = new Float32Array(256); for (let x = 0; x < 256; x++) lut[x] = s2l(x / 255);
-      for (let i = 0; i < lin.length; i++) lin[i] = lut[m.col[i]];
-      flat = g.toNonIndexed(); g.dispose();
-      const out = new Float32Array(flat.getAttribute('position').count * 4), idx = m.idx;     // RGBA like every other mesh in the scene; colours follow the indexing
-      for (let i = 0; i < idx.length; i++) { out[i * 4] = lin[idx[i] * 3]; out[i * 4 + 1] = lin[idx[i] * 3 + 1]; out[i * 4 + 2] = lin[idx[i] * 3 + 2]; out[i * 4 + 3] = 1; }
-      flat.setAttribute('color', new THREE.BufferAttribute(out, 4));
-      root = vp.lego;
-    }
-    flat.computeVertexNormals();
-    const mat = new THREE.MeshPhysicalMaterial({ vertexColors: true, roughness: 0.2, metalness: 0, clearcoat: 0.35, clearcoatRoughness: 0.1, side: THREE.DoubleSide });
-    const mesh = new THREE.Mesh(flat, mat);
-    root.updateMatrixWorld(true); mesh.applyMatrix4(root.matrixWorld); mesh.updateMatrixWorld(true);
-
     const scene = new THREE.Scene(); scene.background = new THREE.Color(dark ? 0x1e222b : 0xe9edf3);
-    scene.add(mesh);
-    // photo-studio cyclo: floor + wall of a filleted cylinder wider than the lights, three soft area lights, EXR studio environment
-    const size = Math.max(vp.W, vp.D, vp.H) / 20 || 20;
-    const cy = new THREE.Mesh(cycloGeometry(size), cycloMaterial(dark)); cy.position.y = -0.002; scene.add(cy);
-    const al = areaLights(size); scene.add(al.group);
+    const activeMeshes = [];
+
+    const hasSrcMesh = !!(vp.src && vp.src.children.some((c) => c.isMesh));
+    const curPieces = pieces && pieces.length > 0 ? pieces : (vp.visiblePieces ? vp.visiblePieces() : (vp.pieces || []));
+    const hasLegoMesh = !!(curPieces && curPieces.length > 0);
+
+    const effMode = viewMode || vp.mode || (source === true ? 'mesh' : (source === false ? 'lego' : 'both'));
+
+    let showSource = false;
+    let showLego = false;
+
+    if (source !== undefined && viewMode === undefined) {
+      showSource = !!source && hasSrcMesh;
+      showLego = !source && hasLegoMesh;
+    } else if (effMode === 'mesh') {
+      showSource = hasSrcMesh;
+    } else if (effMode === 'lego') {
+      showLego = hasLegoMesh;
+      if (!hasLegoMesh && hasSrcMesh) showSource = true;
+    } else if (effMode === 'both' || effMode === 'split') {
+      showSource = hasSrcMesh;
+      showLego = hasLegoMesh;
+    } else {
+      showSource = hasSrcMesh && (vp.src ? vp.src.visible : true);
+      showLego = hasLegoMesh && (vp.lego ? vp.lego.visible : true);
+    }
+
+    if (!showSource && !showLego) {
+      if (hasLegoMesh) showLego = true;
+      else if (hasSrcMesh) showSource = true;
+    }
+
+    if (showSource) {
+      const sm = vp.src.children.find((c) => c.isMesh);
+      if (sm) {
+        const pos = sm.geometry.getAttribute('position'), col = sm.geometry.getAttribute('color'), norm = sm.geometry.getAttribute('normal');
+        const n = pos.count, c4 = new Float32Array(n * 4);
+        for (let i = 0; i < n; i++) {
+          c4[i * 4] = col ? col.getX(i) : 0.7;
+          c4[i * 4 + 1] = col ? col.getY(i) : 0.7;
+          c4[i * 4 + 2] = col ? col.getZ(i) : 0.7;
+          c4[i * 4 + 3] = 1;
+        }
+        const flatSrc = new THREE.BufferGeometry();
+        flatSrc.setAttribute('position', new THREE.BufferAttribute(new Float32Array(pos.array), 3));
+        flatSrc.setAttribute('color', new THREE.BufferAttribute(c4, 4));
+        if (norm) {
+          flatSrc.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(norm.array), 3));
+        } else {
+          flatSrc.computeVertexNormals();
+        }
+
+        const isBoth = showLego && (effMode === 'both' || vp.mode === 'both');
+        const srcMat = isBoth
+          ? new THREE.MeshPhysicalMaterial({
+              vertexColors: true,
+              roughness: 0.25,
+              metalness: 0,
+              transmission: 0.6,
+              opacity: 0.5,
+              transparent: true,
+              ior: 1.3,
+              side: THREE.DoubleSide,
+            })
+          : new THREE.MeshPhysicalMaterial({
+              vertexColors: true,
+              roughness: 0.25,
+              metalness: 0,
+              clearcoat: 0.2,
+              clearcoatRoughness: 0.1,
+              side: THREE.DoubleSide,
+            });
+
+        const srcMesh = new THREE.Mesh(flatSrc, srcMat);
+        vp.src.updateMatrixWorld(true);
+        srcMesh.applyMatrix4(vp.src.matrixWorld);
+        srcMesh.updateMatrixWorld(true);
+        scene.add(srcMesh);
+        activeMeshes.push(srcMesh);
+      }
+    }
+
+    if (showLego) {
+      const m = buildMesh(curPieces, cat, colorMode);
+      const g = new THREE.BufferGeometry();
+      g.setAttribute('position', new THREE.BufferAttribute(m.pos, 3));
+      g.setIndex(new THREE.BufferAttribute(m.idx, 1));
+      const lin = new Float32Array(m.col.length), lut = new Float32Array(256);
+      for (let x = 0; x < 256; x++) lut[x] = s2l(x / 255);
+      for (let i = 0; i < lin.length; i++) lin[i] = lut[m.col[i]];
+      const flatLego = g.toNonIndexed();
+      g.dispose();
+      const out = new Float32Array(flatLego.getAttribute('position').count * 4), idx = m.idx;
+      for (let i = 0; i < idx.length; i++) {
+        out[i * 4] = lin[idx[i] * 3];
+        out[i * 4 + 1] = lin[idx[i] * 3 + 1];
+        out[i * 4 + 2] = lin[idx[i] * 3 + 2];
+        out[i * 4 + 3] = 1;
+      }
+      flatLego.setAttribute('color', new THREE.BufferAttribute(out, 4));
+      flatLego.computeVertexNormals();
+
+      const legoMat = new THREE.MeshPhysicalMaterial({
+        vertexColors: true,
+        roughness: 0.2,
+        metalness: 0,
+        clearcoat: 0.35,
+        clearcoatRoughness: 0.1,
+        side: THREE.DoubleSide,
+      });
+
+      const legoMesh = new THREE.Mesh(flatLego, legoMat);
+      vp.lego.updateMatrixWorld(true);
+      legoMesh.applyMatrix4(vp.lego.matrixWorld);
+      legoMesh.updateMatrixWorld(true);
+      scene.add(legoMesh);
+      activeMeshes.push(legoMesh);
+    }
+
+    if (!activeMeshes.length) throw new Error('No mesh to render');
+
+    // Union of the bounding boxes across all present models
+    const unionBox = new THREE.Box3();
+    for (const mesh of activeMeshes) {
+      const b = new THREE.Box3().setFromObject(mesh);
+      unionBox.union(b);
+    }
+
+    const unionSize = new THREE.Vector3();
+    unionBox.getSize(unionSize);
+    const unionCenter = new THREE.Vector3();
+    unionBox.getCenter(unionCenter);
+
+    // Photo-studio cyclo & area lights scaled and centered on the union bounding box
+    const maxDim = Math.max(unionSize.x, unionSize.y, unionSize.z, 20);
+    const size = maxDim * 1.2;
+    const floorY = Math.min(0, unionBox.min.y) - 0.002;
+
+    const cy = new THREE.Mesh(cycloGeometry(size), cycloMaterial(dark));
+    cy.position.set(unionCenter.x, floorY, unionCenter.z);
+    scene.add(cy);
+
+    const al = areaLights(size);
+    al.group.position.set(unionCenter.x, floorY, unionCenter.z);
+    scene.add(al.group);
+
     const env = await loadEnv(); scene.environment = env; scene.environmentIntensity = dark ? 0.3 : 0.45;
-    const cam = vp.camera.clone();                                  // own camera (live mode re-syncs it with the viewport camera on every move)
-    const P = flat.getAttribute('position'), step = Math.max(1, Math.floor(P.count / 200000)), tv = new THREE.Vector3();
+    const cam = vp.camera.clone(); // own camera (live mode re-syncs it with the viewport camera on every move)
+
+    const tv = new THREE.Vector3();
     const outH = live ? Math.min(1080, Math.round(ch * (window.devicePixelRatio || 1))) : 1080;
-    /** frame the picture on the projected bounding box of the model (x 1.25 for air): same camera, cropped with a view offset; output is `outH` px tall, width follows the box */
+    const corners = [
+      new THREE.Vector3(unionBox.min.x, unionBox.min.y, unionBox.min.z),
+      new THREE.Vector3(unionBox.max.x, unionBox.min.y, unionBox.min.z),
+      new THREE.Vector3(unionBox.min.x, unionBox.max.y, unionBox.min.z),
+      new THREE.Vector3(unionBox.max.x, unionBox.max.y, unionBox.min.z),
+      new THREE.Vector3(unionBox.min.x, unionBox.min.y, unionBox.max.z),
+      new THREE.Vector3(unionBox.max.x, unionBox.min.y, unionBox.max.z),
+      new THREE.Vector3(unionBox.min.x, unionBox.max.y, unionBox.max.z),
+      new THREE.Vector3(unionBox.max.x, unionBox.max.y, unionBox.max.z),
+    ];
+
+    /** frame the picture on the projected bounding box of the model(s) (x 1.25 for air): same camera, cropped with a view offset; output is `outH` px tall, width follows the box */
     const frame = () => {
       cam.copy(vp.camera); cam.clearViewOffset(); cam.aspect = cw / ch; cam.updateProjectionMatrix(); cam.updateMatrixWorld(true);
       let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
-      for (let i = 0; i < P.count; i += step) {
-        tv.fromBufferAttribute(P, i).applyMatrix4(mesh.matrixWorld).applyMatrix4(cam.matrixWorldInverse);
-        if (tv.z > -1e-3) continue;                                              // behind the camera
+      for (const m of activeMeshes) {
+        const P = m.geometry.getAttribute('position');
+        const step = Math.max(1, Math.floor(P.count / 100000));
+        for (let i = 0; i < P.count; i += step) {
+          tv.fromBufferAttribute(P, i).applyMatrix4(m.matrixWorld).applyMatrix4(cam.matrixWorldInverse);
+          if (tv.z > -1e-3) continue; // behind the camera
+          tv.applyMatrix4(cam.projectionMatrix);
+          if (tv.x < x0) x0 = tv.x; if (tv.x > x1) x1 = tv.x; if (tv.y < y0) y0 = tv.y; if (tv.y > y1) y1 = tv.y;
+        }
+      }
+      for (const pt of corners) {
+        tv.copy(pt).applyMatrix4(cam.matrixWorldInverse);
+        if (tv.z > -1e-3) continue;
         tv.applyMatrix4(cam.projectionMatrix);
         if (tv.x < x0) x0 = tv.x; if (tv.x > x1) x1 = tv.x; if (tv.y < y0) y0 = tv.y; if (tv.y > y1) y1 = tv.y;
       }
@@ -80,7 +219,7 @@ export async function createPathTrace(vp, { pieces, cat, colorMode = 'piece', da
     pt.bounces = 4; pt.filterGlossyFactor = 0.5; pt.tiles.set(2, 2); pt.renderScale = 1;
     pt.setScene(scene, cam);
     const cv = renderer.domElement; let host = cv;
-    if (live) {                                                    // a backdrop in the stage colour hides the paused viewport; the framed picture sits centred on it
+    if (live) { // a backdrop in the stage colour hides the paused viewport; the framed picture sits centred on it
       host = document.createElement('div'); host.style.cssText = `position:absolute;inset:0;z-index:2;pointer-events:none;display:flex;align-items:center;justify-content:center;background:${dark ? '#1e222b' : '#e9edf3'}`;
       cv.style.cssText = 'max-width:100%;max-height:100%;object-fit:contain'; host.appendChild(cv);
     } else cv.style.cssText = 'max-width:100%;max-height:72vh;display:block;margin:0 auto;border-radius:6px';
@@ -120,7 +259,18 @@ export async function createPathTrace(vp, { pieces, cat, colorMode = 'piece', da
       reset() { if (dof) { dof.dispose(); dof = null; } try { frame(); pt.updateCamera ? pt.updateCamera() : pt.reset(); } catch { pt.reset(); } },
       url: () => cv.toDataURL('image/png'),
       stop() { stop = true; },
-      dispose() { stop = true; if (dof) { dof.dispose(); dof = null; } try { if (pt) { if (!pt._renderQuad && pt._quad) pt._renderQuad = pt._quad; pt.dispose(); } } catch {} renderer.dispose(); if (host.parentNode) host.parentNode.removeChild(host); },
+      dispose() {
+        stop = true;
+        if (dof) { dof.dispose(); dof = null; }
+        try { if (pt) { if (!pt._renderQuad && pt._quad) pt._renderQuad = pt._quad; pt.dispose(); } } catch {}
+        renderer.dispose();
+        if (cy) { cy.geometry.dispose(); if (cy.material) cy.material.dispose(); }
+        for (const m of activeMeshes) {
+          if (m.geometry) m.geometry.dispose();
+          if (m.material) m.material.dispose();
+        }
+        if (host.parentNode) host.parentNode.removeChild(host);
+      },
     };
     return job;
   } catch (e) { renderer.dispose(); throw e; }

@@ -423,11 +423,11 @@ function StudioInner() {
   useEffect(() => { if (!pt) return; const f = (e) => e.key === 'Escape' && closePt(); window.addEventListener('keydown', f); return () => window.removeEventListener('keydown', f); }, [!!pt]); // eslint-disable-line
   const png = async () => {
     if (!model) return;
-    const source = !res || viewMode === 'mesh';                                       // what is on screen is what gets traced
     sfx.click(); const spp = snapSpp; setPtView({ z: 1, x: 0, y: 0 }); setPt({ n: 0, spp, status: 'running' });
     try {
       const { createPathTrace } = await import('./studio/pathtrace.js');
-      const job = await createPathTrace(vp.current, { pieces: res ? res.pieces : [], cat: FULL_CATALOG, colorMode, dark, spp, source }); ptJob.current = job;
+      const pieces = res ? (vp.current?.visiblePieces() || res.pieces) : [];
+      const job = await createPathTrace(vp.current, { pieces, cat: FULL_CATALOG, colorMode, dark, spp, viewMode }); ptJob.current = job;
       for (let i = 0; i < 50 && !ptHost.current; i++) await new Promise((r) => setTimeout(r, 20));
       setPt((o) => o && { ...o, ar: job.canvas.width / job.canvas.height });
       for (let i = 0; i < 50 && !ptHost.current; i++) await new Promise((r) => setTimeout(r, 20));
