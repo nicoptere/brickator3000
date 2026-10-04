@@ -115,3 +115,27 @@ Performance: post passes dominated; packed-number keys etc. gave 7-15x, bit-iden
   round-trips duck@24 with 1,355 pieces incl. 61 sideways, 0 differences. Both need `LDRAW=<ldraw dir | complete.zip>`.
 - Next, by leverage: side-stud contact in `post.link` (so a sideways part can use any host in the model, not only a mined one);
   more catalogue coverage (31.5 % of OMR placements are still unexpressible parts); face context (air/solid) in the motif score.
+
+## 8. Branch `siren` (2026-10-04): grain, the lattice, implicit fields. Full write-up: `docs/IMPLICIT.md`
+- **The "parasitic noise on flat surfaces" is mostly the grid, not the mesh.** A planar face at a fractional stud / plate position
+  becomes a layer of partial cells; the fill phase's `max_err` refuses big parts over it; `C-relaxed` / `E-thin` plate it with 1x1s.
+  Translating the clean synthetic house by 1-4 LDU: +60 % pieces, -6 IoU. Real models get their planes at arbitrary positions
+  because the scale comes from the bounding box (beak, tail), not the planes.
+- **Fix, on by default: `gridAlign` (grid.latticeFit)** - scale within `alignTol` 5 % and x/z shifts maximising the lattice
+  resultant of the planar face area per axis (stud period in x/z, plate in y with the ground as anchor). Chair .872 -> .922 (-9 %
+  pieces, recall .961 -> .986), table .690 -> .789, duck/dolphin/rafs5 +1..3 pts with fewer pieces; be2 (no planes) -1.5 pt, so the
+  scale only moves when the score gains `alignMinGain` 0.15. **This means "48 studs" may become 46-50.**
+- New, opt-in: `meshSmooth` (Taubin, `smooth.js`: helps baked assets, rounds crisp ones); `field: 'sdf'` (`sdf.js`: exact SDF in a
+  band, `sdfMedian` / `sdfSigma` filters, ~100x slower than rays; the median erases thin features - struts); `sdfGrid` loads a grid
+  from `claude/siren/fit_siren.py` (SIREN on the 4090, omega0 = bandwidth; `--fit none` for the raw SDF), resampled in 0.26 s.
+- **Rule that cost a day to find: the field must be voxelised exactly like the part templates** (span fraction in y from zero
+  crossings, point sample in x/z -> `grid.spansToLevels`, shared by rays and SDF). Any other quantisation (anti-aliased ramp, crisp
+  cube centres) mismatches slopes systematically and the solver reads it as error.
+- Measured negative, kept off: `fieldCascade` (blurred field for the broad phases: IoU .917 -> .758, overfill x7), ray supersampling,
+  per-cell signed residuals in the solver (rounds explode).
+- Tests: `test/noise_bench.mjs house 12 0,1,2,4` (synthetic watertight house + Gaussian grain, graded against the CLEAN field in
+  the same frame - both of those were bugs in the first versions of the bench), `test/field_bench.mjs` (real models, variants via
+  VARIANTS=, external grid via GRID=). HF `DylanRiden/sets_lego_omr_full` = subset of our OMR gallery (1,367 vs 1,470 sets) + theme/year.
+- **The paper**: `docs/BRICKATOR.pdf` (16 pages, 26 figures), sources and the whole figure pipeline in `claude/paper/`
+  (`export_scenes.mjs` -> `figures.py` -> `pdflatex`; `ldraw_mesh.py` is a standalone LDraw -> triangles reader, `render.html` +
+  `shoot.py` a three.js/Playwright still renderer that works for any scene JSON). Rebuild instructions in `claude/paper/README.md`.

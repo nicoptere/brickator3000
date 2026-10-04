@@ -1,0 +1,64 @@
+<!doctype html>
+<!-- Figure renderer for the paper: loads ?scene=<name>.json (triangle soups + colours, engine frame Y up, LDU), fits the camera, draws
+     flat-shaded faces with feature edges, and signals readiness with window.__ready. Driven by shoot.py through Playwright.
+     Scene JSON: { groups: [{ pos: [x,y,z,...], col: [r,g,b] | [r,g,b,...per vertex], opacity? }], edges?: true, view?: 'iso'|'front'|'side'|'top'|'iso2',
+                   bg?: '#fff', zoom?: 1, ortho?: false, grid?: {size, step} } -->
+<html><head><meta charset="utf-8"><style>html,body{margin:0;background:#fff;overflow:hidden}canvas{display:block}</style></head>
+<body>
+<script type="importmap">{ "imports": { "three": "./node_modules/three/build/three.module.js" } }</script>
+<script type="module">
+import * as THREE from 'three';
+const q = new URLSearchParams(location.search), W = +(q.get('w') || 1400), H = +(q.get('h') || 1000);
+const scene = await (await fetch('scenes/' + q.get('scene'))).json();
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true, alpha: true });
+renderer.setSize(W, H); renderer.setPixelRatio(1); renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+document.body.appendChild(renderer.domElement);
+const S = new THREE.Scene(); S.background = scene.bg === 'none' ? null : new THREE.Color(scene.bg || '#ffffff');
+const root = new THREE.Group(); S.add(root);
+const box = new THREE.Box3();
+for (const g of scene.groups) {
+  const pos = new Float32Array(g.pos), geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  let col;
+  if (g.col.length === 3) { col = new Float32Array(pos.length); for (let i = 0; i < pos.length; i += 3) { col[i] = g.col[0]; col[i + 1] = g.col[1]; col[i + 2] = g.col[2]; } }
+  else col = new Float32Array(g.col);
+  geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  geo.computeVertexNormals();
+  const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.75, metalness: 0.0, side: THREE.DoubleSide, flatShading: true, transparent: g.opacity !== undefined && g.opacity < 1, opacity: g.opacity ?? 1 });
+  const mesh = new THREE.Mesh(geo, mat); mesh.castShadow = true; mesh.receiveShadow = true; root.add(mesh);
+  if (scene.edges !== false && !g.noEdges) {
+    const eg = new THREE.EdgesGeometry(geo, g.edgeAngle ?? 25);
+    root.add(new THREE.LineSegments(eg, new THREE.LineBasicMaterial({ color: g.edgeColor || '#1a1a1a', transparent: true, opacity: g.edgeOpacity ?? 0.55 })));
+  }
+  geo.computeBoundingBox(); box.union(geo.boundingBox);
+}
+const size = new THREE.Vector3(), ctr = new THREE.Vector3(); box.getSize(size); box.getCenter(ctr);
+const R = Math.max(size.x, size.y, size.z);
+// ground + grid
+if (scene.grid !== false) {
+  const gsize = Math.ceil(R * 1.6 / 20) * 20, step = scene.grid?.step || 20;
+  const grid = new THREE.GridHelper(gsize, gsize / step, 0xc8c8c8, 0xe6e6e6); grid.position.set(ctr.x, box.min.y - 0.5, ctr.z); S.add(grid);
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(gsize * 3, gsize * 3), new THREE.ShadowMaterial({ opacity: 0.18 }));
+  ground.rotation.x = -Math.PI / 2; ground.position.set(ctr.x, box.min.y - 0.6, ctr.z); ground.receiveShadow = true; S.add(ground);
+}
+S.add(new THREE.HemisphereLight(0xffffff, 0x8899aa, 0.9));
+const sun = new THREE.DirectionalLight(0xffffff, 1.6); sun.position.set(ctr.x + R, ctr.y + R * 1.4, ctr.z + R * 0.6); sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048); const sc = sun.shadow.camera; sc.left = sc.bottom = -R; sc.right = sc.top = R; sc.near = 1; sc.far = R * 6; sun.target.position.copy(ctr); S.add(sun); S.add(sun.target);
+S.add(new THREE.DirectionalLight(0xffffff, 0.35).translateX(-R).translateY(R * 0.3).translateZ(-R));
+const views = { iso: [1, 0.75, 1], iso2: [-1, 0.7, 1], front: [0, 0.15, 1], side: [1, 0.15, 0], top: [0.02, 1, 0.02], low: [1, 0.3, 1] };
+const dir = new THREE.Vector3(...(views[scene.view || 'iso'])).normalize();
+let camera; const rs = size.length() / 2 * 1.04 / (scene.zoom || 1), fov = scene.fov || 28;
+if (scene.ortho) {
+  const a = W / H, half = rs;
+  camera = new THREE.OrthographicCamera(-half * a, half * a, half, -half, 1, R * 10);
+  camera.position.copy(ctr).addScaledVector(dir, R * 3);
+} else {
+  camera = new THREE.PerspectiveCamera(fov, W / H, 1, R * 20);
+  const vfit = rs / Math.sin(fov / 2 * Math.PI / 180), hfit = rs / Math.sin(Math.atan(Math.tan(fov / 2 * Math.PI / 180) * W / H));
+  camera.position.copy(ctr).addScaledVector(dir, Math.max(vfit, hfit));
+}
+camera.lookAt(ctr);
+renderer.render(S, camera);
+window.__ready = true;
+</script>
+</body></html>

@@ -20,6 +20,18 @@ export const DEFAULTS = {
   fieldSmooth: 0,            // 0..1: blend a cell with its 4 lateral neighbours where the neighbourhood is sparse (thin struts).
                              // Helps strut-heavy models (aircraft) and hurts dense ones, so it is opt-in; see docs/MOTIFS.md
   fieldSmoothThin: 0.5,      // only cells whose lateral neighbour mean is <= this are smoothed
+  gridAlign: true,           // snap the model to the LEGO lattice: scale within +-alignTol and x/z shifts so the dominant planar faces sit on stud / plate boundaries (grid.latticeFit)
+  alignTol: 0.05,            // how far from "longest side = N studs" the lattice fit may scale (5 % = N +- 2.4 studs at 48)
+  alignMinGain: 0.15,        // the lattice score must improve by this much over the default scale before the scale is changed (shifts always apply)
+  field: 'rays',             // 'rays' = one vertical ray per 4-LDU cell (the method so far) | 'sdf' = signed distance field (sdf.js)
+  sdfSigma: 0,               // LDU: Gaussian on the SDF before occupancy; denoises grain but rounds creases by ~sigma; 0 = off
+  sdfMedian: 0,              // cells: radius of a median filter on the SDF (edge-preserving denoise, 1 = 3x3x3); applied before the Gaussian
+  sdfBand: 2,                // cells: exact distances this far from the surface, clamped beyond (occupancy only needs ~1)
+  sdfRamp: 0,                // LDU: 0 = occupancy from the SDF's zero crossings, quantised like the ray field (matches the part templates); > 0 = anti-aliased cube ramp
+  fieldCascade: false,       // broad phases (motifs, round, skin, fill) see a coarse field, the detail phases the sharp one (run.js)
+  cascadeSigma: 6,           // LDU: the coarse field's Gaussian (needs field: 'sdf')
+  meshSmooth: 0,             // Taubin lambda|mu iterations on the welded mesh before anything else (smooth.js); rounds creases, so opt-in
+  meshLambda: 0.5, meshMu: -0.53,
   surfaceSamples: 200000,
   seed: 1,
   // grid phase search

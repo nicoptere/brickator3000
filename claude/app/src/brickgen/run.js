@@ -9,6 +9,10 @@ import { motifVariants } from '../motifs/library.js';
 export function solve(pre, cat, ox, oz, o, log = () => {}) {
   const win = window(pre, ox, oz); let M = win.arr; const nxc = win.nxc, nzc = win.nzc, nl = pre.nl;
   const NZ = nzc * G, NX = nxc * G;
+  // fieldCascade: the broad phases (motifs, rounds, skin, fill) see the coarse field - the SDF filtered harder - and the detail
+  // phases (relaxed, fallback, thin, tube) the sharp one; the solver swaps targets in between and keeps what it placed
+  const Msharp = o.fieldCascade && pre.Mcoarse ? M : null;
+  if (Msharp) M = window(pre, ox, oz, 'Mcoarse').arr;
   let mirror = null, plane = 0;
   if (pre.mirror) {
     const off = pre.mirror.ax === 0 ? ox : oz;
@@ -37,6 +41,7 @@ export function solve(pre, cat, ox, oz, o, log = () => {}) {
   const solid = S.attachMirrors(partVariants(cat, flat));
   S.runPhase(solid, withBonus(o.fillTol, tb), 'B-fill');
   if (o.fill2) S.runPhase(solid, withBonus(o.fill2Tol, tb), 'B2-fill');
+  if (Msharp) { S.setField(pre.mirror && o.symField !== false ? symmetrize(Msharp, nl, NZ, NX, pre.mirror.ax, plane) : Msharp); log('cascade: detail phases on the sharp field'); }
   if (o.relaxed) S.runPhase(S.attachMirrors(partVariants(cat, new Set(['plate', 'tile', 'brick'])).filter((v) => v.h === 1)), o.relaxedTol, 'C-relaxed');
   const one = S.attachMirrors(partVariants(cat, new Set(['plate'])).filter((v) => v.c.id === '3024'))[0];
   const any_ = { min_cov: 0, max_err: 1, piece_pen: 0 }, any = any_;

@@ -2,6 +2,7 @@
 import { DEFAULTS, STUD, PLATE } from './constants.js';
 import { surfaceSamples } from './mesh.js';
 import { prepare, normalize } from './grid.js';
+import { smoothModel } from './smooth.js';
 import { solve, metrics } from './run.js';
 import { mergePairs, vertical, horizontal, pillars, bracing, splice, bridge, supports, finish, untile, connectivity, retile } from './post.js';
 import { detectSymmetry } from './symmetry.js';
@@ -31,6 +32,7 @@ const now = () => (typeof performance !== 'undefined' ? performance.now() : Date
 export function setup(model, opts) {
   const o = { ...DEFAULTS, ...opts }, T = {};
   let t = now();
+  if (o.meshSmooth > 0) { model = smoothModel(model, o.meshSmooth, o.meshLambda, o.meshMu); T.smooth = now() - t; t = now(); }   // mesh pre-pass (smooth.js), before sampling and casting
   const smp = model.pts ? { pts: model.pts, cols: model.cols } : surfaceSamples(model.tris, model.vcols, o.surfaceSamples, o.seed);
   const m = { tris: model.tris, vcols: model.vcols, pts: smp.pts, cols: smp.cols };
   T.samples = now() - t; t = now();
@@ -108,7 +110,7 @@ export function finishJob(ctx, job, cat = catalogFor(ctx.o), log = () => {}) {
   const srcTris = normalize(m.tris, null, o.studs, off[0], off[1], o.ref).tris;
   return {
     pieces: S.pieces, dims: S.dims, offset: off, scale: nm.s, srcTris, srcCols: m.vcols,
-    metrics: { ...mt, ...con }, post, timing: T, islands: pre.islands, crust: pre.crust,
+    metrics: { ...mt, ...con }, post, timing: T, islands: pre.islands, crust: pre.crust, align: pre.align,
     symmetry: sym ? { axis: sym.axis, err: sym.err, used: symOk, parity: symOk ? par : null, plane: S.mirror ? S.mirror[1] : null, mirrored } : null,
   };
 }

@@ -25,6 +25,8 @@ export class Solver {
     this.pieces = []; this.o = opts; this.mirror = mirror; this.ver = 0; this.Iver = -1; this.log = () => {};
   }
   idx(l, z, x) { return (l * this.NZs + z) * this.NXs + x; }
+  /** swap the target field mid-solve (run.js fieldCascade): what was consumed stays consumed, the remainder is re-derived from the new field */
+  setField(M0) { this.M0 = M0.slice(); for (let k = 0; k < this.M.length; k++) this.M[k] = Math.min(1, Math.max(0, M0[k] - this.C[k])); this.ver++; }
 
   attachMirrors(variants) {
     if (!this.mirror) return variants;

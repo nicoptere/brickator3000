@@ -2,13 +2,14 @@
 import { STUD, PLATE, G, SAMP, PAD } from './constants.js';
 import { bounds } from './mesh.js';
 import { connectIslands, decimateFloaters } from './islands.js';
+import { buildSDF, occupancyFromSDF, blur3 } from './sdf.js';
 
 /** scale so the reference side = n studs; returns shifted copies (x += ox, z += oz) */
-export function normalize(tris, pts, n, ox, oz, ref = 'min3') {
+export function normalize(tris, pts, n, ox, oz, ref = 'min3', scale = null) {
   const { lo, hi } = bounds(tris);
   const ext = [hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]];
   const base = ref === 'min3' ? Math.min(ext[0], ext[1], ext[2]) : Math.max(ext[0], ext[2]);
-  const s = n * STUD / base;
+  const s = scale ?? n * STUD / base;
   const f = (a) => {
     const o = new Float32Array(a.length);
     for (let i = 0; i < a.length; i += 3) { o[i] = (a[i] - lo[0]) * s + ox; o[i + 1] = (a[i + 1] - lo[1]) * s; o[i + 2] = (a[i + 2] - lo[2]) * s + oz; }
@@ -96,7 +97,6 @@ export function spansVolume(tris, nxc, nzc, nl, o) {
   // one ray column at a time: its fill per level is clamped to 1 within that column, then averaged into the field cell
   // it belongs to (weight 1 / ss^2), so a cell is the area average of its rays instead of a single centre sample.
   const col = new Float32Array(nl), w = 1 / (ss * ss);
-  const add = (l, v) => { col[l] = Math.min(1, col[l] + v); };
   for (let c = 0; c < NXf * NZf; c++) {
     const a = start[c], b = start[c + 1]; if (a === b) continue;
     const izf = Math.floor(c / NXf), ixf = c % NXf;
@@ -109,46 +109,151 @@ export function spansVolume(tris, nxc, nzc, nl, o) {
     // `alt`/`first` above are kept only to report `bad` (diagnostic); they no longer gate which pairing rule is used.
     if (o.mode === 'hollow') { const m = b - a - ((b - a) % 2); for (let p = a; p < a + m; p += 2) pairs.push([Y[p], Y[p + 1]]); }
     else pairs.push([Y[a], Y[b - 1]]);
-    const merged = [];
-    for (const [lo, hi] of pairs) {
-      if (merged.length && lo - merged[merged.length - 1][1] < o.minGap) merged[merged.length - 1][1] = hi;
-      else merged.push([lo, hi]);
-    }
-    let lmin = nl, lmax = -1;
-    for (let k = 0; k < merged.length; k++) {
-      let [lo, hi] = merged[k];
-      if (k === 0 && (lo <= o.snap || b - a === 1)) lo = 0;
-      else if (o.minThick && hi - lo < 0.8 * PLATE) { lo = Math.floor((lo + hi) / 2 / PLATE) * PLATE; hi = lo + PLATE; }
-      const l0 = Math.max(0, Math.floor(lo / PLATE)), l1 = Math.min(nl - 1, Math.floor(hi / PLATE));
-      for (let l = l0; l <= l1; l++) {
-        const v = Math.max(0, Math.min(hi, (l + 1) * PLATE) - Math.max(lo, l * PLATE)) / PLATE;
-        if (v > 0) { add(l, v); if (l < lmin) lmin = l; if (l > lmax) lmax = l; }
-      }
-    }
+    const [lmin, lmax] = spansToLevels(pairs, b - a === 1, nl, o, col);
     for (let l = lmin; l <= lmax; l++) { M[(l * NZ + iz) * NX + ix] += col[l] * w; col[l] = 0; }
   }
   return { M, bad: 1 - valid };
 }
 
+/** solid intervals [lo, hi] (LDU, sorted) of one column -> fractional fill per plate level into `col` (clamped to 1; the caller
+ *  zeroes it). The same rules for every field source (rays, sdf.js): close air thinner than minGap, snap the first interval to the
+ *  ground when it is within `snap` of it (or when the column had a single hit), fatten sheets thinner than 0.8 plate to one plate.
+ *  Returns the [first, last] level touched. */
+export function spansToLevels(pairs, single, nl, o, col) {
+  const merged = [];
+  for (const [lo, hi] of pairs) {
+    if (merged.length && lo - merged[merged.length - 1][1] < o.minGap) merged[merged.length - 1][1] = hi;
+    else merged.push([lo, hi]);
+  }
+  let lmin = nl, lmax = -1;
+  for (let k = 0; k < merged.length; k++) {
+    let [lo, hi] = merged[k];
+    if (k === 0 && (lo <= o.snap || single)) lo = 0;
+    else if (o.minThick && hi - lo < 0.8 * PLATE) { lo = Math.floor((lo + hi) / 2 / PLATE) * PLATE; hi = lo + PLATE; }
+    const l0 = Math.max(0, Math.floor(lo / PLATE)), l1 = Math.min(nl - 1, Math.floor(hi / PLATE));
+    for (let l = l0; l <= l1; l++) {
+      const v = Math.max(0, Math.min(hi, (l + 1) * PLATE) - Math.max(lo, l * PLATE)) / PLATE;
+      if (v > 0) { col[l] = Math.min(1, col[l] + v); if (l < lmin) lmin = l; if (l > lmax) lmax = l; }
+    }
+  }
+  return [lmin, lmax];
+}
+
+/** The sub-cell phase of a model's axis-aligned faces along `axis`: the shift in [0, period) that puts the most face area onto a
+ *  grid boundary. Area-weighted histogram of the face centroids (faces whose normal is within ~25 deg of the axis) modulo `period`,
+ *  smoothed by one bin. A flat face sitting at a fractional offset is what the one-ray-per-cell field turns into a mosaic of partial
+ *  cells (test/noise_bench.mjs: 1 LDU of misalignment costs the clean house +60 % pieces) - the phase search in pipeline.setup only
+ *  steps by whole cells, this is the sub-cell part. Returns { shift, share } where share is the aligned area fraction. */
+export function alignShift(tris, s, lo, axis, period, bins = 16) {
+  const hist = new Float64Array(bins); let total = 0;
+  for (let t = 0; t < tris.length; t += 9) {
+    const ux = tris[t + 3] - tris[t], uy = tris[t + 4] - tris[t + 1], uz = tris[t + 5] - tris[t + 2];
+    const vx = tris[t + 6] - tris[t], vy = tris[t + 7] - tris[t + 1], vz = tris[t + 8] - tris[t + 2];
+    const nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx, a2 = Math.hypot(nx, ny, nz);
+    if (a2 === 0) continue;
+    const comp = axis === 0 ? nx : axis === 1 ? ny : nz;
+    if (Math.abs(comp) / a2 < 0.9) continue;
+    const c = ((tris[t + axis] + tris[t + 3 + axis] + tris[t + 6 + axis]) / 3 - lo[axis]) * s;      // normalised position of the face
+    const ph = ((c % period) + period) % period;
+    hist[Math.min(bins - 1, Math.floor(ph / period * bins))] += a2; total += a2;
+  }
+  if (!total) return { shift: 0, share: 0 };
+  let best = 0, bv = -1;
+  for (let b = 0; b < bins; b++) { const v = hist[(b + bins - 1) % bins] + 2 * hist[b] + hist[(b + 1) % bins]; if (v > bv) { bv = v; best = b; } }
+  // exact phase: area-weighted circular mean of the faces in the winning bin and its two neighbours (a bin centre would be up to
+  // half a bin off, and a shift of that size moves the stud phase too, which costs more than it saves)
+  let cs = 0, sn = 0;
+  for (let t = 0; t < tris.length; t += 9) {
+    const ux = tris[t + 3] - tris[t], uy = tris[t + 4] - tris[t + 1], uz = tris[t + 5] - tris[t + 2];
+    const vx = tris[t + 6] - tris[t], vy = tris[t + 7] - tris[t + 1], vz = tris[t + 8] - tris[t + 2];
+    const nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx, a2 = Math.hypot(nx, ny, nz);
+    if (a2 === 0 || Math.abs(axis === 0 ? nx : axis === 1 ? ny : nz) / a2 < 0.9) continue;
+    const c = ((tris[t + axis] + tris[t + 3 + axis] + tris[t + 6 + axis]) / 3 - lo[axis]) * s, ph = ((c % period) + period) % period;
+    const b = Math.min(bins - 1, Math.floor(ph / period * bins)), db = Math.min(Math.abs(b - best), bins - Math.abs(b - best));
+    if (db <= 1) { const ang = ph / period * 2 * Math.PI; cs += a2 * Math.cos(ang); sn += a2 * Math.sin(ang); }
+  }
+  const phase = ((Math.atan2(sn, cs) / (2 * Math.PI)) * period + period) % period;             // where the faces sit, in [0, period)
+  const shift = phase < period / 2 ? -phase : period - phase;                                 // the smallest move onto a boundary, in [-period/2, period/2)
+  return { shift, phase, share: hist[best] / total };
+}
+
+/** Fit the model to the LEGO lattice: the scale within +-tol of s0 (and, per axis, the shift) that puts the most planar face area on
+ *  stud boundaries in x / z and on plate boundaries in y. Score of a scale = sum over the three axes of the circular resultant
+ *  |sum a_f exp(2 pi i s p_f / period)| / sum a_f, which is 1 when every face of that axis is lattice-consistent and ~0 for random
+ *  positions; the shift per axis is then the phase of that resultant. A model's bounding box is usually set by a beak or a tail, not
+ *  by its dominant planes, so "longest side = N studs" leaves those planes at fractional positions - and a flat face at a fractional
+ *  plate height is exactly what the one-ray-per-cell field renders as a mosaic of partial plates (test/noise_bench.mjs). */
+export function latticeFit(tris, s0, lo, tol = 0.05, steps = 100, minGain = 0.1) {
+  // planar faces per axis: [position, area]
+  const faces = [[], [], []];
+  for (let t = 0; t < tris.length; t += 9) {
+    const ux = tris[t + 3] - tris[t], uy = tris[t + 4] - tris[t + 1], uz = tris[t + 5] - tris[t + 2];
+    const vx = tris[t + 6] - tris[t], vy = tris[t + 7] - tris[t + 1], vz = tris[t + 8] - tris[t + 2];
+    const n = [uy * vz - uz * vy, uz * vx - ux * vz, ux * vy - uy * vx], a2 = Math.hypot(n[0], n[1], n[2]);
+    if (a2 === 0) continue;
+    for (let ax = 0; ax < 3; ax++) if (Math.abs(n[ax]) / a2 >= 0.9) faces[ax].push([(tris[t + ax] + tris[t + 3 + ax] + tris[t + 6 + ax]) / 3 - lo[ax], a2]);
+  }
+  const period = [STUD, PLATE, STUD];
+  const resultant = (ax, s) => { let c = 0, sn = 0, tot = 0; for (const [p, a] of faces[ax]) { const ang = 2 * Math.PI * s * p / period[ax]; c += a * Math.cos(ang); sn += a * Math.sin(ang); tot += a; } return tot ? { r: Math.hypot(c, sn) / tot, phase: Math.atan2(sn, c) / (2 * Math.PI) * period[ax], tot } : { r: 0, phase: 0, tot: 0 }; };
+  const scoreAt = (s) => {
+    const rx = resultant(0, s), rz = resultant(2, s);
+    // y is anchored to the ground (the model stands on it), so only its scale can help: score the plate phase at shift 0, i.e. the
+    // real part of the resultant, instead of its magnitude
+    let cy = 0, ty = 0; for (const [p, a] of faces[1]) { cy += a * Math.cos(2 * Math.PI * s * p / PLATE); ty += a; }
+    return { s, score: rx.r + rz.r + (ty ? cy / ty : 0), rx, rz, ry: { r: ty ? cy / ty : 0 } };
+  };
+  const base = scoreAt(s0); let best = base;
+  for (let k = 0; k <= steps; k++) { const c = scoreAt(s0 * (1 - tol + 2 * tol * k / steps)); if (c.score > best.score) best = c; }
+  // do no harm: a model with few planar faces (an aircraft, an animal) scores ~0.3 everywhere and would be rescaled on noise; keep
+  // the default scale unless the lattice fit gains at least `minGain` (the x / z shifts at that scale are always applied: they
+  // never change the model, only where the grid sits)
+  if (best.score - base.score < minGain) best = base;
+  const shiftOf = (res) => { const ph = ((res.phase % STUD) + STUD) % STUD; return ph < STUD / 2 ? -ph : STUD - ph; };   // smallest move onto a boundary
+  return { s: best.s, s0, shift: [shiftOf(best.rx), shiftOf(best.rz)], score: best.score, score0: base.score, aligned: { x: best.rx.r, y: best.ry.r, z: best.rz.r }, faces: faces.map((f) => f.length) };
+}
+
 /** ray cast ONCE on a padded grid; grid phases are windows of it. sym = { ax: 0|2, plane, parity } aligns the mirror plane. */
 export function prepare(model, n, o, sym = null) {
-  const shift = [0, 0]; let mirror = null;
+  const shift = [0, 0]; let mirror = null, align = null;
+  const { lo, hi: hi0 } = bounds(model.tris);
+  const ext = [hi0[0] - lo[0], hi0[1] - lo[1], hi0[2] - lo[2]];
+  const s0 = n * STUD / (o.ref === 'min3' ? Math.min(...ext) : Math.max(ext[0], ext[2]));
+  let scale = null;
+  if (o.gridAlign && typeof o.gridAlign === 'object' && !Array.isArray(o.gridAlign)) { scale = o.gridAlign.s; shift[0] = o.gridAlign.shift[0]; shift[1] = o.gridAlign.shift[1]; align = { ...o.gridAlign, given: true }; }   // a frame decided elsewhere (tests: the same frame for two meshes)
+  else if (o.gridAlign) {
+    // snap the model to the LEGO lattice: a scale within +-alignTol of "longest side = N studs" and the smallest x / z shifts that
+    // put the dominant planar faces on stud boundaries (and the dominant horizontal faces on plate heights). The whole-sample phase
+    // search in pipeline.setup is then a refinement for models whose faces disagree; the mirror plane, when there is one, owns its axis
+    align = latticeFit(model.tris, s0, lo, o.alignTol ?? 0.05, 100, o.alignMinGain ?? 0.15);
+    scale = align.s;
+    if (!sym || sym.ax !== 0) shift[0] = align.shift[0];
+    if (!sym || sym.ax !== 2) shift[1] = align.shift[1];
+  }
   if (sym) {
-    const { lo, hi } = bounds(model.tris);
-    const ext = [hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]];
-    const s0 = n * STUD / (o.ref === 'min3' ? Math.min(...ext) : Math.max(ext[0], ext[2]));
-    const pn = (sym.plane - lo[sym.ax]) * s0 + PAD;
+    const pn = (sym.plane - lo[sym.ax]) * (scale ?? s0) + PAD;
     const target = sym.parity === 'even' ? 0 : STUD / 2;
     const sh = (((target - pn) % STUD) + STUD) % STUD;
     shift[sym.ax === 0 ? 0 : 1] = sh;
     mirror = { ax: sym.ax, planePadded: pn + sh, parity: sym.parity };
   }
-  const nm = normalize(model.tris, model.pts, n, PAD + shift[0], PAD + shift[1], o.ref);
+  const nm = normalize(model.tris, model.pts, n, PAD + shift[0], PAD + shift[1], o.ref, scale);
   const { hi } = bounds(nm.tris);
   const nxc = Math.ceil((hi[0] + PAD + STUD) / STUD), nzc = Math.ceil((hi[2] + PAD + STUD) / STUD);
   const nl = Math.ceil(hi[1] / PLATE) + 1;
   let { M, bad } = spansVolume(nm.tris, nxc, nzc, nl, o);
   const NX = nxc * G, NZ = nzc * G;
+  let sdf = null, Mcoarse = null;
+  if (o.field === 'sdf') {
+    // the shape as a signed distance field (sdf.js): occupancy follows from distance, continuously, and can be low-pass filtered
+    // without eroding thin features the way filtering occupancy does. `sdfSigma` LDU is the filter for the field the solver sees;
+    // `cascadeSigma` LDU a stronger one for the coarse field the broad phases see (run.js `fieldCascade`).
+    sdf = buildSDF(nm.tris, nxc, nzc, nl, o, { s: nm.s, lo: nm.lo, ox: PAD + shift[0], oz: PAD + shift[1] });
+    M = occupancyFromSDF(sdf.d, sdf.NX, sdf.NY, sdf.NZ, nl, o, o.sdfRamp ?? 0);
+    if (o.fieldCascade && o.cascadeSigma > 0) {
+      const dc = blur3(sdf.d.slice(), sdf.NX, sdf.NY, sdf.NZ, o.cascadeSigma / SAMP);
+      Mcoarse = occupancyFromSDF(dc, sdf.NX, sdf.NY, sdf.NZ, nl, o, o.sdfRamp ?? 0);
+    }
+  }
   if (o.fieldSmooth) M = smoothField(M, nl, NZ, NX, o.fieldSmooth, o.fieldSmoothThin ?? 0.5);
   const P = new Uint16Array(M.length);            // surface-point splat (thin features thinner than the ray spacing)
   for (let k = 0; k < nm.pts.length; k += 3) {
@@ -161,7 +266,7 @@ export function prepare(model, n, o, sym = null) {
   let T = null, islands = null;
   if (o.islands) { const r = connectIslands(M, P, nl, NZ, NX, o); T = r.T; islands = r.stats; }
   else if (o.decimate ?? true) { islands = decimateFloaters(M, P, nl, NZ, NX, o).stats; }
-  return { M, Mfull, P, T, islands, crust, nl, NX, NZ, ext0: [hi[0] - PAD, hi[1], hi[2] - PAD], s: nm.s, bad, shift, mirror };
+  return { M, Mfull, Mcoarse, sdf, P, T, islands, crust, nl, NX, NZ, ext0: [hi[0] - PAD, hi[1], hi[2] - PAD], s: nm.s, lo: nm.lo, bad, shift, mirror, align };
 }
 
 /** crop of the padded field for grid phase (ox, oz) */
