@@ -195,7 +195,15 @@ export class Solver {
     }
     this.ver++;
     if (v.parts) {                       // compound variant (motifs/library.js): the field update above used its union volume; record its real pieces
-      for (const q of v.parts) { const u = q.v, share = u.vtot / v.vtot; this.pieces.push({ id: u.c.id, name: u.c.name, kind: u.c.kind, rot: u.rot, b: b + q.db, i: i + q.di, j: j + q.dj, w: u.w, d: u.d, h: u.h, studs: u.studs.map((s) => s.slice()), phase, matched: ov * share, over: over * share, motif: v.c.id }); }
+      const mi = this.mi = (this.mi || 0) + 1;                                  // one motif placement = one rigid assembly (post.components)
+      // an assembly with a sideways part only holds together as mined: the side studs that carry that part belong to another
+      // piece of the SAME assembly, so none of its pieces may be merged away afterwards (post.free)
+      const rigid = v.parts.some((q) => q.v.ori >= 4);
+      for (const q of v.parts) {
+        const u = q.v, share = u.vtot / v.vtot;
+        this.pieces.push({ id: u.c.id, name: u.c.name, kind: u.c.kind, rot: u.rot, ori: u.ori, b: b + q.db, i: i + q.di, j: j + q.dj, w: u.w, d: u.d, h: u.h,
+          studs: q.studs.map((s) => s.slice()), phase, matched: ov * share, over: over * share, motif: v.c.id, mi, ...(u.ori >= 4 ? { snot: true } : {}), ...(rigid ? { rigid: true } : {}) });
+      }
       return;
     }
     this.pieces.push({ id: v.c.id, name: v.c.name, kind: v.c.kind, rot: v.rot, b, i, j, w: v.w, d: v.d, h: v.h, studs: v.studs.map((s) => s.slice()), phase, matched: ov, over });

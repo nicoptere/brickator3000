@@ -100,7 +100,8 @@ export class PathTracerStudioEngine {
     const floorMat = new THREE.MeshStandardMaterial({
       color: 0x181e2b,
       roughness: 0.35,
-      metalness: 0.05
+      metalness: 0.05,
+      side: THREE.DoubleSide
     });
     this.floorPlane = new THREE.Mesh(floorGeo, floorMat);
     this.floorPlane.rotation.x = -Math.PI / 2;
@@ -296,7 +297,8 @@ export class PathTracerStudioEngine {
       color: hasVertexColors ? 0xffffff : materialColor,
       vertexColors: hasVertexColors,
       roughness: 0.25,
-      metalness: 0.05
+      metalness: 0.05,
+      side: THREE.DoubleSide
     });
 
     const mesh = new THREE.Mesh(geometry, mat);

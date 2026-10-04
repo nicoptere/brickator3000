@@ -69,4 +69,49 @@ Performance: post passes dominated; packed-number keys etc. gave 7-15x, bit-iden
   `node tools/mine_motifs.mjs --omr ../../docs/omr_gallery --ldraw ~/Downloads/complete.zip` (10 min).
 - Export bug fixed: analytic rectangular parts were a quarter turn off in the LDR (`toLDR`), 49307 two plates low. `test/roundtrip.mjs` = 0 differences now.
 - Viewer: `claude/app/view.html` (python3 -m http.server in claude/app; ?a=scene&b=scene from test/motifs_stills.mjs). Studio card has a 'Motifs' quick toggle.
-- Open: motif scoring is still a first guess (per-part penalty, bonus .2 + .1 log2(sets)); results in `docs/MOTIFS.md`. SNOT connectors: design in `docs/MOTIFS.md`.
+- Open: motif scoring is still a first guess (per-part penalty, bonus .1 + .05 log2(sets)); results in `docs/MOTIFS.md`.
+
+## 7. Round 3 (branch `next`, 2026-10-04) — shapes, SNOT, poles. Full write-up: `docs/MOTIFS.md`
+- **Shape catalogue**: `claude/generator/lego_catalog_shapes.py` -> `src/brickgen/catalog_shapes.js`, 45 parts as `cover` occupancy
+  (arches, panels, dishes, corner/triangular tiles, curved-top bricks, inverted slopes) + 10 side-stud connectors. **Motif-only**
+  (`noSolo`): as solo candidates they cost 6-15 % more pieces at equal IoU, so `shapeParts` defaults false. Trap: `lego_catalog.py`'s
+  parser only counted a stud when the stud primitive file was *missing*, so with the real library every height came out 4 LDU too
+  tall; the shapes script has its own `walk()` that always treats `stud*.dat` as a stud.
+- **SNOT works end to end** and is on by default (`motifSnot`). New `src/motifs/orient.js` (24 orientations, `orientPart`,
+  `fineVolume`) is the single source of truth shared by `placements.js` (read), `library.js` (rasterise) and `export.js` (write).
+  Sideways pieces carry fractional `i`/`j` (0.2 stud) and `b` (0.5 plate). Mine: 978 models -> 14,087 motifs, 789 with a sideways
+  part -> 286 sideways compound variants live.
+  Three invariants, each found by measurement — see MOTIFS.md: (1) a sideways motif must contain its own **side-stud host**
+  (`library.js HOST`), or its pieces float; (2) such an assembly is **rigid** — no merge/re-cut/flatten pass may touch any of its
+  pieces (`post.free(p) = !p.snot && !p.rigid`; `mergePairs` was the last leak, it filtered the partner but not the first piece);
+  (3) the repair passes treat a sideways piece as **occupancy only** (`acceptsStuds`, `bridge`'s flatten, and `bracing`'s obstacle
+  grid widened to every cell the box touches). Without (3), post-processing emitted upright plates at `b = 5.5` and crashed `retile`.
+  Gains at 24 studs, extended: recall +0.5…0.7 pt on every model that uses them, IoU +0.010 chair / +0.009 duck, components unchanged
+  or better; cost is pieces (the standing motif trade-off).
+- **Periodic stretch: negative result.** `src/motifs/periodic.js` mines fine but wrecks connectivity (1 -> 25-57 components in every
+  configuration, bigger repair budgets do not help): a stretched motif is a plausible shape that was never a real assembly.
+  `motifStretch` defaults false.
+- **Vertical poles — the mirror-symmetry mystery, solved.** The user saw clean round-brick struts with symmetry on and broken ones
+  with it off. Ablating symmetry into its three parts (`symField` / `symTwins` now exist for this) showed the help came only from
+  averaging the volume field with its mirror; the twins hurt. But the real cause is in `post.pillars`: a column becomes round bricks
+  only if the 8-cell ring is empty **at every level**, so ONE stray neighbour rejected the whole stack — on be2@48, 52 of 56
+  candidates were rejected and all 52 by that test, many blocked at a single level of a 8-16 level run. Two unconditional fixes:
+  split a run at its blocked levels and convert each clear stretch, and stop treating an adjacent 1x1 column as a wall
+  (`pillarCluster 2` = pairs and rows allowed, wider footprints still veto). Pole completion with symmetry **off** 49 % -> 83 %,
+  IoU unchanged everywhere, pieces +2.6 % worst case. Symmetry stays optional and also improved (70 % -> 92 %).
+  Two plausible-sounding fixes that were measured and rejected: supersampling the ray cast (`superSample`, now an option, default 1 —
+  more exact, slightly worse, because every coverage threshold is tuned for point sampling) and lateral field smoothing
+  (`fieldSmooth`, default 0 — big win on strut-heavy aircraft, costs fidelity on dense models because a crust shell is sparse
+  everywhere).
+- **Trap the connectors exposed (fixed)**: `post.vertical` chose the brick for a 3-plate merge with a *last-wins* map over the whole
+  catalogue, so the round-3 connectors (appended last) won the keys: `4733` for 1x1, `11211` for 1x2, `30414` for 1x4. Every such
+  merge became a side-stud connector holding nothing (26 on be2@48, 43 on chair@32). `noSolo` was only honoured in
+  `variants.partVariants`, never in the post passes. Fix: that lookup now goes through `shapes(cat, kind)`, which filters
+  `source === 'analytic' && !noSolo` — **every footprint lookup in post.js must go through it**. Metrics byte-identical before/after,
+  so the substitution bought nothing. Related, still open by design: `technic: true` (default) gives Technic bricks a flat `+0.02`
+  bonus in the fill phases, and `3700`/`3701`/… are identical boxes with identical studs to `3004`/`3010`/… — they win those ties for
+  free, and turning the toggle off changes IoU/recall by exactly nothing.
+- **Tests**: `test/roundtrip_snot.mjs` (12 parts x 24 orientations, 288/288), `test/roundtrip.mjs` now passes `{ snot: true }` and
+  round-trips duck@24 with 1,355 pieces incl. 61 sideways, 0 differences. Both need `LDRAW=<ldraw dir | complete.zip>`.
+- Next, by leverage: side-stud contact in `post.link` (so a sideways part can use any host in the model, not only a mined one);
+  more catalogue coverage (31.5 % of OMR placements are still unexpressible parts); face context (air/solid) in the motif score.

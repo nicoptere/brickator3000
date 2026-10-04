@@ -51,6 +51,7 @@ export class StudioViewport {
     this.src = new THREE.Group(); this.lego = new THREE.Group(); this.world.add(this.src, this.lego);
     this.gradient = toonGradient(4);
     this.toon = new THREE.MeshToonMaterial({ gradientMap: this.gradient, color: 0xffffff, side: THREE.DoubleSide });
+    this.studMat = new THREE.MeshToonMaterial({ gradientMap: this.gradient, color: 0xffffff, side: THREE.DoubleSide });
     this.hullThick = 1; this.hulls = [];
     this.hullMat = new THREE.MeshBasicMaterial({ color: 0x05070a, side: THREE.BackSide });
     this.hullMat.onBeforeCompile = (sh) => {            // inverted hull: back faces, pushed out along the smoothed normal, drawn black behind the coloured front faces
@@ -58,11 +59,51 @@ export class StudioViewport {
       sh.vertexShader = 'attribute vec3 aSmooth;\nuniform float uThick;\n' + sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\ntransformed += normalize(aSmooth) * uThick;');
     };
     this.dark = true;
+    this.smooth = true;
     this.mode = 'lego'; this.outline = true; this.colorMode = 'piece'; this.active = new Map(); this.pieces = null; this.revealed = 0; this.W = 20 * 16; this.D = 20 * 16; this.H = 0;
     this.ray = new THREE.Raycaster(); this.mouse = new THREE.Vector2();
+    this.islandLabels = null; this.selectedIsland = null; this.onSelectIsland = null;
+    let downPos = null;
+    const dom = this.renderer.domElement;
+    dom.addEventListener('pointerdown', (e) => { downPos = { x: e.clientX, y: e.clientY, t: performance.now() }; });
+    dom.addEventListener('pointerup', (e) => {
+      if (!downPos) return;
+      const dist = Math.hypot(e.clientX - downPos.x, e.clientY - downPos.y), dt = performance.now() - downPos.t;
+      downPos = null;
+      if (dist > 5 || dt > 450) return;
+      this.handlePointerClick(e);
+    });
+    dom.addEventListener('pointermove', (e) => this.handlePointerHover(e));
     this.ro = new ResizeObserver(() => this.resize()); this.ro.observe(el); this.resize();
     this.frames = 0; this.t0 = performance.now(); this.fps = 0;
     this.loop = this.loop.bind(this); this.raf = requestAnimationFrame(this.loop);
+  }
+  handlePointerHover(e) {
+    if (!this.srcMesh || !this.src.visible || this.colorMode !== 'islands') {
+      if (this.renderer.domElement.style.cursor === 'pointer') this.renderer.domElement.style.cursor = '';
+      return;
+    }
+    const rect = this.renderer.domElement.getBoundingClientRect();
+    this.mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    this.mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+    this.ray.setFromCamera(this.mouse, this.camera);
+    const hits = this.ray.intersectObject(this.srcMesh, false);
+    this.renderer.domElement.style.cursor = hits.length > 0 && typeof hits[0].faceIndex === 'number' ? 'pointer' : '';
+  }
+  handlePointerClick(e) {
+    if (!this.srcMesh || !this.src.visible) return;
+    const rect = this.renderer.domElement.getBoundingClientRect();
+    this.mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    this.mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+    this.ray.setFromCamera(this.mouse, this.camera);
+    const hits = this.ray.intersectObject(this.srcMesh, false);
+    if (hits.length > 0 && typeof hits[0].faceIndex === 'number') {
+      const faceIndex = hits[0].faceIndex;
+      const islandId = this.islandLabels ? this.islandLabels[faceIndex] : null;
+      this.onSelectIsland && this.onSelectIsland(islandId, faceIndex);
+    } else {
+      this.onSelectIsland && this.onSelectIsland(null);
+    }
   }
   setHullThickness(t) { this.hullThick = t; if (this.hullShader) this.hullShader.uniforms.uThick.value = t; }
   setTheme(dark) {
@@ -71,8 +112,8 @@ export class StudioViewport {
     this.cyclo.material.color.set(dark ? 0x2b303b : 0xd9dde5);
   }
   resize() { const w = this.el.clientWidth || 1, h = this.el.clientHeight || 1; this.renderer.setSize(w, h); this.camera.aspect = w / h; this.camera.updateProjectionMatrix(); }
-  dispose() { cancelAnimationFrame(this.raf); this.ro.disconnect(); this.clearLego(); this.clearGroup(this.src); this.renderer.dispose(); this.el.innerHTML = ''; }
-  clearGroup(g) { for (const c of [...g.children]) { g.remove(c); c.geometry && c.geometry.dispose(); if (c.material && c.material !== this.toon && c.material !== this.hullMat) c.material.dispose(); } }
+  dispose() { cancelAnimationFrame(this.raf); this.ro.disconnect(); this.clearLego(); this.clearGroup(this.src); this.renderer.dispose(); this.el.innerHTML = ''; this.studMat && this.studMat.dispose(); }
+  clearGroup(g) { for (const c of [...g.children]) { g.remove(c); c.geometry && c.geometry.dispose(); if (c.material && c.material !== this.toon && c.material !== this.studMat && c.material !== this.hullMat) c.material.dispose(); } }
 
   loop(now) {
     this.raf = requestAnimationFrame(this.loop);
@@ -84,15 +125,27 @@ export class StudioViewport {
 
   // ------------------------------------------------------------- source mesh
   /** tris in LDU of the result frame (aligned with the LEGO model) or raw tris of a freshly opened file (fitted to ~24 studs) */
-  setSource(tris, cols, { raw = false } = {}) {
+  setSource(tris, cols, { raw = false, keepScale = false } = {}) {
     this.clearGroup(this.src);
     let t = tris;
     if (raw) {
       const lo = [Infinity, Infinity, Infinity], hi = [-Infinity, -Infinity, -Infinity];
       for (let k = 0; k < tris.length; k += 3) for (let a = 0; a < 3; a++) { const v = tris[k + a]; if (v < lo[a]) lo[a] = v; if (v > hi[a]) hi[a] = v; }
-      const k = 24 * STUD / Math.max(hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2], 1e-9);
+      let k, baseLo;
+      if (keepScale && this.rawScale) {
+        baseLo = this.rawScale.lo;
+        k = this.rawScale.k;
+      } else {
+        baseLo = lo;
+        k = 24 * STUD / Math.max(hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2], 1e-9);
+        this.rawScale = { lo: [...lo], k };
+      }
       t = new Float32Array(tris.length);
-      for (let i = 0; i < tris.length; i += 3) { t[i] = (tris[i] - lo[0]) * k; t[i + 1] = (tris[i + 1] - lo[1]) * k; t[i + 2] = (tris[i + 2] - lo[2]) * k; }
+      for (let i = 0; i < tris.length; i += 3) {
+        t[i] = (tris[i] - baseLo[0]) * k;
+        t[i + 1] = (tris[i + 1] - baseLo[1]) * k;
+        t[i + 2] = (tris[i + 2] - baseLo[2]) * k;
+      }
       this.W = (hi[0] - lo[0]) * k; this.D = (hi[2] - lo[2]) * k; this.H = (hi[1] - lo[1]) * k;
       this.clearLego(); this.lego.position.set(0, 0, 0);
     }
@@ -101,24 +154,42 @@ export class StudioViewport {
     g.setAttribute('position', new THREE.BufferAttribute(t, 3)); g.setAttribute('color', new THREE.BufferAttribute(Float32Array.from(cols), 3)); g.computeVertexNormals();
     this.srcCols = cols;
     this.srcMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.75, metalness: 0, side: THREE.DoubleSide });
-    const m = new THREE.Mesh(g, this.srcMat); m.castShadow = true; m.receiveShadow = true; this.src.add(m); this.srcGeo = g;
+    const m = new THREE.Mesh(g, this.srcMat); m.castShadow = true; m.receiveShadow = true; this.src.add(m); this.srcGeo = g; this.srcMesh = m;
     if (!raw) { g.computeBoundingBox(); }
     this.flatN = Float32Array.from(g.attributes.normal.array); this.smoothN = null;
     this.paintSource(); this.applySmooth();
     this.applyMode();
+    if (raw && !keepScale) this.zoomToFit(false);
   }
 
 
   // ------------------------------------------------------------- voxel preview (resolution feedback)
   /** white blocks of one grid unit (1 stud x 1 brick x 1 stud) covering the source surface at `studs` resolution; they grow from the centre in a wave, hold, then shrink away in the same wave */
-  voxelPreview(studs, ref = 'min3') {
-    const t = this.srcPos; if (!t || !t.length) return;
+  voxelPreview(studs, ref = 'min3', repeat = false, immediate = false) {
+    const t = this.srcPos; if (!t || !t.length) return Promise.resolve();
     clearTimeout(this.voxTimer);
-    this.voxTimer = setTimeout(() => this.buildVoxels(studs, ref), 90);                 // debounce while the slider is dragged
+    if (this.vox && this.vox.resolve) { const cb = this.vox.resolve; this.vox.resolve = null; cb(); }
+    return new Promise((resolve) => {
+      if (immediate || repeat) {
+        this.buildVoxels(studs, ref, repeat, resolve);
+      } else {
+        this.voxTimer = setTimeout(() => this.buildVoxels(studs, ref, false, resolve), 90);                 // debounce while the slider is dragged
+      }
+    });
   }
-  clearVoxels() { clearTimeout(this.voxTimer); if (this.vox) { this.world.remove(this.vox.mesh); this.vox.mesh.geometry.dispose(); this.vox = null; } }
-  buildVoxels(studs, ref) {
-    const t = this.srcPos; if (!t) return;
+  clearVoxels() {
+    clearTimeout(this.voxTimer);
+    if (this.vox) {
+      const cb = this.vox.resolve;
+      this.vox.resolve = null;
+      this.world.remove(this.vox.mesh);
+      this.vox.mesh.geometry.dispose();
+      this.vox = null;
+      cb && cb();
+    }
+  }
+  buildVoxels(studs, ref, repeat = false, onDone = null) {
+    const t = this.srcPos; if (!t) { onDone && onDone(); return; }
     const lo = [Infinity, Infinity, Infinity], hi = [-Infinity, -Infinity, -Infinity];
     for (let k = 0; k < t.length; k += 3) for (let a = 0; a < 3; a++) { const v = t[k + a]; if (v < lo[a]) lo[a] = v; if (v > hi[a]) hi[a] = v; }
     const ext = [hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]];
@@ -140,9 +211,9 @@ export class StudioViewport {
       if (set.size > 60000) break;
     }
     this.clearVoxels();
-    const N = set.size; if (!N) return;
+    const N = set.size; if (!N) { onDone && onDone(); return; }
     const geo = new THREE.BoxGeometry(u, uy, u);
-    const mat = new THREE.MeshToonMaterial({ gradientMap: this.gradient, color: 0xffffff });
+    const mat = new THREE.MeshToonMaterial({ gradientMap: this.gradient, color: 0xffffff, side: THREE.DoubleSide });
     const mesh = new THREE.InstancedMesh(geo, mat, N); mesh.castShadow = true; mesh.receiveShadow = true; mesh.frustumCulled = false;
     mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     const pos = new Float32Array(N * 3), dist = new Float32Array(N);
@@ -156,7 +227,7 @@ export class StudioViewport {
     }
     for (let n = 0; n < N; n++) dist[n] /= dmax;
     this.world.add(mesh);
-    this.vox = { mesh, pos, dist, N, t0: performance.now(), dummy: new THREE.Object3D() };
+    this.vox = { mesh, pos, dist, N, t0: performance.now(), dummy: new THREE.Object3D(), repeat, resolve: onDone };
   }
   stepVoxels(now) {
     const v = this.vox; if (!v) return;
@@ -164,7 +235,14 @@ export class StudioViewport {
     // OUT_AT of the fill time, so the centre is already fading while the rim is still arriving.
     const WAVE = 650, GROW = 380, FILL = WAVE + GROW, OUT_AT = 0.25;
     const T = now - v.t0, OUT0 = FILL * OUT_AT, END = OUT0 + FILL;
-    if (T > END) { this.clearVoxels(); return; }
+    if (T > END) {
+      if (v.repeat) {
+        v.t0 = now;
+      } else {
+        this.clearVoxels();
+        return;
+      }
+    }
     const { dummy, mesh, pos, dist, N } = v;
     for (let n = 0; n < N; n++) {
       const d = dist[n] * WAVE;                                                           // this cell's place in the wave
@@ -206,7 +284,7 @@ export class StudioViewport {
       mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage); this.lego.add(mesh); this.groups.push(mesh); this.addHull(mesh);
     }
     if (studs.length) {
-      const mesh = new THREE.InstancedMesh(studGeometry(), this.toon, studs.length); mesh.castShadow = true; mesh.userData.pieces = studs.map((s) => s[0]);
+      const mesh = new THREE.InstancedMesh(studGeometry(), this.studMat, studs.length); mesh.castShadow = true; mesh.userData.pieces = studs.map((s) => s[0]);
       studs.forEach(([n, x, y, z], k) => { dummy.position.set(x, y, z); dummy.scale.setScalar(1); dummy.updateMatrix(); mesh.setMatrixAt(k, dummy.matrix); (this.pe[n] = this.pe[n] || []).push({ mesh, k, base: [x, y, z] }); });
       mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage); this.lego.add(mesh); this.groups.push(mesh); this.addHull(mesh);
     }
@@ -234,11 +312,48 @@ export class StudioViewport {
     this.srcMat.flatShading = !on; this.srcMat.needsUpdate = true;
   }
   /** per-corner colours of the source mesh (linear RGB) used by the 'islands' colour mode */
-  setIslandColors(cols) { this.islandCols = cols; this.paintSource(); }
+  setIslandColors(cols, labels = null) {
+    this.islandCols = cols;
+    if (labels) this.islandLabels = labels;
+    this.paintSource();
+  }
+  setSelectedIsland(id) {
+    this.selectedIsland = id;
+    this.paintSource();
+  }
   paintSource() {
     if (!this.srcGeo) return;
     const isl = this.colorMode === 'islands' && this.islandCols && this.islandCols.length === this.srcCols.length;
-    const a = this.srcGeo.getAttribute('color'), src = isl ? this.islandCols : this.srcCols;
+    const a = this.srcGeo.getAttribute('color');
+    if (!a) return;
+    if (isl) {
+      if (this.selectedIsland != null && this.islandLabels && this.islandLabels.length * 9 === this.islandCols.length) {
+        const sel = this.selectedIsland, labels = this.islandLabels, base = this.islandCols, arr = a.array;
+        for (let t = 0; t < labels.length; t++) {
+          const isSel = labels[t] === sel, o = t * 9;
+          for (let k = 0; k < 9; k += 3) {
+            if (isSel) {
+              arr[o + k] = Math.min(1, base[o + k] * 1.35 + 0.05);
+              arr[o + k + 1] = Math.min(1, base[o + k + 1] * 1.35 + 0.05);
+              arr[o + k + 2] = Math.min(1, base[o + k + 2] * 1.35 + 0.05);
+            } else {
+              const lum = base[o + k] * 0.299 + base[o + k + 1] * 0.587 + base[o + k + 2] * 0.114;
+              arr[o + k] = lum * 0.25 + 0.18;
+              arr[o + k + 1] = lum * 0.25 + 0.18;
+              arr[o + k + 2] = lum * 0.25 + 0.22;
+            }
+          }
+        }
+        a.needsUpdate = true;
+        return;
+      }
+      if (a.array.length === this.islandCols.length) {
+        a.array.set(this.islandCols);
+        a.needsUpdate = true;
+        return;
+      }
+    }
+    const src = this.srcCols;
     if (a.array.length !== src.length) return;
     a.array.set(src); a.needsUpdate = true;
   }

@@ -50,10 +50,15 @@ export function meshIslands(tris) {
   return { labels, count: id.size };
 }
 
+/** generate one random but well-spread THREE.Color per island */
+export function islandPalette(count, seed = 7) {
+  let s = seed >>> 0; const rnd = () => { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 4294967296; };
+  return Array.from({ length: count }, (_, i) => new THREE.Color().setHSL((i * 0.61803 + rnd() * 0.15) % 1, 0.55 + rnd() * 0.35, 0.45 + rnd() * 0.15, THREE.SRGBColorSpace));
+}
+
 /** one random but well-spread colour per island, expanded to per-corner linear RGB (9 floats per triangle) */
 export function islandColors(labels, count, seed = 7) {
-  let s = seed >>> 0; const rnd = () => { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 4294967296; };
-  const pal = Array.from({ length: count }, (_, i) => new THREE.Color().setHSL((i * 0.61803 + rnd() * 0.15) % 1, 0.55 + rnd() * 0.35, 0.45 + rnd() * 0.15, THREE.SRGBColorSpace));
+  const pal = islandPalette(count, seed);
   const out = new Float32Array(labels.length * 9);
   for (let t = 0; t < labels.length; t++) { const c = pal[labels[t]]; for (let k = 0; k < 3; k++) { out[t * 9 + k * 3] = c.r; out[t * 9 + k * 3 + 1] = c.g; out[t * 9 + k * 3 + 2] = c.b; } }
   return out;

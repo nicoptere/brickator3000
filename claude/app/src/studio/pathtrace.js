@@ -43,7 +43,7 @@ export async function createPathTrace(vp, { pieces, cat, colorMode = 'piece', da
       root = vp.lego;
     }
     flat.computeVertexNormals();
-    const mat = new THREE.MeshPhysicalMaterial({ vertexColors: true, roughness: 0.2, metalness: 0, clearcoat: 0.35, clearcoatRoughness: 0.1 });
+    const mat = new THREE.MeshPhysicalMaterial({ vertexColors: true, roughness: 0.2, metalness: 0, clearcoat: 0.35, clearcoatRoughness: 0.1, side: THREE.DoubleSide });
     const mesh = new THREE.Mesh(flat, mat);
     root.updateMatrixWorld(true); mesh.applyMatrix4(root.matrixWorld); mesh.updateMatrixWorld(true);
 
@@ -91,7 +91,10 @@ export async function createPathTrace(vp, { pieces, cat, colorMode = 'piece', da
       prepareDof() {
         if (!dof) dof = createDof(renderer);
         dof.grab(cv);
+        const cyVis = cy ? cy.visible : true;
+        if (cy) cy.visible = false;
         const r = dof.capture(scene, cam);
+        if (cy) cy.visible = cyVis;
         dofState.span = r;
         if (r && !dofState.focus) dofState.focus = (r.near + r.far) / 2;
         return r;

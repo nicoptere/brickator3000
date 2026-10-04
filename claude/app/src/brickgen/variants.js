@@ -42,11 +42,12 @@ export function baseVolume(c) {
 const cache = new Map();
 /** all distinct rotated variants of the parts whose kind is in `kinds` */
 export function partVariants(cat, kinds) {
-  const key = [...kinds].sort().join(',') + '|' + cat.length;
+  let solo = 0; for (const c of cat) if (!c.noSolo) solo++;
+  const key = [...kinds].sort().join(',') + '|' + cat.length + '|' + solo;
   if (cache.has(key)) return cache.get(key);
   const out = [];
   for (const c of cat) {
-    if (!kinds.has(c.kind)) continue;
+    if (c.noSolo || !kinds.has(c.kind)) continue;        // motif-only parts (see pipeline.catalogFor) are never chosen on their own
     const { vol, h } = baseVolume(c);
     const seen = new Set();
     for (const rot of [0, 90, 180, 270]) {

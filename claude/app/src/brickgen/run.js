@@ -9,15 +9,17 @@ import { motifVariants } from '../motifs/library.js';
 export function solve(pre, cat, ox, oz, o, log = () => {}) {
   const win = window(pre, ox, oz); let M = win.arr; const nxc = win.nxc, nzc = win.nzc, nl = pre.nl;
   const NZ = nzc * G, NX = nxc * G;
-  let mirror = null;
+  let mirror = null, plane = 0;
   if (pre.mirror) {
     const off = pre.mirror.ax === 0 ? ox : oz;
-    const c2 = Math.round(2 * (pre.mirror.planePadded - (PAD - off)) / STUD);
-    M = symmetrize(M, nl, NZ, NX, pre.mirror.ax, c2);
-    mirror = [pre.mirror.ax === 0 ? 'x' : 'z', c2];
+    plane = Math.round(2 * (pre.mirror.planePadded - (PAD - off)) / STUD);
+    // symField: average the volume field with its mirror (halves the sampling noise on thin features)
+    // symTwins: every placed piece also places its mirror twin. Both default on; they are separable for analysis (docs/MOTIFS.md).
+    if (o.symField !== false) M = symmetrize(M, nl, NZ, NX, pre.mirror.ax, plane);
+    if (o.symTwins !== false) mirror = [pre.mirror.ax === 0 ? 'x' : 'z', plane];
   }
   const S = new Solver(M, nl, NZ, NX, o, mirror); S.log = log;
-  if (pre.Mfull) { let F = window(pre, ox, oz, 'Mfull').arr; if (pre.mirror) F = symmetrize(F, nl, NZ, NX, pre.mirror.ax, mirror[1]); S.Mfull = F; }   // hollow core: the full solid, so filling the core is not counted as overfill
+  if (pre.Mfull) { let F = window(pre, ox, oz, 'Mfull').arr; if (pre.mirror && o.symField !== false) F = symmetrize(F, nl, NZ, NX, pre.mirror.ax, plane); S.Mfull = F; }   // hollow core: the full solid, so filling the core is not counted as overfill
   S.nxc = nxc; S.nzc = nzc;
   const tb = o.technic ? { technic: 0.02 } : {};
   const withBonus = (t, extra) => ({ ...t, bonus: { ...(t.bonus || {}), ...extra } });

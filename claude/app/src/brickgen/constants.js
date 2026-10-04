@@ -15,19 +15,27 @@ export const DEFAULTS = {
   snap: 12.0,                // LDU: gap above the ground snapped shut
   minThick: true,            // sheets thinner than 0.8 plate are fattened to one plate
   minGap: 6.0,               // LDU: air thinner than this between two solid intervals is closed
+  superSample: 1,            // rays per field cell per axis: 1 = one centre ray, 2 = 2x2 area average (more exact, but the
+                             // coverage thresholds below are tuned for point sampling, so raising it costs IoU until they are retuned)
+  fieldSmooth: 0,            // 0..1: blend a cell with its 4 lateral neighbours where the neighbourhood is sparse (thin struts).
+                             // Helps strut-heavy models (aircraft) and hurts dense ones, so it is opt-in; see docs/MOTIFS.md
+  fieldSmoothThin: 0.5,      // only cells whose lateral neighbour mean is <= this are smoothed
   surfaceSamples: 200000,
   seed: 1,
   // grid phase search
   offsets: [0, 4, 8],        // LDU, tried on both axes (multiples of 4); the Precision slider (0/4/8/12) sets it to every multiple of 4 up to its value
   precision: 8,
   partSet: 'limited',   // 'limited' (core catalogue) | 'extended' (+ extra LDraw shapes)
+  shapeParts: false,    // let the frequent shapes compete as single parts too (they are always available to motifs): arches, panels, dishes, corner tiles, curved-top bricks (catalog_shapes.js)
   // symmetry
   symmetry: 'off',           // 'auto' | 'off'
   symThreshold: 0.006,       // mean mirror distance / bbox diagonal
   parity: 'auto',            // 'auto' (solve both) | 'even' (plane on a stud seam) | 'odd' (plane on a stud centre line)
-  // broad phase: motifs = multi-part assemblies mined from the OMR models (motifs/library.js); off = the method as before, bit-identical
+  // broad phase: motifs = multi-part assemblies mined from the OMR models (motifs/library.js); off = the method as before, bit-identical.
+  // motifSnot keeps the ones that hold a sideways part (a tile clamped between two headlight bricks and the like): they are placed
+  // as one rigid assembly, kept out of the merge passes, and exported with their real orientation (motifs/orient.js).
   motifs: false, motifTol: { min_cov: 0.85, max_err: 0.06, piece_pen: 0.3, beatFlat: 0.8 },   // beatFlat: a motif must explain its box better than plain plates / bricks would (else the fill phases do it with fewer pieces)
-  motifMinModels: 2, motifMinCount: 3, motifMaxParts: 12, motifSolid: false, motifShapedOnly: true, motifMirror: true, motifBonus: 0.1, motifBonusLog: 0.05, motifMinPartH: 2,
+  motifMinModels: 2, motifMinCount: 3, motifMaxParts: 12, motifSolid: false, motifShapedOnly: true, motifMirror: true, motifSnot: true, motifStretch: false, motifStretchMax: 4, motifStretchCells: 96,   // synthesising the missing lengths raises recall ~0.004 but multiplies disconnected components (duck 1 -> 25+): off motifBonus: 0.1, motifBonusLog: 0.05, motifMinPartH: 2,
   motifScoring: false,       // also run the motif phase while scoring the grid phases (9x slower); off = only the final solve uses motifs
   // phases
   rounds: true, roundTol: { min_cov: 0.85, max_err: 0.12, piece_pen: 0.5, bonus: { round: 0.4 } },
@@ -51,6 +59,8 @@ export const DEFAULTS = {
   retile: true,              // three levels of plates -> bricks, committed per level only if connectivity holds
   mergeVertical: true, mergeHorizontal: true, colorTol: 22,
   pillars: true, pillarMinLevels: 3,
+  pillarCluster: 2,          // thin (1x1) neighbours a pole may touch per level: 0 = only a fully isolated column (old
+                             // behaviour), 2 = strut pairs and rows of railings convert too. Wider neighbours always veto.
   bracing: true, braceMaxGap: 3, braceMaxSpan: 4, braceRounds: 40,
   splice: true, spliceRounds: 60, spliceTries: 80,   // re-cut side-by-side pieces of different components so a 1x2 plate spans the seam
   bridge: true, bridgeMax: 10, bridgeRounds: 120,    // shortest plate chain (zig-zag) through free cells between two components

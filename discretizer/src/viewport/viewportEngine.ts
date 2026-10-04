@@ -308,7 +308,8 @@ export class ViewportEngine {
         color: 0xcccccc,
         roughness: 0.4,
         metalness: 0.1,
-        vertexColors: geom.hasAttribute('color')
+        vertexColors: geom.hasAttribute('color'),
+        side: THREE.DoubleSide
       });
       loadedObject = new THREE.Mesh(geom, mat);
     } else if (fileType === '3ds') {
@@ -322,7 +323,8 @@ export class ViewportEngine {
       const mat = new THREE.MeshStandardMaterial({
         color: 0xffffff,
         roughness: 0.35,
-        metalness: 0.05
+        metalness: 0.05,
+        side: THREE.DoubleSide
       });
       loadedObject = new THREE.Mesh(geom, mat);
     } else if (fileType === 'procedural_torus') {
@@ -331,7 +333,8 @@ export class ViewportEngine {
       const mat = new THREE.MeshStandardMaterial({
         color: 0x2563eb,
         roughness: 0.25,
-        metalness: 0.2
+        metalness: 0.2,
+        side: THREE.DoubleSide
       });
       loadedObject = new THREE.Mesh(geom, mat);
     }
@@ -365,7 +368,8 @@ export class ViewportEngine {
       const mat = new THREE.MeshStandardMaterial({
         color: 0xcccccc,
         roughness: 0.4,
-        vertexColors: geom.hasAttribute('color')
+        vertexColors: geom.hasAttribute('color'),
+        side: THREE.DoubleSide
       });
       loadedObject = new THREE.Mesh(geom, mat);
     } else if (ext === '3ds') {
@@ -617,7 +621,8 @@ export class ViewportEngine {
       roughness: 0.18,
       metalness: 0.02,
       clearcoat: 0.35,
-      clearcoatRoughness: 0.1
+      clearcoatRoughness: 0.1,
+      side: THREE.DoubleSide
     });
 
     // 1. Separate bricks by shape category
@@ -872,7 +877,8 @@ export class ViewportEngine {
     const boxGeo = new THREE.BoxGeometry(studPitch * 0.92, platePitch * 0.92, studPitch * 0.92);
     const voxelMat = new THREE.MeshStandardMaterial({
       roughness: 0.35,
-      metalness: 0.05
+      metalness: 0.05,
+      side: THREE.DoubleSide
     });
 
     const mesh = new THREE.InstancedMesh(boxGeo, voxelMat, occupiedVoxels.length);
@@ -947,7 +953,8 @@ export class ViewportEngine {
       opacity: 0.75,
       roughness: 0.2,
       emissive: step.status === 'ACCEPTED' ? 0x1d4ed8 : 0x000000,
-      emissiveIntensity: 0.3
+      emissiveIntensity: 0.3,
+      side: THREE.DoubleSide
     });
 
     const candidateMesh = new THREE.Mesh(boxGeo, partMat);
@@ -967,7 +974,8 @@ export class ViewportEngine {
         transparent: true,
         opacity: 0.85,
         emissive: 0x15803d,
-        emissiveIntensity: 0.3
+        emissiveIntensity: 0.3,
+        side: THREE.DoubleSide
       });
 
       const airMat = new THREE.MeshStandardMaterial({
@@ -975,7 +983,8 @@ export class ViewportEngine {
         transparent: true,
         opacity: 0.75,
         emissive: 0xb91c1c,
-        emissiveIntensity: 0.3
+        emissiveIntensity: 0.3,
+        side: THREE.DoubleSide
       });
 
       for (const tv of step.targetVoxels) {

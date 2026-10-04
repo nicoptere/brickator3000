@@ -42,6 +42,7 @@ export class Viewer {
     this.src.add(new THREE.Mesh(g, this.srcMat));
     g.computeBoundingBox(); this.srcBox = g.boundingBox.clone();
     this.applyLayout();
+    this.zoomToFit(false);
   }
 
   setLego(pieces, cat) {
@@ -57,7 +58,7 @@ export class Viewer {
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.BufferAttribute(m.pos, 3)); g.setAttribute('color', new THREE.BufferAttribute(lin, 3));
     g.setIndex(new THREE.BufferAttribute(m.idx, 1));
-    this.legoMesh = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: 0.45, metalness: 0, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 }));
+    this.legoMesh = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: 0.45, metalness: 0, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1, side: THREE.DoubleSide }));
     this.legoMesh.userData.pieceOfTri = m.triPiece;
     const eg = new THREE.BufferGeometry(); eg.setAttribute('position', new THREE.BufferAttribute(m.edges, 3));
     this.edgeMesh = new THREE.LineSegments(eg, new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.35 }));

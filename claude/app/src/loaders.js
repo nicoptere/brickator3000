@@ -52,7 +52,7 @@ function fromObject3D(root) {
 }
 
 function geometryToModel(geo) {
-  const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: 0xb3b3b3 }));
+  const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: 0xb3b3b3, side: THREE.DoubleSide }));
   return fromObject3D(mesh);
 }
 

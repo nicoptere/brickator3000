@@ -31,8 +31,10 @@ html, body, #root { margin: 0; width: 100%; height: 100%; overflow: hidden; back
 .replay { display: flex; flex-direction: column; gap: 4px; }
 .tree { max-height: 250px; overflow-y: auto; border: 1px solid var(--bd); border-radius: 6px; padding: 4px; background: var(--soft); }
 .tree .ant-tree { background: transparent; font-size: 12px; }
-.tree .ant-tree-treenode { padding: 0; } .tree .ant-tree-node-content-wrapper { min-height: 22px; line-height: 22px; }
-.tree .tl { display: flex; justify-content: space-between; gap: 8px; } .tree .tl i { font-style: normal; color: var(--tx2); font-size: 10px; }
+.tree .ant-tree-treenode { padding: 0; } .tree .ant-tree-node-content-wrapper { min-height: 22px; line-height: 22px; cursor: pointer; }
+.tree .tl { display: flex; justify-content: space-between; gap: 8px; width: 100%; } .tree .tl i { font-style: normal; color: var(--tx2); font-size: 10px; }
+.tree .cat-label { font-weight: 600; cursor: pointer; user-select: none; }
+.tree .cat-label:hover { color: #2563eb; }
 
 .toolbar { position: absolute; top: 12px; z-index: 15; display: flex; justify-content: center; pointer-events: none; }
 .toolbar .tools { pointer-events: auto; display: flex; flex-direction: row; align-items: center; gap: 2px; background: var(--bg-dock); border: 1px solid var(--bd); border-radius: 20px; padding: 3px 8px; box-shadow: 0 4px 16px var(--shadow); }
@@ -90,3 +92,14 @@ html, body, #root { margin: 0; width: 100%; height: 100%; overflow: hidden; back
 .ptdof { display: flex; align-items: center; gap: 8px; width: 100%; font-size: 11px; color: var(--tx2); margin: 2px 0 -2px; }
 .ptdof b { color: #3b82f6; font-variant-numeric: tabular-nums; min-width: 34px; text-align: right; }
 .ptdof .ant-slider { margin: 0; }
+
+/* island picking & management */
+.island-box { background: var(--soft); border: 1px solid var(--bd); border-radius: 6px; padding: 8px 10px; display: flex; flex-direction: column; gap: 6px; }
+.island-list { max-height: 180px; overflow-y: auto; display: flex; flex-direction: column; gap: 3px; }
+.island-item { display: flex; align-items: center; justify-content: space-between; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; border: 1px solid transparent; }
+.island-item:hover { background: var(--res-bg); }
+.island-item.selected { background: var(--res-bg); border-color: var(--res-bd); }
+.island-swatch { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; border: 1px solid rgba(0,0,0,0.15); }
+.island-selected-card { background: var(--res-bg); border: 1px solid var(--res-bd); border-radius: 6px; padding: 8px 10px; display: flex; flex-direction: column; gap: 6px; }
+.island-overlay { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 15; background: var(--bg-dock); border: 1px solid var(--bd); border-radius: 20px; padding: 6px 14px; box-shadow: 0 4px 16px var(--shadow); display: flex; align-items: center; gap: 10px; font-size: 12px; pointer-events: auto; }
+

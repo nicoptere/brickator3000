@@ -4,15 +4,16 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ConfigProvider, App as AntApp, Select, Input, Button, Upload, Typography, Tag, Divider, Slider, Radio, Checkbox, Progress, Drawer, Modal, Table, Tooltip, Switch, Tabs, Collapse, Alert, Tree, Segmented, theme as antTheme } from 'antd';
 import { UploadOutlined, SearchOutlined, ThunderboltOutlined, DownloadOutlined, EyeOutlined, CheckCircleOutlined, AppstoreOutlined, MenuFoldOutlined, MenuUnfoldOutlined,
   DownOutlined, RightOutlined, CaretRightOutlined, PauseOutlined, StepBackwardOutlined, StepForwardOutlined, SoundOutlined, AudioMutedOutlined, AimOutlined,
-  SettingOutlined, StopOutlined, CameraOutlined, SyncOutlined, ReloadOutlined, BulbOutlined, BulbFilled } from '@ant-design/icons';
+  SettingOutlined, StopOutlined, CameraOutlined, SyncOutlined, ReloadOutlined, BulbOutlined, BulbFilled, DeleteOutlined, UndoOutlined, CloseOutlined, ScissorOutlined } from '@ant-design/icons';
 import './studio.css';
 import { StudioViewport } from './studio/viewport3d.js';
 import { sfx } from './studio/sfx.js';
-import { fixWinding, meshIslands, islandColors } from './studio/meshtools.js';
+import { fixWinding, meshIslands, islandColors, islandPalette } from './studio/meshtools.js';
 import { loadModel, reorient } from './loaders.js';
 import { runMethod, cancel, poolSize } from './engine.js';
 import { DEFAULTS, CATALOG, FULL_CATALOG, catalogFor } from './brickgen/pipeline.js';
 import { buildMesh, toGLB, toLDR, KIND_COL } from './brickgen/export.js';
+import { snapToPalette } from './brickgen/colors.js';
 import { SCHEMA } from './schema.js';
 import { Field } from './fields.jsx';
 
@@ -57,9 +58,52 @@ function StudioInner() {
   const [models, setModels] = useState([]);
   const [cat, setCat] = useState(null), [query, setQuery] = useState(''), [modelPath, setModelPath] = useState(null);
   const [model, setModel] = useState(null), [up, setUp] = useState('y');
-  const [isl, setIsl] = useState(null), [smooth, setSmooth] = useState(false), [busy, setBusy] = useState(false), [stage, setStage] = useState(['', 0]);
+  const [isl, setIsl] = useState(null), [smooth, setSmooth] = useState(true), [busy, setBusy] = useState(false), [stage, setStage] = useState(['', 0]);
   const [res, setRes] = useState(null);
+  const [officialColors, setOfficialColors] = useState(false);
   const [viewMode, setViewMode] = useState('mesh'), [colorMode, setColorMode] = useState('piece'), [outline, setOutline] = useState(true);
+  const [selectedIsland, setSelectedIsland] = useState(null);
+  const [history, setHistory] = useState([]);
+  const [detectIslands, setDetectIslands] = useState(false);
+  const detectIslandsRef = useRef(false);
+  detectIslandsRef.current = detectIslands;
+  const cancellingRef = useRef(false);
+  const onSelectIslandRef = useRef(null);
+  onSelectIslandRef.current = (id) => {
+    setSelectedIsland(id);
+    if (vp.current) vp.current.setSelectedIsland(id);
+    if (id != null && colorMode !== 'islands') {
+      setColorMode('islands');
+      if (vp.current) vp.current.setColorMode('islands');
+    }
+  };
+
+  const applyOfficialPalette = (pieces, official) => {
+    for (const p of pieces) {
+      if (official) {
+        if (!p.origRgb) p.origRgb = p.rgb ? [...p.rgb] : [200, 200, 200];
+        if (p.origColorName === undefined) p.origColorName = p.colorName;
+        if (p.origCode === undefined) p.origCode = p.code;
+        const c = snapToPalette(p.origRgb);
+        p.rgb = c.rgb;
+        p.colorName = c.name;
+        p.code = c.code;
+      } else if (p.origRgb) {
+        p.rgb = [...p.origRgb];
+        p.colorName = p.origColorName;
+        p.code = p.origCode;
+      }
+    }
+  };
+
+  const toggleOfficialColors = (on) => {
+    sfx.click();
+    setOfficialColors(on);
+    if (!res || !res.pieces) return;
+    applyOfficialPalette(res.pieces, on);
+    if (vp.current) vp.current.setColorMode(colorMode);
+    setRes((r) => r && { ...r, pieces: [...r.pieces] });
+  };
   const [step, setStep] = useState(0), [playing, setPlaying] = useState(false), [speed, setSpeed] = useState(1), [autoBuild, setAutoBuild] = useState(true);
   const [sound, setSound] = useState(sfx.on), [rotate, setRotate] = useState(false);
     const [dark, setDark] = useState(() => { try { return localStorage.getItem('brickgen.theme') !== 'light'; } catch { return true; } });
@@ -88,9 +132,135 @@ function StudioInner() {
   useEffect(() => {
     vp.current = new StudioViewport(vEl.current);
     vp.current.setTheme(dark);
+    vp.current.onSelectIsland = (id, faceIdx) => onSelectIslandRef.current && onSelectIslandRef.current(id, faceIdx);
     fetch('/api/models').then((r) => r.json()).then((d) => setModels((d.models || []).sort((a, b) => a.path.localeCompare(b.path)))).catch(() => setModels([]));
     return () => vp.current && vp.current.dispose();
   }, []);
+
+  const islandStats = useMemo(() => {
+    if (!isl || !isl.labels || !isl.count) return [];
+    const counts = new Int32Array(isl.count);
+    const nt = isl.labels.length;
+    for (let t = 0; t < nt; t++) {
+      const l = isl.labels[t];
+      if (l >= 0 && l < isl.count) counts[l]++;
+    }
+    const pal = islandPalette(isl.count);
+    const res = [];
+    for (let i = 0; i < isl.count; i++) {
+      const triangles = counts[i];
+      const pct = nt > 0 ? (triangles / nt) * 100 : 0;
+      const color = pal[i] ? '#' + pal[i].getHexString() : '#888888';
+      res.push({ id: i, triangles, pct, color });
+    }
+    return res;
+  }, [isl]);
+
+  const deleteIsland = useCallback((id) => {
+    if (id == null || !model || !isl || !isl.labels) return;
+    if (isl.count <= 1) {
+      message.warning('Cannot delete the only remaining island');
+      return;
+    }
+    const nt = isl.labels.length;
+    let keep = 0;
+    for (let t = 0; t < nt; t++) {
+      if (isl.labels[t] !== id) keep++;
+    }
+    if (keep === 0) {
+      message.warning('Cannot delete all triangles');
+      return;
+    }
+    setHistory((prev) => [...prev, { tris: model.tris, vcols: model.vcols }]);
+    const newTris = new Float32Array(keep * 9);
+    const newVcols = new Float32Array(keep * 9);
+    let q = 0;
+    for (let t = 0; t < nt; t++) {
+      if (isl.labels[t] !== id) {
+        for (let k = 0; k < 9; k++) {
+          newTris[q * 9 + k] = model.tris[t * 9 + k];
+          newVcols[q * 9 + k] = model.vcols[t * 9 + k];
+        }
+        q++;
+      }
+    }
+    const origTris = model.origTris || model.tris;
+    const origVcols = model.origVcols || model.vcols;
+    const deletedIslands = (model.deletedIslands || 0) + 1;
+    const updated = { ...model, tris: newTris, vcols: newVcols, origTris, origVcols, deletedIslands };
+    setModel(updated);
+    setSelectedIsland(null);
+    if (vp.current) {
+      vp.current.setSelectedIsland(null);
+      vp.current.setSource(newTris, newVcols, { raw: true, keepScale: true });
+    }
+    const newIl = meshIslands(newTris);
+    setIsl({ count: newIl.count, labels: newIl.labels });
+    if (vp.current) {
+      vp.current.islandLabels = newIl.labels;
+      vp.current.setIslandColors(islandColors(newIl.labels, newIl.count), newIl.labels);
+    }
+    if (res) setRes(null);
+    message.success(`Removed island (${nt - keep} triangles). ${newIl.count} island${newIl.count === 1 ? '' : 's'} remaining.`);
+    sfx.click();
+  }, [model, isl, res, message]);
+
+  const undoDelete = useCallback(() => {
+    if (!history.length || !model) return;
+    const prevMesh = history[history.length - 1];
+    setHistory((h) => h.slice(0, -1));
+    const deletedIslands = Math.max(0, (model.deletedIslands || 1) - 1);
+    const updated = { ...model, tris: prevMesh.tris, vcols: prevMesh.vcols, deletedIslands };
+    setModel(updated);
+    setSelectedIsland(null);
+    if (vp.current) {
+      vp.current.setSelectedIsland(null);
+      vp.current.setSource(prevMesh.tris, prevMesh.vcols, { raw: true, keepScale: true });
+    }
+    const newIl = meshIslands(prevMesh.tris);
+    setIsl({ count: newIl.count, labels: newIl.labels });
+    if (vp.current) {
+      vp.current.islandLabels = newIl.labels;
+      vp.current.setIslandColors(islandColors(newIl.labels, newIl.count), newIl.labels);
+    }
+    if (res) setRes(null);
+    message.info('Restored previous island');
+    sfx.click();
+  }, [history, model, res, message]);
+
+  const restoreModel = useCallback(() => {
+    if (!model || !model.origTris) return;
+    setHistory([]);
+    const updated = { ...model, tris: model.origTris, vcols: model.origVcols, deletedIslands: 0 };
+    setModel(updated);
+    setSelectedIsland(null);
+    if (vp.current) {
+      vp.current.setSelectedIsland(null);
+      vp.current.setSource(model.origTris, model.origVcols, { raw: true, keepScale: true });
+    }
+    const newIl = meshIslands(model.origTris);
+    setIsl({ count: newIl.count, labels: newIl.labels });
+    if (vp.current) {
+      vp.current.islandLabels = newIl.labels;
+      vp.current.setIslandColors(islandColors(newIl.labels, newIl.count), newIl.labels);
+    }
+    if (res) setRes(null);
+    message.info('Restored full original mesh');
+    sfx.click();
+  }, [model, res, message]);
+
+  useEffect(() => {
+    const handleKey = (e) => {
+      if (selectedIsland != null && (e.key === 'Delete' || e.key === 'Backspace')) {
+        const tag = document.activeElement?.tagName?.toLowerCase();
+        if (tag === 'input' || tag === 'textarea') return;
+        e.preventDefault();
+        deleteIsland(selectedIsland);
+      }
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [selectedIsland, deleteIsland]);
 
   const cats = useMemo(() => {
     const g = new Map();
@@ -104,11 +274,58 @@ function StudioInner() {
       .map((m) => ({ value: m.path, label: `${m.path.split('/').pop()}  ·  ${(m.size / 1e6).toFixed(1)} MB` }));
   }, [cats, cat, models, query]);
 
-  const showModel = (mm) => {
+  const toggleDetectIslands = useCallback((on) => {
+    sfx.click();
+    setDetectIslands(on);
+    if (on) {
+      if (model) {
+        const il = meshIslands(model.tris);
+        setIsl({ count: il.count, labels: il.labels });
+        if (vp.current) {
+          vp.current.islandLabels = il.labels;
+          vp.current.setIslandColors(islandColors(il.labels, il.count), il.labels);
+          vp.current.paintSource();
+        }
+        message.info(`Detected ${il.count} island${il.count === 1 ? '' : 's'}`);
+      }
+    } else {
+      setIsl(null);
+      setSelectedIsland(null);
+      if (vp.current) {
+        vp.current.islandLabels = null;
+        vp.current.setSelectedIsland(null);
+        vp.current.setIslandColors(null);
+        if (colorMode === 'islands') {
+          setColorMode('piece');
+          vp.current.setColorMode('piece');
+        }
+        vp.current.paintSource();
+      }
+    }
+  }, [model, colorMode, message]);
+
+  const showModel = (mm, computeIsl = detectIslandsRef.current) => {
     setRes(null); setPlaying(false); setStep(0); setViewMode('mesh'); sfx.click();
+    setSelectedIsland(null); setHistory([]);
+    if (vp.current) vp.current.setSelectedIsland(null);
     vp.current.setSource(mm.tris, mm.vcols, { raw: true });
-    const il = meshIslands(mm.tris); setIsl({ count: il.count }); vp.current.setIslandColors(islandColors(il.labels, il.count));
-    vp.current.setMode('mesh');
+    if (computeIsl) {
+      const il = meshIslands(mm.tris); setIsl({ count: il.count, labels: il.labels });
+      if (vp.current) {
+        vp.current.islandLabels = il.labels;
+        vp.current.setIslandColors(islandColors(il.labels, il.count), il.labels);
+      }
+    } else {
+      setIsl(null);
+      if (vp.current) {
+        vp.current.islandLabels = null;
+        vp.current.setIslandColors(null);
+      }
+    }
+    if (vp.current) {
+      vp.current.setMode('mesh');
+      vp.current.zoomToFit(false);
+    }
   };
   const openPath = useCallback(async (p, upAxis = up) => {
     setModelPath(p);
@@ -116,12 +333,14 @@ function StudioInner() {
     try {
       const buf = await (await fetch('/models/' + p)).arrayBuffer();
       const m = await loadModel(p, buf), mm = { name: p.split('/').pop(), ...reorient(m, upAxis) };
+      mm.origTris = mm.tris; mm.origVcols = mm.vcols; mm.deletedIslands = 0;
       setModel(mm); showModel(mm);
     } catch (e) { sfx.error(); message.error(String(e.message || e)); }
   }, [up]); // eslint-disable-line
   async function openFile(file) {
     try {
       const m = await loadModel(file.name, await file.arrayBuffer()), mm = { name: file.name, ...reorient(m, up) };
+      mm.origTris = mm.tris; mm.origVcols = mm.vcols; mm.deletedIslands = 0;
       setModelPath(null); setModel(mm); showModel(mm); message.success(`Loaded ${file.name}`);
     } catch (e) { sfx.error(); message.error(String(e.message || e)); }
     return false;
@@ -158,7 +377,12 @@ function StudioInner() {
 
   async function generate() {
     if (!model) return message.info('Load a model first');
+    cancellingRef.current = false;
     sfx.start(); setBusy(true); setPlaying(false); setStage(['Preparing', 0]);
+    setViewMode('mesh'); vp.current.setMode('mesh');
+    setStage(['Previewing grid', 0]);
+    await vp.current.voxelPreview(opts.studs, opts.ref, false, true);
+    if (cancellingRef.current) return;
     try {
       let src = { tris: model.tris, vcols: model.vcols };
       if (opts.vertexNormals) {
@@ -167,6 +391,8 @@ function StudioInner() {
         message.info(f.flipped ? `vertex normals: ${f.flipped} flipped triangle${f.flipped === 1 ? '' : 's'} corrected` : 'vertex normals: no flipped triangle found');
       }
       const r = await runMethod(src, opts, { workersWanted: workers, onStage: (s, f) => setStage([s, f]) });
+      vp.current.clearVoxels();
+      if (officialColors) applyOfficialPalette(r.pieces, true);
       setRes(r);
       vp.current.setSource(r.srcTris, r.srcCols); vp.current.setLego(r.pieces, FULL_CATALOG, r.dims); vp.current.setColorMode(colorMode); vp.current.setOutline(outline);
       if (colorMode !== 'islands') { setViewMode('lego'); vp.current.setMode('lego'); }
@@ -175,10 +401,14 @@ function StudioInner() {
       const g = r.metrics.grounded >= 0.9995;
       message.success(`${r.metrics.pieces} pieces in ${(r.timing.total / 1000).toFixed(1)} s${g ? ', one grounded piece of work' : ''}`);
       if (autoBuild) { vp.current.setLevel(0, false); setStep(0); setTimeout(() => setPlaying(true), 250); } else { setStep(lv); sfx.done(); }
-    } catch (e) { if (!/terminated|cancel/i.test(String(e))) { sfx.error(); message.error(String(e.message || e)); } console.error(e); }
+    } catch (e) {
+      vp.current.clearVoxels();
+      if (!/terminated|cancel/i.test(String(e))) { sfx.error(); message.error(String(e.message || e)); }
+      console.error(e);
+    }
     setBusy(false);
   }
-  const stop = () => { cancel(); setBusy(false); setStage(['', 0]); sfx.click(); };
+  const stop = () => { cancellingRef.current = true; cancel(); vp.current && vp.current.clearVoxels(); setBusy(false); setStage(['', 0]); sfx.click(); };
 
   const base = model ? model.name.replace(/\.[^.]+$/, '') + '_' + opts.studs : 'model';
   const exportLDR = () => download(toLDR(res.pieces, FULL_CATALOG, base), base + '.ldr', 'text/plain');
@@ -252,6 +482,13 @@ function StudioInner() {
   const LW = 360, RW = 330;
   const toggleTheme = () => { const v = !dark; setDark(v); try { localStorage.setItem('brickgen.theme', v ? 'dark' : 'light'); } catch {} window.dispatchEvent(new Event('brickgen-theme')); sfx.click(); };
 
+  const countLeafs = (node) => {
+    if (node.leaf) return 1;
+    let sum = 0;
+    for (const child of node.children.values()) sum += countLeafs(child);
+    return sum;
+  };
+
   const modelTree = useMemo(() => {
     const q = query.trim().toLowerCase(), root = { children: new Map() };
     for (const m of models) {
@@ -266,10 +503,19 @@ function StudioInner() {
     }
     const conv = (n) => [...n.children.values()].sort((a, b) => (a.leaf - b.leaf) || a.part.localeCompare(b.part)).map((c) => (c.leaf
       ? { key: c.key, isLeaf: true, title: <span className="tl">{c.part.replace(/\.[^.]+$/, '')}<i>{(c.size / 1e6).toFixed(1)} MB</i></span> }
-      : { key: c.key, title: c.part, children: conv(c) }));
+      : { key: c.key, title: <span className="tl cat-label"><span>{c.part}</span><i>{countLeafs(c)}</i></span>, children: conv(c) }));
     return conv(root);
   }, [models, query]);
   const allDirs = useMemo(() => { const s = new Set(); for (const m of models) { const p = m.path.split('/'); if (p[0] === 'clean' && p.length > 1) p.shift(); for (let i = 1; i < p.length; i++) s.add(p.slice(0, i).join('/')); } return [...s]; }, [models]);
+
+  const toggleExpandNode = (key) => {
+    sfx.click();
+    setExpanded((prev) => {
+      const cur = prev.length || query ? (query ? allDirs : prev) : [];
+      const isExp = cur.includes(key);
+      return isExp ? cur.filter((k) => k !== key) : [...cur, key];
+    });
+  };
 
   const resultsBlock = res && (
     <div className="result">
@@ -322,6 +568,15 @@ function StudioInner() {
   return (
     <div className={'studio ' + (dark ? 'dark' : 'light')}>
       <div className="vp" ref={vEl} style={{ left: leftOpen ? LW : 0, right: rightOpen ? RW : 0 }} />
+      {selectedIsland != null && islandStats[selectedIsland] && (
+        <div className="island-overlay">
+          <span className="island-swatch" style={{ background: islandStats[selectedIsland].color }} />
+          <span style={{ fontWeight: 600 }}>Island #{selectedIsland + 1}</span>
+          <span style={{ color: 'var(--tx2)' }}>{islandStats[selectedIsland].triangles.toLocaleString()} triangles ({islandStats[selectedIsland].pct.toFixed(1)}%)</span>
+          <Button size="small" danger icon={<DeleteOutlined />} onClick={() => deleteIsland(selectedIsland)}>Delete</Button>
+          <Button size="small" type="text" icon={<CloseOutlined />} onClick={() => { setSelectedIsland(null); vp.current && vp.current.setSelectedIsland(null); }} />
+        </div>
+      )}
 
       {/* ---------------------------------------------------------------- left drawer */}
       <aside className={'dock left' + (leftOpen ? '' : ' closed')} style={{ width: LW }}>
@@ -335,7 +590,7 @@ function StudioInner() {
             <Input size="small" allowClear placeholder="search models" prefix={<SearchOutlined style={{ color: '#94a3b8' }} />} value={query} onChange={(e) => setQuery(e.target.value)} />
             <div className="tree">
               <Tree blockNode showLine={false} treeData={modelTree} selectedKeys={modelPath ? [modelPath] : []} expandedKeys={expanded.length || query ? (query ? allDirs : expanded) : []}
-                onExpand={setExpanded} onSelect={(k, { node }) => { if (node.isLeaf) { sfx.click(); openPath(node.key); } }}
+                onExpand={setExpanded} onSelect={(k, { node }) => { if (node.isLeaf) { sfx.click(); openPath(node.key); } else { toggleExpandNode(node.key); } }}
                 switcherIcon={<DownOutlined />} />
               {!models.length && <Text type="secondary" style={{ fontSize: 12 }}>no model list: open a file</Text>}
             </div>
@@ -350,6 +605,21 @@ function StudioInner() {
               <Tooltip title="welds the mesh, lets three.js compute vertex normals and flips reversed triangles before the LEGO computation"><Checkbox checked={!!opts.vertexNormals} onChange={(e) => setOpt('vertexNormals', e.target.checked)}>Fix flipped faces</Checkbox></Tooltip>
               <Tooltip title="on: geometry.computeVertexNormals() on the welded mesh, smooth shading. off: flat shading"><Checkbox checked={smooth} onChange={(e) => { setSmooth(e.target.checked); vp.current.setSmooth(e.target.checked); }}>Smooth normals</Checkbox></Tooltip>
             </div>
+            <div className="row" style={{ marginTop: 4 }}>
+              <Tooltip title="Optional: analyze mesh connectivity to detect, inspect, and delete separate 3D islands before computation">
+                <span>Detect mesh islands</span>
+              </Tooltip>
+              <Switch size="small" checked={detectIslands} onChange={toggleDetectIslands} />
+            </div>
+            {detectIslands && isl && isl.count > 1 && (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11, background: 'var(--soft)', border: '1px solid var(--bd)', borderRadius: 4, padding: '4px 8px' }}>
+                <span><b>{isl.count}</b> islands detected</span>
+                <Button size="small" type="link" icon={<ScissorOutlined />} style={{ padding: 0, fontSize: 11, height: 'auto' }}
+                  onClick={() => { setViewMode('mesh'); vp.current && vp.current.setMode('mesh'); setColorMode('islands'); vp.current && vp.current.setColorMode('islands'); }}>
+                  Inspect &amp; delete
+                </Button>
+              </div>
+            )}
           </Section>
           <Divider style={{ margin: '4px 0' }} />
 
@@ -405,13 +675,61 @@ function StudioInner() {
               {[['mesh', 'Mesh'], ['lego', 'LEGO'], ['both', 'Overlay'], ['split', 'Split']].map(([v, l]) => <Radio.Button key={v} value={v} style={{ flex: 1, textAlign: 'center' }}>{l}</Radio.Button>)}
             </Radio.Group>
             <Text style={{ fontSize: 11, color: 'var(--tx2)' }}>Colours</Text>
-            <Radio.Group size="small" value={colorMode} onChange={(e) => { sfx.click(); const v = e.target.value; setColorMode(v); vp.current.setColorMode(v); if (v === 'islands') { setViewMode('mesh'); vp.current.setMode('mesh'); } }} style={{ display: 'flex', width: '100%' }}>
+            <Radio.Group size="small" value={colorMode} onChange={(e) => { sfx.click(); const v = e.target.value; setColorMode(v); vp.current.setColorMode(v); if (v === 'islands') { setViewMode('mesh'); vp.current.setMode('mesh'); if (!detectIslands) toggleDetectIslands(true); } }} style={{ display: 'flex', width: '100%' }}>
               <Radio.Button value="piece" style={{ flex: 1, textAlign: 'center' }}>Model</Radio.Button>
               <Radio.Button value="islands" style={{ flex: 1, textAlign: 'center' }}>Islands</Radio.Button>
               <Radio.Button value="kind" style={{ flex: 1, textAlign: 'center' }}>Part kinds</Radio.Button>
             </Radio.Group>
-            {colorMode === 'islands' && isl && <Text style={{ fontSize: 11, color: 'var(--tx2)' }}>{isl.count} island{isl.count === 1 ? '' : 's'} in the source mesh</Text>}
+            {colorMode === 'islands' && (
+              isl ? (
+                <div className="island-box">
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11 }}>
+                  <span><b>{isl.count}</b> island{isl.count === 1 ? '' : 's'}</span>
+                  <div style={{ display: 'flex', gap: 4 }}>
+                    {history.length > 0 && <Button size="small" type="text" icon={<UndoOutlined />} onClick={undoDelete} style={{ fontSize: 11, height: 22, padding: '0 4px' }}>Undo</Button>}
+                    {model && model.deletedIslands > 0 && <Button size="small" type="link" icon={<ReloadOutlined />} onClick={restoreModel} style={{ fontSize: 11, height: 22, padding: '0 4px' }}>Restore all</Button>}
+                  </div>
+                </div>
+                <Text type="secondary" style={{ fontSize: 10, lineHeight: 1.3 }}>Click an island in the 3D viewport or below to select and remove from computation.</Text>
+                {selectedIsland != null && islandStats[selectedIsland] && (
+                  <div className="island-selected-card">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span className="island-swatch" style={{ background: islandStats[selectedIsland].color }} />
+                      <span style={{ fontWeight: 600, fontSize: 11 }}>Island #{selectedIsland + 1}</span>
+                      <span style={{ fontSize: 10, color: 'var(--tx2)', marginLeft: 'auto' }}>{islandStats[selectedIsland].triangles.toLocaleString()} tris ({islandStats[selectedIsland].pct.toFixed(1)}%)</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: 6, marginTop: 2 }}>
+                      <Button size="small" danger icon={<DeleteOutlined />} onClick={() => deleteIsland(selectedIsland)} style={{ flex: 1, fontSize: 11, height: 24 }}>Delete from model</Button>
+                      <Button size="small" onClick={() => { setSelectedIsland(null); vp.current && vp.current.setSelectedIsland(null); }} style={{ fontSize: 11, height: 24 }}>Deselect</Button>
+                    </div>
+                  </div>
+                )}
+                <div className="island-list">
+                  {islandStats.map((st) => (
+                    <div key={st.id} className={'island-item' + (selectedIsland === st.id ? ' selected' : '')}
+                      onClick={() => { setSelectedIsland(st.id); vp.current && vp.current.setSelectedIsland(st.id); }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
+                        <span className="island-swatch" style={{ background: st.color }} />
+                        <span style={{ fontWeight: selectedIsland === st.id ? 600 : 400 }}>Island #{st.id + 1}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                        <span style={{ color: 'var(--tx2)', fontSize: 10 }}>{st.triangles.toLocaleString()} tris ({st.pct.toFixed(0)}%)</span>
+                        <Tooltip title="Delete island from computation">
+                          <Button size="small" type="text" danger icon={<DeleteOutlined />} onClick={(e) => { e.stopPropagation(); deleteIsland(st.id); }} style={{ width: 20, height: 20, padding: 0 }} />
+                        </Tooltip>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="island-box" style={{ alignItems: 'center', padding: '10px 8px', textAlign: 'center' }}>
+                <Text type="secondary" style={{ fontSize: 11, marginBottom: 6, display: 'block' }}>Mesh islands have not been computed.</Text>
+                <Button size="small" type="primary" onClick={() => toggleDetectIslands(true)}>Detect mesh islands</Button>
+              </div>
+            ))}
             {colorMode === 'kind' && resultsBlock}
+            <div className="row"><span>Official LEGO colors</span><Switch size="small" checked={officialColors} disabled={!res} onChange={toggleOfficialColors} /></div>
             <div className="row"><span>Ink outline</span><Switch size="small" checked={outline} onChange={(v) => { setOutline(v); vp.current.setOutline(v); }} /></div>
             <div className="row"><span>Outline thickness</span><Slider min={0.5} max={4} step={0.25} value={thick} onChange={(v) => { setThick(v); vp.current.setHullThickness(v); }} style={{ width: 120, margin: 0 }} /></div>
             <div className="row"><span>Animate the build</span><Switch size="small" checked={autoBuild} onChange={setAutoBuild} /></div>

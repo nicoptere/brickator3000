@@ -15,8 +15,9 @@ const BLUR_VERT = `
   varying vec2 vUv;
   void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`;
 
-// Gather bokeh: each pixel collects over a disc the size of its own circle of confusion. Samples are weighted down
-// when their own CoC is smaller than the distance they would travel, which stops sharp foreground bleeding outwards.
+// Gather bokeh: each pixel collects over a disc the size of its own circle of confusion.
+// Bilateral depth-aware weighting allows out-of-focus background and foreground to smoothly blur
+// without hard staircase aliasing at the subject silhouette.
 const BLUR_FRAG = `
   precision highp float;
   varying vec2 vUv;
@@ -39,7 +40,22 @@ const BLUR_FRAG = `
       float a = float(i) * 2.39996323;                          // golden angle spiral
       vec2 uv = vUv + vec2(cos(a), sin(a)) * r * uTexel;
       float zs = texture2D(tDepth, uv).r;
-      float w = cocAt(zs) >= r * 0.8 ? 1.0 : 0.08;              // only let a sample bleed this far if it is that blurred itself
+      float coc_s = cocAt(zs);
+      float w = 1.0;
+      if (z <= 0.0) {
+        if (zs > 0.0) {
+          w = clamp((coc_s - r * 0.75) / max(coc_s * 0.35, 1.0), 0.0, 1.0);
+        } else {
+          w = 1.0;
+        }
+      } else {
+        if (zs <= 0.0) {
+          w = clamp((coc - r * 0.75) / max(coc * 0.35, 1.0), 0.0, 1.0);
+        } else {
+          float maxC = max(coc, coc_s);
+          w = clamp((maxC - r * 0.75) / max(maxC * 0.35, 1.0), 0.0, 1.0);
+        }
+      }
       sum += texture2D(tDiffuse, uv).rgb * w; wsum += w;
     }
     gl_FragColor = vec4(sum / wsum, here.a);

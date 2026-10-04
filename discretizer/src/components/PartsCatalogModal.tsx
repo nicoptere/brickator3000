@@ -169,7 +169,8 @@ export const PartsCatalogModal: React.FC<PartsCatalogModalProps> = ({ visible, o
       roughness: 0.18,
       metalness: 0.02,
       clearcoat: 0.35,
-      clearcoatRoughness: 0.1
+      clearcoatRoughness: 0.1,
+      side: THREE.DoubleSide
     });
 
     let meshGeo: THREE.BufferGeometry;

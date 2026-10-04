@@ -7,9 +7,14 @@
 import { STUD, PLATE, G } from '../brickgen/constants.js';
 import { rotate, baseVolume } from '../brickgen/variants.js';
 import { apply } from './ldraw.js';
+import { ORIENTATIONS, orientPart } from './orient.js';
 
 const ROTS = [0, 90, 180, 270];
 const rotY = (deg) => { const t = deg * Math.PI / 180, c = Math.round(Math.cos(t)), s = Math.round(Math.sin(t)); return [c, 0, s, 0, 1, 0, -s, 0, c]; };
+const mm = (A, B) => { const o = new Array(9); for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) o[r * 3 + c] = A[r * 3] * B[c] + A[r * 3 + 1] * B[3 + c] + A[r * 3 + 2] * B[6 + c]; return o; };
+const TURN = rotY(90);
+const oriKey = (M) => M.map((x) => Math.round(x)).join(',');
+const ORI_INDEX = new Map(ORIENTATIONS.map((M, k) => [oriKey(M), k]));
 const DMD = (M) => { const D = [1, -1, -1], o = new Array(9); for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) o[r * 3 + c] = D[r] * M[r * 3 + c] * D[c]; return o; };
 const Dv = (v) => [v[0], -v[1], -v[2]];
 const near = (x, tol = 0.02) => Math.abs(x - Math.round(x)) < tol;
@@ -81,8 +86,8 @@ export function partFrames(cat, lib = null) {
  * placements -> { pieces, unknown, dims, stats }. pieces: engine records (rot canonicalised); unknown: cell boxes [i0,i1,j0,j1,b0,b1]
  * (half-open) of everything else. Coordinates are shifted so the model starts at 0 on every axis.
  */
-export function toGrid(placements, cat, lib, frames = partFrames(cat, lib)) {
-  const pieces = [], unknown = [], stats = { placed: 0, aliased: 0, half: 0, tilted: 0, offgrid: 0, uncovered: 0, dropped: 0, nobbox: 0, parts: new Map() };
+export function toGrid(placements, cat, lib, frames = partFrames(cat, lib), { snot = false } = {}) {
+  const pieces = [], unknown = [], stats = { placed: 0, aliased: 0, half: 0, sideways: 0, sidewaysOff: 0, snot: 0, tilted: 0, offgrid: 0, uncovered: 0, dropped: 0, nobbox: 0, parts: new Map() };
   const count = (m, k) => m.set(k, (m.get(k) || 0) + 1);
   const unknownBox = (p) => {
     const b = lib && lib.bbox(p.part + '.dat'); if (!b) { stats.nobbox++; return; }
@@ -100,21 +105,32 @@ export function toGrid(placements, cat, lib, frames = partFrames(cat, lib)) {
     const res = resolveId(p.part, frames, lib), fr = res && frames.get(res.id);
     if (!fr) { stats.uncovered++; count(stats.parts, p.part); unknownBox(p); continue; }
     if (res.alias) stats.aliased++;
-    const Re = DMD(p.M);
-    let rot = -1;
-    for (const r of ROTS) { const R = rotY(r); let ok = true; for (let k = 0; k < 9; k++) if (Math.abs(Re[k] - R[k]) > 1e-3) { ok = false; break; } if (ok) { rot = r; break; } }
-    if (rot < 0) { stats.tilted++; unknownBox(p); continue; }
-    // analytic catalogue entries (bricks / plates / tiles) list their footprint as (z, x) of the real LDraw part: a quarter turn apart
-    if (res.turn) rot = (rot + 90) % 360;
-    const v = [fr.cx, -fr.maxy, fr.cz], R = rotY(rot), tt = Dv(p.t);
-    const o = [R[0] * v[0] + R[1] * v[1] + R[2] * v[2] + tt[0], R[3] * v[0] + R[4] * v[1] + R[5] * v[2] + tt[1], R[6] * v[0] + R[7] * v[1] + R[8] * v[2] + tt[2]];
-    const [w, d] = fr.foot[rot];
-    const i = o[0] / STUD - w / 2, j = o[2] / STUD - d / 2, b = o[1] / PLATE;
-    // half-stud offsets (jumper plates, offset sub-assemblies) are kept as .5 coordinates: the miner splits the model by parity
-    if (!near(2 * i) || !near(2 * j) || !near(b)) { stats.offgrid++; unknownBox(p); continue; }
-    if (!near(i) || !near(j)) stats.half++;
-    pieces.push({ id: fr.c.id, rot: fr.canon[rot], i: Math.round(2 * i) / 2, j: Math.round(2 * j) / 2, b: Math.round(b), w, d, h: fr.h, color: p.color });
-    stats.placed++;
+    // the part's own frame is a quarter turn from LDraw's for the analytic entries (their footprint is listed as (z, x))
+    const Re = res.turn ? mm(DMD(p.M), TURN) : DMD(p.M);
+    const ori = ORI_INDEX.get(oriKey(Re));
+    if (ori === undefined || !ORIENTATIONS[ori].every((x, k) => Math.abs(Re[k] - x) < 1e-3)) { stats.tilted++; unknownBox(p); continue; }
+    const tt = Dv(p.t);
+    if (ori < 4) {                                            // upright: the footprint is whole studs, the level a whole plate
+      const rot = ori * 90, v = [fr.cx, -fr.maxy, fr.cz], R = ORIENTATIONS[ori];
+      const o = [R[0] * v[0] + R[1] * v[1] + R[2] * v[2] + tt[0], R[3] * v[0] + R[4] * v[1] + R[5] * v[2] + tt[1], R[6] * v[0] + R[7] * v[1] + R[8] * v[2] + tt[2]];
+      const [w, d] = fr.foot[rot];
+      const i = o[0] / STUD - w / 2, j = o[2] / STUD - d / 2, b = o[1] / PLATE;
+      // half-stud offsets (jumper plates, offset sub-assemblies) are kept as .5 coordinates: the miner splits the model by parity
+      if (!near(2 * i) || !near(2 * j) || !near(b)) { stats.offgrid++; unknownBox(p); continue; }
+      if (!near(i) || !near(j)) stats.half++;
+      pieces.push({ id: fr.c.id, ori: fr.canon[rot] / 90, rot: fr.canon[rot], i: Math.round(2 * i) / 2, j: Math.round(2 * j) / 2, b: Math.round(b), w, d, h: fr.h, color: p.color });
+      stats.placed++;
+    } else {                                                  // SNOT: the box corner must sit on the 4-LDU sample grid and on a plate
+      if (!snot) { stats.sideways++; unknownBox(p); continue; }
+      const ob = orientPart(fr.c, ori);
+      const lo = [tt[0] - ob.w * STUD / 2 - ob.origin[0], tt[1] - ob.h * PLATE / 2 - ob.origin[1], tt[2] - ob.d * STUD / 2 - ob.origin[2]];
+      const i = lo[0] / STUD, j = lo[2] / STUD, b = lo[1] / PLATE;
+      // x / z on the 4 LDU sample grid, y on a half plate (the volume field is per plate, but a motif is rasterised in 4 LDU
+      // slices before it is collapsed, so a sideways part may start half a level up - 44% of the sideways parts in the OMR do)
+      if (!near(i * G) || !near(j * G) || !near(2 * b)) { stats.sidewaysOff++; unknownBox(p); continue; }
+      pieces.push({ id: fr.c.id, ori, rot: 0, i: Math.round(i * G) / G, j: Math.round(j * G) / G, b: Math.round(2 * b) / 2, w: ob.w, d: ob.d, h: ob.h, color: p.color, snot: true });
+      stats.sideways++; stats.snot++;
+    }
   }
   // shift to the origin (whole studs / plates, so parities are preserved)
   let i0 = Infinity, j0 = Infinity, b0 = Infinity, i1 = -Infinity, j1 = -Infinity, b1 = -Infinity;

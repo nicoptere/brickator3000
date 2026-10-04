@@ -10,11 +10,21 @@ import { visibleSamples } from './visibility.js';
 import { snapToPalette } from './colors.js';
 import CATALOG from './catalog.js';
 import EXT from './catalog_ext.js';
+import SHAPES from './catalog_shapes.js';
 
-/** limited = the hand-picked core set; extended = core + every extra solid shape measured from LDraw */
-export const FULL_CATALOG = [...CATALOG, ...EXT];
-export const catalogFor = (o) => (o && o.partSet === 'extended' ? FULL_CATALOG : CATALOG);
-export { DEFAULTS, CATALOG };
+/** limited = the hand-picked core set; extended = core + every extra solid shape measured from LDraw.
+ * `shapeParts` adds the frequent shapes both lists skip because of their names (arches, panels, dishes, corner tiles,
+ * curved-top bricks): they are measured as a per-level occupancy, see claude/generator/lego_catalog_shapes.py. */
+export const FULL_CATALOG = [...CATALOG, ...EXT, ...SHAPES];
+// the shape parts are always in the catalogue (motifs place them, and every downstream pass looks parts up by id), but they are
+// poor SOLO candidates: a shell with a finely varying profile beats a plain plate on error while costing a piece (duck +6%,
+// chair +16% pieces for the same IoU). `noSolo` keeps them out of the single-part phases; `shapeParts: true` lets them compete.
+const SHAPES_SOLO = SHAPES, SHAPES_MOTIF_ONLY = SHAPES.map((c) => ({ ...c, noSolo: true }));
+export const catalogFor = (o) => {
+  const base = o && o.partSet === 'extended' ? [...CATALOG, ...EXT] : CATALOG;
+  return [...base, ...((o ? o.shapeParts : false) ? SHAPES_SOLO : SHAPES_MOTIF_ONLY)];
+};
+export { DEFAULTS, CATALOG, SHAPES };
 const now = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
 
 /** shared preparation (samples, symmetry, padded ray-cast volumes per parity) and the list of grid-phase jobs */
@@ -74,7 +84,7 @@ export function finishJob(ctx, job, cat = catalogFor(ctx.o), log = () => {}) {
   if (o.mergeHorizontal) post.horizontal = horizontal(S, cat, 'plate', o.colorTol) + horizontal(S, cat, 'tile', o.colorTol);
   if (o.retile) post.retile = retile(S, cat, o.colorTol);                              // stacked plates of any footprint -> bricks
   post.merged = before - S.pieces.length;
-  if (o.pillars) post.pillars = pillars(S, cat, o.pillarMinLevels);
+  if (o.pillars) post.pillars = pillars(S, cat, o.pillarMinLevels, o.pillarCluster ?? 0);
   post.connectedBefore = connectivity(S);
   if (o.bracing) post.brace = bracing(S, cat, o);
   if (o.splice) post.splice = splice(S, cat, o);

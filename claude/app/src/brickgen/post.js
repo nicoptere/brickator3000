@@ -1,4 +1,10 @@
 // Post-processing on the piece list: merges, pillars, bracing / supports (connectivity), studs finish.
+
+/** Is this piece free to be merged, re-cut or flattened? A sideways (SNOT) part is not: it sits at a fractional cell and level,
+ *  and it hangs on the side studs of the brick beside it. Neither is any other part of the same mined assembly (`mi`): those side
+ *  studs ARE that neighbour, so merging it away would change the trick and cut the sideways piece loose from the only thing
+ *  holding it (post.components groups an assembly by `mi`, which a merged piece no longer carries). */
+const free = (p) => !p.snot && !p.rigid;
 import { G } from './constants.js';
 
 // cell keys are packed numbers (string keys made the connectivity passes allocation-bound): i, j in [-1024, 3072), l in [-1, ...)
@@ -14,19 +20,29 @@ export function mk(c, w, d, i, j, b, rgb, phase, kind = null) {
   return { id: c.id, name: c.name, kind: kind || c.kind, rot: w === c.w && d === c.d ? 0 : 90, b, i, j, w, d, h: Math.round(c.h),
     studs: c.kind === 'tile' ? [] : Array.from({ length: w * d }, (_, k) => [k % w, Math.floor(k / w)]), phase, matched: 0, over: 0, rgb };
 }
-function shapes(cat, kind) { return cat.filter((c) => c.kind === kind && c.source === 'analytic').sort((a, b) => b.w * b.d - a.w * a.d); }
+// The plain boxes of a kind, largest first. `analytic` keeps out the measured LDraw specials (a headlight brick, a side-stud
+// brick) whose box is identical to a plain brick's but which must never be substituted for one; `noSolo` keeps out motif-only
+// parts for the same reason. Every footprint lookup in the post passes must go through here - see `vertical`.
+function shapes(cat, kind) { return cat.filter((c) => c.kind === kind && c.source === 'analytic' && !c.noSolo).sort((a, b) => b.w * b.d - a.w * a.d); }
 export function occupancy(pieces) {
   const occ = new Map();
-  pieces.forEach((p, n) => { for (let dz = 0; dz < p.d; dz++) for (let dx = 0; dx < p.w; dx++) for (let l = 0; l < p.h; l++) occ.set(K(p.i + dx, p.j + dz, p.b + l), n); });
+  pieces.forEach((p, n) => {
+    if (p.snot) {                               // sideways part (motifs/orient.js): fractional position and size, mark every cell its box touches
+      const i0 = Math.floor(p.i + 1e-6), i1 = Math.ceil(p.i + p.w - 1e-6), j0 = Math.floor(p.j + 1e-6), j1 = Math.ceil(p.j + p.d - 1e-6), b0 = Math.floor(p.b + 1e-6), b1 = Math.ceil(p.b + p.h - 1e-6);
+      for (let x = i0; x < i1; x++) for (let z = j0; z < j1; z++) for (let l = b0; l < b1; l++) if (!occ.has(K(x, z, l))) occ.set(K(x, z, l), n);
+      return;
+    }
+    for (let dz = 0; dz < p.d; dz++) for (let dx = 0; dx < p.w; dx++) for (let l = 0; l < p.h; l++) occ.set(K(p.i + dx, p.j + dz, p.b + l), n);
+  });
   return occ;
 }
 const studSet = (p) => new Set(p.studs.map(([a, b]) => K2(p.i + a, p.j + b)));
 
 // ------------------------------------------------------------------ merges
 export function vertical(S, cat, tol) {
-  const bricks = {}; for (const c of cat) if (c.kind === 'brick') bricks[[c.w, c.d].sort((a, b) => a - b).join('x')] = c;
+  const bricks = {}; for (const c of shapes(cat, 'brick')) bricks[[c.w, c.d].sort((a, b) => a - b).join('x')] ??= c;   // plain bricks only: this used to be last-wins over the whole catalogue, so a side-stud connector won 1x1 / 1x2 / 1x4
   const byfoot = new Map();
-  S.pieces.forEach((p, n) => { if (p.kind === 'plate') { const f = `${p.i},${p.j},${p.w},${p.d}`; if (!byfoot.has(f)) byfoot.set(f, new Map()); byfoot.get(f).set(p.b, n); } });
+  S.pieces.forEach((p, n) => { if (p.kind === 'plate' && free(p)) { const f = `${p.i},${p.j},${p.w},${p.d}`; if (!byfoot.has(f)) byfoot.set(f, new Map()); byfoot.get(f).set(p.b, n); } });
   let cand = new Map();
   for (const [f, lv] of byfoot) {
     const [fi, fj, fw, fd] = f.split(',').map(Number), key = [fw, fd].sort((a, b) => a - b).join('x');
@@ -74,7 +90,7 @@ function pack(cells, shp, b, tol) {            // cells: Map "i,j" -> rgb
 
 export function horizontal(S, cat, kind, tol) {
   const shp = shapes(cat, kind), groups = new Map();
-  S.pieces.forEach((p, n) => { if (p.kind === kind && p.h === 1) { if (!groups.has(p.b)) groups.set(p.b, []); groups.get(p.b).push(n); } });
+  S.pieces.forEach((p, n) => { if (p.kind === kind && free(p) && p.h === 1) { if (!groups.has(p.b)) groups.set(p.b, []); groups.get(p.b).push(n); } });
   const sizes = {}; for (const c of shp) { sizes[`${c.w},${c.d}`] = c; sizes[`${c.d},${c.w}`] = c; }
   let gained = 0; const kill = new Set(), add = [];
   for (const [b, ids] of groups) {
@@ -118,33 +134,59 @@ export function horizontal(S, cat, kind, tol) {
 }
 
 // ------------------------------------------------------------------ pillars: isolated 1x1 / 2x2 columns -> round bricks
-export function pillars(S, cat, minLevels = 3) {
+export function pillars(S, cat, minLevels = 3, cluster = 0) {
   const by = byId(cat), occ = occupancy(S.pieces), used = new Set(), add = [], made = { 1: 0, 2: 0 };
   for (const [size, brick, plate] of [[2, '3941', '4032a'], [1, '3062b', '6141']]) {
     const foot = (i, j) => { const o = []; for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) o.push([i + x, j + y]); return o; };
     const ring = (i, j) => { const o = []; for (let y = -1; y <= size; y++) for (let x = -1; x <= size; x++) if (!(x >= 0 && x < size && y >= 0 && y < size)) o.push([i + x, j + y]); return o; };
     const cols = new Map();
     S.pieces.forEach((p, n) => {
-      if (p.w === size && p.d === size && ['plate', 'brick', 'tile', 'round'].includes(p.kind) && !used.has(n))
+      if (p.w === size && p.d === size && free(p) && ['plate', 'brick', 'tile', 'round'].includes(p.kind) && !used.has(n))
         for (let l = 0; l < p.h; l++) { const key = K2(p.i, p.j); if (!cols.has(key)) cols.set(key, new Map()); cols.get(key).set(p.b + l, n); }
     });
     for (const [key, lvm] of cols) {
       const [i, j] = key.split(',').map(Number);
       const lv = [...lvm.entries()].sort((a, b) => a[0] - b[0]);
+      // a free-standing stretch of the column becomes round bricks (+ round plates for the remainder)
+      const emit = (seg) => {
+        const ids = new Set(seg.map((r) => r[1]));
+        ids.forEach((n) => used.add(n));
+        const rgb = S.pieces[seg[Math.floor(seg.length / 2)][1]].rgb, b0 = seg[0][0], L = seg.length;
+        for (let k = 0; k < Math.floor(L / 3); k++) add.push({ ...mk(by[brick], size, size, i, j, b0 + 3 * k, rgb, 'P-pillar', 'round'), studs: by[brick].stud_cells.map((s) => s.slice()) });
+        for (let k = 0; k < L % 3; k++) add.push({ ...mk(by[plate], size, size, i, j, b0 + 3 * Math.floor(L / 3) + k, rgb, 'P-pillar', 'round'), studs: by[plate].stud_cells.map((s) => s.slice()) });
+        made[size]++;
+      };
+      const ringc = ring(i, j), footc = foot(i, j);
       const flush = (run) => {
         if (run.length < minLevels) return;
         const ids = new Set(run.map((r) => r[1]));
         for (const n of ids) if (used.has(n)) return;
-        for (const n of ids) { const p = S.pieces[n]; if (p.b < run[0][0] || p.b + p.h > run[run.length - 1][0] + 1) return; }
-        for (const [l] of run) {
-          if (foot(i, j).some(([a, b]) => !ids.has(occ.get(K(a, b, l))))) return;
-          if (ring(i, j).some(([a, b]) => occ.has(K(a, b, l)))) return;
-        }
-        ids.forEach((n) => used.add(n));
-        const rgb = S.pieces[run[Math.floor(run.length / 2)][1]].rgb, b0 = run[0][0], L = run.length;
-        for (let k = 0; k < Math.floor(L / 3); k++) add.push({ ...mk(by[brick], size, size, i, j, b0 + 3 * k, rgb, 'P-pillar', 'round'), studs: by[brick].stud_cells.map((s) => s.slice()) });
-        for (let k = 0; k < L % 3; k++) add.push({ ...mk(by[plate], size, size, i, j, b0 + 3 * Math.floor(L / 3) + k, rgb, 'P-pillar', 'round'), studs: by[plate].stud_cells.map((s) => s.slice()) });
-        made[size]++;
+        for (const [l] of run) if (footc.some(([a, b]) => !ids.has(occ.get(K(a, b, l))))) return;
+        // The ring must be clear for a column to read as a pole — but a single neighbour used to veto the WHOLE
+        // column, which is why tall poles came out half-converted (and why mirroring the field, which happens to
+        // clean the neighbourhood up, looked like it fixed poles). Convert every clear stretch instead, trimmed to
+        // whole pieces so none is cut in half; a run clear end to end still converts in one go, as before.
+        // A neighbour that is itself a thin (1x1) column - a strut pair, a double leg, a row of railings - does not make
+        // this column part of a wall, so it does not veto; a neighbour of any larger footprint does. `cluster` caps how many
+        // thin neighbours a level may have before the group reads as a solid block rather than a cluster of poles.
+        const clear = (l) => {
+          let thin = 0;
+          for (const [a, b] of ringc) {
+            const n = occ.get(K(a, b, l)); if (n === undefined) continue;
+            const q = S.pieces[n];
+            if (q.w !== 1 || q.d !== 1 || q.snot || ++thin > cluster) return false;
+          }
+          return true;
+        };
+        let seg = [];
+        const close = () => {
+          let s = seg; seg = [];
+          for (let guard = 0; s.length && S.pieces[s[0][1]].b < s[0][0] && guard < 4; guard++) { const n = s[0][1]; s = s.filter((r) => r[1] !== n); }
+          for (let guard = 0; s.length && S.pieces[s[s.length - 1][1]].b + S.pieces[s[s.length - 1][1]].h > s[s.length - 1][0] + 1 && guard < 4; guard++) { const n = s[s.length - 1][1]; s = s.filter((r) => r[1] !== n); }
+          if (s.length >= minLevels) emit(s);
+        };
+        for (const r of run) { if (clear(r[0])) seg.push(r); else close(); }
+        close();
       };
       let run = [];
       for (const [l, n] of lv) { if (run.length && l !== run[run.length - 1][0] + 1) { flush(run); run = []; } run.push([l, n]); }
@@ -220,7 +262,15 @@ function countCompsAfter(P, occ, pairs, ids, add) {
   add.forEach((q, t) => { if (groundRoot.has(find(N + t))) grounded++; });
   return { comps, grounded, pieces: N - ids.size + M };
 }
-export function components(P, occ) { const uf = new UF(P.length); for (let n = 0; n < P.length; n++) link(P, occ, uf, n); return uf; }
+export function components(P, occ) {
+  const uf = new UF(P.length);
+  for (let n = 0; n < P.length; n++) link(P, occ, uf, n);
+  // a motif placed as one candidate is one assembly: its parts hold each other (a sideways tile hangs on the side studs of the
+  // headlight bricks beside it, which the stud-contact test cannot see), so they share a component
+  const mi = new Map();
+  for (let n = 0; n < P.length; n++) { const m = P[n].mi; if (m === undefined) continue; if (mi.has(m)) uf.union(mi.get(m), n); else mi.set(m, n); }
+  return uf;
+}
 export function connectivity(S) {
   const occ = occupancy(S.pieces), uf = components(S.pieces, occ), roots = new Set(), cnt = new Map();
   S.pieces.forEach((p, n) => { const r = uf.find(n); if (p.b === 0) roots.add(r); cnt.set(r, (cnt.get(r) || 0) + 1); });
@@ -230,7 +280,9 @@ export function connectivity(S) {
 }
 
 const plateOf = (by, len) => by[{ 1: '3024', 2: '3023', 3: '3623', 4: '3710' }[len]];
-const acceptsStuds = (p) => p.kind !== 'inverted';
+// A sideways (SNOT) part has no top face at a plate boundary and sits at a fractional level, so it can never be the anchor
+// a new upright piece is braced / spliced / supported against: it counts as occupancy only (same rule as the merge passes).
+const acceptsStuds = (p) => p.kind !== 'inverted' && free(p);
 const BR_DX = [1, -1, 0, 0], BR_DZ = [0, 0, 1, -1], BR_DL = [0, 1, -1, 2, -2, 3, -3];
 
 /** join neighbouring components with a 1xN plate under (or over) the seam; pad the shorter side with 1x1 plates (= thicken the limb) */
@@ -241,7 +293,13 @@ export function bracing(S, cat, o) {
   const NX = S.NXc, NZ = S.NZc, NL = S.NL, grid = new Int32Array(NX * NZ * NL).fill(-1);
   const gset = (i, j, l, n) => { if (i >= 0 && i < NX && j >= 0 && j < NZ && l >= 0 && l < NL) grid[(l * NZ + j) * NX + i] = n; };
   const gi = (i, j, l) => (i < 0 || i >= NX || j < 0 || j >= NZ || l < 0 || l >= NL ? -1 : grid[(l * NZ + j) * NX + i]);
-  P.forEach((p, n) => { for (let dz = 0; dz < p.d; dz++) for (let dx = 0; dx < p.w; dx++) for (let l = 0; l < p.h; l++) gset(p.i + dx, p.j + dz, p.b + l, n); });
+  // every whole cell the piece's box touches: identical to its footprint for an upright piece, and for a sideways one it marks
+  // the cells its fractional box overlaps (same rule as `occupancy`), so a brace is never routed straight through it
+  P.forEach((p, n) => {
+    const i0 = Math.floor(p.i + 1e-6), i1 = Math.ceil(p.i + p.w - 1e-6), j0 = Math.floor(p.j + 1e-6), j1 = Math.ceil(p.j + p.d - 1e-6);
+    const b0 = Math.floor(p.b + 1e-6), b1 = Math.ceil(p.b + p.h - 1e-6);
+    for (let j = j0; j < j1; j++) for (let i = i0; i < i1; i++) for (let l = b0; l < b1; l++) gset(i, j, l, n);
+  });
   for (let round = 0; round < o.braceRounds; round++) {
     const ssCache = new Map(), studSetC = (n) => { let x = ssCache.get(n); if (!x) { const p = P[n]; x = new Set(p.studs.map(([a, b]) => (p.i + a) * KW + p.j + b)); ssCache.set(n, x); } return x; };
     const NP = P.length, plane = S.NXc * S.NZc;      // seen: Map pair(n, m) -> Set of packed (c1, c2) cells
@@ -411,7 +469,7 @@ export function finish(S, cat, bricksMode = 'add') {
   const exposed = (p) => { for (let dz = 0; dz < p.d; dz++) for (let dx = 0; dx < p.w; dx++) if (occ.has(K(p.i + dx, p.j + dz, p.b + p.h)) || !air(p.i + dx, p.j + dz, p.b + p.h)) return false; return true; };
   let swapped = 0, split = 0, added = 0; const nw = [], kill = new Set();
   S.pieces.forEach((p, n) => {
-    if (!p.studs.length || !['plate', 'brick'].includes(p.kind) || !exposed(p)) return;
+    if (!free(p) || !p.studs.length || !['plate', 'brick'].includes(p.kind) || !exposed(p)) return;
     const c = tiles[`${p.w},${p.d}`];
     if (p.kind === 'plate') {
       kill.add(n);
@@ -584,7 +642,9 @@ export function bridge(S, cat, o) {
     }
     if (goal < 0) {
       // last resort: the component has no stud to build on (a lone slope on the ground): flatten its smooth pieces into a brick / plates of the same footprint
-      const SMOOTH = new Set(['slope', 'curved', 'cheese', 'inverted', 'tile']); const idsA = []; P.forEach((p, n) => { if (uf.find(n) === A && SMOOTH.has(p.kind)) idsA.push(n); });
+      // a sideways (SNOT) piece is held by the side studs of its host and sits at a fractional cell / level, so it cannot be
+      // rebuilt as an upright brick of the same footprint: leave it alone (it travels with its motif's other pieces anyway)
+      const SMOOTH = new Set(['slope', 'curved', 'cheese', 'inverted', 'tile']); const idsA = []; P.forEach((p, n) => { if (uf.find(n) === A && SMOOTH.has(p.kind) && free(p)) idsA.push(n); });
       if (idsA.length && !flattened.has(A)) {
         flattened.add(A); const bricks = shapes(cat, 'brick'), plates = shapes(cat, 'plate'), kill = new Set(idsA), add = [];
         for (const n of idsA) {
@@ -658,7 +718,7 @@ export function exteriorAir(S) {
 export function untile(S, cat) {
   const air = exteriorAir(S), shp = shapes(cat, 'plate'); let n = 0; const keep = [], add = [];
   for (const p of S.pieces) {
-    if (p.kind !== 'tile') { keep.push(p); continue; }
+    if (p.kind !== 'tile' || !free(p)) { keep.push(p); continue; }
     let open = true;
     for (let dz = 0; dz < p.d && open; dz++) for (let dx = 0; dx < p.w; dx++) if (!air(p.i + dx, p.j + dz, p.b + p.h)) { open = false; break; }
     if (open) { keep.push(p); continue; }
@@ -676,7 +736,7 @@ export function untile(S, cat) {
  *  piece count drops and connectivity does not get worse (a re-cut plate could lose its only stud contact). */
 export function retile(S, cat, tol) {
   const bricks = shapes(cat, 'brick'), plates = shapes(cat, 'plate');
-  const plain = (p) => p.kind === 'plate' && p.h === 1 && p.studs.length === p.w * p.d;
+  const plain = (p) => p.kind === 'plate' && free(p) && p.h === 1 && p.studs.length === p.w * p.d;
   let gained = 0;
   const levels = [...new Set(S.pieces.filter(plain).map((p) => p.b))].sort((a, b) => a - b);
   for (const b of levels) {
@@ -740,7 +800,7 @@ export function mergePairs(S, cat, kind, tol, passes = 12) {
   let total = 0;
   for (let pass = 0; pass < passes; pass++) {
     const P = S.pieces, foot = new Map(), dead = new Set(), add = [];
-    P.forEach((p, n) => { if (p.kind === kind && p.h === H) foot.set(`${p.b},${p.i},${p.j},${p.w},${p.d}`, n); });
+    P.forEach((p, n) => { if (p.kind === kind && free(p) && p.h === H) foot.set(`${p.b},${p.i},${p.j},${p.w},${p.d}`, n); });
     const mirrorFoot = (p) => { if (!S.mirror) return null; const [ax, c2] = S.mirror; return ax === 'x' ? { i: c2 - p.i - p.w, j: p.j } : { i: p.i, j: c2 - p.j - p.d }; };
     const plan = (n, m) => {                                // union rectangle of two pieces or null
       const a = P[n], b = P[m];
@@ -752,7 +812,7 @@ export function mergePairs(S, cat, kind, tol, passes = 12) {
     };
     const cands = [];
     P.forEach((a, n) => {
-      if (a.kind !== kind || a.h !== H) return;
+      if (a.kind !== kind || a.h !== H || !free(a)) return;          // the partner comes from `foot`, which is already filtered
       for (const [dx, dz] of [[1, 0], [0, 1]]) {
         const ni = dx ? a.i + a.w : a.i, nj = dz ? a.j + a.d : a.j;
         // the neighbour starting at (ni, nj) with the same extent across the seam

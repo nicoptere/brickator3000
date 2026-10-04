@@ -50,7 +50,9 @@ export default function DevApp() {
 
   const showSource = (m) => { setRes(null); viewer.current.clear(viewer.current.lego); viewer.current.pieces = null; viewer.current.legoBox = null;
     // preview in a normalised frame: same scale as the result (studs * 20 LDU on the reference side)
-    viewer.current.setSource(m.tris, m.vcols); };
+    viewer.current.setSource(m.tris, m.vcols);
+    viewer.current.zoomToFit(false);
+  };
 
   async function openPath(p) {
     setModelPath(p);

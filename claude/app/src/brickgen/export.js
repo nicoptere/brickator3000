@@ -1,5 +1,6 @@
 // Piece geometry (internal Y-up frame, LDU), feature edges, LDraw text.
 import { STUD, PLATE } from './constants.js';
+import { ORIENTATIONS, orientPart, ldrMatrix } from '../motifs/orient.js';
 
 const rotY = (deg) => { const t = deg * Math.PI / 180, c = Math.round(Math.cos(t)), s = Math.round(Math.sin(t)); return [c, 0, s, 0, 1, 0, -s, 0, c]; };
 
@@ -92,20 +93,38 @@ export function template(c, rot) {
 }
 /** world offset of a piece's template (footprint centre at grid position, bottom at its level) */
 export const pieceOrigin = (p) => [(p.i + p.w / 2) * STUD, p.b * PLATE, (p.j + p.d / 2) * STUD];
+/** ... and of a sideways piece's: the centre of its box, which is the frame orient.js works in */
+export const pieceCentre = (p) => [(p.i + p.w / 2) * STUD, (p.b + p.h / 2) * PLATE, (p.j + p.d / 2) * STUD];
+
+const mul3 = (A, B) => { const o = new Array(9); for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) o[r * 3 + c] = A[r * 3] * B[c] + A[r * 3 + 1] * B[3 + c] + A[r * 3 + 2] * B[6 + c]; return o; };
+const tmplOri = new Map();
+/** template of a part under one of the 24 orientations (motifs/orient.js), centred on its box centre; studs are not drawn (they point sideways) */
+export function templateOri(c, ori) {
+  const k = `${c.id}|o${ori}`; if (tmplOri.has(k)) return tmplOri.get(k);
+  const R = ORIENTATIONS[ori], ob = orientPart(c, ori), loc = partLocal(c), Hc = ob.ny * (STUD / 5) / 2;   // partLocal is centred in x/z, y from the bottom face
+  const tris = new Float32Array(loc.length);
+  for (let i = 0; i < loc.length; i += 3) {
+    const x = loc[i], y = loc[i + 1] - Hc, z = loc[i + 2];
+    tris[i] = R[0] * x + R[1] * y + R[2] * z; tris[i + 1] = R[3] * x + R[4] * y + R[5] * z; tris[i + 2] = R[6] * x + R[7] * y + R[8] * z;
+  }
+  const body = indexed(tris), t = { pos: body.pos, idx: body.idx, edges: featureEdges(tris), studs: [] };
+  tmplOri.set(k, t); return t;
+}
 
 /** LDraw (Y-down). v_ld = D (R (A p + c0 - cxz) + target), D = A = diag(1,-1,-1). colour: LEGO code when snapped, else direct RGB */
 export function toLDR(pieces, cat, name) {
   const by = {}; for (const c of cat) by[c.id] = c;
   const lines = [`0 ${name}`, `0 Name: ${name}.ldr`, '0 Author: brickgen (claude/app)'];
+  const TURNi = rotY(-90);
   for (const p of pieces) {
-    // analytic entries (bricks / plates / tiles / technic) list their footprint as (z, x) of the real LDraw part: a quarter turn apart
-    // (checked against the library bounding boxes of all 210 parts by motifs/placements.js partFrames)
-    const c = by[p.id], R = rotY(c.source === 'analytic' && c.w !== c.d ? p.rot + 90 : p.rot);
-    const M = [R[0], -R[1], -R[2], -R[3], R[4], R[5], -R[6], R[7], R[8]];          // D R D
-    const tgt = pieceOrigin(p);
-    // maxy = LDraw y of the part's bottom face (its origin is on the top face for the analytic boxes, i.e. maxy = height; 49307 has it at the bottom)
-    const v = [0 - (c.minx + c.w * 10), c.maxy ?? c.h * PLATE, 0 - (c.minz + c.d * 10)];
-    const r = [R[0] * v[0] + R[1] * v[1] + R[2] * v[2] + tgt[0], R[3] * v[0] + R[4] * v[1] + R[5] * v[2] + tgt[1], R[6] * v[0] + R[7] * v[1] + R[8] * v[2] + tgt[2]];
+    // The part's own frame is a quarter turn from LDraw's for the analytic entries (they list their footprint as (z, x) of the real
+    // part; checked against the library bounding boxes of all 210 parts by motifs/placements.js partFrames). Every orientation is
+    // handled the same way: the LDraw origin sits at the box centre plus the part's own origin offset, rotated (motifs/orient.js).
+    const c = by[p.id], ori = p.ori !== undefined ? p.ori : Math.round(((p.rot % 360) + 360) % 360 / 90), ob = orientPart(c, ori);
+    const Rld = c.source === 'analytic' && c.w !== c.d ? mul3(ob.R, TURNi) : ob.R;
+    const M = ldrMatrix(Rld);
+    const ctr = pieceCentre({ ...p, w: ob.w, d: ob.d, h: ob.h });
+    const r = [ctr[0] + ob.origin[0], ctr[1] + ob.origin[1], ctr[2] + ob.origin[2]];
     const t = [r[0], -r[1], -r[2]];
     const rgb = p.rgb || [200, 200, 200];
     const code = p.code !== undefined ? p.code : 0x2000000 + (rgb[0] << 16) + (rgb[1] << 8) + rgb[2];
@@ -114,7 +133,7 @@ export function toLDR(pieces, cat, name) {
   return lines.join('\n') + '\n';
 }
 
-export const KIND_COL = { slope: [0.145, 0.388, 0.922], curved: [0.031, 0.569, 0.698], cheese: [0.576, 0.2, 0.918], inverted: [0.9, 0.3, 0.3],
+export const KIND_COL = { shape: [0.6, 0.45, 0.3], slope: [0.145, 0.388, 0.922], curved: [0.031, 0.569, 0.698], cheese: [0.576, 0.2, 0.918], inverted: [0.9, 0.3, 0.3],
   tile: [0.8, 0.84, 0.88], plate: [0.55, 0.6, 0.67], brick: [0.35, 0.4, 0.48], round: [0.95, 0.6, 0.1], technic: [0.2, 0.7, 0.35], shaped: [0.9, 0.78, 0.15], support: [0.75, 0.2, 0.75] };
 
 /** indexed mesh of all pieces: positions, sRGB colours (Uint8 RGB per vertex), indices, edges, piece index per triangle.
@@ -124,6 +143,7 @@ export function buildMesh(pieces, cat, colorMode = 'piece', { hideCovered = true
   const occ = new Set();
   if (hideCovered) for (const p of pieces) for (let dz = 0; dz < p.d; dz++) for (let dx = 0; dx < p.w; dx++) for (let l = 0; l < p.h; l++) occ.add(`${p.i + dx},${p.j + dz},${p.b + l}`);
   const plan = pieces.map((p) => {
+    if (p.ori >= 4) return { t: templateOri(by[p.id], p.ori), studs: [], snot: true };
     const t = template(by[p.id], p.rot), [ox, , oz] = pieceOrigin(p), top = p.b + p.h;
     const studs = t.studs.filter(([x, , z]) => !occ.has(`${Math.floor((x + ox) / STUD)},${Math.floor((z + oz) / STUD)},${top}`));
     return { t, studs };
@@ -139,7 +159,7 @@ export function buildMesh(pieces, cat, colorMode = 'piece', { hideCovered = true
     triPiece.fill(n, i / 3, (i + I.length) / 3); i += I.length;
   };
   pieces.forEach((p, n) => {
-    const { t, studs } = plan[n], [ox, oy, oz] = pieceOrigin(p);
+    const { t, studs } = plan[n], [ox, oy, oz] = plan[n].snot ? pieceCentre(p) : pieceOrigin(p);
     const c = colorMode === 'kind' ? (KIND_COL[p.kind] || [0.6, 0.6, 0.6]).map((x) => Math.round(x * 255)) : p.rgb || [200, 200, 200];
     put(t.pos, t.idx, ox, oy, oz, c, n);
     for (const [x, y, z] of studs) put(STUD_GEO.pos, STUD_GEO.idx, ox + x, oy + y, oz + z, c, n);

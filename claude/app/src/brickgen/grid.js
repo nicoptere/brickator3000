@@ -17,8 +17,9 @@ export function normalize(tris, pts, n, ox, oz, ref = 'min3') {
   return { tris: f(tris), pts: pts ? f(pts) : null, s, lo };
 }
 
-/** every hit of a vertical ray through every sample column: grouped per column, sorted by height, with facing (-1 = surface looks down) */
-export function columnHits(tris, NX, NZ) {
+/** every hit of a vertical ray through every sample column: grouped per column, sorted by height, with facing (-1 = surface looks down).
+ *  `step` is the ray spacing in LDU: SAMP is one ray per field cell, SAMP / s gives s x s rays per cell (see spansVolume). */
+export function columnHits(tris, NX, NZ, step = SAMP) {
   const ex = 0.00137, ez = 0.00291;
   let cap = 1 << 16, n = 0;
   let sid = new Int32Array(cap), ys = new Float32Array(cap), fc = new Int8Array(cap);
@@ -34,15 +35,15 @@ export function columnHits(tris, NX, NZ) {
     const den = (bz - cz) * (ax - cx) + (cx - bx) * (az - cz);
     if (Math.abs(den) < 1e-12) continue;
     const x0 = Math.min(ax, bx, cx), x1 = Math.max(ax, bx, cx), z0 = Math.min(az, bz, cz), z1 = Math.max(az, bz, cz);
-    const i0 = Math.max(0, Math.ceil((x0 - ex) / SAMP - 0.5)), i1 = Math.min(NX - 1, Math.floor((x1 - ex) / SAMP - 0.5));
-    const k0 = Math.max(0, Math.ceil((z0 - ez) / SAMP - 0.5)), k1 = Math.min(NZ - 1, Math.floor((z1 - ez) / SAMP - 0.5));
+    const i0 = Math.max(0, Math.ceil((x0 - ex) / step - 0.5)), i1 = Math.min(NX - 1, Math.floor((x1 - ex) / step - 0.5));
+    const k0 = Math.max(0, Math.ceil((z0 - ez) / step - 0.5)), k1 = Math.min(NZ - 1, Math.floor((z1 - ez) / step - 0.5));
     if (i1 < i0 || k1 < k0) continue;
     const ny = (bz - az) * (cx - ax) - (bx - ax) * (cz - az);
     const f = ny < 0 ? -1 : 1;
     for (let k = k0; k <= k1; k++) {
-      const Z = (k + 0.5) * SAMP + ez;
+      const Z = (k + 0.5) * step + ez;
       for (let i = i0; i <= i1; i++) {
-        const X = (i + 0.5) * SAMP + ex;
+        const X = (i + 0.5) * step + ex;
         const l1 = ((bz - cz) * (X - cx) + (cx - bx) * (Z - cz)) / den;
         if (l1 < 0) continue;
         const l2 = ((cz - az) * (X - cx) + (ax - cx) * (Z - cz)) / den;
@@ -75,8 +76,10 @@ export function columnHits(tris, NX, NZ) {
  * interior (a cup, a bowl) hollow, regardless of face winding. "envelope": always solid from the lowest to the highest hit
  * (the crude, deliberate opt-in for when a shape is known-simple and robustness against noisy geometry matters more). */
 export function spansVolume(tris, nxc, nzc, nl, o) {
+  const ss = Math.max(1, Math.round(o.superSample ?? 1));
   const NX = nxc * G, NZ = nzc * G;
-  const { start, Y, F } = columnHits(tris, NX, NZ);
+  const NXf = NX * ss, NZf = NZ * ss;                    // ray grid: ss x ss rays per field cell
+  const { start, Y, F } = columnHits(tris, NXf, NZf, SAMP / ss);
   const M = new Float32Array(nl * NZ * NX);
   const alt = (a, b, first) => {
     if ((b - a) % 2) return false;
@@ -84,16 +87,20 @@ export function spansVolume(tris, nxc, nzc, nl, o) {
     return true;
   };
   let okD = 0, okU = 0, ncol = 0;
-  for (let c = 0; c < NX * NZ; c++) {
+  for (let c = 0; c < NXf * NZf; c++) {
     const a = start[c], b = start[c + 1]; if (a === b) continue;
     ncol++; if (alt(a, b, -1)) okD++; if (alt(a, b, 1)) okU++;
   }
   if (!ncol) return { M, bad: 0 };
   const first = okD >= okU ? -1 : 1, valid = Math.max(okD, okU) / ncol;
-  const add = (l, z, x, v) => { const idx = (l * NZ + z) * NX + x; M[idx] = Math.min(1, M[idx] + v); };
-  for (let c = 0; c < NX * NZ; c++) {
+  // one ray column at a time: its fill per level is clamped to 1 within that column, then averaged into the field cell
+  // it belongs to (weight 1 / ss^2), so a cell is the area average of its rays instead of a single centre sample.
+  const col = new Float32Array(nl), w = 1 / (ss * ss);
+  const add = (l, v) => { col[l] = Math.min(1, col[l] + v); };
+  for (let c = 0; c < NXf * NZf; c++) {
     const a = start[c], b = start[c + 1]; if (a === b) continue;
-    const iz = Math.floor(c / NX), ix = c % NX;
+    const izf = Math.floor(c / NXf), ixf = c % NXf;
+    const iz = (izf / ss) | 0, ix = (ixf / ss) | 0;
     let pairs = [];
     // 'hollow' pairs consecutive hits by position (enter/exit/enter/exit...), independent of face orientation: this is the
     // standard even-odd solid test, so it keeps a concave interior (a cup, a bowl) hollow even on a mesh whose winding is
@@ -107,16 +114,18 @@ export function spansVolume(tris, nxc, nzc, nl, o) {
       if (merged.length && lo - merged[merged.length - 1][1] < o.minGap) merged[merged.length - 1][1] = hi;
       else merged.push([lo, hi]);
     }
+    let lmin = nl, lmax = -1;
     for (let k = 0; k < merged.length; k++) {
       let [lo, hi] = merged[k];
       if (k === 0 && (lo <= o.snap || b - a === 1)) lo = 0;
       else if (o.minThick && hi - lo < 0.8 * PLATE) { lo = Math.floor((lo + hi) / 2 / PLATE) * PLATE; hi = lo + PLATE; }
-      const l0 = Math.floor(lo / PLATE), l1 = Math.min(nl - 1, Math.floor(hi / PLATE));
+      const l0 = Math.max(0, Math.floor(lo / PLATE)), l1 = Math.min(nl - 1, Math.floor(hi / PLATE));
       for (let l = l0; l <= l1; l++) {
         const v = Math.max(0, Math.min(hi, (l + 1) * PLATE) - Math.max(lo, l * PLATE)) / PLATE;
-        if (v > 0) add(l, iz, ix, v);
+        if (v > 0) { add(l, v); if (l < lmin) lmin = l; if (l > lmax) lmax = l; }
       }
     }
+    for (let l = lmin; l <= lmax; l++) { M[(l * NZ + iz) * NX + ix] += col[l] * w; col[l] = 0; }
   }
   return { M, bad: 1 - valid };
 }
@@ -138,8 +147,9 @@ export function prepare(model, n, o, sym = null) {
   const { hi } = bounds(nm.tris);
   const nxc = Math.ceil((hi[0] + PAD + STUD) / STUD), nzc = Math.ceil((hi[2] + PAD + STUD) / STUD);
   const nl = Math.ceil(hi[1] / PLATE) + 1;
-  const { M, bad } = spansVolume(nm.tris, nxc, nzc, nl, o);
+  let { M, bad } = spansVolume(nm.tris, nxc, nzc, nl, o);
   const NX = nxc * G, NZ = nzc * G;
+  if (o.fieldSmooth) M = smoothField(M, nl, NZ, NX, o.fieldSmooth, o.fieldSmoothThin ?? 0.5);
   const P = new Uint16Array(M.length);            // surface-point splat (thin features thinner than the ray spacing)
   for (let k = 0; k < nm.pts.length; k += 3) {
     const ix = Math.min(NX - 1, Math.max(0, Math.floor(nm.pts[k] / SAMP))), iz = Math.min(NZ - 1, Math.max(0, Math.floor(nm.pts[k + 2] / SAMP)));
@@ -179,6 +189,24 @@ export function symmetrize(M, nl, nz, nx, ax, c2) {
     if (ax === 0) { const xm = G * c2 - 1 - x; if (xm >= 0 && xm < nx) m = M[(l * nz + z) * nx + xm]; }
     else { const zm = G * c2 - 1 - z; if (zm >= 0 && zm < nz) m = M[(l * nz + zm) * nx + x]; }
     out[idx] = (M[idx] + m) / 2;
+  }
+  return out;
+}
+
+/** blend a cell with the mean of its 4 lateral neighbours at weight w, but ONLY where that neighbourhood is sparse
+ *  (mean <= `thin`). The field is one vertical ray per cell, so a feature thinner than a cell lands in whichever cell the
+ *  ray happens to catch: its column wanders with sub-cell phase, which is why thin struts came out as staircases of plates
+ *  instead of poles. Averaging laterally pulls such a feature back onto its centre. A cell inside a surface or a solid body
+ *  is sampled reliably and is left exactly as it was, so this costs no fidelity where there is nothing to fix. (This is the
+ *  symmetry-free form of what averaging the field with its mirror did by accident on near-symmetric meshes - docs/MOTIFS.md.) */
+export function smoothField(M, nl, nz, nx, w, thin = 0.5) {
+  if (!(w > 0)) return M;
+  const out = new Float32Array(M.length);
+  for (let l = 0; l < nl; l++) for (let z = 0; z < nz; z++) for (let x = 0; x < nx; x++) {
+    const i = (l * nz + z) * nx + x;
+    const a = x > 0 ? M[i - 1] : 0, b = x < nx - 1 ? M[i + 1] : 0, c = z > 0 ? M[i - nx] : 0, d = z < nz - 1 ? M[i + nx] : 0;
+    const s = (a + b + c + d) / 4;
+    out[i] = s <= thin ? (1 - w) * M[i] + w * s : M[i];
   }
   return out;
 }

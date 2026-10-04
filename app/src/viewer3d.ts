@@ -308,11 +308,12 @@ export class Viewer3D {
         if (child.isMesh) {
           if (Array.isArray(child.material)) {
             child.material = child.material.map((m: any) => {
-              if (m && m.isMaterial) return m;
+              if (m && m.isMaterial) { m.side = THREE.DoubleSide; return m; }
               const fallback = new THREE.MeshStandardMaterial({
                 color: 0xcccccc,
                 roughness: 0.3,
-                metalness: 0.1
+                metalness: 0.1,
+                side: THREE.DoubleSide
               });
               fallback.userData = { isDynamicFallback: true };
               return fallback;
@@ -321,10 +322,13 @@ export class Viewer3D {
             const fallback = new THREE.MeshStandardMaterial({
               color: 0xcccccc,
               roughness: 0.3,
-              metalness: 0.1
+              metalness: 0.1,
+              side: THREE.DoubleSide
             });
             fallback.userData = { isDynamicFallback: true };
             child.material = fallback;
+          } else {
+            child.material.side = THREE.DoubleSide;
           }
         }
         if (child.isLineSegments) {
@@ -394,14 +398,21 @@ export class Viewer3D {
 
       // Sanitize all children so no mesh/line has material == null
       group.traverse((child: any) => {
-        if (child.isMesh && (!child.material || child.material === null)) {
-          const fallback = new THREE.MeshStandardMaterial({
-            color: 0xe02424,
-            roughness: 0.3,
-            metalness: 0.1
-          });
-          fallback.userData = { isDynamicFallback: true };
-          child.material = fallback;
+        if (child.isMesh) {
+          if (!child.material || child.material === null) {
+            const fallback = new THREE.MeshStandardMaterial({
+              color: 0xe02424,
+              roughness: 0.3,
+              metalness: 0.1,
+              side: THREE.DoubleSide
+            });
+            fallback.userData = { isDynamicFallback: true };
+            child.material = fallback;
+          } else if (Array.isArray(child.material)) {
+            child.material.forEach((m: any) => { if (m) m.side = THREE.DoubleSide; });
+          } else {
+            child.material.side = THREE.DoubleSide;
+          }
         }
         if (child.isLineSegments && (!child.material || child.material === null)) {
           const fallback = new THREE.LineBasicMaterial({ color: 0x333333 });

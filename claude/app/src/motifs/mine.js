@@ -6,6 +6,11 @@
 // The six window faces are tested with 2D prefix sums of "a piece straddles this plane here" / "a piece starts (ends) on this plane
 // here", so a window costs a handful of lookups and a model costs ~1 s for all window sizes.
 import { partFrames } from './placements.js';
+import { ORI_YAW } from './orient.js';
+
+// a piece's cell bounds: SNOT parts sit at 4 LDU / half plate offsets, so their footprint is the cells their box touches
+const C0 = (v) => Math.floor(v + 1e-6), C1 = (v) => Math.ceil(v - 1e-6);
+const isHalf = (v) => Math.abs(((v % 1) + 1) % 1 - 0.5) < 1e-6;
 
 export const DEFAULT_SIZES = (() => {
   const out = []; const WD = [1, 2, 3, 4, 5, 6, 8, 10, 12], H = [1, 2, 3, 4, 5, 6, 8, 9, 12];
@@ -32,7 +37,7 @@ export function buildGrid(pieces, unknownBoxes, dims) {
   const ay = new Uint8Array((nl + 1) * nz * nx), ey = new Uint8Array((nl + 1) * nz * nx);
   const cellPieces = new Map();
   pieces.forEach((p, k) => {
-    const i0 = p.i, i1 = p.i + p.w, j0 = p.j, j1 = p.j + p.d, b0 = p.b, b1 = p.b + p.h;
+    const i0 = C0(p.i), i1 = C1(p.i + p.w), j0 = C0(p.j), j1 = C1(p.j + p.d), b0 = C0(p.b), b1 = C1(p.b + p.h);
     for (let b = b0; b < b1; b++) for (let j = j0; j < j1; j++) for (let i = i0; i < i1; i++) occ[(b * nz + j) * nx + i]++;
     for (let b = b0; b < b1; b++) for (let j = j0; j < j1; j++) { for (let i = i0 + 1; i < i1; i++) sx[(b * nz + j) * X + i] = 1; ax[(b * nz + j) * X + i0] = 1; ex[(b * nz + j) * X + i1] = 1; }
     for (let b = b0; b < b1; b++) for (let i = i0; i < i1; i++) { for (let j = j0 + 1; j < j1; j++) sz[(b * Z + j) * nx + i] = 1; az[(b * Z + j0) * nx + i] = 1; ez[(b * Z + j1) * nx + i] = 1; }
@@ -83,15 +88,21 @@ export function scanWindows(g, sizes, onWindow, { minFill = 0.4, minPieces = 2 }
   }
 }
 
-/** key of a group of pieces (relative offsets) in a W x D x H window, canonical over the 4 yaw rotations; returns { key, parts, w, d, h } */
+/** key of a group of pieces (relative offsets) in a W x D x H window, canonical over the 4 yaw rotations; returns { key, parts, w, d, h }.
+ * Offsets can be fractions (half studs for jumper sub-assemblies, fifths of a stud and half plates for SNOT parts), so the key
+ * writes them as integers of a tenth of a stud / half a plate rather than as floats. */
+const fmt = (p) => `${p.id}:${p.ori !== undefined ? 'o' + p.ori : p.rot}:${Math.round(p.di * 10)},${Math.round(p.dj * 10)},${Math.round(p.db * 2)}`;
 export function canonicalKey(parts, w, d, h, frames) {
   let best = null;
   let cur = parts.map((p) => ({ ...p })), cw = w, cd = d;
   for (let r = 0; r < 4; r++) {
-    const key = `${cw},${cd},${h}|` + cur.map((p) => `${p.id}:${p.rot}:${p.di},${p.dj},${p.db}`).sort().join(' ');
+    const key = `${cw},${cd},${h}|` + cur.map(fmt).sort().join(' ');
     if (best === null || key < best.key) best = { key, parts: cur.map((p) => ({ ...p })), w: cw, d: cd, h };
-    // rotate the window by +90: (x, z) -> (z, W - x - w2); piece rot += 90 then canonicalised; footprint (w2, d2) -> (d2, w2)
-    cur = cur.map((p) => { const fr = frames.get(p.id), rot = (p.rot + 90) % 360; return { id: p.id, rot: fr.canon[rot], di: p.dj, dj: cw - p.di - p.w2, db: p.db, w2: p.d2, d2: p.w2 }; });
+    // rotate the window by +90: (x, z) -> (z, W - x - w2); piece orientation composed with the yaw; footprint (w2, d2) -> (d2, w2)
+    cur = cur.map((p) => {
+      const o = p.ori !== undefined ? { ori: ORI_YAW[p.ori] } : { rot: frames.get(p.id).canon[(p.rot + 90) % 360] };
+      return { id: p.id, ...o, di: p.dj, dj: cw - p.di - p.w2, db: p.db, w2: p.d2, d2: p.w2 };
+    });
     [cw, cd] = [cd, cw];
   }
   return best;
@@ -100,7 +111,8 @@ export function canonicalKey(parts, w, d, h, frames) {
 /** split a model's pieces into the 4 (x, z) half-stud parity classes; the other classes become unknown boxes in each class grid */
 export function parityClasses(pieces, unknown, dims) {
   const cls = [[], [], [], []];
-  for (const p of pieces) cls[((p.i % 1) ? 2 : 0) + ((p.j % 1) ? 1 : 0)].push(p);
+  // only exact half-stud offsets form their own class; a SNOT part at a fifth of a stud stays in class 0 and blocks the others
+  for (const p of pieces) cls[(isHalf(p.i) ? 2 : 0) + (isHalf(p.j) ? 1 : 0)].push(p);
   const out = [];
   for (let k = 0; k < 4; k++) {
     if (!cls[k].length) continue;
@@ -121,10 +133,10 @@ export function mineModel(grid, cat, acc, modelId, { sizes = DEFAULT_SIZES, minF
     const g = buildGrid(cls.pieces, cls.unknown, cls.dims);
     scanWindows(g, sizes, (i0, j0, b0, w, d, h, idx) => {
       windows++;
-      const parts = idx.map((k) => { const p = cls.pieces[k]; return { id: p.id, rot: p.rot, di: p.i - i0, dj: p.j - j0, db: p.b - b0, w2: p.w, d2: p.d }; });
+      const parts = idx.map((k) => { const p = cls.pieces[k]; return { id: p.id, ...(p.snot ? { ori: p.ori } : { rot: p.rot }), di: p.i - i0, dj: p.j - j0, db: p.b - b0, w2: p.w, d2: p.d }; });
       const c = canonicalKey(parts, w, d, h, frames);
       let rec = acc.get(c.key);
-      if (!rec) { rec = { w: c.w, d: c.d, h: c.h, parts: c.parts.map((p) => ({ id: p.id, rot: p.rot, i: p.di, j: p.dj, b: p.db })), n: 0, models: new Set() }; acc.set(c.key, rec); }
+      if (!rec) { rec = { w: c.w, d: c.d, h: c.h, parts: c.parts.map((p) => ({ id: p.id, ...(p.ori !== undefined ? { ori: p.ori } : { rot: p.rot }), i: p.di, j: p.dj, b: p.db })), n: 0, models: new Set(), snot: c.parts.some((p) => p.ori !== undefined) }; acc.set(c.key, rec); }
       rec.n++; rec.models.add(modelId);
     }, { minFill });
   }
