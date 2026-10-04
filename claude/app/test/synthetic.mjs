@@ -48,3 +48,53 @@ export function perturb(model, sigma, seed = 7) {
   return { ...model, tris: unweld(pos, idx) };
 }
 
+
+// ------------------------------------------------------------------------------------------- curved test shapes (docs/CURVES.md)
+/** triangle soup of a closed parametric surface P(u, v), u in [0, nu) periodic, v in [0, nv]; poles where the v rows degenerate are fine
+ *  (zero-area triangles are skipped). Winding: outward for a surface whose u runs counter-clockwise seen from +v. */
+function lathe(P, nu, nv, flip = false) {
+  const tris = [];
+  const tri = (a, b, c) => { if (flip) [b, c] = [c, b]; tris.push(...a, ...b, ...c); };
+  for (let i = 0; i < nu; i++) for (let j = 0; j < nv; j++) {
+    const a = P(i, j), b = P(i + 1, j), c = P(i + 1, j + 1), d = P(i, j + 1);
+    tri(a, b, c); tri(a, c, d);
+  }
+  const t = new Float32Array(tris);
+  return { tris: t, vcols: new Float32Array(t.length).fill(0.6) };
+}
+
+/** a solid of revolution about y: profile r(y) for y in [0, H], standing on the ground; closed with a flat bottom and a flat top */
+export function revolve(rOf, H, { nu = 96, nv = 64 } = {}) {
+  const P = (i, j) => { const th = 2 * Math.PI * i / nu, y = H * j / nv, r = Math.max(0, rOf(y)); return [r * Math.cos(th), y, r * Math.sin(th)]; };
+  const side = lathe(P, nu, nv, true);
+  const caps = [];
+  for (const [y, flipCap] of [[0, false], [H, true]]) {
+    const r = Math.max(0, rOf(y)); if (r <= 1e-6) continue;
+    for (let i = 0; i < nu; i++) {
+      const a = [0, y, 0], b = [r * Math.cos(2 * Math.PI * i / nu), y, r * Math.sin(2 * Math.PI * i / nu)], c = [r * Math.cos(2 * Math.PI * (i + 1) / nu), y, r * Math.sin(2 * Math.PI * (i + 1) / nu)];
+      if (flipCap) caps.push(...a, ...c, ...b); else caps.push(...a, ...b, ...c);
+    }
+  }
+  const t = new Float32Array(side.tris.length + caps.length); t.set(side.tris); t.set(caps, side.tris.length);
+  return { tris: t, vcols: new Float32Array(t.length).fill(0.6) };
+}
+/** hemisphere of radius R (LDU) on the ground */
+export const dome = (R = 160) => revolve((y) => Math.sqrt(Math.max(0, R * R - y * y)), R);
+/** full sphere of radius R resting on the ground (undersides for the inverted slopes) */
+export const sphere = (R = 160) => revolve((y) => Math.sqrt(Math.max(0, R * R - (y - R) * (y - R))), 2 * R);
+/** egg: a sphere scaled 1 : 1.35 in y */
+export const egg = (R = 140) => revolve((y) => { const t = (y - 1.35 * R) / (1.35 * R); return R * Math.sqrt(Math.max(0, 1 - t * t)); }, 2.7 * R);
+/** cone of base radius R and height H */
+export const cone = (R = 160, H = 200) => revolve((y) => R * (1 - y / H), H);
+/** a cylinder lying along x: radius R, length L, resting on the ground (its underside wants inverted slopes) */
+export function cylinderX(R = 120, L = 400, nu = 96) {
+  const P = (i, j) => { const th = 2 * Math.PI * i / nu, x = j ? L : 0; return [x, R + R * Math.cos(th), R * Math.sin(th)]; };
+  const side = lathe(P, nu, 1, true), caps = [];
+  for (const [x, flipCap] of [[0, false], [L, true]]) for (let i = 0; i < nu; i++) {
+    const a = [x, R, 0], b = [x, R + R * Math.cos(2 * Math.PI * i / nu), R * Math.sin(2 * Math.PI * i / nu)], c = [x, R + R * Math.cos(2 * Math.PI * (i + 1) / nu), R * Math.sin(2 * Math.PI * (i + 1) / nu)];
+    if (flipCap) caps.push(...a, ...c, ...b); else caps.push(...a, ...b, ...c);
+  }
+  const t = new Float32Array(side.tris.length + caps.length); t.set(side.tris); t.set(caps, side.tris.length);
+  return { tris: t, vcols: new Float32Array(t.length).fill(0.6) };
+}
+export const CURVED = { dome, sphere, egg, cone, cylinderX };

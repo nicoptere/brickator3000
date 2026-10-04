@@ -3,8 +3,8 @@ import { DEFAULTS, STUD, PLATE } from './constants.js';
 import { surfaceSamples } from './mesh.js';
 import { prepare, normalize } from './grid.js';
 import { smoothModel } from './smooth.js';
-import { solve, metrics } from './run.js';
-import { mergePairs, vertical, horizontal, pillars, bracing, splice, bridge, supports, finish, untile, connectivity, retile } from './post.js';
+import { solve, metrics, surface } from './run.js';
+import { mergePairs, vertical, horizontal, pillars, bracing, splice, bridge, supports, finish, untile, connectivity, retile, roundCorners, widen, dropLoose } from './post.js';
 import { detectSymmetry } from './symmetry.js';
 import { PointGrid } from './nn.js';
 import { visibleSamples } from './visibility.js';
@@ -20,10 +20,20 @@ export const FULL_CATALOG = [...CATALOG, ...EXT, ...SHAPES];
 // the shape parts are always in the catalogue (motifs place them, and every downstream pass looks parts up by id), but they are
 // poor SOLO candidates: a shell with a finely varying profile beats a plain plate on error while costing a piece (duck +6%,
 // chair +16% pieces for the same IoU). `noSolo` keeps them out of the single-part phases; `shapeParts: true` lets them compete.
-const SHAPES_SOLO = SHAPES, SHAPES_MOTIF_ONLY = SHAPES.map((c) => ({ ...c, noSolo: true }));
+// The exception is the round family (discs, quarter discs, cones: kind 'round'): a cylinder's cross-section or a round table top
+// is exactly what the A0-round phase looks for, and a 4x4 or 6x6 round plate explains it in one piece where the fill phase would
+// lay a staircase of fragments. `shapeSolo` lists the kinds of measured shapes allowed as solo candidates (default ['round']).
+const shapeCache = new Map();
+const shapesFor = (o) => {
+  const solo = o && o.shapeParts ? null : new Set((o && o.shapeSolo) || ['round']);
+  const ids = new Set((o && o.shapeSoloIds) || []);                     // single parts allowed solo whatever their kind (4287a: the 1-wide inverted 33)
+  const key = solo ? [...solo].sort().join(',') + '|' + [...ids].sort().join(',') : '*';
+  if (!shapeCache.has(key)) shapeCache.set(key, SHAPES.map((c) => (solo && !solo.has(c.kind) && !ids.has(c.id) ? { ...c, noSolo: true } : c)));
+  return shapeCache.get(key);
+};
 export const catalogFor = (o) => {
   const base = o && o.partSet === 'extended' ? [...CATALOG, ...EXT] : CATALOG;
-  return [...base, ...((o ? o.shapeParts : false) ? SHAPES_SOLO : SHAPES_MOTIF_ONLY)];
+  return [...base, ...shapesFor(o)];
 };
 export { DEFAULTS, CATALOG, SHAPES };
 const now = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
@@ -65,7 +75,17 @@ export function finishJob(ctx, job, cat = catalogFor(ctx.o), log = () => {}) {
   const { o, m, sym, symOk } = ctx, T = { ...ctx.T };
   let t = now();
   const [par, ox, oz] = job, pre = ctx.pres[par];
-  const S = solve(pre, cat, ox, oz, o, log);
+  let S = solve(pre, cat, ox, oz, o, log);
+  const post = {};
+  // motif verification (docs/CURVES.md): the mined assemblies are a broad-phase heuristic that pays on blocky and roof-like
+  // models and leaves a chaotic skin on organic ones; the same field is solved once more without them (fast: the motif phase is
+  // what costs) and the assemblies are kept only when they gain at least `motifGain` of IoU
+  if (o.motifs && (o.motifVerify ?? true)) {
+    const S2 = solve(pre, cat, ox, oz, { ...o, motifs: false }), a = metrics(S).iou, b = metrics(S2).iou;
+    post.motifCheck = { with: +a.toFixed(4), without: +b.toFixed(4), kept: a >= b + (o.motifGain ?? 0.01) };
+    if (!post.motifCheck.kept) S = S2;
+    log(`motif check: IoU ${a.toFixed(3)} with, ${b.toFixed(3)} without -> ${post.motifCheck.kept ? 'kept' : 'dropped'}`);
+  }
   const off = [ox + pre.shift[0], oz + pre.shift[1]];
   T.solve = now() - t; t = now();
   // cheat colour: mean colour of the nearest surface samples, in the same normalised frame
@@ -80,8 +100,8 @@ export function finishJob(ctx, job, cat = catalogFor(ctx.o), log = () => {}) {
   const cols = ccols;
   for (const p of S.pieces) p.rgb = colourAt(grid, cols, p, o.colorK);
   T.colour = now() - t; t = now();
-  const post = {};
   const before = S.pieces.length;
+  if (o.widen) post.widen = widen(S, cat, o.colorTol);                                   // two identical 1-wide slopes side by side -> the 2-wide part
   if (o.mergeVertical) post.vertical = vertical(S, cat, o.colorTol);
   if (o.mergeHorizontal) post.horizontal = horizontal(S, cat, 'plate', o.colorTol) + horizontal(S, cat, 'tile', o.colorTol);
   if (o.retile) post.retile = retile(S, cat, o.colorTol);                              // stacked plates of any footprint -> bricks
@@ -98,10 +118,12 @@ export function finishJob(ctx, job, cat = catalogFor(ctx.o), log = () => {}) {
   post.untiled = untile(S, cat);                                                        // smooth tiles only on the outside skin
   if (o.mergeHorizontal) post.pairs = mergePairs(S, cat, 'plate', o.colorTol) + mergePairs(S, cat, 'brick', o.colorTol);          // union-only merges: connectivity cannot get worse
   if (o.finish) { post.finish = finish(S, cat, o.finishBricks); if (o.mergeHorizontal) mergePairs(S, cat, 'tile', o.colorTol); }
+  if (o.finish && o.roundCorners) post.corners = roundCorners(S, cat);                   // quarter-round tiles on the convex corners of the top layer
+  if (o.dropLoose) post.loose = dropLoose(S, o.dropLoose);                                 // single pieces touching nothing are not part of the build
   for (const p of S.pieces) if (!p.rgb) p.rgb = colourAt(grid, cols, p, o.colorK);
   if (o.palette === 'lego') for (const p of S.pieces) { if (p.kind === 'support') continue; const c = snapToPalette(p.rgb); p.rgb = c.rgb; p.code = c.code; p.colorName = c.name; }
   T.post = now() - t;
-  const mt = metrics(S), con = connectivity(S);
+  const mt = metrics(S), con = connectivity(S), sf = surface(S, cat);
   let mirrored = null;
   if (S.mirror) {
     const [ax, c2] = S.mirror, keys = new Set(S.pieces.map((q) => `${q.id},${q.b},${q.j},${q.i},${q.w},${q.d}`));
@@ -110,7 +132,7 @@ export function finishJob(ctx, job, cat = catalogFor(ctx.o), log = () => {}) {
   const srcTris = normalize(m.tris, null, o.studs, off[0], off[1], o.ref).tris;
   return {
     pieces: S.pieces, dims: S.dims, offset: off, scale: nm.s, srcTris, srcCols: m.vcols,
-    metrics: { ...mt, ...con }, post, timing: T, islands: pre.islands, crust: pre.crust, align: pre.align,
+    metrics: { ...mt, ...con, ...sf }, post, timing: T, islands: pre.islands, crust: pre.crust, align: pre.align,
     symmetry: sym ? { axis: sym.axis, err: sym.err, used: symOk, parity: symOk ? par : null, plane: S.mirror ? S.mirror[1] : null, mirrored } : null,
   };
 }

@@ -5,6 +5,7 @@
  *  studs ARE that neighbour, so merging it away would change the trick and cut the sideways piece loose from the only thing
  *  holding it (post.components groups an assembly by `mi`, which a merged piece no longer carries). */
 const free = (p) => !p.snot && !p.rigid;
+import { partVariants } from './variants.js';
 import { G } from './constants.js';
 
 // cell keys are packed numbers (string keys made the connectivity passes allocation-bound): i, j in [-1024, 3072), l in [-1, ...)
@@ -271,6 +272,21 @@ export function components(P, occ) {
   for (let n = 0; n < P.length; n++) { const m = P[n].mi; if (m === undefined) continue; if (mi.has(m)) uf.union(mi.get(m), n); else mi.set(m, n); }
   return uf;
 }
+/** drop the components of at most `maxPieces` pieces that touch nothing: a cheese slope or a tile left hanging on a wing tip is
+ *  not a part of the build, it is a part on the floor. The removed volume is taken out of the solver's coverage so the metrics
+ *  stay honest. Returns the number of pieces dropped. */
+export function dropLoose(S, maxPieces = 1) {
+  if (!(maxPieces > 0) || S.pieces.length < 2) return 0;
+  const occ = occupancy(S.pieces), uf = components(S.pieces, occ), cnt = new Map();
+  S.pieces.forEach((_, n) => { const r = uf.find(n); cnt.set(r, (cnt.get(r) || 0) + 1); });
+  const big = Math.max(...cnt.values()), dead = new Set();
+  S.pieces.forEach((p, n) => { const r = uf.find(n); if (cnt.get(r) <= maxPieces && cnt.get(r) < big && !p.snot) dead.add(n); });
+  if (!dead.size) return 0;
+  for (const n of dead) { const p = S.pieces[n]; for (let l = 0; l < p.h; l++) for (let z = p.j * G; z < (p.j + p.d) * G && z < S.NZs; z++) for (let x = p.i * G; x < (p.i + p.w) * G && x < S.NXs; x++) if (p.b + l < S.NL) { const q = ((p.b + l) * S.NZs + z) * S.NXs + x; S.C[q] = Math.max(0, S.C[q] - 1); } }
+  S.pieces = S.pieces.filter((_, n) => !dead.has(n));
+  return dead.size;
+}
+
 export function connectivity(S) {
   const occ = occupancy(S.pieces), uf = components(S.pieces, occ), roots = new Set(), cnt = new Map();
   S.pieces.forEach((p, n) => { const r = uf.find(n); if (p.b === 0) roots.add(r); cnt.set(r, (cnt.get(r) || 0) + 1); });
@@ -485,6 +501,77 @@ export function finish(S, cat, bricksMode = 'add') {
   });
   S.pieces = S.pieces.filter((_, n) => !kill.has(n)).concat(nw);
   return { platesToTiles: swapped, platesSplit: split, bricksCapped: added };
+}
+
+// ------------------------------------------------------------------ widen: two identical 1-wide shaped parts side by side -> the 2-wide part
+/** The skin may be laid as rows of 1-wide slopes (run.js skinNarrow, docs/CURVES.md); wherever two identical ones sit side by side
+ *  at the same level, the catalogue's 2-wide version with the same profile (3040 + 3040 -> 3039, 11477 + 11477 -> 15068,
+ *  4286 + 4286 -> 3298, 3665 + 3665 -> 3660 ...) replaces them. The twin is found by volume, not by name: a 2-wide variant whose
+ *  template is the 1-wide one repeated across. Union-only, so connectivity cannot get worse. */
+const WIDEN = new WeakMap();
+function widenTable(cat) {
+  if (WIDEN.has(cat)) return WIDEN.get(cat);
+  const kinds = new Set(['slope', 'curved', 'cheese', 'inverted']), vs = partVariants(cat, kinds), table = new Map();
+  const byDims = new Map(); for (const u of vs) { const k = `${u.w},${u.d},${u.h}`; if (!byDims.has(k)) byDims.set(k, []); byDims.get(k).push(u); }
+  for (const v of vs) {
+    if (v.w !== 1 && v.d !== 1) continue;
+    for (const axis of v.d === 1 ? ['z'] : ['x']) {
+      const nz = v.d * G, nx = v.w * G, nz2 = axis === 'z' ? 2 * nz : nz, nx2 = axis === 'x' ? 2 * nx : nx, V2 = new Float32Array(v.h * nz2 * nx2);
+      for (let l = 0; l < v.h; l++) for (let z = 0; z < nz2; z++) for (let x = 0; x < nx2; x++) V2[(l * nz2 + z) * nx2 + x] = v.V[(l * nz + (z % nz)) * nx + (x % nx)];
+      const cands = byDims.get(`${axis === 'x' ? 2 * v.w : v.w},${axis === 'z' ? 2 * v.d : v.d},${v.h}`) || [];
+      for (const u of cands) {
+        if (u.c.noSolo || u.c.kind !== v.c.kind) continue;
+        let same = true; for (let q = 0; q < V2.length && same; q++) if (Math.abs(u.V[q] - V2[q]) > 1e-3) same = false;
+        if (same) { table.set(`${v.c.id}|${v.rot}|${axis}`, u); break; }
+      }
+    }
+  }
+  WIDEN.set(cat, table); return table;
+}
+export function widen(S, cat, tol, passes = 4) {
+  const table = widenTable(cat); if (!table.size) return 0;
+  let total = 0;
+  for (let pass = 0; pass < passes; pass++) {
+    const P = S.pieces, at = new Map(), dead = new Set(), add = [];
+    P.forEach((p, n) => { if (free(p) && (p.w === 1 || p.d === 1) && table.has(`${p.id}|${p.rot}|${p.d === 1 ? 'z' : 'x'}`)) at.set(`${p.id},${p.rot},${p.b},${p.i},${p.j}`, n); });
+    for (const [, n] of at) {
+      if (dead.has(n)) continue; const a = P[n], axis = a.d === 1 ? 'z' : 'x';
+      const m = at.get(`${a.id},${a.rot},${a.b},${axis === 'x' ? a.i + 1 : a.i},${axis === 'z' ? a.j + 1 : a.j}`); if (m === undefined || dead.has(m)) continue;
+      const b = P[m]; if (!close(a.rgb, b.rgb, tol)) continue;
+      const u = table.get(`${a.id}|${a.rot}|${axis}`);
+      dead.add(n); dead.add(m);
+      add.push({ id: u.c.id, name: u.c.name, kind: u.c.kind, rot: u.rot, b: a.b, i: a.i, j: a.j, w: u.w, d: u.d, h: u.h, studs: u.studs.map((s) => s.slice()), phase: 'M-widen', matched: a.matched + b.matched, over: a.over + b.over, rgb: meanRgb([a.rgb, b.rgb]) });
+    }
+    if (!add.length) break;
+    S.pieces = P.filter((_, n) => !dead.has(n)).concat(add); total += add.length;
+  }
+  return total;
+}
+
+// ------------------------------------------------------------------ round corners: quarter-round tiles on the convex corners of the top layer
+/** Every exposed 1x1 tile that sits on a convex corner of its layer (two orthogonal neighbours and their diagonal empty, the other
+ *  side attached) becomes a Tile 1x1 Corner Round (25269) turned so its rounded corner faces out - the builder's way of softening
+ *  the staircase of a round table top or a cylinder's cross-section. Cosmetic: 0.2 of a cell less volume per corner. */
+export function roundCorners(S, cat) {
+  const by = byId(cat), qr = by['25269']; if (!qr) return 0;
+  const rt = by['98138'];                       // Tile 1x1 Round: an isolated 1x1 tile (free on all four sides) becomes a round one
+  const occ = occupancy(S.pieces), out = [], kill = new Set(); let n = 0;
+  const empty = (i, j, b) => !occ.has(K(i, j, b));
+  // rounded corner of 25269 at rot 0 is at (+x, +z); each +90 turns it clockwise seen from above: (+x,-z), (-x,-z), (-x,+z)
+  const ROT = { '1,1': 0, '1,-1': 90, '-1,-1': 180, '-1,1': 270 };
+  S.pieces.forEach((p, k) => {
+    if (p.kind !== 'tile' || p.w !== 1 || p.d !== 1 || !free(p) || p.id !== '3070b') return;
+    if (rt && empty(p.i + 1, p.j, p.b) && empty(p.i - 1, p.j, p.b) && empty(p.i, p.j + 1, p.b) && empty(p.i, p.j - 1, p.b)) {
+      kill.add(k); out.push({ ...mk(rt, 1, 1, p.i, p.j, p.b, p.rgb, 'F-round', 'tile'), rot: 0, studs: [] }); n++; return;
+    }
+    for (const sx of [1, -1]) for (const sz of [1, -1]) {
+      if (empty(p.i + sx, p.j, p.b) && empty(p.i, p.j + sz, p.b) && empty(p.i + sx, p.j + sz, p.b) && !(empty(p.i - sx, p.j, p.b) && empty(p.i, p.j - sz, p.b))) {
+        kill.add(k); out.push({ ...mk(qr, 1, 1, p.i, p.j, p.b, p.rgb, 'F-corner', 'tile'), rot: ROT[`${sx},${sz}`], studs: [] }); n++; return;
+      }
+    }
+  });
+  S.pieces = S.pieces.filter((_, k) => !kill.has(k)).concat(out);
+  return n;
 }
 
 // ------------------------------------------------------------------ splice: stitch side-by-side components without changing the volume

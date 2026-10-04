@@ -139,3 +139,60 @@ Performance: post passes dominated; packed-number keys etc. gave 7-15x, bit-iden
 - **The paper**: `docs/BRICKATOR.pdf` (16 pages, 26 figures), sources and the whole figure pipeline in `claude/paper/`
   (`export_scenes.mjs` -> `figures.py` -> `pdflatex`; `ldraw_mesh.py` is a standalone LDraw -> triangles reader, `render.html` +
   `shoot.py` a three.js/Playwright still renderer that works for any scene JSON). Rebuild instructions in `claude/paper/README.md`.
+
+## 9. Round 4 (branch `siren`, 2026-10-04): curved surfaces. Full write-up: `docs/CURVES.md`
+- **The curved-surface artifacts are three things**: the rim staircase of a round cross-section (necklace of 1x1 fragments), the
+  sloped skin of a blob where no catalogue profile matches, and the lattice phase (already fixed by `gridAlign`).
+- **Round parts as parts do not fire**: the round family (round plates / bricks, quarter discs 30357 / 30565, 3063b, cones) is a solo
+  candidate now (`shapeSolo: ['round']`, `lego_catalog_shapes.py` WHITELIST), but a 4x4 round plate only fits a cross-section of
+  radius 2.0 +- .25 studs; real ones never are. Used for poles and dots only.
+- **What works is a recipe: disc layers** (`discs.js`, phase A1 before the motifs, `discs: true` default). Per level: components of
+  cells with fill >= .5, holes filled, Kasa circle fit on the outline, gates discMinR 2 / discRms .45 / discIoU .85, `discsExposed`
+  (only layers whose top shows: table tops, rims; every layer of a sphere overfills, table .799 -> .727). Rows of 1xN plates along x
+  on even levels, z on odd, no lone 1x1 (`splitRun`). Table 660 -> 609 pieces, IoU .789 -> .799, comps 8 -> 7; duck 1377 -> 1358;
+  the other four untouched. Must run BEFORE the motifs (after them it finds nothing: the motifs ate the layers).
+- **Corner rounding** (`post.roundCorners`, after finish, default on, cosmetic): free 1x1 tile on a convex corner -> 25269 turned to
+  the open quadrant (ROT table 0/90/180/270). Table 12, duck 56, chair 4; IoU unchanged.
+- **Part census** (`claude/generator/omr_rank.py` -> `docs/omr/parts_rank.json`): 1,150 models, 401,012 placements, **4,425 distinct
+  parts** - the 5K / 8K / 10K tiers are the same list; top 1000 = 95.5 %, top 2000 = 98.7 %. Buildable families (solid 44.1 %, shape
+  21.6 %, snot 3.7 %) = **69.5 % ceiling**; the catalogue already covers 86.8 % / 75.3 % / 63.3 % of those families' placements and
+  the misses are variants (98138, 6143, 59900, 4460). More solo candidates were measured negative in round 3, so a wider catalogue
+  only pays through re-mining the motifs (the miner keeps only all-in-catalogue windows). Not done.
+- **Disc on a wall (SNOT)**: the library has 6141 sideways on 4070 (44 occ / 15 sets) and nothing bigger; a relief circle on a facade
+  would need a depth-map circle fit per vertical face + a sideways row recipe. Not built.
+- **Small models**: 450 OMR sets have <= 100 parts (247 <= 50): a small-set-only motif mining is a cheap unrun experiment; the
+  handmade organic small-model dataset still does not exist.
+- Fixed on the way: `motifBonus` / `motifBonusLog` / `motifMinPartH` had been swallowed into a trailing comment in constants.js (the
+  library's own fallbacks 0.2 / 0.1 / 2 applied all along); written out with those values, nothing changes. `spliceTime` default added.
+- Tests: `node test/curves_bench.mjs` (variants off | discs | discs+corners | all; OUT= writes orientation-coloured LDRs).
+
+## 10. Round 5 (branch `siren`, 2026-10-04, same day): the sloped skin on curved surfaces. Full write-up: `docs/CURVES.md` §7-10
+- **Diagnosis by attribution** (`run.surface`, the `stairs` / `under` metrics in `result.metrics`): on the duck / dome / sphere,
+  40-99 % of the sloped top-surface columns were covered by flat parts although a fitting skin candidate existed at 100 % of
+  them. Not tolerance, not the catalogue: what the solver was allowed to do.
+- **Three fixes, all default:** (1) `discRing` 1.5 - the round-4 disc layers were laying every ring of a sphere's flank as plates
+  (exposure is now a ring width against the FULL solid); (2) `motifVerify` - the final field is also solved without the mined
+  assemblies and they are kept only if they gain `motifGain` .01 IoU (chair +4.6 kept, cylinder +2.1 kept; dome / sphere / duck /
+  dolphin / table dropped: "a slope on a long brick" fits a smooth surface by volume and leaves chaos); (3) `skinNarrow` +
+  `skinAlign` .6 + `post.widen` - 1-wide skin parts first, scored with a slope-alignment term (`Solver.gradients / slopeOf /
+  align`), pairs fused back into 2-wide parts by template.
+- **Numbers (full pipeline):** dome .873 -> .907, stairs 60 -> 18 %, comps 6 -> 1; duck .859 -> .873, 1377 -> 1318 pieces,
+  stairs 40 -> 17 %, under 67 -> 39 %, comps 8 -> 3; dolphin .672 -> .684; table .799 -> .809, 609 -> 542; chair / cylinder /
+  rafs5 unchanged (motifs kept). Cost: be2 3 -> 8 components at equal IoU (struts; bridge phase).
+- **Tried and rejected** (table in CURVES.md §9): looser skin tolerance, narrow without alignment, alignment alone, exact-fit skin
+  before motifs, motifs after skin, curvature masks for motifs (two definitions), `motifShapedMin` (option kept, off), profile
+  chains by DP (`skin.js`, `profiles: false`, kept as opt-in - clean rows but below the narrow greedy: hard x/z split, no 2-wide).
+- New synthetic shapes in `test/synthetic.mjs`: dome, sphere, egg, cone, cylinderX (`synth:<name>` in the benches).
+- Tests: `node test/curves_bench.mjs` (variants round3 | round4 | round5 | nomotif, OUT= for kind-coloured LDRs).
+
+## 11. Follow-up pass (2026-10-04 evening): the merged roadmap of `docs/CURVES.md` §10, worked through
+- Done: inverted 33 slopes 4287 / 3747 as core solo parts (`lego_catalog.py` GEOM; the shape copies 4287a / 3747a removed and
+  aliased in `motifs/library.js`); `post.dropLoose` (components of <= 1 piece removed: be2 8 -> 1 components, chair 5 -> 1);
+  98138 round tile for isolated 1x1 tiles in the finish (`post.roundCorners`); `motifLibrary` option (any mined list).
+- Measured moot: re-mining with the top-1000 parts (the miner already resolves 94.5 % of their placements by alias); small-set
+  mining (680 motifs from the 450 sets <= 100 parts: dropped by the verification where the built-in one is, -0.5 on the chair).
+- Measured negative, not done: extended 1-wide parts in the narrow pass (duck stairs 19 -> 45 %, twice); a corner-slope pass for
+  the diagonal seams (no effect at 8 studs of radius).
+- Generator traps: `lego_catalog.py` rendered stud sub-files into the profiles when the LDraw copy has them (fixed: studs are
+  positions only); regenerating the whole core catalogue from another LDraw copy changes 61678 / 88930 - append, never replace.
+- Not started: discs on a wall (design written in CURVES.md §11), the handmade small-model dataset.

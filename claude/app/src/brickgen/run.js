@@ -1,6 +1,8 @@
 // One solve of the prepared field at one grid phase: skin -> fill -> relaxed -> fallback -> thin features.
 import { G, PAD, STUD } from './constants.js';
 import { window, symmetrize } from './grid.js';
+import { placeDiscs } from './discs.js';
+import { placeProfiles } from './skin.js';
 import { mirrorMask } from './islands.js';
 import { partVariants } from './variants.js';
 import { Solver } from './solver.js';
@@ -27,12 +29,25 @@ export function solve(pre, cat, ox, oz, o, log = () => {}) {
   S.nxc = nxc; S.nzc = nzc;
   const tb = o.technic ? { technic: 0.02 } : {};
   const withBonus = (t, extra) => ({ ...t, bonus: { ...(t.bonus || {}), ...extra } });
+  // disc layers first (discs.js): a level whose cross-section is a rounded blob is laid as rows of plates, alternating direction
+  // per level - the sphere / round-top recipe - before the mined assemblies and the single parts get to it
+  if (o.discs) { const d = placeDiscs(S, cat, partVariants(cat, new Set(['plate'])), o, log); log(`phase A1-disc: ${d.layers} disc layers, ${d.pieces} plates`); }   // circular cross-sections as rows of plates (discs.js)
+  // profile chains (skin.js): the sloped skin as rows of 1-wide parts chosen per row, before the assemblies and the greedy skin
+  if (o.profiles && o.skin) {
+    const kinds = new Set(['slope', 'curved', 'cheese']); if (o.inverted) kinds.add('inverted');
+    placeProfiles(S, partVariants(cat, kinds), o, log);
+  }
   // broad phase: assemblies mined from human-built models (several parts at once), before any single part is considered
   if (o.motifs) { const lib = motifVariants(cat, o); S.runPhase(S.attachMirrors(lib.variants), o.motifTol, 'M-motif'); }
   if (o.rounds) S.runPhase(S.attachMirrors(partVariants(cat, new Set(['round']))), o.roundTol, 'A0-round');
   if (o.skin) {
     const kinds = new Set(['slope', 'curved', 'cheese', 'tile']); if (o.inverted) kinds.add('inverted');
     const skinV = partVariants(cat, kinds);
+    // the 1-stud-wide skin parts first (docs/CURVES.md): they alone fit a doubly curved surface, where a 2-wide part fails on its
+    // cross slope; with the alignment term (solver.align) they come out in rows along the fall line, and post.widen fuses the
+    // pairs that sit side by side back into the 2-wide parts
+    // (core parts only: letting the extended 1-wide parts in - even only the monotonic ones - halves the skin coverage, duck stairs 19 -> 45 %)
+    if (o.skinNarrow) S.runPhase(S.attachMirrors(skinV.filter((v) => (v.w === 1 || v.d === 1) && !v.c.ext)), o.skinTol, 'A-skin-narrow');
     // core slopes / inverted slopes first, so the extended shapes only fill what they leave (never crowd them out)
     S.runPhase(S.attachMirrors(skinV.filter((v) => !v.c.ext)), o.skinTol, 'A-skin');
     if (skinV.some((v) => v.c.ext)) S.runPhase(S.attachMirrors(skinV.filter((v) => v.c.ext)), o.skinTol, 'A2-skin-ext');
@@ -94,6 +109,40 @@ export function solve(pre, cat, ox, oz, o, log = () => {}) {
   }
   S.dims = [nxc, nzc, nl];
   return S;
+}
+
+/**
+ * surface regularity (docs/CURVES.md): of the sample columns whose top (or underside) surface slopes between 20 and 75 degrees,
+ * the share covered by a flat part - a plate, brick or tile step where a slope / curved part was wanted. 0 = every sloped
+ * column is skinned by a shaped part, 1 = all stairs. `stairs` for the top surface, `under` for the undersides.
+ */
+export function surface(S, cat) {
+  const NL = S.NL, NZ = S.NZs, NX = S.NXs, F = S.Mfull || S.M0, g = S.gradients();
+  const vars = partVariants(cat, new Set(cat.map((c) => c.kind))), vmap = new Map(vars.map((v) => [v.c.id + '|' + v.rot, v])), byId = new Map();
+  for (const v of vars) if (!byId.has(v.c.id)) byId.set(v.c.id, v);
+  const SHAPED = new Set(['slope', 'curved', 'cheese', 'inverted', 'wedge', 'round', 'shaped']);
+  const topK = new Int8Array(NZ * NX).fill(-1), topH = new Float32Array(NZ * NX).fill(-1), botK = new Int8Array(NZ * NX).fill(-1), botH = new Float32Array(NZ * NX).fill(1e9);
+  for (const p of S.pieces) {
+    if (p.snot) continue; const v = vmap.get(p.id + '|' + p.rot) || byId.get(p.id); if (!v) continue;
+    const pz = v.d * G, px = v.w * G, sh = SHAPED.has(p.kind) ? 1 : 0;
+    for (let z = 0; z < pz; z++) for (let x = 0; x < px; x++) {
+      const Z = p.j * G + z, X = p.i * G + x; if (Z < 0 || X < 0 || Z >= NZ || X >= NX) continue; const q = Z * NX + X;
+      for (let l = v.h - 1; l >= 0; l--) { const vv = v.V[(l * pz + z) * px + x]; if (vv > 0.05) { const t = p.b + l + vv; if (t > topH[q]) { topH[q] = t; topK[q] = sh; } break; } }
+      for (let l = 0; l < v.h; l++) { const vv = v.V[(l * pz + z) * px + x]; if (vv > 0.05) { const t = p.b + l + 1 - vv; if (t < botH[q]) { botH[q] = t; botK[q] = sh; } break; } }
+    }
+  }
+  // the field's top / bottom surface slope per sample column, from the solver's stud-cell gradients (plates / sample; tan 20 = .091, tan 75 = .93)
+  const Xc = S.NXc;
+  let cols = 0, flat = 0, bcols = 0, bflat = 0;
+  for (let z = 0; z < NZ; z++) for (let x = 0; x < NX; x++) {
+    const q = z * NX + x, c = ((z / G) | 0) * Xc + ((x / G) | 0);
+    let top = -1, bot = -1; for (let l = NL - 1; l >= 0; l--) { const m = F[S.idx(l, z, x)]; if (m > 0.05) { top = l + m; break; } } if (top < 0) continue;
+    for (let l = 0; l < NL; l++) { const m = F[S.idx(l, z, x)]; if (m > 0.05) { bot = l + 1 - m; break; } }
+    const gt = Math.hypot(g.top.gx[c], g.top.gz[c]), gb = Math.hypot(g.bot.gx[c], g.bot.gz[c]);
+    if (gt >= 0.091 && gt < 0.93) { cols++; if (topK[q] !== 1) flat++; }
+    if (gb >= 0.091 && gb < 0.93 && bot > 0.3) { bcols++; if (botK[q] !== 1) bflat++; }
+  }
+  return { stairs: cols ? flat / cols : 0, stairsCols: cols, under: bcols ? bflat / bcols : 0, underCols: bcols };
 }
 
 export function metrics(S) {

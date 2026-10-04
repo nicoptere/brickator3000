@@ -38,6 +38,7 @@ export const DEFAULTS = {
   offsets: [0, 4, 8],        // LDU, tried on both axes (multiples of 4); the Precision slider (0/4/8/12) sets it to every multiple of 4 up to its value
   precision: 8,
   partSet: 'limited',   // 'limited' (core catalogue) | 'extended' (+ extra LDraw shapes)
+  shapeSolo: ['round'],      // kinds of the measured shape parts (catalog_shapes.js) allowed as solo candidates: discs / quarter discs / cones
   shapeParts: false,    // let the frequent shapes compete as single parts too (they are always available to motifs): arches, panels, dishes, corner tiles, curved-top bricks (catalog_shapes.js)
   // symmetry
   symmetry: 'off',           // 'auto' | 'off'
@@ -47,9 +48,15 @@ export const DEFAULTS = {
   // motifSnot keeps the ones that hold a sideways part (a tile clamped between two headlight bricks and the like): they are placed
   // as one rigid assembly, kept out of the merge passes, and exported with their real orientation (motifs/orient.js).
   motifs: false, motifTol: { min_cov: 0.85, max_err: 0.06, piece_pen: 0.3, beatFlat: 0.8 },   // beatFlat: a motif must explain its box better than plain plates / bricks would (else the fill phases do it with fewer pieces)
-  motifMinModels: 2, motifMinCount: 3, motifMaxParts: 12, motifSolid: false, motifShapedOnly: true, motifMirror: true, motifSnot: true, motifStretch: false, motifStretchMax: 4, motifStretchCells: 96,   // synthesising the missing lengths raises recall ~0.004 but multiplies disconnected components (duck 1 -> 25+): off motifBonus: 0.1, motifBonusLog: 0.05, motifMinPartH: 2,
+  motifMinModels: 2, motifMinCount: 3, motifMaxParts: 12, motifSolid: false, motifShapedOnly: true, motifMirror: true, motifSnot: true, motifStretch: false, motifStretchMax: 4, motifStretchCells: 96,   // synthesising the missing lengths raises recall ~0.004 but multiplies disconnected components (duck 1 -> 25+): off
+  motifBonus: 0.2, motifBonusLog: 0.1, motifMinPartH: 2,   // these three had been swallowed by the comment above and the library's own fallbacks (0.2 / 0.1 / 2) applied; written out with those values so nothing changes
+  motifShapedMin: 0,         // min share of an assembly's volume in shaped parts (0 = off): .5 drops "a slope on a long brick"; +.8 IoU on the chair for +26 % pieces, so off (docs/CURVES.md)
   motifScoring: false,       // also run the motif phase while scoring the grid phases (9x slower); off = only the final solve uses motifs
+  motifVerify: true, motifGain: 0.01,   // the final field is also solved without the assemblies; they are kept only if they gain this much IoU (docs/CURVES.md)
   // phases
+  dropLoose: 1,              // post: components of at most this many pieces that touch nothing are removed (a cheese on a wing tip); 0 = keep
+  roundCorners: true,        // after finish: exposed 1x1 tiles on convex corners become quarter-round tiles (post.roundCorners); IoU unchanged, table 12 / duck 56 corners
+  discs: true, discMinR: 2, discRms: 0.45, discIoU: 0.85, discsExposed: true, discRing: 1.5,   // disc layers (discs.js, phase A1 before the motifs): a level whose solid component is a circle of radius >= discMinR studs is laid as rows of plates, direction alternating per level. Measured: table 660 -> 609 pieces, IoU .789 -> .799; duck -19 pieces; the others untouched (no round layer). discsExposed limits it to layers whose top shows (table tops, rims); laying every layer of a sphere overfills (table rim: IoU .727)
   rounds: true, roundTol: { min_cov: 0.85, max_err: 0.12, piece_pen: 0.5, bonus: { round: 0.4 } },
   skin: true, skinTol: { min_cov: 0.65, max_err: 0.14, piece_pen: 0.3, bonus: { slope: 0.7, curved: 0.6, cheese: 0.5, inverted: 0.6 } },
   inverted: true,
@@ -60,6 +67,12 @@ export const DEFAULTS = {
   thin: true, thinBand: [0.3, 0.5], thinPoints: 4,
   technic: true,
   wErr: 3.0,                 // default weight of |V - M| in the score
+  // the sloped skin on curved surfaces (docs/CURVES.md, round 5)
+  skinNarrow: true,          // the 1-wide skin parts first: they fit doubly curved surfaces where 2-wide parts fail on their cross slope; post.widen fuses pairs back
+  shapeSoloIds: [],          // measured shapes allowed solo by id whatever their kind (pipeline.shapesFor); empty: the inverted 33 slopes are core parts now (4287, 3747)
+  skinAlign: 0.6,            // +- this much net for a shaped part whose slope direction agrees / disagrees with the surface gradient there (solver.align); 0 = off
+  widen: true,               // post: two identical 1-wide shaped parts side by side become the catalogue's 2-wide version (post.widen)
+  profiles: false, profileTol: { min_cov: 0.65, max_err: 0.14, piece_pen: 0.3, bonus: { slope: 0.7, curved: 0.6, cheese: 0.5, inverted: 0.6 } }, profileSkip: 0.4, profileMaxLen: 4, profileExt: false,   // profile chains (skin.js): rows of 1-wide parts chosen per row by DP - measured below the narrow greedy, kept as an option
   beatFlat: 0.9,             // a shaped part (slope, curve, round, wedge) is only a candidate where its error is below this fraction of the best flat plate / brick stack in the same box (1 = off)
   tileExposure: 0.35,        // a tile is refused if the level above is fuller than this
   // crust: erase the hollow core (voxels deeper than crustDepth LDU below the surface) so only the shell is solved
@@ -74,7 +87,7 @@ export const DEFAULTS = {
   pillarCluster: 2,          // thin (1x1) neighbours a pole may touch per level: 0 = only a fully isolated column (old
                              // behaviour), 2 = strut pairs and rows of railings convert too. Wider neighbours always veto.
   bracing: true, braceMaxGap: 3, braceMaxSpan: 4, braceRounds: 40,
-  splice: true, spliceRounds: 60, spliceTries: 80,   // re-cut side-by-side pieces of different components so a 1x2 plate spans the seam
+  splice: true, spliceRounds: 60, spliceTries: 80, spliceTime: 6000,   // re-cut side-by-side pieces of different components so a 1x2 plate spans the seam
   bridge: true, bridgeMax: 10, bridgeRounds: 120,    // shortest plate chain (zig-zag) through free cells between two components
   vertexNormals: false,      // main-thread pre-step (three.js welded vertex normals): flips reversed triangles before the ray cast
   supports: false, groundSupports: false, supportMinFrac: 0.01, supportSpacing: 24,

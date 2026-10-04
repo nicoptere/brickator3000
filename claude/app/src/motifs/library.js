@@ -85,13 +85,17 @@ const libCache = new Map();
  * compound variants for a catalogue: { variants, kept, dropped }. Options: minModels (motif seen in at least this many source models),
  * minCount, maxParts, solid (keep solid-box motifs), bonusLog (per-variant score bonus = base + bonusLog * log2(models))
  */
-export function motifVariants(cat, { motifMinModels = 2, motifMinCount = 3, motifMaxParts = 12, motifSolid = false, motifBonus = 0.2, motifBonusLog = 0.1, motifMinPartH = 2, motifShapedOnly = true, motifMirror = true, motifStretch = true, motifStretchMax = 8, motifStretchCells = 512, motifSnot = true } = {}) {
-  const key = `${cat.length}|${motifMinModels}|${motifMinCount}|${motifMaxParts}|${motifSolid}|${motifBonus}|${motifBonusLog}|${motifMinPartH}|${motifShapedOnly}|${motifMirror}|${motifStretch}|${motifStretchMax}|${motifStretchCells}|${motifSnot}`;
+export function motifVariants(cat, { motifMinModels = 2, motifMinCount = 3, motifMaxParts = 12, motifSolid = false, motifBonus = 0.2, motifBonusLog = 0.1, motifMinPartH = 2, motifShapedOnly = true, motifShapedMin = 0, motifMirror = true, motifStretch = true, motifStretchMax = 8, motifStretchCells = 512, motifSnot = true, motifLibrary = null } = {}) {
+  const LIB = motifLibrary || MOTIFS;         // motifLibrary: another mined list (tools/mine_motifs.mjs output) in place of the built-in one
+  const key = `${LIB === MOTIFS ? 'builtin' : 'custom' + LIB.length}|${cat.length}|${motifMinModels}|${motifMinCount}|${motifMaxParts}|${motifSolid}|${motifBonus}|${motifBonusLog}|${motifMinPartH}|${motifShapedOnly}|${motifShapedMin}|${motifMirror}|${motifStretch}|${motifStretchMax}|${motifStretchCells}|${motifSnot}`;
   const FLAT = new Set(['brick', 'plate', 'tile', 'technic']);
   // parts that offer studs on a vertical face, by their LDraw description (headlight bricks, side-stud bricks, brackets)
   const HOST = /stud(s)? on .{0,20}side|headlight|^bracket/i;
   if (libCache.has(key)) return libCache.get(key);
   const by = new Map(cat.map((c) => [c.id, c]));
+  // ids the library was mined with that the catalogue has since replaced by the same part under its other LDraw name
+  const ALIAS = { '4287a': '4287', '3747a': '3747' };
+  for (const [a, b] of Object.entries(ALIAS)) if (!by.has(a) && by.has(b)) by.set(a, by.get(b));
   // a motif is "sideways" (SNOT) as soon as one of its parts sits in a non-upright orientation; the mine stores the
   // orientation index per part (orient.js: 0..3 are the yaws), so the flag is derived here rather than duplicated in the data
   const snotOf = (m) => { if (m.snot === undefined) m.snot = m.parts.some((p) => (p.ori ?? 0) >= 4); return m.snot; };
@@ -107,10 +111,13 @@ export function motifVariants(cat, { motifMinModels = 2, motifMinCount = 3, moti
     // brick / plate-only arrangements (L-shapes, steps) would take the skin before the slope phase runs and the single-part phases
     // pack flat regions with fewer pieces anyway: keep motifs that bring a shaped part (slope, curved, cheese, inverted, round, wedge)
     if (motifShapedOnly && !snotOf(m) && !m.parts.some((p) => !FLAT.has(by.get(p.id).kind))) return false;
+    // a slope riding on a long brick is a wall with a slope on top (docs/CURVES.md): on a curved surface the brick fits by volume
+    // and leaves a straight ridge. motifShapedMin asks for the shaped parts to be at least this share of the assembly's volume
+    if (motifShapedMin > 0 && !snotOf(m)) { let sh = 0, all = 0; for (const p of m.parts) { const v = partVariant(by.get(p.id), p.rot ?? 0).vtot; all += v; if (!FLAT.has(by.get(p.id).kind)) sh += v; } if (sh < motifShapedMin * all) return false; }
     return true;
   };
   const variants = []; let kept = 0, dropped = 0;
-  const mined = MOTIFS.filter((m) => { const k = keep(m); if (!k) dropped++; return k; });
+  const mined = LIB.filter((m) => { const k = keep(m); if (!k) dropped++; return k; });
   // a motif that repeats along one axis is a unit x n, so the lengths no set happened to contain are valid assemblies too
   const dims = (id, rot) => { const v = oriented(by.get(id), Math.round(rot / 90)); return [v.w, v.d, Math.ceil(v.h)]; };
   const studded = (id) => (by.get(id).stud_cells || []).length > 0;
