@@ -37,6 +37,7 @@ function Section({ title, open, setOpen, color = 'var(--tx)', children }) {
 
 // quick toggles shown in the card (everything else is in the "all parameters" drawer)
 const QUICK = [
+  ['motifs', 'Motifs from official sets (broad phase)'],
   ['rounds', 'Round parts / poles'], ['skin', 'Slopes, curves, cheese'], ['inverted', 'Inverted slopes'],
   ['symmetry', 'Mirror symmetry', (o) => o.symmetry !== 'off', (o, v) => ({ symmetry: v ? 'auto' : 'off' })],
   ['crust', 'Hollow core (crust only)'],

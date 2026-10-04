@@ -1,7 +1,8 @@
 // Part volumes (levels x nz x nx samples) for the 4 yaw rotations, from the catalog's measured height profiles.
 import { STUD, PLATE, G, SAMP } from './constants.js';
 
-function rotate(vol, h, c, rot) {
+/** yaw a part volume (levels x nz x nx) by rot degrees; also exported for the motif tools (motifs/placements.js) */
+export function rotate(vol, h, c, rot) {
   const w = c.w, d = c.d, nz = d * G, nx = w * G;
   const th = rot * Math.PI / 180, co = Math.round(Math.cos(th)), si = Math.round(Math.sin(th));
   const [w2, d2] = rot === 90 || rot === 270 ? [d, w] : [w, d];
@@ -20,6 +21,24 @@ function rotate(vol, h, c, rot) {
   return { V: out, studs, w: w2, d: d2 };
 }
 
+/** unrotated volume of a catalogue part: { vol (h x nz x nx samples), h (plates) } */
+export function baseVolume(c) {
+  const nz = c.d * G, nx = c.w * G;
+  let h, vol;
+  if (c.cover) {
+    h = c.cover.length; vol = new Float32Array(h * nz * nx);
+    for (let l = 0; l < h; l++) for (let z = 0; z < nz; z++) for (let x = 0; x < nx; x++) vol[(l * nz + z) * nx + x] = c.cover[l][z][x];
+  } else {
+    let tmax = 1e-3; for (const row of c.top) for (const t of row) tmax = Math.max(tmax, t);
+    h = Math.ceil(tmax / PLATE - 1e-6); vol = new Float32Array(h * nz * nx);
+    for (let l = 0; l < h; l++) for (let z = 0; z < nz; z++) for (let x = 0; x < nx; x++) {
+      const top = c.top[z][x], bot = c.kind === 'inverted' ? c.bot[z][x] : 0;
+      vol[(l * nz + z) * nx + x] = Math.min(1, Math.max(0, (Math.min(top, (l + 1) * PLATE) - Math.max(bot, l * PLATE)) / PLATE));
+    }
+  }
+  return { vol, h };
+}
+
 const cache = new Map();
 /** all distinct rotated variants of the parts whose kind is in `kinds` */
 export function partVariants(cat, kinds) {
@@ -28,19 +47,7 @@ export function partVariants(cat, kinds) {
   const out = [];
   for (const c of cat) {
     if (!kinds.has(c.kind)) continue;
-    const nz = c.d * G, nx = c.w * G;
-    let h, vol;
-    if (c.cover) {
-      h = c.cover.length; vol = new Float32Array(h * nz * nx);
-      for (let l = 0; l < h; l++) for (let z = 0; z < nz; z++) for (let x = 0; x < nx; x++) vol[(l * nz + z) * nx + x] = c.cover[l][z][x];
-    } else {
-      let tmax = 1e-3; for (const row of c.top) for (const t of row) tmax = Math.max(tmax, t);
-      h = Math.ceil(tmax / PLATE - 1e-6); vol = new Float32Array(h * nz * nx);
-      for (let l = 0; l < h; l++) for (let z = 0; z < nz; z++) for (let x = 0; x < nx; x++) {
-        const top = c.top[z][x], bot = c.kind === 'inverted' ? c.bot[z][x] : 0;
-        vol[(l * nz + z) * nx + x] = Math.min(1, Math.max(0, (Math.min(top, (l + 1) * PLATE) - Math.max(bot, l * PLATE)) / PLATE));
-      }
-    }
+    const { vol, h } = baseVolume(c);
     const seen = new Set();
     for (const rot of [0, 90, 180, 270]) {
       const r = rotate(vol, h, c, rot);

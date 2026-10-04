@@ -1,0 +1,56 @@
+<!doctype html><meta charset="utf-8"><title>brickgen scene viewer</title>
+<!--
+  Side-by-side viewer for the scene files written by test/motifs_stills.mjs (and test/batch10.mjs).
+  Serve claude/app with any static server, e.g.   cd claude/app && python3 -m http.server 8765
+  then open   http://localhost:8765/view.html?a=out/motifs/duck_16_off.json&b=out/motifs/duck_16_on.json
+  Drag = orbit, wheel = zoom, right-drag = pan (shared camera).  Keys: K = kind colours / real colours, E = edges, S = source mesh.
+-->
+<style>
+ html,body{margin:0;background:#1e222b;overflow:hidden;font-family:Inter,system-ui,sans-serif;color:#e2e8f0}
+ canvas{display:block}
+ .lab{position:absolute;top:12px;font-size:14px;pointer-events:none}.lab b{color:#fff}.lab span{color:#94a3b8}
+ #l{left:16px}#r{left:calc(50% + 16px)}#div{position:absolute;left:50%;top:0;bottom:0;width:1px;background:#334155}
+ #leg{position:absolute;right:16px;bottom:12px;font-size:12px;line-height:1.6;color:#cbd5e1}#leg i{display:inline-block;width:11px;height:11px;margin-right:6px;border-radius:2px;vertical-align:-1px}
+ #help{position:absolute;left:16px;bottom:12px;font-size:12px;color:#94a3b8}
+</style>
+<div id="l" class="lab"></div><div id="r" class="lab"></div><div id="div"></div><div id="leg"></div>
+<div id="help">K kind / real colours · E edges · S source mesh · drag orbit · wheel zoom · right-drag pan</div>
+<script type="importmap">{"imports":{"three":"./node_modules/three/build/three.module.js","three/addons/":"./node_modules/three/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+const Q = new URLSearchParams(location.search);
+const urls = [Q.get('a') || 'out/motifs/duck_16_off.json', Q.get('b') || 'out/motifs/duck_16_on.json'];
+const D = await Promise.all(urls.map(async (u) => { const r = await fetch(u); if (!r.ok) throw new Error(u + ': ' + r.status); return r.json(); }));
+let W = innerWidth, H = innerHeight, kind = true, showEdges = true, showSrc = false;
+const r = new THREE.WebGLRenderer({ antialias: true }); r.setSize(W, H); r.setPixelRatio(devicePixelRatio); r.setClearColor(0x1e222b); r.autoClear = false; document.body.appendChild(r.domElement);
+const geo = (pos, col) => { const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); g.computeVertexNormals(); return g; };
+const mat = (side) => new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .55, metalness: 0, side, flatShading: true });
+const scenes = D.map((d) => {
+  const s = new THREE.Scene(); s.add(new THREE.HemisphereLight(0xffffff, 0x39404f, 1.15));
+  const l1 = new THREE.DirectionalLight(0xffffff, 2.1); l1.position.set(.6, 1, .8); s.add(l1); const l2 = new THREE.DirectionalLight(0xbcd0ff, .7); l2.position.set(-1, .4, -.6); s.add(l2);
+  const lego = new THREE.Mesh(geo(d.lego_pos, d.lego_kind), mat(THREE.FrontSide)); lego.userData = { kind: new Float32Array(d.lego_kind), real: new Float32Array(d.lego_col) };
+  const eg = new THREE.BufferGeometry(); eg.setAttribute('position', new THREE.Float32BufferAttribute(d.edges, 3));
+  const edges = new THREE.LineSegments(eg, new THREE.LineBasicMaterial({ color: 0x0b0f17, transparent: true, opacity: .55 }));
+  const src = new THREE.Mesh(geo(d.src_pos, d.src_col), mat(THREE.DoubleSide)); src.visible = false;
+  const g = new THREE.Group(); g.add(lego, edges, src); s.add(g);
+  return { s, lego, edges, src, g };
+});
+// shared framing on the union of both builds
+const box = new THREE.Box3(); for (const sc of scenes) box.expandByObject(sc.lego);
+const c = box.getCenter(new THREE.Vector3()), sz = box.getSize(new THREE.Vector3()), R = Math.hypot(sz.x, sz.y, sz.z) / 2;
+for (const sc of scenes) { sc.g.position.sub(c); const f = new THREE.Mesh(new THREE.CircleGeometry(R * 1.2, 64).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x262b36 })); f.position.y = -sz.y / 2 - .5; sc.s.add(f); }
+const cam = new THREE.PerspectiveCamera(30, (W / 2) / H, 1, 50000); cam.position.set(R * 2.2, R * 2.0, R * 2.8);
+const ctl = new OrbitControls(cam, r.domElement); ctl.enableDamping = true;
+const lab = (id, d) => document.getElementById(id).innerHTML = `<b>${d.meta.lego}</b> <span>${d.meta.src}</span>`;
+lab('l', D[0]); lab('r', D[1]); document.getElementById('leg').innerHTML = D[1].meta.legend || D[0].meta.legend || '';
+addEventListener('keydown', (e) => {
+  const k = e.key.toLowerCase();
+  if (k === 'k') { kind = !kind; for (const sc of scenes) { sc.lego.geometry.setAttribute('color', new THREE.Float32BufferAttribute(kind ? sc.lego.userData.kind : sc.lego.userData.real, 3)); } }
+  if (k === 'e') { showEdges = !showEdges; for (const sc of scenes) sc.edges.visible = showEdges; }
+  if (k === 's') { showSrc = !showSrc; for (const sc of scenes) { sc.src.visible = showSrc; sc.lego.visible = !showSrc; sc.edges.visible = showEdges && !showSrc; } }
+});
+addEventListener('resize', () => { W = innerWidth; H = innerHeight; r.setSize(W, H); cam.aspect = (W / 2) / H; cam.updateProjectionMatrix(); });
+(function loop() { requestAnimationFrame(loop); ctl.update(); r.clear(); r.setScissorTest(true);
+  for (let i = 0; i < 2; i++) { r.setViewport(i * W / 2, 0, W / 2, H); r.setScissor(i * W / 2, 0, W / 2, H); r.render(scenes[i].s, cam); } })();
+</script>

@@ -43,7 +43,7 @@ export function setup(model, opts) {
 /** score of one grid phase (used to pick the best phase; cheap enough to run in several workers) */
 export function scoreJob(ctx, job, cat = catalogFor(ctx.o)) {
   const [par, ox, oz] = job;
-  const S = solve(ctx.pres[par], cat, ox, oz, ctx.o);
+  const S = solve(ctx.pres[par], cat, ox, oz, ctx.o.motifs && !ctx.o.motifScoring ? { ...ctx.o, motifs: false } : ctx.o);
   const mt = metrics(S);
   return mt.iou - 0.002 * mt.pieces;
 }

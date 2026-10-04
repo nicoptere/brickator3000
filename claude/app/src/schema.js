@@ -18,6 +18,13 @@ export const SCHEMA = [
     { key: 'parity', label: 'Width parity', type: 'select', options: [['auto', 'auto (solve both)'], ['even', 'even: plane on a stud seam'], ['odd', 'odd: plane on a stud centre line']] },
   ] },
   { panel: 'Part selection phases', items: [
+    { key: 'motifs', label: 'M motifs: assemblies mined from official sets (broad phase)', type: 'bool', help: 'multi-part assemblies seen repeatedly in the OMR models (docs/omr) are tried first, as one candidate each; the single-part phases then fill what is left. See docs/MOTIFS.md' }, { key: 'motifTol', type: 'tol', when: 'motifs' },
+    { key: 'motifMinModels', label: 'motif: min source models', type: 'int', min: 1, max: 50, step: 1, when: 'motifs', help: 'an assembly must occur in at least this many different official sets' },
+    { key: 'motifMaxParts', label: 'motif: max parts', type: 'int', min: 2, max: 24, step: 1, when: 'motifs' },
+    { key: 'motifShapedOnly', label: 'motif: only assemblies with a shaped part', type: 'bool', when: 'motifs', help: 'off = also brick / plate-only arrangements (L-shapes, steps); they tend to take the skin before the slope phase' },
+    { key: 'motifMirror', label: 'motif: also the mirror image of each assembly', type: 'bool', when: 'motifs' },
+    { key: 'motifSolid', label: 'motif: keep solid boxes (pure brick / plate stacks)', type: 'bool', when: 'motifs' },
+    { key: 'motifBonusLog', label: 'motif: score bonus per log2(models)', type: 'num', min: 0, max: 1, step: 0.05, when: 'motifs' },
     { key: 'rounds', label: 'A0 round parts (poles, cones)', type: 'bool' }, { key: 'roundTol', type: 'tol', when: 'rounds' },
     { key: 'skin', label: 'A skin (slopes, curved, cheese, tiles)', type: 'bool' }, { key: 'skinTol', type: 'tol', when: 'skin' },
     { key: 'inverted', label: 'Inverted slopes (undersides)', type: 'bool' },

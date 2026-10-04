@@ -78,7 +78,7 @@ export class Solver {
       for (let z = 0; z < pz; z++) { const base = this.idx(b + 1, j * G + z, i * G); for (let x = 0; x < px; x++) s += this.M0[base + x]; }
       if (s / (pz * px) > this.o.tileExposure) return null;
     }
-    const net = ov - (tol.w_err ?? this.o.wErr) * over - tol.piece_pen + ((tol.bonus || {})[v.c.kind] || 0);
+    const net = ov - (tol.w_err ?? this.o.wErr) * over - tol.piece_pen * (v.npieces ?? 1) + (v.bonus ?? ((tol.bonus || {})[v.c.kind] || 0));
     return [net, ov, over];
   }
 
@@ -146,7 +146,7 @@ export class Solver {
             if (flatErr >= 0 && over > beat * flatErr) continue;
             ov /= G2; over /= G2;
             if (ov / v.vtot < tol.min_cov || over / box > tol.max_err) continue;
-            const net = ov - wErr * over - tol.piece_pen + (bonusOf[v.c.kind] || 0);
+            const net = ov - wErr * over - tol.piece_pen * (v.npieces ?? 1) + (v.bonus ?? (bonusOf[v.c.kind] || 0));
             if (net > 0) out.push([-net, k, b, j, i]);
           }
         }
@@ -194,6 +194,10 @@ export class Solver {
       for (let x = 0; x < px; x++) { const vv = v.V[vb + x]; this.C[base + x] += vv; this.M[base + x] = Math.min(1, Math.max(0, this.M[base + x] - vv)); }
     }
     this.ver++;
+    if (v.parts) {                       // compound variant (motifs/library.js): the field update above used its union volume; record its real pieces
+      for (const q of v.parts) { const u = q.v, share = u.vtot / v.vtot; this.pieces.push({ id: u.c.id, name: u.c.name, kind: u.c.kind, rot: u.rot, b: b + q.db, i: i + q.di, j: j + q.dj, w: u.w, d: u.d, h: u.h, studs: u.studs.map((s) => s.slice()), phase, matched: ov * share, over: over * share, motif: v.c.id }); }
+      return;
+    }
     this.pieces.push({ id: v.c.id, name: v.c.name, kind: v.c.kind, rot: v.rot, b, i, j, w: v.w, d: v.d, h: v.h, studs: v.studs.map((s) => s.slice()), phase, matched: ov, over });
   }
   /** mean fill of every stud cell of the remaining field */

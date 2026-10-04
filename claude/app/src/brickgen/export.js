@@ -98,16 +98,15 @@ export function toLDR(pieces, cat, name) {
   const by = {}; for (const c of cat) by[c.id] = c;
   const lines = [`0 ${name}`, `0 Name: ${name}.ldr`, '0 Author: brickgen (claude/app)'];
   for (const p of pieces) {
-    const c = by[p.id], R = rotY(p.rot);
+    // analytic entries (bricks / plates / tiles / technic) list their footprint as (z, x) of the real LDraw part: a quarter turn apart
+    // (checked against the library bounding boxes of all 210 parts by motifs/placements.js partFrames)
+    const c = by[p.id], R = rotY(c.source === 'analytic' && c.w !== c.d ? p.rot + 90 : p.rot);
     const M = [R[0], -R[1], -R[2], -R[3], R[4], R[5], -R[6], R[7], R[8]];          // D R D
     const tgt = pieceOrigin(p);
-    let t;
-    if (c.source === 'analytic') t = [tgt[0], -(tgt[1] + c.h * PLATE), -tgt[2]];       // origin on the top face
-    else {
-      const v = [0 - (c.minx + c.w * 10), c.maxy, 0 - (c.minz + c.d * 10)];
-      const r = [R[0] * v[0] + R[1] * v[1] + R[2] * v[2] + tgt[0], R[3] * v[0] + R[4] * v[1] + R[5] * v[2] + tgt[1], R[6] * v[0] + R[7] * v[1] + R[8] * v[2] + tgt[2]];
-      t = [r[0], -r[1], -r[2]];
-    }
+    // maxy = LDraw y of the part's bottom face (its origin is on the top face for the analytic boxes, i.e. maxy = height; 49307 has it at the bottom)
+    const v = [0 - (c.minx + c.w * 10), c.maxy ?? c.h * PLATE, 0 - (c.minz + c.d * 10)];
+    const r = [R[0] * v[0] + R[1] * v[1] + R[2] * v[2] + tgt[0], R[3] * v[0] + R[4] * v[1] + R[5] * v[2] + tgt[1], R[6] * v[0] + R[7] * v[1] + R[8] * v[2] + tgt[2]];
+    const t = [r[0], -r[1], -r[2]];
     const rgb = p.rgb || [200, 200, 200];
     const code = p.code !== undefined ? p.code : 0x2000000 + (rgb[0] << 16) + (rgb[1] << 8) + rgb[2];
     lines.push(`1 ${code} ${t.map((x) => x.toFixed(1)).join(' ')} ${M.map((x) => +x.toFixed(4)).join(' ')} ${p.id}.dat`);

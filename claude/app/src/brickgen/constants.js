@@ -25,6 +25,10 @@ export const DEFAULTS = {
   symmetry: 'off',           // 'auto' | 'off'
   symThreshold: 0.006,       // mean mirror distance / bbox diagonal
   parity: 'auto',            // 'auto' (solve both) | 'even' (plane on a stud seam) | 'odd' (plane on a stud centre line)
+  // broad phase: motifs = multi-part assemblies mined from the OMR models (motifs/library.js); off = the method as before, bit-identical
+  motifs: false, motifTol: { min_cov: 0.85, max_err: 0.06, piece_pen: 0.3, beatFlat: 0.8 },   // beatFlat: a motif must explain its box better than plain plates / bricks would (else the fill phases do it with fewer pieces)
+  motifMinModels: 2, motifMinCount: 3, motifMaxParts: 12, motifSolid: false, motifShapedOnly: true, motifMirror: true, motifBonus: 0.1, motifBonusLog: 0.05, motifMinPartH: 2,
+  motifScoring: false,       // also run the motif phase while scoring the grid phases (9x slower); off = only the final solve uses motifs
   // phases
   rounds: true, roundTol: { min_cov: 0.85, max_err: 0.12, piece_pen: 0.5, bonus: { round: 0.4 } },
   skin: true, skinTol: { min_cov: 0.65, max_err: 0.14, piece_pen: 0.3, bonus: { slope: 0.7, curved: 0.6, cheese: 0.5, inverted: 0.6 } },

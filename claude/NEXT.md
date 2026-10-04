@@ -57,3 +57,16 @@ Performance: post passes dominated; packed-number keys etc. gave 7-15x, bit-iden
 4. Add `decimate` and `colorVisible` as quick toggles in StudioApp.jsx if wanted; surface a "solved-piece components" colour mode (only `post.connectivity` knows it).
 5. Known: duck@16 Extended = 2 components; `bridge` T-flatten wipes skin on tiny models; shallow 1-plate steps stay stairs (biggest visible quality gap); catalog_ext.js 2.8 MB eagerly imported; cyclo lighting never checked on a real GPU; symmetry on drops jawa IoU; `brickgen-method.md` outdated; delete `spearman.glb` and the stray `app/` tree by hand.
 6. Bird/wing "vertical strut" report never reproduced on the exact model (probably the §12 envelope bug).
+
+## 6. Motif broad phase (branch `next`, 2026-10-03) — read `docs/MOTIFS.md`
+- Data: `docs/omr/index.json` = full OMR catalogue (1470 sets / 1836 files); `docs/omr_gallery/` has 1420 (run `node tools/omr_fetch.mjs`
+  in `claude/app` for the 415 missing B-models). Full LDraw library: `~/Downloads/complete.zip` works directly as `--ldraw`.
+- Code (all new, engine untouched except 3 hooks): `claude/app/src/motifs/{ldraw,placements,mine,library,zip}.js`, `tools/{omr_stats,mine_motifs,omr_fetch}.mjs`,
+  `test/{roundtrip,motifs_bench}.mjs`. Hooks: `solver.js` (`v.bonus`, `v.npieces`, `_place` expands `v.parts`), `run.js` (phase `M-motif` when `o.motifs`),
+  `pipeline.js scoreJob` (motifs skipped while scoring grid phases unless `motifScoring`), `variants.js` (`baseVolume` / `rotate` exported), `constants.js`, `schema.js`.
+  `motifs: false` (default) is bit-identical to before (`test/run.mjs` dump cmp on duck@16).
+- Library: `src/motifs/motifs.js` (5238 motifs seen in >= 2 sets; 720 kept / 3160 compound variants incl. mirrors with the defaults). Rebuild:
+  `node tools/mine_motifs.mjs --omr ../../docs/omr_gallery --ldraw ~/Downloads/complete.zip` (10 min).
+- Export bug fixed: analytic rectangular parts were a quarter turn off in the LDR (`toLDR`), 49307 two plates low. `test/roundtrip.mjs` = 0 differences now.
+- Viewer: `claude/app/view.html` (python3 -m http.server in claude/app; ?a=scene&b=scene from test/motifs_stills.mjs). Studio card has a 'Motifs' quick toggle.
+- Open: motif scoring is still a first guess (per-part penalty, bonus .2 + .1 log2(sets)); results in `docs/MOTIFS.md`. SNOT connectors: design in `docs/MOTIFS.md`.

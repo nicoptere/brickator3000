@@ -4,6 +4,7 @@ import { window, symmetrize } from './grid.js';
 import { mirrorMask } from './islands.js';
 import { partVariants } from './variants.js';
 import { Solver } from './solver.js';
+import { motifVariants } from '../motifs/library.js';
 
 export function solve(pre, cat, ox, oz, o, log = () => {}) {
   const win = window(pre, ox, oz); let M = win.arr; const nxc = win.nxc, nzc = win.nzc, nl = pre.nl;
@@ -20,6 +21,8 @@ export function solve(pre, cat, ox, oz, o, log = () => {}) {
   S.nxc = nxc; S.nzc = nzc;
   const tb = o.technic ? { technic: 0.02 } : {};
   const withBonus = (t, extra) => ({ ...t, bonus: { ...(t.bonus || {}), ...extra } });
+  // broad phase: assemblies mined from human-built models (several parts at once), before any single part is considered
+  if (o.motifs) { const lib = motifVariants(cat, o); S.runPhase(S.attachMirrors(lib.variants), o.motifTol, 'M-motif'); }
   if (o.rounds) S.runPhase(S.attachMirrors(partVariants(cat, new Set(['round']))), o.roundTol, 'A0-round');
   if (o.skin) {
     const kinds = new Set(['slope', 'curved', 'cheese', 'tile']); if (o.inverted) kinds.add('inverted');
