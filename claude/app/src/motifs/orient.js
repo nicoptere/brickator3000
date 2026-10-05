@@ -59,6 +59,7 @@ const cache = new Map();
  * `origin` is the LDU vector from the world box centre to the part's own LDraw origin, which is all export.js needs.
  */
 export function orientPart(c, ori) {
+  if (!c || !ORIENTATIONS[ori]) throw new Error(`orientPart: ${c ? `part ${c.id}` : 'no part'}, orientation ${ori} (expected 0..23)`);
   const k = `${c.id}|${ori}`; if (cache.has(k)) return cache.get(k);
   const R = ORIENTATIONS[ori], { F, nx, ny, nz } = fineVolume(c);
   const nL = [nx, ny, nz];                                         // local fine extents per axis (x, y, z)

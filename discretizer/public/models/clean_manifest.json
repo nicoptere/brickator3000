@@ -1,1015 +1,13 @@
 {
-  "generatedAt": "2026-10-05T04:24:00.942Z",
-  "categories": [
-    {
-      "name": "airplanes",
-      "title": "Airplanes",
-      "icon": "",
-      "count": 8,
-      "models": [
-        {
-          "id": "airplanes/be2.glb",
-          "name": "Be2",
-          "filename": "be2.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/be2.glb",
-          "sizeBytes": 327848,
-          "sizeFormatted": "320.2 KB"
-        },
-        {
-          "id": "airplanes/f117.glb",
-          "name": "F117",
-          "filename": "f117.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/f117.glb",
-          "sizeBytes": 8039684,
-          "sizeFormatted": "7.7 MB"
-        },
-        {
-          "id": "airplanes/fw189.glb",
-          "name": "Fw189",
-          "filename": "fw189.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/fw189.glb",
-          "sizeBytes": 12600964,
-          "sizeFormatted": "12 MB"
-        },
-        {
-          "id": "airplanes/g4m11.glb",
-          "name": "G4m11",
-          "filename": "g4m11.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/g4m11.glb",
-          "sizeBytes": 1906604,
-          "sizeFormatted": "1.8 MB"
-        },
-        {
-          "id": "airplanes/kitty.glb",
-          "name": "Kitty",
-          "filename": "kitty.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/kitty.glb",
-          "sizeBytes": 671748,
-          "sizeFormatted": "656 KB"
-        },
-        {
-          "id": "airplanes/osprey.glb",
-          "name": "Osprey",
-          "filename": "osprey.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/osprey.glb",
-          "sizeBytes": 1145900,
-          "sizeFormatted": "1.1 MB"
-        },
-        {
-          "id": "airplanes/p_38_lig.glb",
-          "name": "P 38 Lig",
-          "filename": "p_38_lig.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/p_38_lig.glb",
-          "sizeBytes": 986472,
-          "sizeFormatted": "963.4 KB"
-        },
-        {
-          "id": "airplanes/rafs5.glb",
-          "name": "Rafs5",
-          "filename": "rafs5.glb",
-          "category": "airplanes",
-          "path": "models/clean/airplanes/rafs5.glb",
-          "sizeBytes": 688344,
-          "sizeFormatted": "672.2 KB"
-        }
-      ]
-    },
-    {
-      "name": "airports",
-      "title": "Airports",
-      "icon": "",
-      "count": 3,
-      "models": [
-        {
-          "id": "airports/airsg1.glb",
-          "name": "Airsg1",
-          "filename": "airsg1.glb",
-          "category": "airports",
-          "path": "models/clean/airports/airsg1.glb",
-          "sizeBytes": 470572,
-          "sizeFormatted": "459.5 KB"
-        },
-        {
-          "id": "airports/eagle.glb",
-          "name": "Eagle",
-          "filename": "eagle.glb",
-          "category": "airports",
-          "path": "models/clean/airports/eagle.glb",
-          "sizeBytes": 863664,
-          "sizeFormatted": "843.4 KB"
-        },
-        {
-          "id": "airports/f15s.glb",
-          "name": "F15s",
-          "filename": "f15s.glb",
-          "category": "airports",
-          "path": "models/clean/airports/f15s.glb",
-          "sizeBytes": 234652,
-          "sizeFormatted": "229.2 KB"
-        }
-      ]
-    },
-    {
-      "name": "animals",
-      "title": "Animals",
-      "icon": "",
-      "count": 22,
-      "models": [
-        {
-          "id": "animals/delfin.glb",
-          "name": "Delfin",
-          "filename": "delfin.glb",
-          "category": "animals",
-          "path": "models/clean/animals/delfin.glb",
-          "sizeBytes": 510580,
-          "sizeFormatted": "498.6 KB"
-        },
-        {
-          "id": "animals/devilfis.glb",
-          "name": "Devilfis",
-          "filename": "devilfis.glb",
-          "category": "animals",
-          "path": "models/clean/animals/devilfis.glb",
-          "sizeBytes": 856460,
-          "sizeFormatted": "836.4 KB"
-        },
-        {
-          "id": "animals/dromedar.glb",
-          "name": "Dromedar",
-          "filename": "dromedar.glb",
-          "category": "animals",
-          "path": "models/clean/animals/dromedar.glb",
-          "sizeBytes": 829744,
-          "sizeFormatted": "810.3 KB"
-        },
-        {
-          "id": "animals/ghop.glb",
-          "name": "Ghop",
-          "filename": "ghop.glb",
-          "category": "animals",
-          "path": "models/clean/animals/ghop.glb",
-          "sizeBytes": 1262612,
-          "sizeFormatted": "1.2 MB"
-        },
-        {
-          "id": "animals/kangaro.glb",
-          "name": "Kangaro",
-          "filename": "kangaro.glb",
-          "category": "animals",
-          "path": "models/clean/animals/kangaro.glb",
-          "sizeBytes": 2683136,
-          "sizeFormatted": "2.6 MB"
-        },
-        {
-          "id": "animals/kwha.glb",
-          "name": "Kwha",
-          "filename": "kwha.glb",
-          "category": "animals",
-          "path": "models/clean/animals/kwha.glb",
-          "sizeBytes": 652668,
-          "sizeFormatted": "637.4 KB"
-        },
-        {
-          "id": "animals/lebis.glb",
-          "name": "Lebis",
-          "filename": "lebis.glb",
-          "category": "animals",
-          "path": "models/clean/animals/lebis.glb",
-          "sizeBytes": 724972,
-          "sizeFormatted": "708 KB"
-        },
-        {
-          "id": "animals/lion.glb",
-          "name": "Lion",
-          "filename": "lion.glb",
-          "category": "animals",
-          "path": "models/clean/animals/lion.glb",
-          "sizeBytes": 3262792,
-          "sizeFormatted": "3.1 MB"
-        },
-        {
-          "id": "animals/lobster1.glb",
-          "name": "Lobster1",
-          "filename": "lobster1.glb",
-          "category": "animals",
-          "path": "models/clean/animals/lobster1.glb",
-          "sizeBytes": 565756,
-          "sizeFormatted": "552.5 KB"
-        },
-        {
-          "id": "animals/lobster2.glb",
-          "name": "Lobster2",
-          "filename": "lobster2.glb",
-          "category": "animals",
-          "path": "models/clean/animals/lobster2.glb",
-          "sizeBytes": 468732,
-          "sizeFormatted": "457.7 KB"
-        },
-        {
-          "id": "animals/mantis.glb",
-          "name": "Mantis",
-          "filename": "mantis.glb",
-          "category": "animals",
-          "path": "models/clean/animals/mantis.glb",
-          "sizeBytes": 647940,
-          "sizeFormatted": "632.8 KB"
-        },
-        {
-          "id": "animals/mosquito.glb",
-          "name": "Mosquito",
-          "filename": "mosquito.glb",
-          "category": "animals",
-          "path": "models/clean/animals/mosquito.glb",
-          "sizeBytes": 469764,
-          "sizeFormatted": "458.8 KB"
-        },
-        {
-          "id": "animals/ootter.glb",
-          "name": "Ootter",
-          "filename": "ootter.glb",
-          "category": "animals",
-          "path": "models/clean/animals/ootter.glb",
-          "sizeBytes": 452804,
-          "sizeFormatted": "442.2 KB"
-        },
-        {
-          "id": "animals/parasau.glb",
-          "name": "Parasau",
-          "filename": "parasau.glb",
-          "category": "animals",
-          "path": "models/clean/animals/parasau.glb",
-          "sizeBytes": 430948,
-          "sizeFormatted": "420.8 KB"
-        },
-        {
-          "id": "animals/pig.glb",
-          "name": "Pig",
-          "filename": "pig.glb",
-          "category": "animals",
-          "path": "models/clean/animals/pig.glb",
-          "sizeBytes": 894060,
-          "sizeFormatted": "873.1 KB"
-        },
-        {
-          "id": "animals/poecil.glb",
-          "name": "Poecil",
-          "filename": "poecil.glb",
-          "category": "animals",
-          "path": "models/clean/animals/poecil.glb",
-          "sizeBytes": 575384,
-          "sizeFormatted": "561.9 KB"
-        },
-        {
-          "id": "animals/reindeer.glb",
-          "name": "Reindeer",
-          "filename": "reindeer.glb",
-          "category": "animals",
-          "path": "models/clean/animals/reindeer.glb",
-          "sizeBytes": 579112,
-          "sizeFormatted": "565.5 KB"
-        },
-        {
-          "id": "animals/rhino.glb",
-          "name": "Rhino",
-          "filename": "rhino.glb",
-          "category": "animals",
-          "path": "models/clean/animals/rhino.glb",
-          "sizeBytes": 728436,
-          "sizeFormatted": "711.4 KB"
-        },
-        {
-          "id": "animals/seahorse.glb",
-          "name": "Seahorse",
-          "filename": "seahorse.glb",
-          "category": "animals",
-          "path": "models/clean/animals/seahorse.glb",
-          "sizeBytes": 3778344,
-          "sizeFormatted": "3.6 MB"
-        },
-        {
-          "id": "animals/snail.glb",
-          "name": "Snail",
-          "filename": "snail.glb",
-          "category": "animals",
-          "path": "models/clean/animals/snail.glb",
-          "sizeBytes": 1322316,
-          "sizeFormatted": "1.3 MB"
-        },
-        {
-          "id": "animals/stagbee.glb",
-          "name": "Stagbee",
-          "filename": "stagbee.glb",
-          "category": "animals",
-          "path": "models/clean/animals/stagbee.glb",
-          "sizeBytes": 2142240,
-          "sizeFormatted": "2 MB"
-        },
-        {
-          "id": "animals/wasp.glb",
-          "name": "Wasp",
-          "filename": "wasp.glb",
-          "category": "animals",
-          "path": "models/clean/animals/wasp.glb",
-          "sizeBytes": 782804,
-          "sizeFormatted": "764.5 KB"
-        }
-      ]
-    },
-    {
-      "name": "architecture",
-      "title": "Architecture",
-      "icon": "",
-      "count": 8,
-      "models": [
-        {
-          "id": "architecture/firest.glb",
-          "name": "Firest",
-          "filename": "firest.glb",
-          "category": "architecture",
-          "path": "models/clean/architecture/firest.glb",
-          "sizeBytes": 2060700,
-          "sizeFormatted": "2 MB"
-        },
-        {
-          "id": "architecture/grand.glb",
-          "name": "Grand",
-          "filename": "grand.glb",
-          "category": "architecture",
-          "path": "models/clean/architecture/grand.glb",
-          "sizeBytes": 375892,
-          "sizeFormatted": "367.1 KB"
-        },
-        {
-          "id": "architecture/nordstad.glb",
-          "name": "Nordstad",
-          "filename": "nordstad.glb",
-          "category": "architecture",
-          "path": "models/clean/architecture/nordstad.glb",
-          "sizeBytes": 356976,
-          "sizeFormatted": "348.6 KB"
-        },
-        {
-          "id": "architecture/observ.glb",
-          "name": "Observ",
-          "filename": "observ.glb",
-          "category": "architecture",
-          "path": "models/clean/architecture/observ.glb",
-          "sizeBytes": 274716,
-          "sizeFormatted": "268.3 KB"
-        },
-        {
-          "id": "architecture/sjeronim.glb",
-          "name": "Sjeronim",
-          "filename": "sjeronim.glb",
-          "category": "architecture",
-          "path": "models/clean/architecture/sjeronim.glb",
-          "sizeBytes": 42575728,
-          "sizeFormatted": "40.6 MB"
-        },
-        {
-          "id": "architecture/store.glb",
-          "name": "Store",
-          "filename": "store.glb",
-          "category": "architecture",
-          "path": "models/clean/architecture/store.glb",
-          "sizeBytes": 315212,
-          "sizeFormatted": "307.8 KB"
-        },
-        {
-          "id": "architecture/t_lich.glb",
-          "name": "T Lich",
-          "filename": "t_lich.glb",
-          "category": "architecture",
-          "path": "models/clean/architecture/t_lich.glb",
-          "sizeBytes": 3596920,
-          "sizeFormatted": "3.4 MB"
-        },
-        {
-          "id": "architecture/townhou1.glb",
-          "name": "Townhou1",
-          "filename": "townhou1.glb",
-          "category": "architecture",
-          "path": "models/clean/architecture/townhou1.glb",
-          "sizeBytes": 679088,
-          "sizeFormatted": "663.2 KB"
-        }
-      ]
-    },
-    {
-      "name": "cars",
-      "title": "Cars",
-      "icon": "",
-      "count": 20,
-      "models": [
-        {
-          "id": "cars/diablo.glb",
-          "name": "Diablo",
-          "filename": "diablo.glb",
-          "category": "cars",
-          "path": "models/clean/cars/diablo.glb",
-          "sizeBytes": 582004,
-          "sizeFormatted": "568.4 KB"
-        },
-        {
-          "id": "cars/drag.glb",
-          "name": "Drag",
-          "filename": "drag.glb",
-          "category": "cars",
-          "path": "models/clean/cars/drag.glb",
-          "sizeBytes": 854356,
-          "sizeFormatted": "834.3 KB"
-        },
-        {
-          "id": "cars/fordv8.glb",
-          "name": "Fordv8",
-          "filename": "fordv8.glb",
-          "category": "cars",
-          "path": "models/clean/cars/fordv8.glb",
-          "sizeBytes": 334552,
-          "sizeFormatted": "326.7 KB"
-        },
-        {
-          "id": "cars/gto.glb",
-          "name": "Gto",
-          "filename": "gto.glb",
-          "category": "cars",
-          "path": "models/clean/cars/gto.glb",
-          "sizeBytes": 2333000,
-          "sizeFormatted": "2.2 MB"
-        },
-        {
-          "id": "cars/isetta.glb",
-          "name": "Isetta",
-          "filename": "isetta.glb",
-          "category": "cars",
-          "path": "models/clean/cars/isetta.glb",
-          "sizeBytes": 302472,
-          "sizeFormatted": "295.4 KB"
-        },
-        {
-          "id": "cars/jaguar.glb",
-          "name": "Jaguar",
-          "filename": "jaguar.glb",
-          "category": "cars",
-          "path": "models/clean/cars/jaguar.glb",
-          "sizeBytes": 3269788,
-          "sizeFormatted": "3.1 MB"
-        },
-        {
-          "id": "cars/lambcoun.glb",
-          "name": "Lambcoun",
-          "filename": "lambcoun.glb",
-          "category": "cars",
-          "path": "models/clean/cars/lambcoun.glb",
-          "sizeBytes": 505256,
-          "sizeFormatted": "493.4 KB"
-        },
-        {
-          "id": "cars/lanc_b24.glb",
-          "name": "Lanc B24",
-          "filename": "lanc_b24.glb",
-          "category": "cars",
-          "path": "models/clean/cars/lanc_b24.glb",
-          "sizeBytes": 466208,
-          "sizeFormatted": "455.3 KB"
-        },
-        {
-          "id": "cars/lincoln.glb",
-          "name": "Lincoln",
-          "filename": "lincoln.glb",
-          "category": "cars",
-          "path": "models/clean/cars/lincoln.glb",
-          "sizeBytes": 825672,
-          "sizeFormatted": "806.3 KB"
-        },
-        {
-          "id": "cars/lotus107.glb",
-          "name": "Lotus107",
-          "filename": "lotus107.glb",
-          "category": "cars",
-          "path": "models/clean/cars/lotus107.glb",
-          "sizeBytes": 1811648,
-          "sizeFormatted": "1.7 MB"
-        },
-        {
-          "id": "cars/mer300sl.glb",
-          "name": "Mer300sl",
-          "filename": "mer300sl.glb",
-          "category": "cars",
-          "path": "models/clean/cars/mer300sl.glb",
-          "sizeBytes": 230428,
-          "sizeFormatted": "225 KB"
-        },
-        {
-          "id": "cars/mercedes.glb",
-          "name": "Mercedes",
-          "filename": "mercedes.glb",
-          "category": "cars",
-          "path": "models/clean/cars/mercedes.glb",
-          "sizeBytes": 554044,
-          "sizeFormatted": "541.1 KB"
-        },
-        {
-          "id": "cars/mes.glb",
-          "name": "Mes",
-          "filename": "mes.glb",
-          "category": "cars",
-          "path": "models/clean/cars/mes.glb",
-          "sizeBytes": 222384,
-          "sizeFormatted": "217.2 KB"
-        },
-        {
-          "id": "cars/mgtc.glb",
-          "name": "Mgtc",
-          "filename": "mgtc.glb",
-          "category": "cars",
-          "path": "models/clean/cars/mgtc.glb",
-          "sizeBytes": 403620,
-          "sizeFormatted": "394.2 KB"
-        },
-        {
-          "id": "cars/olds_c.glb",
-          "name": "Olds C",
-          "filename": "olds_c.glb",
-          "category": "cars",
-          "path": "models/clean/cars/olds_c.glb",
-          "sizeBytes": 6030340,
-          "sizeFormatted": "5.8 MB"
-        },
-        {
-          "id": "cars/op1909.glb",
-          "name": "Op1909",
-          "filename": "op1909.glb",
-          "category": "cars",
-          "path": "models/clean/cars/op1909.glb",
-          "sizeBytes": 1093744,
-          "sizeFormatted": "1 MB"
-        },
-        {
-          "id": "cars/renault.glb",
-          "name": "Renault",
-          "filename": "renault.glb",
-          "category": "cars",
-          "path": "models/clean/cars/renault.glb",
-          "sizeBytes": 432056,
-          "sizeFormatted": "421.9 KB"
-        },
-        {
-          "id": "cars/rolls.glb",
-          "name": "Rolls",
-          "filename": "rolls.glb",
-          "category": "cars",
-          "path": "models/clean/cars/rolls.glb",
-          "sizeBytes": 311488,
-          "sizeFormatted": "304.2 KB"
-        },
-        {
-          "id": "cars/t_chevy.glb",
-          "name": "T Chevy",
-          "filename": "t_chevy.glb",
-          "category": "cars",
-          "path": "models/clean/cars/t_chevy.glb",
-          "sizeBytes": 343204,
-          "sizeFormatted": "335.2 KB"
-        },
-        {
-          "id": "cars/tyrrel.glb",
-          "name": "Tyrrel",
-          "filename": "tyrrel.glb",
-          "category": "cars",
-          "path": "models/clean/cars/tyrrel.glb",
-          "sizeBytes": 1199908,
-          "sizeFormatted": "1.1 MB"
-        }
-      ]
-    },
-    {
-      "name": "contemporary_furniture",
-      "title": "Contemporary Furniture",
-      "icon": "",
-      "count": 2,
-      "models": [
-        {
-          "id": "contemporary_furniture/officec2.glb",
-          "name": "Officec2",
-          "filename": "officec2.glb",
-          "category": "contemporary_furniture",
-          "path": "models/clean/contemporary_furniture/officec2.glb",
-          "sizeBytes": 1604288,
-          "sizeFormatted": "1.5 MB"
-        },
-        {
-          "id": "contemporary_furniture/officech.glb",
-          "name": "Officech",
-          "filename": "officech.glb",
-          "category": "contemporary_furniture",
-          "path": "models/clean/contemporary_furniture/officech.glb",
-          "sizeBytes": 156348,
-          "sizeFormatted": "152.7 KB"
-        }
-      ]
-    },
-    {
-      "name": "electronics",
-      "title": "Electronics",
-      "icon": "",
-      "count": 5,
-      "models": [
-        {
-          "id": "electronics/aiwa2.glb",
-          "name": "Aiwa2",
-          "filename": "aiwa2.glb",
-          "category": "electronics",
-          "path": "models/clean/electronics/aiwa2.glb",
-          "sizeBytes": 1047992,
-          "sizeFormatted": "1023.4 KB"
-        },
-        {
-          "id": "electronics/camara.glb",
-          "name": "Camara",
-          "filename": "camara.glb",
-          "category": "electronics",
-          "path": "models/clean/electronics/camara.glb",
-          "sizeBytes": 4453156,
-          "sizeFormatted": "4.2 MB"
-        },
-        {
-          "id": "electronics/flexo.glb",
-          "name": "Flexo",
-          "filename": "flexo.glb",
-          "category": "electronics",
-          "path": "models/clean/electronics/flexo.glb",
-          "sizeBytes": 402280,
-          "sizeFormatted": "392.9 KB"
-        },
-        {
-          "id": "electronics/sanyo.glb",
-          "name": "Sanyo",
-          "filename": "sanyo.glb",
-          "category": "electronics",
-          "path": "models/clean/electronics/sanyo.glb",
-          "sizeBytes": 415632,
-          "sizeFormatted": "405.9 KB"
-        },
-        {
-          "id": "electronics/telefon2.glb",
-          "name": "Telefon2",
-          "filename": "telefon2.glb",
-          "category": "electronics",
-          "path": "models/clean/electronics/telefon2.glb",
-          "sizeBytes": 722500,
-          "sizeFormatted": "705.6 KB"
-        }
-      ]
-    },
-    {
-      "name": "furniture",
-      "title": "Furniture",
-      "icon": "",
-      "count": 7,
-      "models": [
-        {
-          "id": "furniture/bi8ed4.glb",
-          "name": "Bi8ed4",
-          "filename": "bi8ed4.glb",
-          "category": "furniture",
-          "path": "models/clean/furniture/bi8ed4.glb",
-          "sizeBytes": 9898876,
-          "sizeFormatted": "9.4 MB"
-        },
-        {
-          "id": "furniture/ca5fec2.glb",
-          "name": "Ca5fec2",
-          "filename": "ca5fec2.glb",
-          "category": "furniture",
-          "path": "models/clean/furniture/ca5fec2.glb",
-          "sizeBytes": 824448,
-          "sizeFormatted": "805.1 KB"
-        },
-        {
-          "id": "furniture/english2.glb",
-          "name": "English2",
-          "filename": "english2.glb",
-          "category": "furniture",
-          "path": "models/clean/furniture/english2.glb",
-          "sizeBytes": 3343536,
-          "sizeFormatted": "3.2 MB"
-        },
-        {
-          "id": "furniture/garden.glb",
-          "name": "Garden",
-          "filename": "garden.glb",
-          "category": "furniture",
-          "path": "models/clean/furniture/garden.glb",
-          "sizeBytes": 735148,
-          "sizeFormatted": "717.9 KB"
-        },
-        {
-          "id": "furniture/roundta.glb",
-          "name": "Roundta",
-          "filename": "roundta.glb",
-          "category": "furniture",
-          "path": "models/clean/furniture/roundta.glb",
-          "sizeBytes": 555064,
-          "sizeFormatted": "542.1 KB"
-        },
-        {
-          "id": "furniture/sheraton.glb",
-          "name": "Sheraton",
-          "filename": "sheraton.glb",
-          "category": "furniture",
-          "path": "models/clean/furniture/sheraton.glb",
-          "sizeBytes": 1943976,
-          "sizeFormatted": "1.9 MB"
-        },
-        {
-          "id": "furniture/table.glb",
-          "name": "Table",
-          "filename": "table.glb",
-          "category": "furniture",
-          "path": "models/clean/furniture/table.glb",
-          "sizeBytes": 813460,
-          "sizeFormatted": "794.4 KB"
-        }
-      ]
-    },
-    {
-      "name": "helicopters",
-      "title": "Helicopters",
-      "icon": "",
-      "count": 4,
-      "models": [
-        {
-          "id": "helicopters/aloue2.glb",
-          "name": "Aloue2",
-          "filename": "aloue2.glb",
-          "category": "helicopters",
-          "path": "models/clean/helicopters/aloue2.glb",
-          "sizeBytes": 1299984,
-          "sizeFormatted": "1.2 MB"
-        },
-        {
-          "id": "helicopters/ka27.glb",
-          "name": "Ka27",
-          "filename": "ka27.glb",
-          "category": "helicopters",
-          "path": "models/clean/helicopters/ka27.glb",
-          "sizeBytes": 1518052,
-          "sizeFormatted": "1.4 MB"
-        },
-        {
-          "id": "helicopters/mi_8.glb",
-          "name": "Mi 8",
-          "filename": "mi_8.glb",
-          "category": "helicopters",
-          "path": "models/clean/helicopters/mi_8.glb",
-          "sizeBytes": 726304,
-          "sizeFormatted": "709.3 KB"
-        },
-        {
-          "id": "helicopters/sh3hnavy.glb",
-          "name": "Sh3hnavy",
-          "filename": "sh3hnavy.glb",
-          "category": "helicopters",
-          "path": "models/clean/helicopters/sh3hnavy.glb",
-          "sizeBytes": 1198740,
-          "sizeFormatted": "1.1 MB"
-        }
-      ]
-    },
-    {
-      "name": "military",
-      "title": "Military",
-      "icon": "",
-      "count": 6,
-      "models": [
-        {
-          "id": "military/amx13.glb",
-          "name": "Amx13",
-          "filename": "amx13.glb",
-          "category": "military",
-          "path": "models/clean/military/amx13.glb",
-          "sizeBytes": 729644,
-          "sizeFormatted": "712.5 KB"
-        },
-        {
-          "id": "military/elefant.glb",
-          "name": "Elefant",
-          "filename": "elefant.glb",
-          "category": "military",
-          "path": "models/clean/military/elefant.glb",
-          "sizeBytes": 5563376,
-          "sizeFormatted": "5.3 MB"
-        },
-        {
-          "id": "military/gaskin.glb",
-          "name": "Gaskin",
-          "filename": "gaskin.glb",
-          "category": "military",
-          "path": "models/clean/military/gaskin.glb",
-          "sizeBytes": 4620452,
-          "sizeFormatted": "4.4 MB"
-        },
-        {
-          "id": "military/pmissile.glb",
-          "name": "Pmissile",
-          "filename": "pmissile.glb",
-          "category": "military",
-          "path": "models/clean/military/pmissile.glb",
-          "sizeBytes": 4833364,
-          "sizeFormatted": "4.6 MB"
-        },
-        {
-          "id": "military/rf8.glb",
-          "name": "Rf8",
-          "filename": "rf8.glb",
-          "category": "military",
-          "path": "models/clean/military/rf8.glb",
-          "sizeBytes": 1863568,
-          "sizeFormatted": "1.8 MB"
-        },
-        {
-          "id": "military/t62a.glb",
-          "name": "T62a",
-          "filename": "t62a.glb",
-          "category": "military",
-          "path": "models/clean/military/t62a.glb",
-          "sizeBytes": 3911196,
-          "sizeFormatted": "3.7 MB"
-        }
-      ]
-    },
-    {
-      "name": "miscellaneous",
-      "title": "Miscellaneous",
-      "icon": "",
-      "count": 10,
-      "models": [
-        {
-          "id": "miscellaneous/cofcup.glb",
-          "name": "Cofcup",
-          "filename": "cofcup.glb",
-          "category": "miscellaneous",
-          "path": "models/clean/miscellaneous/cofcup.glb",
-          "sizeBytes": 121624,
-          "sizeFormatted": "118.8 KB"
-        },
-        {
-          "id": "miscellaneous/extiisle.glb",
-          "name": "Extiisle",
-          "filename": "extiisle.glb",
-          "category": "miscellaneous",
-          "path": "models/clean/miscellaneous/extiisle.glb",
-          "sizeBytes": 156164,
-          "sizeFormatted": "152.5 KB"
-        },
-        {
-          "id": "miscellaneous/extinto2.glb",
-          "name": "Extinto2",
-          "filename": "extinto2.glb",
-          "category": "miscellaneous",
-          "path": "models/clean/miscellaneous/extinto2.glb",
-          "sizeBytes": 532372,
-          "sizeFormatted": "519.9 KB"
-        },
-        {
-          "id": "miscellaneous/fender.glb",
-          "name": "Fender",
-          "filename": "fender.glb",
-          "category": "miscellaneous",
-          "path": "models/clean/miscellaneous/fender.glb",
-          "sizeBytes": 5354164,
-          "sizeFormatted": "5.1 MB"
-        },
-        {
-          "id": "miscellaneous/lamp5.glb",
-          "name": "Lamp5",
-          "filename": "lamp5.glb",
-          "category": "miscellaneous",
-          "path": "models/clean/miscellaneous/lamp5.glb",
-          "sizeBytes": 617928,
-          "sizeFormatted": "603.4 KB"
-        },
-        {
-          "id": "miscellaneous/packard.glb",
-          "name": "Packard",
-          "filename": "packard.glb",
-          "category": "miscellaneous",
-          "path": "models/clean/miscellaneous/packard.glb",
-          "sizeBytes": 7052432,
-          "sizeFormatted": "6.7 MB"
-        },
-        {
-          "id": "miscellaneous/racer.glb",
-          "name": "Racer",
-          "filename": "racer.glb",
-          "category": "miscellaneous",
-          "path": "models/clean/miscellaneous/racer.glb",
-          "sizeBytes": 5218892,
-          "sizeFormatted": "5 MB"
-        },
-        {
-          "id": "miscellaneous/racer3.glb",
-          "name": "Racer3",
-          "filename": "racer3.glb",
-          "category": "miscellaneous",
-          "path": "models/clean/miscellaneous/racer3.glb",
-          "sizeBytes": 5436500,
-          "sizeFormatted": "5.2 MB"
-        },
-        {
-          "id": "miscellaneous/stshoe.glb",
-          "name": "Stshoe",
-          "filename": "stshoe.glb",
-          "category": "miscellaneous",
-          "path": "models/clean/miscellaneous/stshoe.glb",
-          "sizeBytes": 529532,
-          "sizeFormatted": "517.1 KB"
-        },
-        {
-          "id": "miscellaneous/torb.glb",
-          "name": "Torb",
-          "filename": "torb.glb",
-          "category": "miscellaneous",
-          "path": "models/clean/miscellaneous/torb.glb",
-          "sizeBytes": 525132,
-          "sizeFormatted": "512.8 KB"
-        }
-      ]
-    },
-    {
-      "name": "motorcycles",
-      "title": "Motorcycles",
-      "icon": "",
-      "count": 6,
-      "models": [
-        {
-          "id": "motorcycles/guzzi_1.glb",
-          "name": "Guzzi 1",
-          "filename": "guzzi_1.glb",
-          "category": "motorcycles",
-          "path": "models/clean/motorcycles/guzzi_1.glb",
-          "sizeBytes": 1195904,
-          "sizeFormatted": "1.1 MB"
-        },
-        {
-          "id": "motorcycles/katana.glb",
-          "name": "Katana",
-          "filename": "katana.glb",
-          "category": "motorcycles",
-          "path": "models/clean/motorcycles/katana.glb",
-          "sizeBytes": 614284,
-          "sizeFormatted": "599.9 KB"
-        },
-        {
-          "id": "motorcycles/mguzzica.glb",
-          "name": "Mguzzica",
-          "filename": "mguzzica.glb",
-          "category": "motorcycles",
-          "path": "models/clean/motorcycles/mguzzica.glb",
-          "sizeBytes": 1827292,
-          "sizeFormatted": "1.7 MB"
-        },
-        {
-          "id": "motorcycles/mjeln.glb",
-          "name": "Mjeln",
-          "filename": "mjeln.glb",
-          "category": "motorcycles",
-          "path": "models/clean/motorcycles/mjeln.glb",
-          "sizeBytes": 779564,
-          "sizeFormatted": "761.3 KB"
-        },
-        {
-          "id": "motorcycles/shadow.glb",
-          "name": "Shadow",
-          "filename": "shadow.glb",
-          "category": "motorcycles",
-          "path": "models/clean/motorcycles/shadow.glb",
-          "sizeBytes": 3569388,
-          "sizeFormatted": "3.4 MB"
-        },
-        {
-          "id": "motorcycles/vintage.glb",
-          "name": "Vintage",
-          "filename": "vintage.glb",
-          "category": "motorcycles",
-          "path": "models/clean/motorcycles/vintage.glb",
-          "sizeBytes": 494528,
-          "sizeFormatted": "482.9 KB"
-        }
-      ]
-    },
+  "generatedAt": "2026-10-05T05:27:28.079Z",
+  "totalModels": 147,
+  "totalBytes": 322938920,
+  "totalBytesFormatted": "308 MB",
+  "groups": [
     {
       "name": "objaverse",
       "title": "Objaverse",
-      "icon": "",
+      "type": "flat",
       "count": 10,
       "models": [
         {
@@ -1017,6 +15,7 @@
           "name": "Creature",
           "filename": "creature.glb",
           "category": "objaverse",
+          "group": "objaverse",
           "path": "models/clean/objaverse/creature.glb",
           "sizeBytes": 1789100,
           "sizeFormatted": "1.7 MB"
@@ -1026,6 +25,7 @@
           "name": "Felix",
           "filename": "felix.glb",
           "category": "objaverse",
+          "group": "objaverse",
           "path": "models/clean/objaverse/felix.glb",
           "sizeBytes": 530040,
           "sizeFormatted": "517.6 KB"
@@ -1035,6 +35,7 @@
           "name": "FNAF",
           "filename": "fnaf.glb",
           "category": "objaverse",
+          "group": "objaverse",
           "path": "models/clean/objaverse/fnaf.glb",
           "sizeBytes": 2265128,
           "sizeFormatted": "2.2 MB"
@@ -1044,6 +45,7 @@
           "name": "Harley",
           "filename": "harley.glb",
           "category": "objaverse",
+          "group": "objaverse",
           "path": "models/clean/objaverse/harley.glb",
           "sizeBytes": 17256816,
           "sizeFormatted": "16.5 MB"
@@ -1053,6 +55,7 @@
           "name": "Hen",
           "filename": "hen.glb",
           "category": "objaverse",
+          "group": "objaverse",
           "path": "models/clean/objaverse/hen.glb",
           "sizeBytes": 38968,
           "sizeFormatted": "38.1 KB"
@@ -1062,6 +65,7 @@
           "name": "Ice Cream",
           "filename": "ice-cream.glb",
           "category": "objaverse",
+          "group": "objaverse",
           "path": "models/clean/objaverse/ice-cream.glb",
           "sizeBytes": 905540,
           "sizeFormatted": "884.3 KB"
@@ -1071,6 +75,7 @@
           "name": "Joypad",
           "filename": "joypad.glb",
           "category": "objaverse",
+          "group": "objaverse",
           "path": "models/clean/objaverse/joypad.glb",
           "sizeBytes": 328632,
           "sizeFormatted": "320.9 KB"
@@ -1080,6 +85,7 @@
           "name": "Mouse",
           "filename": "mouse.glb",
           "category": "objaverse",
+          "group": "objaverse",
           "path": "models/clean/objaverse/mouse.glb",
           "sizeBytes": 1434952,
           "sizeFormatted": "1.4 MB"
@@ -1089,6 +95,7 @@
           "name": "Pony",
           "filename": "pony.glb",
           "category": "objaverse",
+          "group": "objaverse",
           "path": "models/clean/objaverse/pony.glb",
           "sizeBytes": 1064036,
           "sizeFormatted": "1 MB"
@@ -1098,6 +105,7 @@
           "name": "Soldier",
           "filename": "soldier.glb",
           "category": "objaverse",
+          "group": "objaverse",
           "path": "models/clean/objaverse/soldier.glb",
           "sizeBytes": 4225084,
           "sizeFormatted": "4 MB"
@@ -1105,318 +113,9 @@
       ]
     },
     {
-      "name": "old_army",
-      "title": "Old Army",
-      "icon": "",
-      "count": 4,
-      "models": [
-        {
-          "id": "old_army/buccan.glb",
-          "name": "Buccan",
-          "filename": "buccan.glb",
-          "category": "old_army",
-          "path": "models/clean/old_army/buccan.glb",
-          "sizeBytes": 5457768,
-          "sizeFormatted": "5.2 MB"
-        },
-        {
-          "id": "old_army/cannon2.glb",
-          "name": "Cannon2",
-          "filename": "cannon2.glb",
-          "category": "old_army",
-          "path": "models/clean/old_army/cannon2.glb",
-          "sizeBytes": 1660872,
-          "sizeFormatted": "1.6 MB"
-        },
-        {
-          "id": "old_army/doglh.glb",
-          "name": "Doglh",
-          "filename": "doglh.glb",
-          "category": "old_army",
-          "path": "models/clean/old_army/doglh.glb",
-          "sizeBytes": 1031912,
-          "sizeFormatted": "1007.7 KB"
-        },
-        {
-          "id": "old_army/grenade2.glb",
-          "name": "Grenade2",
-          "filename": "grenade2.glb",
-          "category": "old_army",
-          "path": "models/clean/old_army/grenade2.glb",
-          "sizeBytes": 3275380,
-          "sizeFormatted": "3.1 MB"
-        }
-      ]
-    },
-    {
-      "name": "plants",
-      "title": "Plants",
-      "icon": "",
-      "count": 6,
-      "models": [
-        {
-          "id": "plants/drosera.glb",
-          "name": "Drosera",
-          "filename": "drosera.glb",
-          "category": "plants",
-          "path": "models/clean/plants/drosera.glb",
-          "sizeBytes": 802088,
-          "sizeFormatted": "783.3 KB"
-        },
-        {
-          "id": "plants/rose1.glb",
-          "name": "Rose1",
-          "filename": "rose1.glb",
-          "category": "plants",
-          "path": "models/clean/plants/rose1.glb",
-          "sizeBytes": 149692,
-          "sizeFormatted": "146.2 KB"
-        },
-        {
-          "id": "plants/rose2.glb",
-          "name": "Rose2",
-          "filename": "rose2.glb",
-          "category": "plants",
-          "path": "models/clean/plants/rose2.glb",
-          "sizeBytes": 145464,
-          "sizeFormatted": "142.1 KB"
-        },
-        {
-          "id": "plants/saguaro.glb",
-          "name": "Saguaro",
-          "filename": "saguaro.glb",
-          "category": "plants",
-          "path": "models/clean/plants/saguaro.glb",
-          "sizeBytes": 811176,
-          "sizeFormatted": "792.2 KB"
-        },
-        {
-          "id": "plants/salixa.glb",
-          "name": "Salixa",
-          "filename": "salixa.glb",
-          "category": "plants",
-          "path": "models/clean/plants/salixa.glb",
-          "sizeBytes": 670980,
-          "sizeFormatted": "655.3 KB"
-        },
-        {
-          "id": "plants/styrax.glb",
-          "name": "Styrax",
-          "filename": "styrax.glb",
-          "category": "plants",
-          "path": "models/clean/plants/styrax.glb",
-          "sizeBytes": 616028,
-          "sizeFormatted": "601.6 KB"
-        }
-      ]
-    },
-    {
-      "name": "public_works",
-      "title": "Public Works",
-      "icon": "",
-      "count": 6,
-      "models": [
-        {
-          "id": "public_works/dumper.glb",
-          "name": "Dumper",
-          "filename": "dumper.glb",
-          "category": "public_works",
-          "path": "models/clean/public_works/dumper.glb",
-          "sizeBytes": 11961612,
-          "sizeFormatted": "11.4 MB"
-        },
-        {
-          "id": "public_works/excava.glb",
-          "name": "Excava",
-          "filename": "excava.glb",
-          "category": "public_works",
-          "path": "models/clean/public_works/excava.glb",
-          "sizeBytes": 9619352,
-          "sizeFormatted": "9.2 MB"
-        },
-        {
-          "id": "public_works/fall.glb",
-          "name": "Fall",
-          "filename": "fall.glb",
-          "category": "public_works",
-          "path": "models/clean/public_works/fall.glb",
-          "sizeBytes": 478172,
-          "sizeFormatted": "467 KB"
-        },
-        {
-          "id": "public_works/fd14e.glb",
-          "name": "Fd14e",
-          "filename": "fd14e.glb",
-          "category": "public_works",
-          "path": "models/clean/public_works/fd14e.glb",
-          "sizeBytes": 305292,
-          "sizeFormatted": "298.1 KB"
-        },
-        {
-          "id": "public_works/fh2000.glb",
-          "name": "Fh2000",
-          "filename": "fh2000.glb",
-          "category": "public_works",
-          "path": "models/clean/public_works/fh2000.glb",
-          "sizeBytes": 1321204,
-          "sizeFormatted": "1.3 MB"
-        },
-        {
-          "id": "public_works/torocat.glb",
-          "name": "Torocat",
-          "filename": "torocat.glb",
-          "category": "public_works",
-          "path": "models/clean/public_works/torocat.glb",
-          "sizeBytes": 260376,
-          "sizeFormatted": "254.3 KB"
-        }
-      ]
-    },
-    {
-      "name": "sculptures",
-      "title": "Sculptures",
-      "icon": "",
-      "count": 4,
-      "models": [
-        {
-          "id": "sculptures/angel2.glb",
-          "name": "Angel2",
-          "filename": "angel2.glb",
-          "category": "sculptures",
-          "path": "models/clean/sculptures/angel2.glb",
-          "sizeBytes": 704508,
-          "sizeFormatted": "688 KB"
-        },
-        {
-          "id": "sculptures/athene.glb",
-          "name": "Athene",
-          "filename": "athene.glb",
-          "category": "sculptures",
-          "path": "models/clean/sculptures/athene.glb",
-          "sizeBytes": 6343136,
-          "sizeFormatted": "6 MB"
-        },
-        {
-          "id": "sculptures/dama.glb",
-          "name": "Dama",
-          "filename": "dama.glb",
-          "category": "sculptures",
-          "path": "models/clean/sculptures/dama.glb",
-          "sizeBytes": 476164,
-          "sizeFormatted": "465 KB"
-        },
-        {
-          "id": "sculptures/mercury.glb",
-          "name": "Mercury",
-          "filename": "mercury.glb",
-          "category": "sculptures",
-          "path": "models/clean/sculptures/mercury.glb",
-          "sizeBytes": 1344900,
-          "sizeFormatted": "1.3 MB"
-        }
-      ]
-    },
-    {
-      "name": "ships",
-      "title": "Ships",
-      "icon": "",
-      "count": 7,
-      "models": [
-        {
-          "id": "ships/ix_b.glb",
-          "name": "Ix B",
-          "filename": "ix_b.glb",
-          "category": "ships",
-          "path": "models/clean/ships/ix_b.glb",
-          "sizeBytes": 498860,
-          "sizeFormatted": "487.2 KB"
-        },
-        {
-          "id": "ships/offshore.glb",
-          "name": "Offshore",
-          "filename": "offshore.glb",
-          "category": "ships",
-          "path": "models/clean/ships/offshore.glb",
-          "sizeBytes": 335144,
-          "sizeFormatted": "327.3 KB"
-        },
-        {
-          "id": "ships/pinta.glb",
-          "name": "Pinta",
-          "filename": "pinta.glb",
-          "category": "ships",
-          "path": "models/clean/ships/pinta.glb",
-          "sizeBytes": 3591564,
-          "sizeFormatted": "3.4 MB"
-        },
-        {
-          "id": "ships/sanjuan.glb",
-          "name": "Sanjuan",
-          "filename": "sanjuan.glb",
-          "category": "ships",
-          "path": "models/clean/ships/sanjuan.glb",
-          "sizeBytes": 7384396,
-          "sizeFormatted": "7 MB"
-        },
-        {
-          "id": "ships/shrimp.glb",
-          "name": "Shrimp",
-          "filename": "shrimp.glb",
-          "category": "ships",
-          "path": "models/clean/ships/shrimp.glb",
-          "sizeBytes": 1869260,
-          "sizeFormatted": "1.8 MB"
-        },
-        {
-          "id": "ships/smit.glb",
-          "name": "Smit",
-          "filename": "smit.glb",
-          "category": "ships",
-          "path": "models/clean/ships/smit.glb",
-          "sizeBytes": 454016,
-          "sizeFormatted": "443.4 KB"
-        },
-        {
-          "id": "ships/thonie1.glb",
-          "name": "Thonie1",
-          "filename": "thonie1.glb",
-          "category": "ships",
-          "path": "models/clean/ships/thonie1.glb",
-          "sizeBytes": 625288,
-          "sizeFormatted": "610.6 KB"
-        }
-      ]
-    },
-    {
-      "name": "sports",
-      "title": "Sports",
-      "icon": "",
-      "count": 2,
-      "models": [
-        {
-          "id": "sports/basketac.glb",
-          "name": "Basketac",
-          "filename": "basketac.glb",
-          "category": "sports",
-          "path": "models/clean/sports/basketac.glb",
-          "sizeBytes": 356764,
-          "sizeFormatted": "348.4 KB"
-        },
-        {
-          "id": "sports/ecycle.glb",
-          "name": "Ecycle",
-          "filename": "ecycle.glb",
-          "category": "sports",
-          "path": "models/clean/sports/ecycle.glb",
-          "sizeBytes": 548164,
-          "sizeFormatted": "535.3 KB"
-        }
-      ]
-    },
-    {
       "name": "stanford",
       "title": "Stanford 3D Scans",
-      "icon": "",
+      "type": "flat",
       "count": 7,
       "models": [
         {
@@ -1424,6 +123,7 @@
           "name": "Armadillo",
           "filename": "armadillo.glb",
           "category": "stanford",
+          "group": "stanford",
           "path": "models/clean/stanford/armadillo.glb",
           "sizeBytes": 9687852,
           "sizeFormatted": "9.2 MB"
@@ -1433,6 +133,7 @@
           "name": "Stanford Bunny",
           "filename": "bunny.glb",
           "category": "stanford",
+          "group": "stanford",
           "path": "models/clean/stanford/bunny.glb",
           "sizeBytes": 1949448,
           "sizeFormatted": "1.9 MB"
@@ -1442,6 +143,7 @@
           "name": "Stanford Dragon",
           "filename": "dragon.glb",
           "category": "stanford",
+          "group": "stanford",
           "path": "models/clean/stanford/dragon.glb",
           "sizeBytes": 1310304,
           "sizeFormatted": "1.2 MB"
@@ -1451,6 +153,7 @@
           "name": "Drill",
           "filename": "drill.glb",
           "category": "stanford",
+          "group": "stanford",
           "path": "models/clean/stanford/drill.glb",
           "sizeBytes": 110320,
           "sizeFormatted": "107.7 KB"
@@ -1460,6 +163,7 @@
           "name": "Happy Buddha",
           "filename": "happy_buddha.glb",
           "category": "stanford",
+          "group": "stanford",
           "path": "models/clean/stanford/happy_buddha.glb",
           "sizeBytes": 1842360,
           "sizeFormatted": "1.8 MB"
@@ -1469,6 +173,7 @@
           "name": "Lucy",
           "filename": "lucy.glb",
           "category": "stanford",
+          "group": "stanford",
           "path": "models/clean/stanford/lucy.glb",
           "sizeBytes": 2800552,
           "sizeFormatted": "2.7 MB"
@@ -1478,14 +183,3134 @@
           "name": "Teapot",
           "filename": "teapot.glb",
           "category": "stanford",
+          "group": "stanford",
           "path": "models/clean/stanford/teapot.glb",
           "sizeBytes": 193712,
           "sizeFormatted": "189.2 KB"
         }
       ]
+    },
+    {
+      "name": "taschen",
+      "title": "Taschen",
+      "type": "nested",
+      "count": 130,
+      "categories": [
+        {
+          "name": "airplanes",
+          "title": "Airplanes",
+          "icon": "",
+          "group": "taschen",
+          "count": 8,
+          "models": [
+            {
+              "id": "taschen/airplanes/be2.glb",
+              "name": "Be2",
+              "filename": "be2.glb",
+              "category": "airplanes",
+              "group": "taschen",
+              "path": "models/clean/taschen/airplanes/be2.glb",
+              "sizeBytes": 327848,
+              "sizeFormatted": "320.2 KB"
+            },
+            {
+              "id": "taschen/airplanes/f117.glb",
+              "name": "F117",
+              "filename": "f117.glb",
+              "category": "airplanes",
+              "group": "taschen",
+              "path": "models/clean/taschen/airplanes/f117.glb",
+              "sizeBytes": 8039684,
+              "sizeFormatted": "7.7 MB"
+            },
+            {
+              "id": "taschen/airplanes/fw189.glb",
+              "name": "Fw189",
+              "filename": "fw189.glb",
+              "category": "airplanes",
+              "group": "taschen",
+              "path": "models/clean/taschen/airplanes/fw189.glb",
+              "sizeBytes": 12600964,
+              "sizeFormatted": "12 MB"
+            },
+            {
+              "id": "taschen/airplanes/g4m11.glb",
+              "name": "G4m11",
+              "filename": "g4m11.glb",
+              "category": "airplanes",
+              "group": "taschen",
+              "path": "models/clean/taschen/airplanes/g4m11.glb",
+              "sizeBytes": 1906604,
+              "sizeFormatted": "1.8 MB"
+            },
+            {
+              "id": "taschen/airplanes/kitty.glb",
+              "name": "Kitty",
+              "filename": "kitty.glb",
+              "category": "airplanes",
+              "group": "taschen",
+              "path": "models/clean/taschen/airplanes/kitty.glb",
+              "sizeBytes": 671748,
+              "sizeFormatted": "656 KB"
+            },
+            {
+              "id": "taschen/airplanes/osprey.glb",
+              "name": "Osprey",
+              "filename": "osprey.glb",
+              "category": "airplanes",
+              "group": "taschen",
+              "path": "models/clean/taschen/airplanes/osprey.glb",
+              "sizeBytes": 1145900,
+              "sizeFormatted": "1.1 MB"
+            },
+            {
+              "id": "taschen/airplanes/p_38_lig.glb",
+              "name": "P 38 Lig",
+              "filename": "p_38_lig.glb",
+              "category": "airplanes",
+              "group": "taschen",
+              "path": "models/clean/taschen/airplanes/p_38_lig.glb",
+              "sizeBytes": 986472,
+              "sizeFormatted": "963.4 KB"
+            },
+            {
+              "id": "taschen/airplanes/rafs5.glb",
+              "name": "Rafs5",
+              "filename": "rafs5.glb",
+              "category": "airplanes",
+              "group": "taschen",
+              "path": "models/clean/taschen/airplanes/rafs5.glb",
+              "sizeBytes": 688344,
+              "sizeFormatted": "672.2 KB"
+            }
+          ]
+        },
+        {
+          "name": "airports",
+          "title": "Airports",
+          "icon": "",
+          "group": "taschen",
+          "count": 3,
+          "models": [
+            {
+              "id": "taschen/airports/airsg1.glb",
+              "name": "Airsg1",
+              "filename": "airsg1.glb",
+              "category": "airports",
+              "group": "taschen",
+              "path": "models/clean/taschen/airports/airsg1.glb",
+              "sizeBytes": 470572,
+              "sizeFormatted": "459.5 KB"
+            },
+            {
+              "id": "taschen/airports/eagle.glb",
+              "name": "Eagle",
+              "filename": "eagle.glb",
+              "category": "airports",
+              "group": "taschen",
+              "path": "models/clean/taschen/airports/eagle.glb",
+              "sizeBytes": 863664,
+              "sizeFormatted": "843.4 KB"
+            },
+            {
+              "id": "taschen/airports/f15s.glb",
+              "name": "F15s",
+              "filename": "f15s.glb",
+              "category": "airports",
+              "group": "taschen",
+              "path": "models/clean/taschen/airports/f15s.glb",
+              "sizeBytes": 234652,
+              "sizeFormatted": "229.2 KB"
+            }
+          ]
+        },
+        {
+          "name": "animals",
+          "title": "Animals",
+          "icon": "",
+          "group": "taschen",
+          "count": 22,
+          "models": [
+            {
+              "id": "taschen/animals/delfin.glb",
+              "name": "Delfin",
+              "filename": "delfin.glb",
+              "category": "animals",
+              "group": "taschen",
+              "path": "models/clean/taschen/animals/delfin.glb",
+              "sizeBytes": 510580,
+              "sizeFormatted": "498.6 KB"
+            },
+            {
+              "id": "taschen/animals/devilfis.glb",
+              "name": "Devilfis",
+              "filename": "devilfis.glb",
+              "category": "animals",
+              "group": "taschen",
+              "path": "models/clean/taschen/animals/devilfis.glb",
+              "sizeBytes": 856460,
+              "sizeFormatted": "836.4 KB"
+            },
+            {
+              "id": "taschen/animals/dromedar.glb",
+              "name": "Dromedar",
+              "filename": "dromedar.glb",
+              "category": "animals",
+              "group": "taschen",
+              "path": "models/clean/taschen/animals/dromedar.glb",
+              "sizeBytes": 829744,
+              "sizeFormatted": "810.3 KB"
+            },
+            {
+              "id": "taschen/animals/ghop.glb",
+              "name": "Ghop",
+              "filename": "ghop.glb",
+              "category": "animals",
+              "group": "taschen",
+              "path": "models/clean/taschen/animals/ghop.glb",
+              "sizeBytes": 1262612,
+              "sizeFormatted": "1.2 MB"
+            },
+            {
+              "id": "taschen/animals/kangaro.glb",
+              "name": "Kangaro",
+              "filename": "kangaro.glb",
+              "category": "animals",
+              "group": "taschen",
+              "path": "models/clean/taschen/animals/kangaro.glb",
+              "sizeBytes": 2683136,
+              "sizeFormatted": "2.6 MB"
+            },
+            {
+              "id": "taschen/animals/kwha.glb",
+              "name": "Kwha",
+              "filename": "kwha.glb",
+              "category": "animals",
+              "group": "taschen",
+              "path": "models/clean/taschen/animals/kwha.glb",
+              "sizeBytes": 652668,
+              "sizeFormatted": "637.4 KB"
+            },
+            {
+              "id": "taschen/animals/lebis.glb",
+              "name": "Lebis",
+              "filename": "lebis.glb",
+              "category": "animals",
+              "group": "taschen",
+              "path": "models/clean/taschen/animals/lebis.glb",
+              "sizeBytes": 724972,
+              "sizeFormatted": "708 KB"
+            },
+            {
+              "id": "taschen/animals/lion.glb",
+              "name": "Lion",
+              "filename": "lion.glb",
+              "category": "animals",
+              "group": "taschen",
+              "path": "models/clean/taschen/animals/lion.glb",
+              "sizeBytes": 3262792,
+              "sizeFormatted": "3.1 MB"
+            },
+            {
+              "id": "taschen/animals/lobster1.glb",
+              "name": "Lobster1",
+              "filename": "lobster1.glb",
+              "category": "animals",
+              "group": "taschen",
+              "path": "models/clean/taschen/animals/lobster1.glb",
+              "sizeBytes": 565756,
+              "sizeFormatted": "552.5 KB"
+            },
+            {
+              "id": "taschen/animals/lobster2.glb",
+              "name": "Lobster2",
+              "filename": "lobster2.glb",
+              "category": "animals",
+              "group": "taschen",
+              "path": "models/clean/taschen/animals/lobster2.glb",
+              "sizeBytes": 468732,
+              "sizeFormatted": "457.7 KB"
+            },
+            {
+              "id": "taschen/animals/mantis.glb",
+              "name": "Mantis",
+              "filename": "mantis.glb",
+              "category": "animals",
+              "group": "taschen",
+              "path": "models/clean/taschen/animals/mantis.glb",
+              "sizeBytes": 647940,
+              "sizeFormatted": "632.8 KB"
+            },
+            {
+              "id": "taschen/animals/mosquito.glb",
+              "name": "Mosquito",
+              "filename": "mosquito.glb",
+              "category": "animals",
+              "group": "taschen",
+              "path": "models/clean/taschen/animals/mosquito.glb",
+              "sizeBytes": 469764,
+              "sizeFormatted": "458.8 KB"
+            },
+            {
+              "id": "taschen/animals/ootter.glb",
+              "name": "Ootter",
+              "filename": "ootter.glb",
+              "category": "animals",
+              "group": "taschen",
+              "path": "models/clean/taschen/animals/ootter.glb",
+              "sizeBytes": 452804,
+              "sizeFormatted": "442.2 KB"
+            },
+            {
+              "id": "taschen/animals/parasau.glb",
+              "name": "Parasau",
+              "filename": "parasau.glb",
+              "category": "animals",
+              "group": "taschen",
+              "path": "models/clean/taschen/animals/parasau.glb",
+              "sizeBytes": 430948,
+              "sizeFormatted": "420.8 KB"
+            },
+            {
+              "id": "taschen/animals/pig.glb",
+              "name": "Pig",
+              "filename": "pig.glb",
+              "category": "animals",
+              "group": "taschen",
+              "path": "models/clean/taschen/animals/pig.glb",
+              "sizeBytes": 894060,
+              "sizeFormatted": "873.1 KB"
+            },
+            {
+              "id": "taschen/animals/poecil.glb",
+              "name": "Poecil",
+              "filename": "poecil.glb",
+              "category": "animals",
+              "group": "taschen",
+              "path": "models/clean/taschen/animals/poecil.glb",
+              "sizeBytes": 575384,
+              "sizeFormatted": "561.9 KB"
+            },
+            {
+              "id": "taschen/animals/reindeer.glb",
+              "name": "Reindeer",
+              "filename": "reindeer.glb",
+              "category": "animals",
+              "group": "taschen",
+              "path": "models/clean/taschen/animals/reindeer.glb",
+              "sizeBytes": 579112,
+              "sizeFormatted": "565.5 KB"
+            },
+            {
+              "id": "taschen/animals/rhino.glb",
+              "name": "Rhino",
+              "filename": "rhino.glb",
+              "category": "animals",
+              "group": "taschen",
+              "path": "models/clean/taschen/animals/rhino.glb",
+              "sizeBytes": 728436,
+              "sizeFormatted": "711.4 KB"
+            },
+            {
+              "id": "taschen/animals/seahorse.glb",
+              "name": "Seahorse",
+              "filename": "seahorse.glb",
+              "category": "animals",
+              "group": "taschen",
+              "path": "models/clean/taschen/animals/seahorse.glb",
+              "sizeBytes": 3778344,
+              "sizeFormatted": "3.6 MB"
+            },
+            {
+              "id": "taschen/animals/snail.glb",
+              "name": "Snail",
+              "filename": "snail.glb",
+              "category": "animals",
+              "group": "taschen",
+              "path": "models/clean/taschen/animals/snail.glb",
+              "sizeBytes": 1322316,
+              "sizeFormatted": "1.3 MB"
+            },
+            {
+              "id": "taschen/animals/stagbee.glb",
+              "name": "Stagbee",
+              "filename": "stagbee.glb",
+              "category": "animals",
+              "group": "taschen",
+              "path": "models/clean/taschen/animals/stagbee.glb",
+              "sizeBytes": 2142240,
+              "sizeFormatted": "2 MB"
+            },
+            {
+              "id": "taschen/animals/wasp.glb",
+              "name": "Wasp",
+              "filename": "wasp.glb",
+              "category": "animals",
+              "group": "taschen",
+              "path": "models/clean/taschen/animals/wasp.glb",
+              "sizeBytes": 782804,
+              "sizeFormatted": "764.5 KB"
+            }
+          ]
+        },
+        {
+          "name": "architecture",
+          "title": "Architecture",
+          "icon": "",
+          "group": "taschen",
+          "count": 8,
+          "models": [
+            {
+              "id": "taschen/architecture/firest.glb",
+              "name": "Firest",
+              "filename": "firest.glb",
+              "category": "architecture",
+              "group": "taschen",
+              "path": "models/clean/taschen/architecture/firest.glb",
+              "sizeBytes": 2060700,
+              "sizeFormatted": "2 MB"
+            },
+            {
+              "id": "taschen/architecture/grand.glb",
+              "name": "Grand",
+              "filename": "grand.glb",
+              "category": "architecture",
+              "group": "taschen",
+              "path": "models/clean/taschen/architecture/grand.glb",
+              "sizeBytes": 375892,
+              "sizeFormatted": "367.1 KB"
+            },
+            {
+              "id": "taschen/architecture/nordstad.glb",
+              "name": "Nordstad",
+              "filename": "nordstad.glb",
+              "category": "architecture",
+              "group": "taschen",
+              "path": "models/clean/taschen/architecture/nordstad.glb",
+              "sizeBytes": 356976,
+              "sizeFormatted": "348.6 KB"
+            },
+            {
+              "id": "taschen/architecture/observ.glb",
+              "name": "Observ",
+              "filename": "observ.glb",
+              "category": "architecture",
+              "group": "taschen",
+              "path": "models/clean/taschen/architecture/observ.glb",
+              "sizeBytes": 274716,
+              "sizeFormatted": "268.3 KB"
+            },
+            {
+              "id": "taschen/architecture/sjeronim.glb",
+              "name": "Sjeronim",
+              "filename": "sjeronim.glb",
+              "category": "architecture",
+              "group": "taschen",
+              "path": "models/clean/taschen/architecture/sjeronim.glb",
+              "sizeBytes": 42575728,
+              "sizeFormatted": "40.6 MB"
+            },
+            {
+              "id": "taschen/architecture/store.glb",
+              "name": "Store",
+              "filename": "store.glb",
+              "category": "architecture",
+              "group": "taschen",
+              "path": "models/clean/taschen/architecture/store.glb",
+              "sizeBytes": 315212,
+              "sizeFormatted": "307.8 KB"
+            },
+            {
+              "id": "taschen/architecture/t_lich.glb",
+              "name": "T Lich",
+              "filename": "t_lich.glb",
+              "category": "architecture",
+              "group": "taschen",
+              "path": "models/clean/taschen/architecture/t_lich.glb",
+              "sizeBytes": 3596920,
+              "sizeFormatted": "3.4 MB"
+            },
+            {
+              "id": "taschen/architecture/townhou1.glb",
+              "name": "Townhou1",
+              "filename": "townhou1.glb",
+              "category": "architecture",
+              "group": "taschen",
+              "path": "models/clean/taschen/architecture/townhou1.glb",
+              "sizeBytes": 679088,
+              "sizeFormatted": "663.2 KB"
+            }
+          ]
+        },
+        {
+          "name": "cars",
+          "title": "Cars",
+          "icon": "",
+          "group": "taschen",
+          "count": 20,
+          "models": [
+            {
+              "id": "taschen/cars/diablo.glb",
+              "name": "Diablo",
+              "filename": "diablo.glb",
+              "category": "cars",
+              "group": "taschen",
+              "path": "models/clean/taschen/cars/diablo.glb",
+              "sizeBytes": 582004,
+              "sizeFormatted": "568.4 KB"
+            },
+            {
+              "id": "taschen/cars/drag.glb",
+              "name": "Drag",
+              "filename": "drag.glb",
+              "category": "cars",
+              "group": "taschen",
+              "path": "models/clean/taschen/cars/drag.glb",
+              "sizeBytes": 854356,
+              "sizeFormatted": "834.3 KB"
+            },
+            {
+              "id": "taschen/cars/fordv8.glb",
+              "name": "Fordv8",
+              "filename": "fordv8.glb",
+              "category": "cars",
+              "group": "taschen",
+              "path": "models/clean/taschen/cars/fordv8.glb",
+              "sizeBytes": 334552,
+              "sizeFormatted": "326.7 KB"
+            },
+            {
+              "id": "taschen/cars/gto.glb",
+              "name": "Gto",
+              "filename": "gto.glb",
+              "category": "cars",
+              "group": "taschen",
+              "path": "models/clean/taschen/cars/gto.glb",
+              "sizeBytes": 2333000,
+              "sizeFormatted": "2.2 MB"
+            },
+            {
+              "id": "taschen/cars/isetta.glb",
+              "name": "Isetta",
+              "filename": "isetta.glb",
+              "category": "cars",
+              "group": "taschen",
+              "path": "models/clean/taschen/cars/isetta.glb",
+              "sizeBytes": 302472,
+              "sizeFormatted": "295.4 KB"
+            },
+            {
+              "id": "taschen/cars/jaguar.glb",
+              "name": "Jaguar",
+              "filename": "jaguar.glb",
+              "category": "cars",
+              "group": "taschen",
+              "path": "models/clean/taschen/cars/jaguar.glb",
+              "sizeBytes": 3269788,
+              "sizeFormatted": "3.1 MB"
+            },
+            {
+              "id": "taschen/cars/lambcoun.glb",
+              "name": "Lambcoun",
+              "filename": "lambcoun.glb",
+              "category": "cars",
+              "group": "taschen",
+              "path": "models/clean/taschen/cars/lambcoun.glb",
+              "sizeBytes": 505256,
+              "sizeFormatted": "493.4 KB"
+            },
+            {
+              "id": "taschen/cars/lanc_b24.glb",
+              "name": "Lanc B24",
+              "filename": "lanc_b24.glb",
+              "category": "cars",
+              "group": "taschen",
+              "path": "models/clean/taschen/cars/lanc_b24.glb",
+              "sizeBytes": 466208,
+              "sizeFormatted": "455.3 KB"
+            },
+            {
+              "id": "taschen/cars/lincoln.glb",
+              "name": "Lincoln",
+              "filename": "lincoln.glb",
+              "category": "cars",
+              "group": "taschen",
+              "path": "models/clean/taschen/cars/lincoln.glb",
+              "sizeBytes": 825672,
+              "sizeFormatted": "806.3 KB"
+            },
+            {
+              "id": "taschen/cars/lotus107.glb",
+              "name": "Lotus107",
+              "filename": "lotus107.glb",
+              "category": "cars",
+              "group": "taschen",
+              "path": "models/clean/taschen/cars/lotus107.glb",
+              "sizeBytes": 1811648,
+              "sizeFormatted": "1.7 MB"
+            },
+            {
+              "id": "taschen/cars/mer300sl.glb",
+              "name": "Mer300sl",
+              "filename": "mer300sl.glb",
+              "category": "cars",
+              "group": "taschen",
+              "path": "models/clean/taschen/cars/mer300sl.glb",
+              "sizeBytes": 230428,
+              "sizeFormatted": "225 KB"
+            },
+            {
+              "id": "taschen/cars/mercedes.glb",
+              "name": "Mercedes",
+              "filename": "mercedes.glb",
+              "category": "cars",
+              "group": "taschen",
+              "path": "models/clean/taschen/cars/mercedes.glb",
+              "sizeBytes": 554044,
+              "sizeFormatted": "541.1 KB"
+            },
+            {
+              "id": "taschen/cars/mes.glb",
+              "name": "Mes",
+              "filename": "mes.glb",
+              "category": "cars",
+              "group": "taschen",
+              "path": "models/clean/taschen/cars/mes.glb",
+              "sizeBytes": 222384,
+              "sizeFormatted": "217.2 KB"
+            },
+            {
+              "id": "taschen/cars/mgtc.glb",
+              "name": "Mgtc",
+              "filename": "mgtc.glb",
+              "category": "cars",
+              "group": "taschen",
+              "path": "models/clean/taschen/cars/mgtc.glb",
+              "sizeBytes": 403620,
+              "sizeFormatted": "394.2 KB"
+            },
+            {
+              "id": "taschen/cars/olds_c.glb",
+              "name": "Olds C",
+              "filename": "olds_c.glb",
+              "category": "cars",
+              "group": "taschen",
+              "path": "models/clean/taschen/cars/olds_c.glb",
+              "sizeBytes": 6030340,
+              "sizeFormatted": "5.8 MB"
+            },
+            {
+              "id": "taschen/cars/op1909.glb",
+              "name": "Op1909",
+              "filename": "op1909.glb",
+              "category": "cars",
+              "group": "taschen",
+              "path": "models/clean/taschen/cars/op1909.glb",
+              "sizeBytes": 1093744,
+              "sizeFormatted": "1 MB"
+            },
+            {
+              "id": "taschen/cars/renault.glb",
+              "name": "Renault",
+              "filename": "renault.glb",
+              "category": "cars",
+              "group": "taschen",
+              "path": "models/clean/taschen/cars/renault.glb",
+              "sizeBytes": 432056,
+              "sizeFormatted": "421.9 KB"
+            },
+            {
+              "id": "taschen/cars/rolls.glb",
+              "name": "Rolls",
+              "filename": "rolls.glb",
+              "category": "cars",
+              "group": "taschen",
+              "path": "models/clean/taschen/cars/rolls.glb",
+              "sizeBytes": 311488,
+              "sizeFormatted": "304.2 KB"
+            },
+            {
+              "id": "taschen/cars/t_chevy.glb",
+              "name": "T Chevy",
+              "filename": "t_chevy.glb",
+              "category": "cars",
+              "group": "taschen",
+              "path": "models/clean/taschen/cars/t_chevy.glb",
+              "sizeBytes": 343204,
+              "sizeFormatted": "335.2 KB"
+            },
+            {
+              "id": "taschen/cars/tyrrel.glb",
+              "name": "Tyrrel",
+              "filename": "tyrrel.glb",
+              "category": "cars",
+              "group": "taschen",
+              "path": "models/clean/taschen/cars/tyrrel.glb",
+              "sizeBytes": 1199908,
+              "sizeFormatted": "1.1 MB"
+            }
+          ]
+        },
+        {
+          "name": "contemporary_furniture",
+          "title": "Contemporary Furniture",
+          "icon": "",
+          "group": "taschen",
+          "count": 2,
+          "models": [
+            {
+              "id": "taschen/contemporary_furniture/officec2.glb",
+              "name": "Officec2",
+              "filename": "officec2.glb",
+              "category": "contemporary_furniture",
+              "group": "taschen",
+              "path": "models/clean/taschen/contemporary_furniture/officec2.glb",
+              "sizeBytes": 1604288,
+              "sizeFormatted": "1.5 MB"
+            },
+            {
+              "id": "taschen/contemporary_furniture/officech.glb",
+              "name": "Officech",
+              "filename": "officech.glb",
+              "category": "contemporary_furniture",
+              "group": "taschen",
+              "path": "models/clean/taschen/contemporary_furniture/officech.glb",
+              "sizeBytes": 156348,
+              "sizeFormatted": "152.7 KB"
+            }
+          ]
+        },
+        {
+          "name": "electronics",
+          "title": "Electronics",
+          "icon": "",
+          "group": "taschen",
+          "count": 5,
+          "models": [
+            {
+              "id": "taschen/electronics/aiwa2.glb",
+              "name": "Aiwa2",
+              "filename": "aiwa2.glb",
+              "category": "electronics",
+              "group": "taschen",
+              "path": "models/clean/taschen/electronics/aiwa2.glb",
+              "sizeBytes": 1047992,
+              "sizeFormatted": "1023.4 KB"
+            },
+            {
+              "id": "taschen/electronics/camara.glb",
+              "name": "Camara",
+              "filename": "camara.glb",
+              "category": "electronics",
+              "group": "taschen",
+              "path": "models/clean/taschen/electronics/camara.glb",
+              "sizeBytes": 4453156,
+              "sizeFormatted": "4.2 MB"
+            },
+            {
+              "id": "taschen/electronics/flexo.glb",
+              "name": "Flexo",
+              "filename": "flexo.glb",
+              "category": "electronics",
+              "group": "taschen",
+              "path": "models/clean/taschen/electronics/flexo.glb",
+              "sizeBytes": 402280,
+              "sizeFormatted": "392.9 KB"
+            },
+            {
+              "id": "taschen/electronics/sanyo.glb",
+              "name": "Sanyo",
+              "filename": "sanyo.glb",
+              "category": "electronics",
+              "group": "taschen",
+              "path": "models/clean/taschen/electronics/sanyo.glb",
+              "sizeBytes": 415632,
+              "sizeFormatted": "405.9 KB"
+            },
+            {
+              "id": "taschen/electronics/telefon2.glb",
+              "name": "Telefon2",
+              "filename": "telefon2.glb",
+              "category": "electronics",
+              "group": "taschen",
+              "path": "models/clean/taschen/electronics/telefon2.glb",
+              "sizeBytes": 722500,
+              "sizeFormatted": "705.6 KB"
+            }
+          ]
+        },
+        {
+          "name": "furniture",
+          "title": "Furniture",
+          "icon": "",
+          "group": "taschen",
+          "count": 7,
+          "models": [
+            {
+              "id": "taschen/furniture/bi8ed4.glb",
+              "name": "Bi8ed4",
+              "filename": "bi8ed4.glb",
+              "category": "furniture",
+              "group": "taschen",
+              "path": "models/clean/taschen/furniture/bi8ed4.glb",
+              "sizeBytes": 9898876,
+              "sizeFormatted": "9.4 MB"
+            },
+            {
+              "id": "taschen/furniture/ca5fec2.glb",
+              "name": "Ca5fec2",
+              "filename": "ca5fec2.glb",
+              "category": "furniture",
+              "group": "taschen",
+              "path": "models/clean/taschen/furniture/ca5fec2.glb",
+              "sizeBytes": 824448,
+              "sizeFormatted": "805.1 KB"
+            },
+            {
+              "id": "taschen/furniture/english2.glb",
+              "name": "English2",
+              "filename": "english2.glb",
+              "category": "furniture",
+              "group": "taschen",
+              "path": "models/clean/taschen/furniture/english2.glb",
+              "sizeBytes": 3343536,
+              "sizeFormatted": "3.2 MB"
+            },
+            {
+              "id": "taschen/furniture/garden.glb",
+              "name": "Garden",
+              "filename": "garden.glb",
+              "category": "furniture",
+              "group": "taschen",
+              "path": "models/clean/taschen/furniture/garden.glb",
+              "sizeBytes": 735148,
+              "sizeFormatted": "717.9 KB"
+            },
+            {
+              "id": "taschen/furniture/roundta.glb",
+              "name": "Roundta",
+              "filename": "roundta.glb",
+              "category": "furniture",
+              "group": "taschen",
+              "path": "models/clean/taschen/furniture/roundta.glb",
+              "sizeBytes": 555064,
+              "sizeFormatted": "542.1 KB"
+            },
+            {
+              "id": "taschen/furniture/sheraton.glb",
+              "name": "Sheraton",
+              "filename": "sheraton.glb",
+              "category": "furniture",
+              "group": "taschen",
+              "path": "models/clean/taschen/furniture/sheraton.glb",
+              "sizeBytes": 1943976,
+              "sizeFormatted": "1.9 MB"
+            },
+            {
+              "id": "taschen/furniture/table.glb",
+              "name": "Table",
+              "filename": "table.glb",
+              "category": "furniture",
+              "group": "taschen",
+              "path": "models/clean/taschen/furniture/table.glb",
+              "sizeBytes": 813460,
+              "sizeFormatted": "794.4 KB"
+            }
+          ]
+        },
+        {
+          "name": "helicopters",
+          "title": "Helicopters",
+          "icon": "",
+          "group": "taschen",
+          "count": 4,
+          "models": [
+            {
+              "id": "taschen/helicopters/aloue2.glb",
+              "name": "Aloue2",
+              "filename": "aloue2.glb",
+              "category": "helicopters",
+              "group": "taschen",
+              "path": "models/clean/taschen/helicopters/aloue2.glb",
+              "sizeBytes": 1299984,
+              "sizeFormatted": "1.2 MB"
+            },
+            {
+              "id": "taschen/helicopters/ka27.glb",
+              "name": "Ka27",
+              "filename": "ka27.glb",
+              "category": "helicopters",
+              "group": "taschen",
+              "path": "models/clean/taschen/helicopters/ka27.glb",
+              "sizeBytes": 1518052,
+              "sizeFormatted": "1.4 MB"
+            },
+            {
+              "id": "taschen/helicopters/mi_8.glb",
+              "name": "Mi 8",
+              "filename": "mi_8.glb",
+              "category": "helicopters",
+              "group": "taschen",
+              "path": "models/clean/taschen/helicopters/mi_8.glb",
+              "sizeBytes": 726304,
+              "sizeFormatted": "709.3 KB"
+            },
+            {
+              "id": "taschen/helicopters/sh3hnavy.glb",
+              "name": "Sh3hnavy",
+              "filename": "sh3hnavy.glb",
+              "category": "helicopters",
+              "group": "taschen",
+              "path": "models/clean/taschen/helicopters/sh3hnavy.glb",
+              "sizeBytes": 1198740,
+              "sizeFormatted": "1.1 MB"
+            }
+          ]
+        },
+        {
+          "name": "military",
+          "title": "Military",
+          "icon": "",
+          "group": "taschen",
+          "count": 6,
+          "models": [
+            {
+              "id": "taschen/military/amx13.glb",
+              "name": "Amx13",
+              "filename": "amx13.glb",
+              "category": "military",
+              "group": "taschen",
+              "path": "models/clean/taschen/military/amx13.glb",
+              "sizeBytes": 729644,
+              "sizeFormatted": "712.5 KB"
+            },
+            {
+              "id": "taschen/military/elefant.glb",
+              "name": "Elefant",
+              "filename": "elefant.glb",
+              "category": "military",
+              "group": "taschen",
+              "path": "models/clean/taschen/military/elefant.glb",
+              "sizeBytes": 5563376,
+              "sizeFormatted": "5.3 MB"
+            },
+            {
+              "id": "taschen/military/gaskin.glb",
+              "name": "Gaskin",
+              "filename": "gaskin.glb",
+              "category": "military",
+              "group": "taschen",
+              "path": "models/clean/taschen/military/gaskin.glb",
+              "sizeBytes": 4620452,
+              "sizeFormatted": "4.4 MB"
+            },
+            {
+              "id": "taschen/military/pmissile.glb",
+              "name": "Pmissile",
+              "filename": "pmissile.glb",
+              "category": "military",
+              "group": "taschen",
+              "path": "models/clean/taschen/military/pmissile.glb",
+              "sizeBytes": 4833364,
+              "sizeFormatted": "4.6 MB"
+            },
+            {
+              "id": "taschen/military/rf8.glb",
+              "name": "Rf8",
+              "filename": "rf8.glb",
+              "category": "military",
+              "group": "taschen",
+              "path": "models/clean/taschen/military/rf8.glb",
+              "sizeBytes": 1863568,
+              "sizeFormatted": "1.8 MB"
+            },
+            {
+              "id": "taschen/military/t62a.glb",
+              "name": "T62a",
+              "filename": "t62a.glb",
+              "category": "military",
+              "group": "taschen",
+              "path": "models/clean/taschen/military/t62a.glb",
+              "sizeBytes": 3911196,
+              "sizeFormatted": "3.7 MB"
+            }
+          ]
+        },
+        {
+          "name": "miscellaneous",
+          "title": "Miscellaneous",
+          "icon": "",
+          "group": "taschen",
+          "count": 10,
+          "models": [
+            {
+              "id": "taschen/miscellaneous/cofcup.glb",
+              "name": "Cofcup",
+              "filename": "cofcup.glb",
+              "category": "miscellaneous",
+              "group": "taschen",
+              "path": "models/clean/taschen/miscellaneous/cofcup.glb",
+              "sizeBytes": 121624,
+              "sizeFormatted": "118.8 KB"
+            },
+            {
+              "id": "taschen/miscellaneous/extiisle.glb",
+              "name": "Extiisle",
+              "filename": "extiisle.glb",
+              "category": "miscellaneous",
+              "group": "taschen",
+              "path": "models/clean/taschen/miscellaneous/extiisle.glb",
+              "sizeBytes": 156164,
+              "sizeFormatted": "152.5 KB"
+            },
+            {
+              "id": "taschen/miscellaneous/extinto2.glb",
+              "name": "Extinto2",
+              "filename": "extinto2.glb",
+              "category": "miscellaneous",
+              "group": "taschen",
+              "path": "models/clean/taschen/miscellaneous/extinto2.glb",
+              "sizeBytes": 532372,
+              "sizeFormatted": "519.9 KB"
+            },
+            {
+              "id": "taschen/miscellaneous/fender.glb",
+              "name": "Fender",
+              "filename": "fender.glb",
+              "category": "miscellaneous",
+              "group": "taschen",
+              "path": "models/clean/taschen/miscellaneous/fender.glb",
+              "sizeBytes": 5354164,
+              "sizeFormatted": "5.1 MB"
+            },
+            {
+              "id": "taschen/miscellaneous/lamp5.glb",
+              "name": "Lamp5",
+              "filename": "lamp5.glb",
+              "category": "miscellaneous",
+              "group": "taschen",
+              "path": "models/clean/taschen/miscellaneous/lamp5.glb",
+              "sizeBytes": 617928,
+              "sizeFormatted": "603.4 KB"
+            },
+            {
+              "id": "taschen/miscellaneous/packard.glb",
+              "name": "Packard",
+              "filename": "packard.glb",
+              "category": "miscellaneous",
+              "group": "taschen",
+              "path": "models/clean/taschen/miscellaneous/packard.glb",
+              "sizeBytes": 7052432,
+              "sizeFormatted": "6.7 MB"
+            },
+            {
+              "id": "taschen/miscellaneous/racer.glb",
+              "name": "Racer",
+              "filename": "racer.glb",
+              "category": "miscellaneous",
+              "group": "taschen",
+              "path": "models/clean/taschen/miscellaneous/racer.glb",
+              "sizeBytes": 5218892,
+              "sizeFormatted": "5 MB"
+            },
+            {
+              "id": "taschen/miscellaneous/racer3.glb",
+              "name": "Racer3",
+              "filename": "racer3.glb",
+              "category": "miscellaneous",
+              "group": "taschen",
+              "path": "models/clean/taschen/miscellaneous/racer3.glb",
+              "sizeBytes": 5436500,
+              "sizeFormatted": "5.2 MB"
+            },
+            {
+              "id": "taschen/miscellaneous/stshoe.glb",
+              "name": "Stshoe",
+              "filename": "stshoe.glb",
+              "category": "miscellaneous",
+              "group": "taschen",
+              "path": "models/clean/taschen/miscellaneous/stshoe.glb",
+              "sizeBytes": 529532,
+              "sizeFormatted": "517.1 KB"
+            },
+            {
+              "id": "taschen/miscellaneous/torb.glb",
+              "name": "Torb",
+              "filename": "torb.glb",
+              "category": "miscellaneous",
+              "group": "taschen",
+              "path": "models/clean/taschen/miscellaneous/torb.glb",
+              "sizeBytes": 525132,
+              "sizeFormatted": "512.8 KB"
+            }
+          ]
+        },
+        {
+          "name": "motorcycles",
+          "title": "Motorcycles",
+          "icon": "",
+          "group": "taschen",
+          "count": 6,
+          "models": [
+            {
+              "id": "taschen/motorcycles/guzzi_1.glb",
+              "name": "Guzzi 1",
+              "filename": "guzzi_1.glb",
+              "category": "motorcycles",
+              "group": "taschen",
+              "path": "models/clean/taschen/motorcycles/guzzi_1.glb",
+              "sizeBytes": 1195904,
+              "sizeFormatted": "1.1 MB"
+            },
+            {
+              "id": "taschen/motorcycles/katana.glb",
+              "name": "Katana",
+              "filename": "katana.glb",
+              "category": "motorcycles",
+              "group": "taschen",
+              "path": "models/clean/taschen/motorcycles/katana.glb",
+              "sizeBytes": 614284,
+              "sizeFormatted": "599.9 KB"
+            },
+            {
+              "id": "taschen/motorcycles/mguzzica.glb",
+              "name": "Mguzzica",
+              "filename": "mguzzica.glb",
+              "category": "motorcycles",
+              "group": "taschen",
+              "path": "models/clean/taschen/motorcycles/mguzzica.glb",
+              "sizeBytes": 1827292,
+              "sizeFormatted": "1.7 MB"
+            },
+            {
+              "id": "taschen/motorcycles/mjeln.glb",
+              "name": "Mjeln",
+              "filename": "mjeln.glb",
+              "category": "motorcycles",
+              "group": "taschen",
+              "path": "models/clean/taschen/motorcycles/mjeln.glb",
+              "sizeBytes": 779564,
+              "sizeFormatted": "761.3 KB"
+            },
+            {
+              "id": "taschen/motorcycles/shadow.glb",
+              "name": "Shadow",
+              "filename": "shadow.glb",
+              "category": "motorcycles",
+              "group": "taschen",
+              "path": "models/clean/taschen/motorcycles/shadow.glb",
+              "sizeBytes": 3569388,
+              "sizeFormatted": "3.4 MB"
+            },
+            {
+              "id": "taschen/motorcycles/vintage.glb",
+              "name": "Vintage",
+              "filename": "vintage.glb",
+              "category": "motorcycles",
+              "group": "taschen",
+              "path": "models/clean/taschen/motorcycles/vintage.glb",
+              "sizeBytes": 494528,
+              "sizeFormatted": "482.9 KB"
+            }
+          ]
+        },
+        {
+          "name": "old_army",
+          "title": "Old Army",
+          "icon": "",
+          "group": "taschen",
+          "count": 4,
+          "models": [
+            {
+              "id": "taschen/old_army/buccan.glb",
+              "name": "Buccan",
+              "filename": "buccan.glb",
+              "category": "old_army",
+              "group": "taschen",
+              "path": "models/clean/taschen/old_army/buccan.glb",
+              "sizeBytes": 5457768,
+              "sizeFormatted": "5.2 MB"
+            },
+            {
+              "id": "taschen/old_army/cannon2.glb",
+              "name": "Cannon2",
+              "filename": "cannon2.glb",
+              "category": "old_army",
+              "group": "taschen",
+              "path": "models/clean/taschen/old_army/cannon2.glb",
+              "sizeBytes": 1660872,
+              "sizeFormatted": "1.6 MB"
+            },
+            {
+              "id": "taschen/old_army/doglh.glb",
+              "name": "Doglh",
+              "filename": "doglh.glb",
+              "category": "old_army",
+              "group": "taschen",
+              "path": "models/clean/taschen/old_army/doglh.glb",
+              "sizeBytes": 1031912,
+              "sizeFormatted": "1007.7 KB"
+            },
+            {
+              "id": "taschen/old_army/grenade2.glb",
+              "name": "Grenade2",
+              "filename": "grenade2.glb",
+              "category": "old_army",
+              "group": "taschen",
+              "path": "models/clean/taschen/old_army/grenade2.glb",
+              "sizeBytes": 3275380,
+              "sizeFormatted": "3.1 MB"
+            }
+          ]
+        },
+        {
+          "name": "plants",
+          "title": "Plants",
+          "icon": "",
+          "group": "taschen",
+          "count": 6,
+          "models": [
+            {
+              "id": "taschen/plants/drosera.glb",
+              "name": "Drosera",
+              "filename": "drosera.glb",
+              "category": "plants",
+              "group": "taschen",
+              "path": "models/clean/taschen/plants/drosera.glb",
+              "sizeBytes": 802088,
+              "sizeFormatted": "783.3 KB"
+            },
+            {
+              "id": "taschen/plants/rose1.glb",
+              "name": "Rose1",
+              "filename": "rose1.glb",
+              "category": "plants",
+              "group": "taschen",
+              "path": "models/clean/taschen/plants/rose1.glb",
+              "sizeBytes": 149692,
+              "sizeFormatted": "146.2 KB"
+            },
+            {
+              "id": "taschen/plants/rose2.glb",
+              "name": "Rose2",
+              "filename": "rose2.glb",
+              "category": "plants",
+              "group": "taschen",
+              "path": "models/clean/taschen/plants/rose2.glb",
+              "sizeBytes": 145464,
+              "sizeFormatted": "142.1 KB"
+            },
+            {
+              "id": "taschen/plants/saguaro.glb",
+              "name": "Saguaro",
+              "filename": "saguaro.glb",
+              "category": "plants",
+              "group": "taschen",
+              "path": "models/clean/taschen/plants/saguaro.glb",
+              "sizeBytes": 811176,
+              "sizeFormatted": "792.2 KB"
+            },
+            {
+              "id": "taschen/plants/salixa.glb",
+              "name": "Salixa",
+              "filename": "salixa.glb",
+              "category": "plants",
+              "group": "taschen",
+              "path": "models/clean/taschen/plants/salixa.glb",
+              "sizeBytes": 670980,
+              "sizeFormatted": "655.3 KB"
+            },
+            {
+              "id": "taschen/plants/styrax.glb",
+              "name": "Styrax",
+              "filename": "styrax.glb",
+              "category": "plants",
+              "group": "taschen",
+              "path": "models/clean/taschen/plants/styrax.glb",
+              "sizeBytes": 616028,
+              "sizeFormatted": "601.6 KB"
+            }
+          ]
+        },
+        {
+          "name": "public_works",
+          "title": "Public Works",
+          "icon": "",
+          "group": "taschen",
+          "count": 6,
+          "models": [
+            {
+              "id": "taschen/public_works/dumper.glb",
+              "name": "Dumper",
+              "filename": "dumper.glb",
+              "category": "public_works",
+              "group": "taschen",
+              "path": "models/clean/taschen/public_works/dumper.glb",
+              "sizeBytes": 11961612,
+              "sizeFormatted": "11.4 MB"
+            },
+            {
+              "id": "taschen/public_works/excava.glb",
+              "name": "Excava",
+              "filename": "excava.glb",
+              "category": "public_works",
+              "group": "taschen",
+              "path": "models/clean/taschen/public_works/excava.glb",
+              "sizeBytes": 9619352,
+              "sizeFormatted": "9.2 MB"
+            },
+            {
+              "id": "taschen/public_works/fall.glb",
+              "name": "Fall",
+              "filename": "fall.glb",
+              "category": "public_works",
+              "group": "taschen",
+              "path": "models/clean/taschen/public_works/fall.glb",
+              "sizeBytes": 478172,
+              "sizeFormatted": "467 KB"
+            },
+            {
+              "id": "taschen/public_works/fd14e.glb",
+              "name": "Fd14e",
+              "filename": "fd14e.glb",
+              "category": "public_works",
+              "group": "taschen",
+              "path": "models/clean/taschen/public_works/fd14e.glb",
+              "sizeBytes": 305292,
+              "sizeFormatted": "298.1 KB"
+            },
+            {
+              "id": "taschen/public_works/fh2000.glb",
+              "name": "Fh2000",
+              "filename": "fh2000.glb",
+              "category": "public_works",
+              "group": "taschen",
+              "path": "models/clean/taschen/public_works/fh2000.glb",
+              "sizeBytes": 1321204,
+              "sizeFormatted": "1.3 MB"
+            },
+            {
+              "id": "taschen/public_works/torocat.glb",
+              "name": "Torocat",
+              "filename": "torocat.glb",
+              "category": "public_works",
+              "group": "taschen",
+              "path": "models/clean/taschen/public_works/torocat.glb",
+              "sizeBytes": 260376,
+              "sizeFormatted": "254.3 KB"
+            }
+          ]
+        },
+        {
+          "name": "sculptures",
+          "title": "Sculptures",
+          "icon": "",
+          "group": "taschen",
+          "count": 4,
+          "models": [
+            {
+              "id": "taschen/sculptures/angel2.glb",
+              "name": "Angel2",
+              "filename": "angel2.glb",
+              "category": "sculptures",
+              "group": "taschen",
+              "path": "models/clean/taschen/sculptures/angel2.glb",
+              "sizeBytes": 704508,
+              "sizeFormatted": "688 KB"
+            },
+            {
+              "id": "taschen/sculptures/athene.glb",
+              "name": "Athene",
+              "filename": "athene.glb",
+              "category": "sculptures",
+              "group": "taschen",
+              "path": "models/clean/taschen/sculptures/athene.glb",
+              "sizeBytes": 6343136,
+              "sizeFormatted": "6 MB"
+            },
+            {
+              "id": "taschen/sculptures/dama.glb",
+              "name": "Dama",
+              "filename": "dama.glb",
+              "category": "sculptures",
+              "group": "taschen",
+              "path": "models/clean/taschen/sculptures/dama.glb",
+              "sizeBytes": 476164,
+              "sizeFormatted": "465 KB"
+            },
+            {
+              "id": "taschen/sculptures/mercury.glb",
+              "name": "Mercury",
+              "filename": "mercury.glb",
+              "category": "sculptures",
+              "group": "taschen",
+              "path": "models/clean/taschen/sculptures/mercury.glb",
+              "sizeBytes": 1344900,
+              "sizeFormatted": "1.3 MB"
+            }
+          ]
+        },
+        {
+          "name": "ships",
+          "title": "Ships",
+          "icon": "",
+          "group": "taschen",
+          "count": 7,
+          "models": [
+            {
+              "id": "taschen/ships/ix_b.glb",
+              "name": "Ix B",
+              "filename": "ix_b.glb",
+              "category": "ships",
+              "group": "taschen",
+              "path": "models/clean/taschen/ships/ix_b.glb",
+              "sizeBytes": 498860,
+              "sizeFormatted": "487.2 KB"
+            },
+            {
+              "id": "taschen/ships/offshore.glb",
+              "name": "Offshore",
+              "filename": "offshore.glb",
+              "category": "ships",
+              "group": "taschen",
+              "path": "models/clean/taschen/ships/offshore.glb",
+              "sizeBytes": 335144,
+              "sizeFormatted": "327.3 KB"
+            },
+            {
+              "id": "taschen/ships/pinta.glb",
+              "name": "Pinta",
+              "filename": "pinta.glb",
+              "category": "ships",
+              "group": "taschen",
+              "path": "models/clean/taschen/ships/pinta.glb",
+              "sizeBytes": 3591564,
+              "sizeFormatted": "3.4 MB"
+            },
+            {
+              "id": "taschen/ships/sanjuan.glb",
+              "name": "Sanjuan",
+              "filename": "sanjuan.glb",
+              "category": "ships",
+              "group": "taschen",
+              "path": "models/clean/taschen/ships/sanjuan.glb",
+              "sizeBytes": 7384396,
+              "sizeFormatted": "7 MB"
+            },
+            {
+              "id": "taschen/ships/shrimp.glb",
+              "name": "Shrimp",
+              "filename": "shrimp.glb",
+              "category": "ships",
+              "group": "taschen",
+              "path": "models/clean/taschen/ships/shrimp.glb",
+              "sizeBytes": 1869260,
+              "sizeFormatted": "1.8 MB"
+            },
+            {
+              "id": "taschen/ships/smit.glb",
+              "name": "Smit",
+              "filename": "smit.glb",
+              "category": "ships",
+              "group": "taschen",
+              "path": "models/clean/taschen/ships/smit.glb",
+              "sizeBytes": 454016,
+              "sizeFormatted": "443.4 KB"
+            },
+            {
+              "id": "taschen/ships/thonie1.glb",
+              "name": "Thonie1",
+              "filename": "thonie1.glb",
+              "category": "ships",
+              "group": "taschen",
+              "path": "models/clean/taschen/ships/thonie1.glb",
+              "sizeBytes": 625288,
+              "sizeFormatted": "610.6 KB"
+            }
+          ]
+        },
+        {
+          "name": "sports",
+          "title": "Sports",
+          "icon": "",
+          "group": "taschen",
+          "count": 2,
+          "models": [
+            {
+              "id": "taschen/sports/basketac.glb",
+              "name": "Basketac",
+              "filename": "basketac.glb",
+              "category": "sports",
+              "group": "taschen",
+              "path": "models/clean/taschen/sports/basketac.glb",
+              "sizeBytes": 356764,
+              "sizeFormatted": "348.4 KB"
+            },
+            {
+              "id": "taschen/sports/ecycle.glb",
+              "name": "Ecycle",
+              "filename": "ecycle.glb",
+              "category": "sports",
+              "group": "taschen",
+              "path": "models/clean/taschen/sports/ecycle.glb",
+              "sizeBytes": 548164,
+              "sizeFormatted": "535.3 KB"
+            }
+          ]
+        }
+      ]
     }
   ],
-  "totalModels": 147,
-  "totalBytes": 322938920,
-  "totalBytesFormatted": "308 MB"
+  "categories": [
+    {
+      "name": "objaverse",
+      "title": "Objaverse",
+      "icon": "",
+      "group": "objaverse",
+      "count": 10,
+      "models": [
+        {
+          "id": "objaverse/creature.glb",
+          "name": "Creature",
+          "filename": "creature.glb",
+          "category": "objaverse",
+          "group": "objaverse",
+          "path": "models/clean/objaverse/creature.glb",
+          "sizeBytes": 1789100,
+          "sizeFormatted": "1.7 MB"
+        },
+        {
+          "id": "objaverse/felix.glb",
+          "name": "Felix",
+          "filename": "felix.glb",
+          "category": "objaverse",
+          "group": "objaverse",
+          "path": "models/clean/objaverse/felix.glb",
+          "sizeBytes": 530040,
+          "sizeFormatted": "517.6 KB"
+        },
+        {
+          "id": "objaverse/fnaf.glb",
+          "name": "FNAF",
+          "filename": "fnaf.glb",
+          "category": "objaverse",
+          "group": "objaverse",
+          "path": "models/clean/objaverse/fnaf.glb",
+          "sizeBytes": 2265128,
+          "sizeFormatted": "2.2 MB"
+        },
+        {
+          "id": "objaverse/harley.glb",
+          "name": "Harley",
+          "filename": "harley.glb",
+          "category": "objaverse",
+          "group": "objaverse",
+          "path": "models/clean/objaverse/harley.glb",
+          "sizeBytes": 17256816,
+          "sizeFormatted": "16.5 MB"
+        },
+        {
+          "id": "objaverse/hen.glb",
+          "name": "Hen",
+          "filename": "hen.glb",
+          "category": "objaverse",
+          "group": "objaverse",
+          "path": "models/clean/objaverse/hen.glb",
+          "sizeBytes": 38968,
+          "sizeFormatted": "38.1 KB"
+        },
+        {
+          "id": "objaverse/ice-cream.glb",
+          "name": "Ice Cream",
+          "filename": "ice-cream.glb",
+          "category": "objaverse",
+          "group": "objaverse",
+          "path": "models/clean/objaverse/ice-cream.glb",
+          "sizeBytes": 905540,
+          "sizeFormatted": "884.3 KB"
+        },
+        {
+          "id": "objaverse/joypad.glb",
+          "name": "Joypad",
+          "filename": "joypad.glb",
+          "category": "objaverse",
+          "group": "objaverse",
+          "path": "models/clean/objaverse/joypad.glb",
+          "sizeBytes": 328632,
+          "sizeFormatted": "320.9 KB"
+        },
+        {
+          "id": "objaverse/mouse.glb",
+          "name": "Mouse",
+          "filename": "mouse.glb",
+          "category": "objaverse",
+          "group": "objaverse",
+          "path": "models/clean/objaverse/mouse.glb",
+          "sizeBytes": 1434952,
+          "sizeFormatted": "1.4 MB"
+        },
+        {
+          "id": "objaverse/pony.glb",
+          "name": "Pony",
+          "filename": "pony.glb",
+          "category": "objaverse",
+          "group": "objaverse",
+          "path": "models/clean/objaverse/pony.glb",
+          "sizeBytes": 1064036,
+          "sizeFormatted": "1 MB"
+        },
+        {
+          "id": "objaverse/soldier.glb",
+          "name": "Soldier",
+          "filename": "soldier.glb",
+          "category": "objaverse",
+          "group": "objaverse",
+          "path": "models/clean/objaverse/soldier.glb",
+          "sizeBytes": 4225084,
+          "sizeFormatted": "4 MB"
+        }
+      ]
+    },
+    {
+      "name": "stanford",
+      "title": "Stanford 3D Scans",
+      "icon": "",
+      "group": "stanford",
+      "count": 7,
+      "models": [
+        {
+          "id": "stanford/armadillo.glb",
+          "name": "Armadillo",
+          "filename": "armadillo.glb",
+          "category": "stanford",
+          "group": "stanford",
+          "path": "models/clean/stanford/armadillo.glb",
+          "sizeBytes": 9687852,
+          "sizeFormatted": "9.2 MB"
+        },
+        {
+          "id": "stanford/bunny.glb",
+          "name": "Stanford Bunny",
+          "filename": "bunny.glb",
+          "category": "stanford",
+          "group": "stanford",
+          "path": "models/clean/stanford/bunny.glb",
+          "sizeBytes": 1949448,
+          "sizeFormatted": "1.9 MB"
+        },
+        {
+          "id": "stanford/dragon.glb",
+          "name": "Stanford Dragon",
+          "filename": "dragon.glb",
+          "category": "stanford",
+          "group": "stanford",
+          "path": "models/clean/stanford/dragon.glb",
+          "sizeBytes": 1310304,
+          "sizeFormatted": "1.2 MB"
+        },
+        {
+          "id": "stanford/drill.glb",
+          "name": "Drill",
+          "filename": "drill.glb",
+          "category": "stanford",
+          "group": "stanford",
+          "path": "models/clean/stanford/drill.glb",
+          "sizeBytes": 110320,
+          "sizeFormatted": "107.7 KB"
+        },
+        {
+          "id": "stanford/happy_buddha.glb",
+          "name": "Happy Buddha",
+          "filename": "happy_buddha.glb",
+          "category": "stanford",
+          "group": "stanford",
+          "path": "models/clean/stanford/happy_buddha.glb",
+          "sizeBytes": 1842360,
+          "sizeFormatted": "1.8 MB"
+        },
+        {
+          "id": "stanford/lucy.glb",
+          "name": "Lucy",
+          "filename": "lucy.glb",
+          "category": "stanford",
+          "group": "stanford",
+          "path": "models/clean/stanford/lucy.glb",
+          "sizeBytes": 2800552,
+          "sizeFormatted": "2.7 MB"
+        },
+        {
+          "id": "stanford/teapot.glb",
+          "name": "Teapot",
+          "filename": "teapot.glb",
+          "category": "stanford",
+          "group": "stanford",
+          "path": "models/clean/stanford/teapot.glb",
+          "sizeBytes": 193712,
+          "sizeFormatted": "189.2 KB"
+        }
+      ]
+    },
+    {
+      "name": "airplanes",
+      "title": "Airplanes",
+      "icon": "",
+      "group": "taschen",
+      "count": 8,
+      "models": [
+        {
+          "id": "taschen/airplanes/be2.glb",
+          "name": "Be2",
+          "filename": "be2.glb",
+          "category": "airplanes",
+          "group": "taschen",
+          "path": "models/clean/taschen/airplanes/be2.glb",
+          "sizeBytes": 327848,
+          "sizeFormatted": "320.2 KB"
+        },
+        {
+          "id": "taschen/airplanes/f117.glb",
+          "name": "F117",
+          "filename": "f117.glb",
+          "category": "airplanes",
+          "group": "taschen",
+          "path": "models/clean/taschen/airplanes/f117.glb",
+          "sizeBytes": 8039684,
+          "sizeFormatted": "7.7 MB"
+        },
+        {
+          "id": "taschen/airplanes/fw189.glb",
+          "name": "Fw189",
+          "filename": "fw189.glb",
+          "category": "airplanes",
+          "group": "taschen",
+          "path": "models/clean/taschen/airplanes/fw189.glb",
+          "sizeBytes": 12600964,
+          "sizeFormatted": "12 MB"
+        },
+        {
+          "id": "taschen/airplanes/g4m11.glb",
+          "name": "G4m11",
+          "filename": "g4m11.glb",
+          "category": "airplanes",
+          "group": "taschen",
+          "path": "models/clean/taschen/airplanes/g4m11.glb",
+          "sizeBytes": 1906604,
+          "sizeFormatted": "1.8 MB"
+        },
+        {
+          "id": "taschen/airplanes/kitty.glb",
+          "name": "Kitty",
+          "filename": "kitty.glb",
+          "category": "airplanes",
+          "group": "taschen",
+          "path": "models/clean/taschen/airplanes/kitty.glb",
+          "sizeBytes": 671748,
+          "sizeFormatted": "656 KB"
+        },
+        {
+          "id": "taschen/airplanes/osprey.glb",
+          "name": "Osprey",
+          "filename": "osprey.glb",
+          "category": "airplanes",
+          "group": "taschen",
+          "path": "models/clean/taschen/airplanes/osprey.glb",
+          "sizeBytes": 1145900,
+          "sizeFormatted": "1.1 MB"
+        },
+        {
+          "id": "taschen/airplanes/p_38_lig.glb",
+          "name": "P 38 Lig",
+          "filename": "p_38_lig.glb",
+          "category": "airplanes",
+          "group": "taschen",
+          "path": "models/clean/taschen/airplanes/p_38_lig.glb",
+          "sizeBytes": 986472,
+          "sizeFormatted": "963.4 KB"
+        },
+        {
+          "id": "taschen/airplanes/rafs5.glb",
+          "name": "Rafs5",
+          "filename": "rafs5.glb",
+          "category": "airplanes",
+          "group": "taschen",
+          "path": "models/clean/taschen/airplanes/rafs5.glb",
+          "sizeBytes": 688344,
+          "sizeFormatted": "672.2 KB"
+        }
+      ]
+    },
+    {
+      "name": "airports",
+      "title": "Airports",
+      "icon": "",
+      "group": "taschen",
+      "count": 3,
+      "models": [
+        {
+          "id": "taschen/airports/airsg1.glb",
+          "name": "Airsg1",
+          "filename": "airsg1.glb",
+          "category": "airports",
+          "group": "taschen",
+          "path": "models/clean/taschen/airports/airsg1.glb",
+          "sizeBytes": 470572,
+          "sizeFormatted": "459.5 KB"
+        },
+        {
+          "id": "taschen/airports/eagle.glb",
+          "name": "Eagle",
+          "filename": "eagle.glb",
+          "category": "airports",
+          "group": "taschen",
+          "path": "models/clean/taschen/airports/eagle.glb",
+          "sizeBytes": 863664,
+          "sizeFormatted": "843.4 KB"
+        },
+        {
+          "id": "taschen/airports/f15s.glb",
+          "name": "F15s",
+          "filename": "f15s.glb",
+          "category": "airports",
+          "group": "taschen",
+          "path": "models/clean/taschen/airports/f15s.glb",
+          "sizeBytes": 234652,
+          "sizeFormatted": "229.2 KB"
+        }
+      ]
+    },
+    {
+      "name": "animals",
+      "title": "Animals",
+      "icon": "",
+      "group": "taschen",
+      "count": 22,
+      "models": [
+        {
+          "id": "taschen/animals/delfin.glb",
+          "name": "Delfin",
+          "filename": "delfin.glb",
+          "category": "animals",
+          "group": "taschen",
+          "path": "models/clean/taschen/animals/delfin.glb",
+          "sizeBytes": 510580,
+          "sizeFormatted": "498.6 KB"
+        },
+        {
+          "id": "taschen/animals/devilfis.glb",
+          "name": "Devilfis",
+          "filename": "devilfis.glb",
+          "category": "animals",
+          "group": "taschen",
+          "path": "models/clean/taschen/animals/devilfis.glb",
+          "sizeBytes": 856460,
+          "sizeFormatted": "836.4 KB"
+        },
+        {
+          "id": "taschen/animals/dromedar.glb",
+          "name": "Dromedar",
+          "filename": "dromedar.glb",
+          "category": "animals",
+          "group": "taschen",
+          "path": "models/clean/taschen/animals/dromedar.glb",
+          "sizeBytes": 829744,
+          "sizeFormatted": "810.3 KB"
+        },
+        {
+          "id": "taschen/animals/ghop.glb",
+          "name": "Ghop",
+          "filename": "ghop.glb",
+          "category": "animals",
+          "group": "taschen",
+          "path": "models/clean/taschen/animals/ghop.glb",
+          "sizeBytes": 1262612,
+          "sizeFormatted": "1.2 MB"
+        },
+        {
+          "id": "taschen/animals/kangaro.glb",
+          "name": "Kangaro",
+          "filename": "kangaro.glb",
+          "category": "animals",
+          "group": "taschen",
+          "path": "models/clean/taschen/animals/kangaro.glb",
+          "sizeBytes": 2683136,
+          "sizeFormatted": "2.6 MB"
+        },
+        {
+          "id": "taschen/animals/kwha.glb",
+          "name": "Kwha",
+          "filename": "kwha.glb",
+          "category": "animals",
+          "group": "taschen",
+          "path": "models/clean/taschen/animals/kwha.glb",
+          "sizeBytes": 652668,
+          "sizeFormatted": "637.4 KB"
+        },
+        {
+          "id": "taschen/animals/lebis.glb",
+          "name": "Lebis",
+          "filename": "lebis.glb",
+          "category": "animals",
+          "group": "taschen",
+          "path": "models/clean/taschen/animals/lebis.glb",
+          "sizeBytes": 724972,
+          "sizeFormatted": "708 KB"
+        },
+        {
+          "id": "taschen/animals/lion.glb",
+          "name": "Lion",
+          "filename": "lion.glb",
+          "category": "animals",
+          "group": "taschen",
+          "path": "models/clean/taschen/animals/lion.glb",
+          "sizeBytes": 3262792,
+          "sizeFormatted": "3.1 MB"
+        },
+        {
+          "id": "taschen/animals/lobster1.glb",
+          "name": "Lobster1",
+          "filename": "lobster1.glb",
+          "category": "animals",
+          "group": "taschen",
+          "path": "models/clean/taschen/animals/lobster1.glb",
+          "sizeBytes": 565756,
+          "sizeFormatted": "552.5 KB"
+        },
+        {
+          "id": "taschen/animals/lobster2.glb",
+          "name": "Lobster2",
+          "filename": "lobster2.glb",
+          "category": "animals",
+          "group": "taschen",
+          "path": "models/clean/taschen/animals/lobster2.glb",
+          "sizeBytes": 468732,
+          "sizeFormatted": "457.7 KB"
+        },
+        {
+          "id": "taschen/animals/mantis.glb",
+          "name": "Mantis",
+          "filename": "mantis.glb",
+          "category": "animals",
+          "group": "taschen",
+          "path": "models/clean/taschen/animals/mantis.glb",
+          "sizeBytes": 647940,
+          "sizeFormatted": "632.8 KB"
+        },
+        {
+          "id": "taschen/animals/mosquito.glb",
+          "name": "Mosquito",
+          "filename": "mosquito.glb",
+          "category": "animals",
+          "group": "taschen",
+          "path": "models/clean/taschen/animals/mosquito.glb",
+          "sizeBytes": 469764,
+          "sizeFormatted": "458.8 KB"
+        },
+        {
+          "id": "taschen/animals/ootter.glb",
+          "name": "Ootter",
+          "filename": "ootter.glb",
+          "category": "animals",
+          "group": "taschen",
+          "path": "models/clean/taschen/animals/ootter.glb",
+          "sizeBytes": 452804,
+          "sizeFormatted": "442.2 KB"
+        },
+        {
+          "id": "taschen/animals/parasau.glb",
+          "name": "Parasau",
+          "filename": "parasau.glb",
+          "category": "animals",
+          "group": "taschen",
+          "path": "models/clean/taschen/animals/parasau.glb",
+          "sizeBytes": 430948,
+          "sizeFormatted": "420.8 KB"
+        },
+        {
+          "id": "taschen/animals/pig.glb",
+          "name": "Pig",
+          "filename": "pig.glb",
+          "category": "animals",
+          "group": "taschen",
+          "path": "models/clean/taschen/animals/pig.glb",
+          "sizeBytes": 894060,
+          "sizeFormatted": "873.1 KB"
+        },
+        {
+          "id": "taschen/animals/poecil.glb",
+          "name": "Poecil",
+          "filename": "poecil.glb",
+          "category": "animals",
+          "group": "taschen",
+          "path": "models/clean/taschen/animals/poecil.glb",
+          "sizeBytes": 575384,
+          "sizeFormatted": "561.9 KB"
+        },
+        {
+          "id": "taschen/animals/reindeer.glb",
+          "name": "Reindeer",
+          "filename": "reindeer.glb",
+          "category": "animals",
+          "group": "taschen",
+          "path": "models/clean/taschen/animals/reindeer.glb",
+          "sizeBytes": 579112,
+          "sizeFormatted": "565.5 KB"
+        },
+        {
+          "id": "taschen/animals/rhino.glb",
+          "name": "Rhino",
+          "filename": "rhino.glb",
+          "category": "animals",
+          "group": "taschen",
+          "path": "models/clean/taschen/animals/rhino.glb",
+          "sizeBytes": 728436,
+          "sizeFormatted": "711.4 KB"
+        },
+        {
+          "id": "taschen/animals/seahorse.glb",
+          "name": "Seahorse",
+          "filename": "seahorse.glb",
+          "category": "animals",
+          "group": "taschen",
+          "path": "models/clean/taschen/animals/seahorse.glb",
+          "sizeBytes": 3778344,
+          "sizeFormatted": "3.6 MB"
+        },
+        {
+          "id": "taschen/animals/snail.glb",
+          "name": "Snail",
+          "filename": "snail.glb",
+          "category": "animals",
+          "group": "taschen",
+          "path": "models/clean/taschen/animals/snail.glb",
+          "sizeBytes": 1322316,
+          "sizeFormatted": "1.3 MB"
+        },
+        {
+          "id": "taschen/animals/stagbee.glb",
+          "name": "Stagbee",
+          "filename": "stagbee.glb",
+          "category": "animals",
+          "group": "taschen",
+          "path": "models/clean/taschen/animals/stagbee.glb",
+          "sizeBytes": 2142240,
+          "sizeFormatted": "2 MB"
+        },
+        {
+          "id": "taschen/animals/wasp.glb",
+          "name": "Wasp",
+          "filename": "wasp.glb",
+          "category": "animals",
+          "group": "taschen",
+          "path": "models/clean/taschen/animals/wasp.glb",
+          "sizeBytes": 782804,
+          "sizeFormatted": "764.5 KB"
+        }
+      ]
+    },
+    {
+      "name": "architecture",
+      "title": "Architecture",
+      "icon": "",
+      "group": "taschen",
+      "count": 8,
+      "models": [
+        {
+          "id": "taschen/architecture/firest.glb",
+          "name": "Firest",
+          "filename": "firest.glb",
+          "category": "architecture",
+          "group": "taschen",
+          "path": "models/clean/taschen/architecture/firest.glb",
+          "sizeBytes": 2060700,
+          "sizeFormatted": "2 MB"
+        },
+        {
+          "id": "taschen/architecture/grand.glb",
+          "name": "Grand",
+          "filename": "grand.glb",
+          "category": "architecture",
+          "group": "taschen",
+          "path": "models/clean/taschen/architecture/grand.glb",
+          "sizeBytes": 375892,
+          "sizeFormatted": "367.1 KB"
+        },
+        {
+          "id": "taschen/architecture/nordstad.glb",
+          "name": "Nordstad",
+          "filename": "nordstad.glb",
+          "category": "architecture",
+          "group": "taschen",
+          "path": "models/clean/taschen/architecture/nordstad.glb",
+          "sizeBytes": 356976,
+          "sizeFormatted": "348.6 KB"
+        },
+        {
+          "id": "taschen/architecture/observ.glb",
+          "name": "Observ",
+          "filename": "observ.glb",
+          "category": "architecture",
+          "group": "taschen",
+          "path": "models/clean/taschen/architecture/observ.glb",
+          "sizeBytes": 274716,
+          "sizeFormatted": "268.3 KB"
+        },
+        {
+          "id": "taschen/architecture/sjeronim.glb",
+          "name": "Sjeronim",
+          "filename": "sjeronim.glb",
+          "category": "architecture",
+          "group": "taschen",
+          "path": "models/clean/taschen/architecture/sjeronim.glb",
+          "sizeBytes": 42575728,
+          "sizeFormatted": "40.6 MB"
+        },
+        {
+          "id": "taschen/architecture/store.glb",
+          "name": "Store",
+          "filename": "store.glb",
+          "category": "architecture",
+          "group": "taschen",
+          "path": "models/clean/taschen/architecture/store.glb",
+          "sizeBytes": 315212,
+          "sizeFormatted": "307.8 KB"
+        },
+        {
+          "id": "taschen/architecture/t_lich.glb",
+          "name": "T Lich",
+          "filename": "t_lich.glb",
+          "category": "architecture",
+          "group": "taschen",
+          "path": "models/clean/taschen/architecture/t_lich.glb",
+          "sizeBytes": 3596920,
+          "sizeFormatted": "3.4 MB"
+        },
+        {
+          "id": "taschen/architecture/townhou1.glb",
+          "name": "Townhou1",
+          "filename": "townhou1.glb",
+          "category": "architecture",
+          "group": "taschen",
+          "path": "models/clean/taschen/architecture/townhou1.glb",
+          "sizeBytes": 679088,
+          "sizeFormatted": "663.2 KB"
+        }
+      ]
+    },
+    {
+      "name": "cars",
+      "title": "Cars",
+      "icon": "",
+      "group": "taschen",
+      "count": 20,
+      "models": [
+        {
+          "id": "taschen/cars/diablo.glb",
+          "name": "Diablo",
+          "filename": "diablo.glb",
+          "category": "cars",
+          "group": "taschen",
+          "path": "models/clean/taschen/cars/diablo.glb",
+          "sizeBytes": 582004,
+          "sizeFormatted": "568.4 KB"
+        },
+        {
+          "id": "taschen/cars/drag.glb",
+          "name": "Drag",
+          "filename": "drag.glb",
+          "category": "cars",
+          "group": "taschen",
+          "path": "models/clean/taschen/cars/drag.glb",
+          "sizeBytes": 854356,
+          "sizeFormatted": "834.3 KB"
+        },
+        {
+          "id": "taschen/cars/fordv8.glb",
+          "name": "Fordv8",
+          "filename": "fordv8.glb",
+          "category": "cars",
+          "group": "taschen",
+          "path": "models/clean/taschen/cars/fordv8.glb",
+          "sizeBytes": 334552,
+          "sizeFormatted": "326.7 KB"
+        },
+        {
+          "id": "taschen/cars/gto.glb",
+          "name": "Gto",
+          "filename": "gto.glb",
+          "category": "cars",
+          "group": "taschen",
+          "path": "models/clean/taschen/cars/gto.glb",
+          "sizeBytes": 2333000,
+          "sizeFormatted": "2.2 MB"
+        },
+        {
+          "id": "taschen/cars/isetta.glb",
+          "name": "Isetta",
+          "filename": "isetta.glb",
+          "category": "cars",
+          "group": "taschen",
+          "path": "models/clean/taschen/cars/isetta.glb",
+          "sizeBytes": 302472,
+          "sizeFormatted": "295.4 KB"
+        },
+        {
+          "id": "taschen/cars/jaguar.glb",
+          "name": "Jaguar",
+          "filename": "jaguar.glb",
+          "category": "cars",
+          "group": "taschen",
+          "path": "models/clean/taschen/cars/jaguar.glb",
+          "sizeBytes": 3269788,
+          "sizeFormatted": "3.1 MB"
+        },
+        {
+          "id": "taschen/cars/lambcoun.glb",
+          "name": "Lambcoun",
+          "filename": "lambcoun.glb",
+          "category": "cars",
+          "group": "taschen",
+          "path": "models/clean/taschen/cars/lambcoun.glb",
+          "sizeBytes": 505256,
+          "sizeFormatted": "493.4 KB"
+        },
+        {
+          "id": "taschen/cars/lanc_b24.glb",
+          "name": "Lanc B24",
+          "filename": "lanc_b24.glb",
+          "category": "cars",
+          "group": "taschen",
+          "path": "models/clean/taschen/cars/lanc_b24.glb",
+          "sizeBytes": 466208,
+          "sizeFormatted": "455.3 KB"
+        },
+        {
+          "id": "taschen/cars/lincoln.glb",
+          "name": "Lincoln",
+          "filename": "lincoln.glb",
+          "category": "cars",
+          "group": "taschen",
+          "path": "models/clean/taschen/cars/lincoln.glb",
+          "sizeBytes": 825672,
+          "sizeFormatted": "806.3 KB"
+        },
+        {
+          "id": "taschen/cars/lotus107.glb",
+          "name": "Lotus107",
+          "filename": "lotus107.glb",
+          "category": "cars",
+          "group": "taschen",
+          "path": "models/clean/taschen/cars/lotus107.glb",
+          "sizeBytes": 1811648,
+          "sizeFormatted": "1.7 MB"
+        },
+        {
+          "id": "taschen/cars/mer300sl.glb",
+          "name": "Mer300sl",
+          "filename": "mer300sl.glb",
+          "category": "cars",
+          "group": "taschen",
+          "path": "models/clean/taschen/cars/mer300sl.glb",
+          "sizeBytes": 230428,
+          "sizeFormatted": "225 KB"
+        },
+        {
+          "id": "taschen/cars/mercedes.glb",
+          "name": "Mercedes",
+          "filename": "mercedes.glb",
+          "category": "cars",
+          "group": "taschen",
+          "path": "models/clean/taschen/cars/mercedes.glb",
+          "sizeBytes": 554044,
+          "sizeFormatted": "541.1 KB"
+        },
+        {
+          "id": "taschen/cars/mes.glb",
+          "name": "Mes",
+          "filename": "mes.glb",
+          "category": "cars",
+          "group": "taschen",
+          "path": "models/clean/taschen/cars/mes.glb",
+          "sizeBytes": 222384,
+          "sizeFormatted": "217.2 KB"
+        },
+        {
+          "id": "taschen/cars/mgtc.glb",
+          "name": "Mgtc",
+          "filename": "mgtc.glb",
+          "category": "cars",
+          "group": "taschen",
+          "path": "models/clean/taschen/cars/mgtc.glb",
+          "sizeBytes": 403620,
+          "sizeFormatted": "394.2 KB"
+        },
+        {
+          "id": "taschen/cars/olds_c.glb",
+          "name": "Olds C",
+          "filename": "olds_c.glb",
+          "category": "cars",
+          "group": "taschen",
+          "path": "models/clean/taschen/cars/olds_c.glb",
+          "sizeBytes": 6030340,
+          "sizeFormatted": "5.8 MB"
+        },
+        {
+          "id": "taschen/cars/op1909.glb",
+          "name": "Op1909",
+          "filename": "op1909.glb",
+          "category": "cars",
+          "group": "taschen",
+          "path": "models/clean/taschen/cars/op1909.glb",
+          "sizeBytes": 1093744,
+          "sizeFormatted": "1 MB"
+        },
+        {
+          "id": "taschen/cars/renault.glb",
+          "name": "Renault",
+          "filename": "renault.glb",
+          "category": "cars",
+          "group": "taschen",
+          "path": "models/clean/taschen/cars/renault.glb",
+          "sizeBytes": 432056,
+          "sizeFormatted": "421.9 KB"
+        },
+        {
+          "id": "taschen/cars/rolls.glb",
+          "name": "Rolls",
+          "filename": "rolls.glb",
+          "category": "cars",
+          "group": "taschen",
+          "path": "models/clean/taschen/cars/rolls.glb",
+          "sizeBytes": 311488,
+          "sizeFormatted": "304.2 KB"
+        },
+        {
+          "id": "taschen/cars/t_chevy.glb",
+          "name": "T Chevy",
+          "filename": "t_chevy.glb",
+          "category": "cars",
+          "group": "taschen",
+          "path": "models/clean/taschen/cars/t_chevy.glb",
+          "sizeBytes": 343204,
+          "sizeFormatted": "335.2 KB"
+        },
+        {
+          "id": "taschen/cars/tyrrel.glb",
+          "name": "Tyrrel",
+          "filename": "tyrrel.glb",
+          "category": "cars",
+          "group": "taschen",
+          "path": "models/clean/taschen/cars/tyrrel.glb",
+          "sizeBytes": 1199908,
+          "sizeFormatted": "1.1 MB"
+        }
+      ]
+    },
+    {
+      "name": "contemporary_furniture",
+      "title": "Contemporary Furniture",
+      "icon": "",
+      "group": "taschen",
+      "count": 2,
+      "models": [
+        {
+          "id": "taschen/contemporary_furniture/officec2.glb",
+          "name": "Officec2",
+          "filename": "officec2.glb",
+          "category": "contemporary_furniture",
+          "group": "taschen",
+          "path": "models/clean/taschen/contemporary_furniture/officec2.glb",
+          "sizeBytes": 1604288,
+          "sizeFormatted": "1.5 MB"
+        },
+        {
+          "id": "taschen/contemporary_furniture/officech.glb",
+          "name": "Officech",
+          "filename": "officech.glb",
+          "category": "contemporary_furniture",
+          "group": "taschen",
+          "path": "models/clean/taschen/contemporary_furniture/officech.glb",
+          "sizeBytes": 156348,
+          "sizeFormatted": "152.7 KB"
+        }
+      ]
+    },
+    {
+      "name": "electronics",
+      "title": "Electronics",
+      "icon": "",
+      "group": "taschen",
+      "count": 5,
+      "models": [
+        {
+          "id": "taschen/electronics/aiwa2.glb",
+          "name": "Aiwa2",
+          "filename": "aiwa2.glb",
+          "category": "electronics",
+          "group": "taschen",
+          "path": "models/clean/taschen/electronics/aiwa2.glb",
+          "sizeBytes": 1047992,
+          "sizeFormatted": "1023.4 KB"
+        },
+        {
+          "id": "taschen/electronics/camara.glb",
+          "name": "Camara",
+          "filename": "camara.glb",
+          "category": "electronics",
+          "group": "taschen",
+          "path": "models/clean/taschen/electronics/camara.glb",
+          "sizeBytes": 4453156,
+          "sizeFormatted": "4.2 MB"
+        },
+        {
+          "id": "taschen/electronics/flexo.glb",
+          "name": "Flexo",
+          "filename": "flexo.glb",
+          "category": "electronics",
+          "group": "taschen",
+          "path": "models/clean/taschen/electronics/flexo.glb",
+          "sizeBytes": 402280,
+          "sizeFormatted": "392.9 KB"
+        },
+        {
+          "id": "taschen/electronics/sanyo.glb",
+          "name": "Sanyo",
+          "filename": "sanyo.glb",
+          "category": "electronics",
+          "group": "taschen",
+          "path": "models/clean/taschen/electronics/sanyo.glb",
+          "sizeBytes": 415632,
+          "sizeFormatted": "405.9 KB"
+        },
+        {
+          "id": "taschen/electronics/telefon2.glb",
+          "name": "Telefon2",
+          "filename": "telefon2.glb",
+          "category": "electronics",
+          "group": "taschen",
+          "path": "models/clean/taschen/electronics/telefon2.glb",
+          "sizeBytes": 722500,
+          "sizeFormatted": "705.6 KB"
+        }
+      ]
+    },
+    {
+      "name": "furniture",
+      "title": "Furniture",
+      "icon": "",
+      "group": "taschen",
+      "count": 7,
+      "models": [
+        {
+          "id": "taschen/furniture/bi8ed4.glb",
+          "name": "Bi8ed4",
+          "filename": "bi8ed4.glb",
+          "category": "furniture",
+          "group": "taschen",
+          "path": "models/clean/taschen/furniture/bi8ed4.glb",
+          "sizeBytes": 9898876,
+          "sizeFormatted": "9.4 MB"
+        },
+        {
+          "id": "taschen/furniture/ca5fec2.glb",
+          "name": "Ca5fec2",
+          "filename": "ca5fec2.glb",
+          "category": "furniture",
+          "group": "taschen",
+          "path": "models/clean/taschen/furniture/ca5fec2.glb",
+          "sizeBytes": 824448,
+          "sizeFormatted": "805.1 KB"
+        },
+        {
+          "id": "taschen/furniture/english2.glb",
+          "name": "English2",
+          "filename": "english2.glb",
+          "category": "furniture",
+          "group": "taschen",
+          "path": "models/clean/taschen/furniture/english2.glb",
+          "sizeBytes": 3343536,
+          "sizeFormatted": "3.2 MB"
+        },
+        {
+          "id": "taschen/furniture/garden.glb",
+          "name": "Garden",
+          "filename": "garden.glb",
+          "category": "furniture",
+          "group": "taschen",
+          "path": "models/clean/taschen/furniture/garden.glb",
+          "sizeBytes": 735148,
+          "sizeFormatted": "717.9 KB"
+        },
+        {
+          "id": "taschen/furniture/roundta.glb",
+          "name": "Roundta",
+          "filename": "roundta.glb",
+          "category": "furniture",
+          "group": "taschen",
+          "path": "models/clean/taschen/furniture/roundta.glb",
+          "sizeBytes": 555064,
+          "sizeFormatted": "542.1 KB"
+        },
+        {
+          "id": "taschen/furniture/sheraton.glb",
+          "name": "Sheraton",
+          "filename": "sheraton.glb",
+          "category": "furniture",
+          "group": "taschen",
+          "path": "models/clean/taschen/furniture/sheraton.glb",
+          "sizeBytes": 1943976,
+          "sizeFormatted": "1.9 MB"
+        },
+        {
+          "id": "taschen/furniture/table.glb",
+          "name": "Table",
+          "filename": "table.glb",
+          "category": "furniture",
+          "group": "taschen",
+          "path": "models/clean/taschen/furniture/table.glb",
+          "sizeBytes": 813460,
+          "sizeFormatted": "794.4 KB"
+        }
+      ]
+    },
+    {
+      "name": "helicopters",
+      "title": "Helicopters",
+      "icon": "",
+      "group": "taschen",
+      "count": 4,
+      "models": [
+        {
+          "id": "taschen/helicopters/aloue2.glb",
+          "name": "Aloue2",
+          "filename": "aloue2.glb",
+          "category": "helicopters",
+          "group": "taschen",
+          "path": "models/clean/taschen/helicopters/aloue2.glb",
+          "sizeBytes": 1299984,
+          "sizeFormatted": "1.2 MB"
+        },
+        {
+          "id": "taschen/helicopters/ka27.glb",
+          "name": "Ka27",
+          "filename": "ka27.glb",
+          "category": "helicopters",
+          "group": "taschen",
+          "path": "models/clean/taschen/helicopters/ka27.glb",
+          "sizeBytes": 1518052,
+          "sizeFormatted": "1.4 MB"
+        },
+        {
+          "id": "taschen/helicopters/mi_8.glb",
+          "name": "Mi 8",
+          "filename": "mi_8.glb",
+          "category": "helicopters",
+          "group": "taschen",
+          "path": "models/clean/taschen/helicopters/mi_8.glb",
+          "sizeBytes": 726304,
+          "sizeFormatted": "709.3 KB"
+        },
+        {
+          "id": "taschen/helicopters/sh3hnavy.glb",
+          "name": "Sh3hnavy",
+          "filename": "sh3hnavy.glb",
+          "category": "helicopters",
+          "group": "taschen",
+          "path": "models/clean/taschen/helicopters/sh3hnavy.glb",
+          "sizeBytes": 1198740,
+          "sizeFormatted": "1.1 MB"
+        }
+      ]
+    },
+    {
+      "name": "military",
+      "title": "Military",
+      "icon": "",
+      "group": "taschen",
+      "count": 6,
+      "models": [
+        {
+          "id": "taschen/military/amx13.glb",
+          "name": "Amx13",
+          "filename": "amx13.glb",
+          "category": "military",
+          "group": "taschen",
+          "path": "models/clean/taschen/military/amx13.glb",
+          "sizeBytes": 729644,
+          "sizeFormatted": "712.5 KB"
+        },
+        {
+          "id": "taschen/military/elefant.glb",
+          "name": "Elefant",
+          "filename": "elefant.glb",
+          "category": "military",
+          "group": "taschen",
+          "path": "models/clean/taschen/military/elefant.glb",
+          "sizeBytes": 5563376,
+          "sizeFormatted": "5.3 MB"
+        },
+        {
+          "id": "taschen/military/gaskin.glb",
+          "name": "Gaskin",
+          "filename": "gaskin.glb",
+          "category": "military",
+          "group": "taschen",
+          "path": "models/clean/taschen/military/gaskin.glb",
+          "sizeBytes": 4620452,
+          "sizeFormatted": "4.4 MB"
+        },
+        {
+          "id": "taschen/military/pmissile.glb",
+          "name": "Pmissile",
+          "filename": "pmissile.glb",
+          "category": "military",
+          "group": "taschen",
+          "path": "models/clean/taschen/military/pmissile.glb",
+          "sizeBytes": 4833364,
+          "sizeFormatted": "4.6 MB"
+        },
+        {
+          "id": "taschen/military/rf8.glb",
+          "name": "Rf8",
+          "filename": "rf8.glb",
+          "category": "military",
+          "group": "taschen",
+          "path": "models/clean/taschen/military/rf8.glb",
+          "sizeBytes": 1863568,
+          "sizeFormatted": "1.8 MB"
+        },
+        {
+          "id": "taschen/military/t62a.glb",
+          "name": "T62a",
+          "filename": "t62a.glb",
+          "category": "military",
+          "group": "taschen",
+          "path": "models/clean/taschen/military/t62a.glb",
+          "sizeBytes": 3911196,
+          "sizeFormatted": "3.7 MB"
+        }
+      ]
+    },
+    {
+      "name": "miscellaneous",
+      "title": "Miscellaneous",
+      "icon": "",
+      "group": "taschen",
+      "count": 10,
+      "models": [
+        {
+          "id": "taschen/miscellaneous/cofcup.glb",
+          "name": "Cofcup",
+          "filename": "cofcup.glb",
+          "category": "miscellaneous",
+          "group": "taschen",
+          "path": "models/clean/taschen/miscellaneous/cofcup.glb",
+          "sizeBytes": 121624,
+          "sizeFormatted": "118.8 KB"
+        },
+        {
+          "id": "taschen/miscellaneous/extiisle.glb",
+          "name": "Extiisle",
+          "filename": "extiisle.glb",
+          "category": "miscellaneous",
+          "group": "taschen",
+          "path": "models/clean/taschen/miscellaneous/extiisle.glb",
+          "sizeBytes": 156164,
+          "sizeFormatted": "152.5 KB"
+        },
+        {
+          "id": "taschen/miscellaneous/extinto2.glb",
+          "name": "Extinto2",
+          "filename": "extinto2.glb",
+          "category": "miscellaneous",
+          "group": "taschen",
+          "path": "models/clean/taschen/miscellaneous/extinto2.glb",
+          "sizeBytes": 532372,
+          "sizeFormatted": "519.9 KB"
+        },
+        {
+          "id": "taschen/miscellaneous/fender.glb",
+          "name": "Fender",
+          "filename": "fender.glb",
+          "category": "miscellaneous",
+          "group": "taschen",
+          "path": "models/clean/taschen/miscellaneous/fender.glb",
+          "sizeBytes": 5354164,
+          "sizeFormatted": "5.1 MB"
+        },
+        {
+          "id": "taschen/miscellaneous/lamp5.glb",
+          "name": "Lamp5",
+          "filename": "lamp5.glb",
+          "category": "miscellaneous",
+          "group": "taschen",
+          "path": "models/clean/taschen/miscellaneous/lamp5.glb",
+          "sizeBytes": 617928,
+          "sizeFormatted": "603.4 KB"
+        },
+        {
+          "id": "taschen/miscellaneous/packard.glb",
+          "name": "Packard",
+          "filename": "packard.glb",
+          "category": "miscellaneous",
+          "group": "taschen",
+          "path": "models/clean/taschen/miscellaneous/packard.glb",
+          "sizeBytes": 7052432,
+          "sizeFormatted": "6.7 MB"
+        },
+        {
+          "id": "taschen/miscellaneous/racer.glb",
+          "name": "Racer",
+          "filename": "racer.glb",
+          "category": "miscellaneous",
+          "group": "taschen",
+          "path": "models/clean/taschen/miscellaneous/racer.glb",
+          "sizeBytes": 5218892,
+          "sizeFormatted": "5 MB"
+        },
+        {
+          "id": "taschen/miscellaneous/racer3.glb",
+          "name": "Racer3",
+          "filename": "racer3.glb",
+          "category": "miscellaneous",
+          "group": "taschen",
+          "path": "models/clean/taschen/miscellaneous/racer3.glb",
+          "sizeBytes": 5436500,
+          "sizeFormatted": "5.2 MB"
+        },
+        {
+          "id": "taschen/miscellaneous/stshoe.glb",
+          "name": "Stshoe",
+          "filename": "stshoe.glb",
+          "category": "miscellaneous",
+          "group": "taschen",
+          "path": "models/clean/taschen/miscellaneous/stshoe.glb",
+          "sizeBytes": 529532,
+          "sizeFormatted": "517.1 KB"
+        },
+        {
+          "id": "taschen/miscellaneous/torb.glb",
+          "name": "Torb",
+          "filename": "torb.glb",
+          "category": "miscellaneous",
+          "group": "taschen",
+          "path": "models/clean/taschen/miscellaneous/torb.glb",
+          "sizeBytes": 525132,
+          "sizeFormatted": "512.8 KB"
+        }
+      ]
+    },
+    {
+      "name": "motorcycles",
+      "title": "Motorcycles",
+      "icon": "",
+      "group": "taschen",
+      "count": 6,
+      "models": [
+        {
+          "id": "taschen/motorcycles/guzzi_1.glb",
+          "name": "Guzzi 1",
+          "filename": "guzzi_1.glb",
+          "category": "motorcycles",
+          "group": "taschen",
+          "path": "models/clean/taschen/motorcycles/guzzi_1.glb",
+          "sizeBytes": 1195904,
+          "sizeFormatted": "1.1 MB"
+        },
+        {
+          "id": "taschen/motorcycles/katana.glb",
+          "name": "Katana",
+          "filename": "katana.glb",
+          "category": "motorcycles",
+          "group": "taschen",
+          "path": "models/clean/taschen/motorcycles/katana.glb",
+          "sizeBytes": 614284,
+          "sizeFormatted": "599.9 KB"
+        },
+        {
+          "id": "taschen/motorcycles/mguzzica.glb",
+          "name": "Mguzzica",
+          "filename": "mguzzica.glb",
+          "category": "motorcycles",
+          "group": "taschen",
+          "path": "models/clean/taschen/motorcycles/mguzzica.glb",
+          "sizeBytes": 1827292,
+          "sizeFormatted": "1.7 MB"
+        },
+        {
+          "id": "taschen/motorcycles/mjeln.glb",
+          "name": "Mjeln",
+          "filename": "mjeln.glb",
+          "category": "motorcycles",
+          "group": "taschen",
+          "path": "models/clean/taschen/motorcycles/mjeln.glb",
+          "sizeBytes": 779564,
+          "sizeFormatted": "761.3 KB"
+        },
+        {
+          "id": "taschen/motorcycles/shadow.glb",
+          "name": "Shadow",
+          "filename": "shadow.glb",
+          "category": "motorcycles",
+          "group": "taschen",
+          "path": "models/clean/taschen/motorcycles/shadow.glb",
+          "sizeBytes": 3569388,
+          "sizeFormatted": "3.4 MB"
+        },
+        {
+          "id": "taschen/motorcycles/vintage.glb",
+          "name": "Vintage",
+          "filename": "vintage.glb",
+          "category": "motorcycles",
+          "group": "taschen",
+          "path": "models/clean/taschen/motorcycles/vintage.glb",
+          "sizeBytes": 494528,
+          "sizeFormatted": "482.9 KB"
+        }
+      ]
+    },
+    {
+      "name": "old_army",
+      "title": "Old Army",
+      "icon": "",
+      "group": "taschen",
+      "count": 4,
+      "models": [
+        {
+          "id": "taschen/old_army/buccan.glb",
+          "name": "Buccan",
+          "filename": "buccan.glb",
+          "category": "old_army",
+          "group": "taschen",
+          "path": "models/clean/taschen/old_army/buccan.glb",
+          "sizeBytes": 5457768,
+          "sizeFormatted": "5.2 MB"
+        },
+        {
+          "id": "taschen/old_army/cannon2.glb",
+          "name": "Cannon2",
+          "filename": "cannon2.glb",
+          "category": "old_army",
+          "group": "taschen",
+          "path": "models/clean/taschen/old_army/cannon2.glb",
+          "sizeBytes": 1660872,
+          "sizeFormatted": "1.6 MB"
+        },
+        {
+          "id": "taschen/old_army/doglh.glb",
+          "name": "Doglh",
+          "filename": "doglh.glb",
+          "category": "old_army",
+          "group": "taschen",
+          "path": "models/clean/taschen/old_army/doglh.glb",
+          "sizeBytes": 1031912,
+          "sizeFormatted": "1007.7 KB"
+        },
+        {
+          "id": "taschen/old_army/grenade2.glb",
+          "name": "Grenade2",
+          "filename": "grenade2.glb",
+          "category": "old_army",
+          "group": "taschen",
+          "path": "models/clean/taschen/old_army/grenade2.glb",
+          "sizeBytes": 3275380,
+          "sizeFormatted": "3.1 MB"
+        }
+      ]
+    },
+    {
+      "name": "plants",
+      "title": "Plants",
+      "icon": "",
+      "group": "taschen",
+      "count": 6,
+      "models": [
+        {
+          "id": "taschen/plants/drosera.glb",
+          "name": "Drosera",
+          "filename": "drosera.glb",
+          "category": "plants",
+          "group": "taschen",
+          "path": "models/clean/taschen/plants/drosera.glb",
+          "sizeBytes": 802088,
+          "sizeFormatted": "783.3 KB"
+        },
+        {
+          "id": "taschen/plants/rose1.glb",
+          "name": "Rose1",
+          "filename": "rose1.glb",
+          "category": "plants",
+          "group": "taschen",
+          "path": "models/clean/taschen/plants/rose1.glb",
+          "sizeBytes": 149692,
+          "sizeFormatted": "146.2 KB"
+        },
+        {
+          "id": "taschen/plants/rose2.glb",
+          "name": "Rose2",
+          "filename": "rose2.glb",
+          "category": "plants",
+          "group": "taschen",
+          "path": "models/clean/taschen/plants/rose2.glb",
+          "sizeBytes": 145464,
+          "sizeFormatted": "142.1 KB"
+        },
+        {
+          "id": "taschen/plants/saguaro.glb",
+          "name": "Saguaro",
+          "filename": "saguaro.glb",
+          "category": "plants",
+          "group": "taschen",
+          "path": "models/clean/taschen/plants/saguaro.glb",
+          "sizeBytes": 811176,
+          "sizeFormatted": "792.2 KB"
+        },
+        {
+          "id": "taschen/plants/salixa.glb",
+          "name": "Salixa",
+          "filename": "salixa.glb",
+          "category": "plants",
+          "group": "taschen",
+          "path": "models/clean/taschen/plants/salixa.glb",
+          "sizeBytes": 670980,
+          "sizeFormatted": "655.3 KB"
+        },
+        {
+          "id": "taschen/plants/styrax.glb",
+          "name": "Styrax",
+          "filename": "styrax.glb",
+          "category": "plants",
+          "group": "taschen",
+          "path": "models/clean/taschen/plants/styrax.glb",
+          "sizeBytes": 616028,
+          "sizeFormatted": "601.6 KB"
+        }
+      ]
+    },
+    {
+      "name": "public_works",
+      "title": "Public Works",
+      "icon": "",
+      "group": "taschen",
+      "count": 6,
+      "models": [
+        {
+          "id": "taschen/public_works/dumper.glb",
+          "name": "Dumper",
+          "filename": "dumper.glb",
+          "category": "public_works",
+          "group": "taschen",
+          "path": "models/clean/taschen/public_works/dumper.glb",
+          "sizeBytes": 11961612,
+          "sizeFormatted": "11.4 MB"
+        },
+        {
+          "id": "taschen/public_works/excava.glb",
+          "name": "Excava",
+          "filename": "excava.glb",
+          "category": "public_works",
+          "group": "taschen",
+          "path": "models/clean/taschen/public_works/excava.glb",
+          "sizeBytes": 9619352,
+          "sizeFormatted": "9.2 MB"
+        },
+        {
+          "id": "taschen/public_works/fall.glb",
+          "name": "Fall",
+          "filename": "fall.glb",
+          "category": "public_works",
+          "group": "taschen",
+          "path": "models/clean/taschen/public_works/fall.glb",
+          "sizeBytes": 478172,
+          "sizeFormatted": "467 KB"
+        },
+        {
+          "id": "taschen/public_works/fd14e.glb",
+          "name": "Fd14e",
+          "filename": "fd14e.glb",
+          "category": "public_works",
+          "group": "taschen",
+          "path": "models/clean/taschen/public_works/fd14e.glb",
+          "sizeBytes": 305292,
+          "sizeFormatted": "298.1 KB"
+        },
+        {
+          "id": "taschen/public_works/fh2000.glb",
+          "name": "Fh2000",
+          "filename": "fh2000.glb",
+          "category": "public_works",
+          "group": "taschen",
+          "path": "models/clean/taschen/public_works/fh2000.glb",
+          "sizeBytes": 1321204,
+          "sizeFormatted": "1.3 MB"
+        },
+        {
+          "id": "taschen/public_works/torocat.glb",
+          "name": "Torocat",
+          "filename": "torocat.glb",
+          "category": "public_works",
+          "group": "taschen",
+          "path": "models/clean/taschen/public_works/torocat.glb",
+          "sizeBytes": 260376,
+          "sizeFormatted": "254.3 KB"
+        }
+      ]
+    },
+    {
+      "name": "sculptures",
+      "title": "Sculptures",
+      "icon": "",
+      "group": "taschen",
+      "count": 4,
+      "models": [
+        {
+          "id": "taschen/sculptures/angel2.glb",
+          "name": "Angel2",
+          "filename": "angel2.glb",
+          "category": "sculptures",
+          "group": "taschen",
+          "path": "models/clean/taschen/sculptures/angel2.glb",
+          "sizeBytes": 704508,
+          "sizeFormatted": "688 KB"
+        },
+        {
+          "id": "taschen/sculptures/athene.glb",
+          "name": "Athene",
+          "filename": "athene.glb",
+          "category": "sculptures",
+          "group": "taschen",
+          "path": "models/clean/taschen/sculptures/athene.glb",
+          "sizeBytes": 6343136,
+          "sizeFormatted": "6 MB"
+        },
+        {
+          "id": "taschen/sculptures/dama.glb",
+          "name": "Dama",
+          "filename": "dama.glb",
+          "category": "sculptures",
+          "group": "taschen",
+          "path": "models/clean/taschen/sculptures/dama.glb",
+          "sizeBytes": 476164,
+          "sizeFormatted": "465 KB"
+        },
+        {
+          "id": "taschen/sculptures/mercury.glb",
+          "name": "Mercury",
+          "filename": "mercury.glb",
+          "category": "sculptures",
+          "group": "taschen",
+          "path": "models/clean/taschen/sculptures/mercury.glb",
+          "sizeBytes": 1344900,
+          "sizeFormatted": "1.3 MB"
+        }
+      ]
+    },
+    {
+      "name": "ships",
+      "title": "Ships",
+      "icon": "",
+      "group": "taschen",
+      "count": 7,
+      "models": [
+        {
+          "id": "taschen/ships/ix_b.glb",
+          "name": "Ix B",
+          "filename": "ix_b.glb",
+          "category": "ships",
+          "group": "taschen",
+          "path": "models/clean/taschen/ships/ix_b.glb",
+          "sizeBytes": 498860,
+          "sizeFormatted": "487.2 KB"
+        },
+        {
+          "id": "taschen/ships/offshore.glb",
+          "name": "Offshore",
+          "filename": "offshore.glb",
+          "category": "ships",
+          "group": "taschen",
+          "path": "models/clean/taschen/ships/offshore.glb",
+          "sizeBytes": 335144,
+          "sizeFormatted": "327.3 KB"
+        },
+        {
+          "id": "taschen/ships/pinta.glb",
+          "name": "Pinta",
+          "filename": "pinta.glb",
+          "category": "ships",
+          "group": "taschen",
+          "path": "models/clean/taschen/ships/pinta.glb",
+          "sizeBytes": 3591564,
+          "sizeFormatted": "3.4 MB"
+        },
+        {
+          "id": "taschen/ships/sanjuan.glb",
+          "name": "Sanjuan",
+          "filename": "sanjuan.glb",
+          "category": "ships",
+          "group": "taschen",
+          "path": "models/clean/taschen/ships/sanjuan.glb",
+          "sizeBytes": 7384396,
+          "sizeFormatted": "7 MB"
+        },
+        {
+          "id": "taschen/ships/shrimp.glb",
+          "name": "Shrimp",
+          "filename": "shrimp.glb",
+          "category": "ships",
+          "group": "taschen",
+          "path": "models/clean/taschen/ships/shrimp.glb",
+          "sizeBytes": 1869260,
+          "sizeFormatted": "1.8 MB"
+        },
+        {
+          "id": "taschen/ships/smit.glb",
+          "name": "Smit",
+          "filename": "smit.glb",
+          "category": "ships",
+          "group": "taschen",
+          "path": "models/clean/taschen/ships/smit.glb",
+          "sizeBytes": 454016,
+          "sizeFormatted": "443.4 KB"
+        },
+        {
+          "id": "taschen/ships/thonie1.glb",
+          "name": "Thonie1",
+          "filename": "thonie1.glb",
+          "category": "ships",
+          "group": "taschen",
+          "path": "models/clean/taschen/ships/thonie1.glb",
+          "sizeBytes": 625288,
+          "sizeFormatted": "610.6 KB"
+        }
+      ]
+    },
+    {
+      "name": "sports",
+      "title": "Sports",
+      "icon": "",
+      "group": "taschen",
+      "count": 2,
+      "models": [
+        {
+          "id": "taschen/sports/basketac.glb",
+          "name": "Basketac",
+          "filename": "basketac.glb",
+          "category": "sports",
+          "group": "taschen",
+          "path": "models/clean/taschen/sports/basketac.glb",
+          "sizeBytes": 356764,
+          "sizeFormatted": "348.4 KB"
+        },
+        {
+          "id": "taschen/sports/ecycle.glb",
+          "name": "Ecycle",
+          "filename": "ecycle.glb",
+          "category": "sports",
+          "group": "taschen",
+          "path": "models/clean/taschen/sports/ecycle.glb",
+          "sizeBytes": 548164,
+          "sizeFormatted": "535.3 KB"
+        }
+      ]
+    }
+  ]
 }

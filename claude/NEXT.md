@@ -243,3 +243,25 @@ Performance: post passes dominated; packed-number keys etc. gave 7-15x, bit-iden
 - **The paper** is now `docs/BRICKAGEN3000.pdf` (+ `-mobile`): title BRICKAGEN 3000, three new sections (curved surfaces, the
   three bugs + SNOT synthesis, choosing the resolution), results refreshed; `claude/paper/rounds.tex`, `export_rounds.mjs`,
   `auto_candidates.mjs`, `figures_rounds.py` added to the pipeline (README).
+
+## 14. UI revamp + a motif crash (2026-10-05): high-level controls
+- **`src/presets.js`** (new): 14 **feature groups** - one switch per idea, each writing the handful of low-level options it is
+  made of (`FEATURES`, `featureState` -> on / off / **custom** when a parameter behind it was changed by hand, `featurePatch`).
+  Grouped Scale (auto resolution, lattice fit, symmetry) / Shape (disc layers, rounded surfaces, sloped skin, round parts,
+  learned assemblies, SNOT) / Build (hollow core, connect and brace, merge and retile, supports, finish). Disc layers (the
+  round cross-section recipe) and rounded surfaces (the aligned narrow skin, widen, corner tiles, round-family order) are
+  separate switches: a table wants the first and not the second.
+- **Panel 2 "Discretization"** now holds only high-level controls: **Resolution** (slider, presets, and an **Auto** button that
+  runs `pipeline.autoStuds` on its own worker through the new `engine.chooseStuds`, reports what decided it - "14 studs - best
+  fit to the lattice, 15 s" - and goes straight back to its resting state; moving the slider by hand drops that result),
+  **Phases** (the old Precision, renamed, 0-16 in LDU with the grid-position count beside it: 8 = 9 positions, the default),
+  **Parts** (Core / Extended / Every shape = `partSet` + `shapeParts`, plus a multi-select of the measured-shape kinds allowed
+  as single parts, `shapeSolo`, with the part and solo counts), and eight feature switches (disc layers, rounded surfaces,
+  assemblies, SNOT, hollow core, connect and brace, supports, finish). Mirror symmetry sits in panel 1 with the model, being a
+  property of the mesh. Everything else moved out of the panel.
+- **The "All parameters" drawer** opens with all 14 groups, grouped under Scale / Shape / Build, above the full schema collapse.
+- **Fixed a crash with `motifStretch` on** (`orientPart ... R is undefined`): `library.js`'s `dims()` read `p.rot` alone, but a
+  sideways motif part carries `ori` (0..23) and no `rot`, so `Math.round(undefined / 90)` = NaN indexed the orientation table.
+  `dims` now takes the whole part and goes through `oriOf`; `periodic.js`'s identity keys include the orientation (two sideways
+  parts differing only by `ori` used to collide); `orientPart` throws a readable error instead of failing three frames deeper.
+  `motifStretch: true` gives 2528 motifs / 12513 variants against 1174 / 5308 without it.

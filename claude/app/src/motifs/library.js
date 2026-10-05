@@ -49,7 +49,7 @@ function rasterise(parts, w, d, h) {
   return V;
 }
 
-const oriOf = (p) => (p.ori !== undefined ? p.ori : Math.round(p.rot / 90));
+const oriOf = (p) => (p.ori !== undefined ? p.ori : Math.round((p.rot || 0) / 90) % 4);   // a sideways part carries `ori` (0..23) and no `rot`
 /** +90 yaw of a motif's part list inside its w x d window (same convention as mine.js canonicalKey / variants.rotate) */
 function turn(parts, w, by) {
   return parts.map((p) => { const o = oriOf(p); return { id: p.id, ori: ORI_YAW[o], i: p.j, j: w - p.i - oriented(by.get(p.id), o).w, b: p.b }; });
@@ -119,7 +119,7 @@ export function motifVariants(cat, { motifMinModels = 2, motifMinCount = 3, moti
   const variants = []; let kept = 0, dropped = 0;
   const mined = LIB.filter((m) => { const k = keep(m); if (!k) dropped++; return k; });
   // a motif that repeats along one axis is a unit x n, so the lengths no set happened to contain are valid assemblies too
-  const dims = (id, rot) => { const v = oriented(by.get(id), Math.round(rot / 90)); return [v.w, v.d, Math.ceil(v.h)]; };
+  const dims = (p) => { const v = oriented(by.get(p.id), oriOf(p)); return [v.w, v.d, Math.ceil(v.h)]; };   // takes the part: `rot` alone is undefined on a sideways one (NaN orientation -> crash in orientPart)
   const studded = (id) => (by.get(id).stud_cells || []).length > 0;
   const synth = motifStretch ? stretch(mined, dims, { max: motifStretchMax, maxParts: motifMaxParts, maxCells: motifStretchCells, studded }) : [];
   for (const m of [...mined, ...synth]) {

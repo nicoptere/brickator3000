@@ -10,7 +10,7 @@
  * - Zero emojis, medium-sized Gluestack/Tailwind-inspired controls
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   FolderIcon,
   FolderOpenIcon,
@@ -40,7 +40,17 @@ export interface CleanCategoryItem {
   models: CleanModelItem[];
 }
 
+export interface CleanGroupItem {
+  name: string;
+  title: string;
+  type: 'flat' | 'nested';
+  count: number;
+  models?: CleanModelItem[];
+  categories?: CleanCategoryItem[];
+}
+
 export interface CleanManifest {
+  groups?: CleanGroupItem[];
   categories: CleanCategoryItem[];
   totalModels: number;
 }
@@ -75,7 +85,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [manifest, setManifest] = useState<CleanManifest | null>(null);
   const [isLoadingManifest, setIsLoadingManifest] = useState<boolean>(false);
-  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['cars', 'airplanes']));
+  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['taschen', 'cars']));
 
   // Fetch clean models manifest
   const fetchManifest = async () => {
@@ -97,27 +107,83 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
     fetchManifest();
   }, []);
 
+  // Normalize groups from manifest
+  const normalizedGroups = useMemo<CleanGroupItem[]>(() => {
+    if (!manifest) return [];
+    if (manifest.groups && manifest.groups.length > 0) {
+      return manifest.groups;
+    }
+
+    const objaverseCat = manifest.categories.find((c) => c.name === 'objaverse');
+    const stanfordCat = manifest.categories.find((c) => c.name === 'stanford');
+    const taschenCats = manifest.categories.filter((c) => c.name !== 'objaverse' && c.name !== 'stanford');
+
+    const groups: CleanGroupItem[] = [];
+    if (objaverseCat) {
+      groups.push({
+        name: 'objaverse',
+        title: 'Objaverse',
+        type: 'flat',
+        count: objaverseCat.count,
+        models: objaverseCat.models
+      });
+    }
+    if (stanfordCat) {
+      groups.push({
+        name: 'stanford',
+        title: 'Stanford 3D Scans',
+        type: 'flat',
+        count: stanfordCat.count,
+        models: stanfordCat.models
+      });
+    }
+    if (taschenCats.length > 0) {
+      groups.push({
+        name: 'taschen',
+        title: 'Taschen',
+        type: 'nested',
+        count: taschenCats.reduce((sum, c) => sum + c.count, 0),
+        categories: taschenCats
+      });
+    }
+    return groups;
+  }, [manifest]);
+
   // Whenever currentModelId or manifest changes:
-  // Automatically expand ONLY the category containing the active model, and collapse all others
+  // Automatically expand group and category containing the active model
   useEffect(() => {
     if (!manifest || !currentModelId) return;
 
-    for (const cat of manifest.categories) {
-      const hasModel = cat.models.some(
-        (m) =>
-          currentModelId === m.id ||
-          currentModelId === m.path ||
-          currentModelId === m.filename ||
-          currentModelId.endsWith('/' + m.filename) ||
-          (m.path && currentModelId.endsWith(m.path)) ||
-          (currentModelId.toLowerCase().includes('beetle') && m.id.toLowerCase().includes('beetle'))
-      );
-      if (hasModel) {
-        setExpandedFolders(new Set([cat.name]));
-        break;
+    for (const group of normalizedGroups) {
+      if (group.type === 'flat') {
+        const hasModel = group.models?.some(
+          (m: CleanModelItem) =>
+            currentModelId === m.id ||
+            currentModelId === m.path ||
+            currentModelId === m.filename ||
+            currentModelId.endsWith('/' + m.filename)
+        );
+        if (hasModel) {
+          setExpandedFolders(new Set([group.name]));
+          break;
+        }
+      } else {
+        for (const cat of group.categories || []) {
+          const hasModel = cat.models.some(
+            (m: CleanModelItem) =>
+              currentModelId === m.id ||
+              currentModelId === m.path ||
+              currentModelId === m.filename ||
+              currentModelId.endsWith('/' + m.filename)
+          );
+          if (hasModel) {
+            setExpandedFolders(new Set([group.name, cat.name]));
+            break;
+          }
+        }
       }
     }
-  }, [currentModelId, manifest]);
+  }, [currentModelId, manifest, normalizedGroups]);
 
   // Auto-scroll highlighted model into view when tree opens or selection changes
   useEffect(() => {
@@ -130,34 +196,37 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
     return () => clearTimeout(timer);
   }, [currentModelId, expandedFolders]);
 
-  const toggleFolder = (catName: string) => {
+  const toggleFolder = (folderName: string) => {
     setExpandedFolders((prev) => {
       const next = new Set(prev);
-      if (next.has(catName)) {
-        next.delete(catName);
+      if (next.has(folderName)) {
+        next.delete(folderName);
       } else {
-        next.add(catName);
+        next.add(folderName);
       }
       return next;
     });
   };
 
-  const handleSelectModelItem = (catName: string, modelId: string, modelUrl: string) => {
-    // Collapse other tree folders and expand selected category
-    setExpandedFolders(new Set([catName]));
+  const handleSelectModelItem = (parentGroup: string, catName: string, modelId: string, modelUrl: string) => {
+    setExpandedFolders(new Set([parentGroup, catName]));
     onSelectModel(modelId, modelUrl);
   };
 
   const expandAll = () => {
-    if (!manifest) return;
-    setExpandedFolders(new Set(manifest.categories.map((c) => c.name)));
+    const all = new Set<string>();
+    normalizedGroups.forEach((g: CleanGroupItem) => {
+      all.add(g.name);
+      if (g.categories) {
+        g.categories.forEach((c: CleanCategoryItem) => all.add(c.name));
+      }
+    });
+    setExpandedFolders(all);
   };
 
   const collapseAll = () => {
     setExpandedFolders(new Set());
   };
-
-  const categories = manifest ? manifest.categories : [];
 
   return (
     <div
@@ -376,107 +445,318 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
           </div>
         )}
 
-        {!isLoadingManifest && categories.map((cat) => {
-          const isExpanded = expandedFolders.has(cat.name);
-          const containsSelected = cat.models.some(
-            (m) =>
-              currentModelId === m.id ||
-              currentModelId === m.path ||
-              currentModelId === m.filename ||
-              currentModelId.endsWith('/' + m.filename) ||
-              (m.path && currentModelId.endsWith(m.path)) ||
-              (currentModelId.toLowerCase().includes('beetle') && m.id.toLowerCase().includes('beetle'))
-          );
-          return (
-            <div key={cat.name} style={{ marginBottom: 2 }}>
-              {/* Category Folder Row */}
-              <button
-                onClick={() => toggleFolder(cat.name)}
-                style={{
-                  width: '100%',
-                  padding: '5px 6px',
-                  borderRadius: 4,
-                  border: containsSelected ? '1px solid #bfdbfe' : '1px solid transparent',
-                  backgroundColor: isExpanded ? '#eff6ff' : (containsSelected ? '#f8fafc' : 'transparent'),
-                  color: isExpanded || containsSelected ? '#2563eb' : '#475569',
-                  fontSize: 11,
-                  fontWeight: containsSelected ? 700 : 600,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  textAlign: 'left',
-                  transition: 'all 0.15s ease'
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                  <span style={{ color: '#64748b', display: 'flex', alignItems: 'center' }}>
-                    {isExpanded ? <ChevronDownIcon size={12} /> : <ChevronRightIcon size={12} />}
-                  </span>
-                  <span style={{ color: '#2563eb', display: 'flex', alignItems: 'center' }}>
-                    {isExpanded ? <FolderOpenIcon size={14} /> : <FolderIcon size={14} />}
-                  </span>
-                  <span>{cat.title}</span>
-                </div>
-                <span style={{ fontSize: 10, color: containsSelected ? '#2563eb' : '#64748b', fontFamily: 'monospace', fontWeight: containsSelected ? 700 : 500 }}>
-                  {cat.models.length}
-                </span>
-              </button>
+        {!isLoadingManifest &&
+          normalizedGroups.map((group: CleanGroupItem) => {
+            const isGroupExpanded = expandedFolders.has(group.name);
 
-              {/* Category Items */}
-              {isExpanded && (
-                <div style={{ paddingLeft: 18, paddingTop: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  {cat.models.map((m) => {
-                    const isSelected =
-                      currentModelId === m.id ||
-                      currentModelId === m.path ||
-                      currentModelId === m.filename ||
-                      currentModelId.endsWith('/' + m.filename) ||
-                      (m.path && currentModelId.endsWith(m.path)) ||
-                      (currentModelId.toLowerCase().includes('beetle') && m.id.toLowerCase().includes('beetle'));
-                    const modelUrl = getAssetUrl(m.path);
-                    return (
-                      <div
-                        key={m.id}
-                        id={isSelected ? 'selected-model-tree-node' : undefined}
-                        onClick={() => handleSelectModelItem(cat.name, m.id, modelUrl)}
-                        style={{
-                          padding: '5px 8px',
-                          borderRadius: 4,
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          backgroundColor: isSelected ? '#2563eb' : 'transparent',
-                          color: isSelected ? '#ffffff' : '#0f172a',
-                          fontSize: 11,
-                          fontWeight: isSelected ? 700 : 400,
-                          boxShadow: isSelected ? '0 1px 4px rgba(37, 99, 235, 0.35)' : 'none',
-                          border: isSelected ? '1px solid #1d4ed8' : '1px solid transparent',
-                          transition: 'all 0.15s ease'
-                        }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
-                          {isSelected && isLoading && (
-                            <SpinnerIcon size={12} color="#ffffff" />
-                          )}
-                          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {m.name}
-                          </span>
-                        </div>
-                        {m.sizeFormatted && (
-                          <span style={{ fontSize: 9, color: isSelected ? 'rgba(255, 255, 255, 0.85)' : '#64748b', marginLeft: 6, flexShrink: 0 }}>
-                            {m.sizeFormatted}
-                          </span>
-                        )}
-                      </div>
-                    );
-                  })}
+            if (group.type === 'flat') {
+              const containsSelected = (group.models || []).some(
+                (m: CleanModelItem) =>
+                  currentModelId === m.id ||
+                  currentModelId === m.path ||
+                  currentModelId === m.filename ||
+                  currentModelId.endsWith('/' + m.filename) ||
+                  (m.path && currentModelId.endsWith(m.path))
+              );
+
+              return (
+                <div key={group.name} style={{ marginBottom: 2 }}>
+                  {/* Top-Level Flat Group Row (objaverse, stanford) */}
+                  <button
+                    onClick={() => toggleFolder(group.name)}
+                    style={{
+                      width: '100%',
+                      padding: '5px 6px',
+                      borderRadius: 4,
+                      border: containsSelected ? '1px solid #bfdbfe' : '1px solid transparent',
+                      backgroundColor: isGroupExpanded ? '#eff6ff' : containsSelected ? '#f8fafc' : 'transparent',
+                      color: isGroupExpanded || containsSelected ? '#2563eb' : '#475569',
+                      fontSize: 11,
+                      fontWeight: containsSelected ? 700 : 600,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      textAlign: 'left',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                      <span style={{ color: '#64748b', display: 'flex', alignItems: 'center' }}>
+                        {isGroupExpanded ? <ChevronDownIcon size={12} /> : <ChevronRightIcon size={12} />}
+                      </span>
+                      <span style={{ color: '#2563eb', display: 'flex', alignItems: 'center' }}>
+                        {isGroupExpanded ? <FolderOpenIcon size={14} /> : <FolderIcon size={14} />}
+                      </span>
+                      <span>{group.title}</span>
+                    </div>
+                    <span
+                      style={{
+                        fontSize: 10,
+                        color: containsSelected ? '#2563eb' : '#64748b',
+                        fontFamily: 'monospace',
+                        fontWeight: containsSelected ? 700 : 500
+                      }}
+                    >
+                      {group.models?.length || 0}
+                    </span>
+                  </button>
+
+                  {/* Direct Models List */}
+                  {isGroupExpanded && (
+                    <div style={{ paddingLeft: 18, paddingTop: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      {group.models?.map((m: CleanModelItem) => {
+                        const isSelected =
+                          currentModelId === m.id ||
+                          currentModelId === m.path ||
+                          currentModelId === m.filename ||
+                          currentModelId.endsWith('/' + m.filename) ||
+                          (m.path && currentModelId.endsWith(m.path));
+                        const modelUrl = getAssetUrl(m.path);
+                        return (
+                          <div
+                            key={m.id}
+                            id={isSelected ? 'selected-model-tree-node' : undefined}
+                            onClick={() => handleSelectModelItem(group.name, group.name, m.id, modelUrl)}
+                            style={{
+                              padding: '5px 8px',
+                              borderRadius: 4,
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              backgroundColor: isSelected ? '#2563eb' : 'transparent',
+                              color: isSelected ? '#ffffff' : '#0f172a',
+                              fontSize: 11,
+                              fontWeight: isSelected ? 700 : 400,
+                              boxShadow: isSelected ? '0 1px 4px rgba(37, 99, 235, 0.35)' : 'none',
+                              border: isSelected ? '1px solid #1d4ed8' : '1px solid transparent',
+                              transition: 'all 0.15s ease'
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
+                              {isSelected && isLoading && <SpinnerIcon size={12} color="#ffffff" />}
+                              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {m.name}
+                              </span>
+                            </div>
+                            {m.sizeFormatted && (
+                              <span
+                                style={{
+                                  fontSize: 9,
+                                  color: isSelected ? 'rgba(255, 255, 255, 0.85)' : '#64748b',
+                                  marginLeft: 6,
+                                  flexShrink: 0
+                                }}
+                              >
+                                {m.sizeFormatted}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          );
-        })}
+              );
+            }
+
+            // Nested Group: Taschen
+            const groupContainsSelected = (group.categories || []).some((cat: CleanCategoryItem) =>
+              cat.models.some(
+                (m: CleanModelItem) =>
+                  currentModelId === m.id ||
+                  currentModelId === m.path ||
+                  currentModelId === m.filename ||
+                  currentModelId.endsWith('/' + m.filename) ||
+                  (m.path && currentModelId.endsWith(m.path)) ||
+                  (currentModelId.toLowerCase().includes('beetle') && m.id.toLowerCase().includes('beetle'))
+              )
+            );
+
+            return (
+              <div key={group.name} style={{ marginBottom: 2 }}>
+                {/* Taschen Top-Level Header */}
+                <button
+                  onClick={() => toggleFolder(group.name)}
+                  style={{
+                    width: '100%',
+                    padding: '5px 6px',
+                    borderRadius: 4,
+                    border: groupContainsSelected ? '1px solid #bfdbfe' : '1px solid transparent',
+                    backgroundColor: isGroupExpanded ? '#eff6ff' : groupContainsSelected ? '#f8fafc' : 'transparent',
+                    color: isGroupExpanded || groupContainsSelected ? '#2563eb' : '#475569',
+                    fontSize: 11,
+                    fontWeight: groupContainsSelected ? 700 : 600,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    textAlign: 'left',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <span style={{ color: '#64748b', display: 'flex', alignItems: 'center' }}>
+                      {isGroupExpanded ? <ChevronDownIcon size={12} /> : <ChevronRightIcon size={12} />}
+                    </span>
+                    <span style={{ color: '#2563eb', display: 'flex', alignItems: 'center' }}>
+                      {isGroupExpanded ? <FolderOpenIcon size={14} /> : <FolderIcon size={14} />}
+                    </span>
+                    <span>{group.title}</span>
+                  </div>
+                  <span
+                    style={{
+                      fontSize: 10,
+                      color: groupContainsSelected ? '#2563eb' : '#64748b',
+                      fontFamily: 'monospace',
+                      fontWeight: groupContainsSelected ? 700 : 500
+                    }}
+                  >
+                    {group.count}
+                  </span>
+                </button>
+
+                {/* Taschen Categories List */}
+                {isGroupExpanded && (
+                  <div style={{ paddingLeft: 12, paddingTop: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    {group.categories?.map((cat: CleanCategoryItem) => {
+                      const isCatExpanded = expandedFolders.has(cat.name);
+                      const catContainsSelected = cat.models.some(
+                        (m: CleanModelItem) =>
+                          currentModelId === m.id ||
+                          currentModelId === m.path ||
+                          currentModelId === m.filename ||
+                          currentModelId.endsWith('/' + m.filename) ||
+                          (m.path && currentModelId.endsWith(m.path)) ||
+                          (currentModelId.toLowerCase().includes('beetle') && m.id.toLowerCase().includes('beetle'))
+                      );
+
+                      return (
+                        <div key={cat.name} style={{ marginBottom: 1 }}>
+                          {/* Category Subfolder Row */}
+                          <button
+                            onClick={() => toggleFolder(cat.name)}
+                            style={{
+                              width: '100%',
+                              padding: '4px 6px',
+                              borderRadius: 4,
+                              border: catContainsSelected ? '1px solid #bfdbfe' : '1px solid transparent',
+                              backgroundColor: isCatExpanded
+                                ? '#eff6ff'
+                                : catContainsSelected
+                                ? '#f8fafc'
+                                : 'transparent',
+                              color: isCatExpanded || catContainsSelected ? '#2563eb' : '#475569',
+                              fontSize: 11,
+                              fontWeight: catContainsSelected ? 700 : 500,
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              textAlign: 'left',
+                              transition: 'all 0.15s ease'
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                              <span style={{ color: '#64748b', display: 'flex', alignItems: 'center' }}>
+                                {isCatExpanded ? <ChevronDownIcon size={11} /> : <ChevronRightIcon size={11} />}
+                              </span>
+                              <span style={{ color: '#2563eb', display: 'flex', alignItems: 'center' }}>
+                                {isCatExpanded ? <FolderOpenIcon size={13} /> : <FolderIcon size={13} />}
+                              </span>
+                              <span>{cat.title}</span>
+                            </div>
+                            <span
+                              style={{
+                                fontSize: 9,
+                                color: catContainsSelected ? '#2563eb' : '#64748b',
+                                fontFamily: 'monospace'
+                              }}
+                            >
+                              {cat.models.length}
+                            </span>
+                          </button>
+
+                          {/* Category Models List */}
+                          {isCatExpanded && (
+                            <div
+                              style={{
+                                paddingLeft: 16,
+                                paddingTop: 2,
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: 1
+                              }}
+                            >
+                              {cat.models.map((m: CleanModelItem) => {
+                                const isSelected =
+                                  currentModelId === m.id ||
+                                  currentModelId === m.path ||
+                                  currentModelId === m.filename ||
+                                  currentModelId.endsWith('/' + m.filename) ||
+                                  (m.path && currentModelId.endsWith(m.path)) ||
+                                  (currentModelId.toLowerCase().includes('beetle') &&
+                                    m.id.toLowerCase().includes('beetle'));
+                                const modelUrl = getAssetUrl(m.path);
+                                return (
+                                  <div
+                                    key={m.id}
+                                    id={isSelected ? 'selected-model-tree-node' : undefined}
+                                    onClick={() => handleSelectModelItem(group.name, cat.name, m.id, modelUrl)}
+                                    style={{
+                                      padding: '4px 8px',
+                                      borderRadius: 4,
+                                      cursor: 'pointer',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'space-between',
+                                      backgroundColor: isSelected ? '#2563eb' : 'transparent',
+                                      color: isSelected ? '#ffffff' : '#0f172a',
+                                      fontSize: 11,
+                                      fontWeight: isSelected ? 700 : 400,
+                                      boxShadow: isSelected ? '0 1px 4px rgba(37, 99, 235, 0.35)' : 'none',
+                                      border: isSelected ? '1px solid #1d4ed8' : '1px solid transparent',
+                                      transition: 'all 0.15s ease'
+                                    }}
+                                  >
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
+                                      {isSelected && isLoading && <SpinnerIcon size={12} color="#ffffff" />}
+                                      <span
+                                        style={{
+                                          overflow: 'hidden',
+                                          textOverflow: 'ellipsis',
+                                          whiteSpace: 'nowrap'
+                                        }}
+                                      >
+                                        {m.name}
+                                      </span>
+                                    </div>
+                                    {m.sizeFormatted && (
+                                      <span
+                                        style={{
+                                          fontSize: 9,
+                                          color: isSelected ? 'rgba(255, 255, 255, 0.85)' : '#64748b',
+                                          marginLeft: 6,
+                                          flexShrink: 0
+                                        }}
+                                      >
+                                        {m.sizeFormatted}
+                                      </span>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
       </div>
     </div>
   );

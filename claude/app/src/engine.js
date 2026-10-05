@@ -18,6 +18,16 @@ function call(w, msg, onProgress) {
 
 export function cancel() { workers.forEach((w) => w.terminate()); workers = []; }
 
+/**
+ * The resolution alone (pipeline.autoStuds, docs/CURVES.md round 8): a piece budget from two pilot solves, the curvature
+ * ceiling of the mesh, then the best-aligned stud count within 15 % of the smaller of the two. A few seconds; runs on its own
+ * worker so the pool and any running job are untouched. Returns the whole choice ({ studs, chosen, budget, feature, candidates }).
+ */
+export async function chooseStuds(model, opts) {
+  const w = spawn();
+  try { return (await call(w, { type: 'auto', key: 'auto', model, opts })).choice; } finally { w.terminate(); }
+}
+
 /** model = { tris: Float32Array, vcols: Float32Array (linear) } */
 export async function runMethod(model, opts, { workersWanted = POOL, onStage = () => {} } = {}) {
   cancel();

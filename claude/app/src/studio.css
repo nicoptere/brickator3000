@@ -103,3 +103,26 @@ html, body, #root { margin: 0; width: 100%; height: 100%; overflow: hidden; back
 .island-selected-card { background: var(--res-bg); border: 1px solid var(--res-bd); border-radius: 6px; padding: 8px 10px; display: flex; flex-direction: column; gap: 6px; }
 .island-overlay { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 15; background: var(--bg-dock); border: 1px solid var(--bd); border-radius: 20px; padding: 6px 14px; box-shadow: 0 4px 16px var(--shadow); display: flex; align-items: center; gap: 10px; font-size: 12px; pointer-events: auto; }
 
+
+/* ---------------------------------------------------------------- high-level feature switches (presets.js) */
+.feats { display: flex; flex-direction: column; gap: 1px; margin: 2px 0 6px; }
+.feat { display: flex; align-items: center; gap: 8px; padding: 4px 6px; border-radius: 4px; font-size: 12px; cursor: default; }
+.feat:hover { background: var(--soft); }
+.feat > span { flex: 1; min-width: 0; display: flex; align-items: baseline; gap: 6px; }
+.feat > span > i { font-style: normal; font-size: 9px; letter-spacing: .04em; text-transform: uppercase; color: var(--tx2);
+  border: 1px solid var(--bd); border-radius: 3px; padding: 0 3px; flex: none; }
+.feat.custom > span { color: var(--tx); }
+.auto-hint { display: flex; align-items: baseline; gap: 6px; font-size: 11px; color: var(--tx2); margin-top: 6px;
+  background: var(--soft); border: 1px solid var(--bd); border-radius: 4px; padding: 3px 8px; }
+.auto-hint b { color: var(--tx); }
+.auto-hint span { margin-left: auto; opacity: .7; }
+.advtop { display: flex; flex-direction: column; gap: 10px; }
+.advtop-h { font-size: 12px; font-weight: 600; display: flex; flex-direction: column; }
+.advtop-h i { font-style: normal; font-weight: 400; font-size: 11px; color: var(--tx2); }
+.featgroup h4 { margin: 0 0 2px; font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--tx2); font-weight: 600; }
+.featgroup .feat { padding: 3px 4px; }
+.refrow { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 11px; color: var(--tx2); }
+.refrow > span { flex: none; }
+.feats.flush { margin: 0; }
+.feats.flush .feat { padding-left: 0; padding-right: 0; }
+.feats.flush .feat:hover { background: none; }

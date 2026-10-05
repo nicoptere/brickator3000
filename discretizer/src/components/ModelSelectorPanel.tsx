@@ -51,9 +51,19 @@ export interface CleanCategoryItem {
   models: CleanModelItem[];
 }
 
+export interface CleanGroupItem {
+  name: string;
+  title: string;
+  type: 'flat' | 'nested';
+  count: number;
+  models?: CleanModelItem[];
+  categories?: CleanCategoryItem[];
+}
+
 export interface CleanManifest {
   generatedAt: string;
   totalModels: number;
+  groups?: CleanGroupItem[];
   categories: CleanCategoryItem[];
 }
 
@@ -192,6 +202,37 @@ export const ModelSelectorPanel: React.FC<ModelSelectorPanelProps> = ({
     if (!cleanManifest?.categories) return [];
     return cleanManifest.categories;
   }, [cleanManifest]);
+
+  const categoryOptions = useMemo(() => {
+    const opts: any[] = [{ label: 'All Categories', value: 'all' }];
+    if (cleanManifest?.groups && cleanManifest.groups.length > 0) {
+      for (const group of cleanManifest.groups) {
+        if (group.type === 'flat') {
+          opts.push({
+            label: `${group.title} (${group.count})`,
+            value: group.name
+          });
+        } else if (group.type === 'nested' && group.categories) {
+          opts.push({
+            label: `${group.title} (${group.count})`,
+            options: group.categories.map((c: any) => ({
+              label: `${c.title} (${c.count})`,
+              value: c.name
+            }))
+          });
+        }
+      }
+      return opts;
+    }
+
+    return [
+      { label: 'All Categories', value: 'all' },
+      ...categories.map(c => ({
+        label: `${c.title} (${c.count})`,
+        value: c.name
+      }))
+    ];
+  }, [cleanManifest, categories]);
 
   const allCleanModels = useMemo(() => {
     if (!cleanManifest?.categories) return [];
@@ -434,13 +475,7 @@ export const ModelSelectorPanel: React.FC<ModelSelectorPanelProps> = ({
                           value={selectedCategory}
                           onChange={setSelectedCategory}
                           style={{ width: 140 }}
-                          options={[
-                            { label: 'All Categories', value: 'all' },
-                            ...categories.map(c => ({
-                              label: `${c.title} (${c.count})`,
-                              value: c.name
-                            }))
-                          ]}
+                          options={categoryOptions}
                         />
                         <Input
                           size="small"

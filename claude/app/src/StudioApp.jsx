@@ -4,17 +4,18 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ConfigProvider, App as AntApp, Select, Input, Button, Upload, Typography, Tag, Divider, Slider, Radio, Checkbox, Progress, Drawer, Modal, Table, Tooltip, Switch, Tabs, Collapse, Alert, Tree, Segmented, theme as antTheme } from 'antd';
 import { UploadOutlined, SearchOutlined, ThunderboltOutlined, DownloadOutlined, EyeOutlined, CheckCircleOutlined, AppstoreOutlined, MenuFoldOutlined, MenuUnfoldOutlined,
   DownOutlined, RightOutlined, CaretRightOutlined, PauseOutlined, StepBackwardOutlined, StepForwardOutlined, SoundOutlined, AudioMutedOutlined, AimOutlined,
-  SettingOutlined, StopOutlined, CameraOutlined, SyncOutlined, ReloadOutlined, BulbOutlined, BulbFilled, DeleteOutlined, UndoOutlined, CloseOutlined, ScissorOutlined } from '@ant-design/icons';
+  SettingOutlined, StopOutlined, CameraOutlined, SyncOutlined, ReloadOutlined, BulbOutlined, BulbFilled, DeleteOutlined, UndoOutlined, CloseOutlined, ScissorOutlined, ExperimentOutlined } from '@ant-design/icons';
 import './studio.css';
 import { StudioViewport } from './studio/viewport3d.js';
 import { sfx } from './studio/sfx.js';
 import { fixWinding, meshIslands, islandColors, islandPalette } from './studio/meshtools.js';
 import { loadModel, reorient } from './loaders.js';
-import { runMethod, cancel, poolSize } from './engine.js';
+import { runMethod, cancel, chooseStuds, poolSize } from './engine.js';
 import { DEFAULTS, CATALOG, FULL_CATALOG, catalogFor } from './brickgen/pipeline.js';
 import { buildMesh, toGLB, toLDR, KIND_COL } from './brickgen/export.js';
 import { snapToPalette } from './brickgen/colors.js';
 import { SCHEMA } from './schema.js';
+import { FEATURES, FEATURE_GROUPS, featureState, featurePatch } from './presets.js';
 import { Field } from './fields.jsx';
 
 const { Text, Title } = Typography;
@@ -37,15 +38,27 @@ function Section({ title, open, setOpen, color = 'var(--tx)', children }) {
 }
 
 // quick toggles shown in the card (everything else is in the "all parameters" drawer)
-const QUICK = [
-  ['motifs', 'Motifs from official sets (broad phase)'],
-  ['rounds', 'Round parts / poles'], ['skin', 'Slopes, curves, cheese'], ['inverted', 'Inverted slopes'],
-  ['symmetry', 'Mirror symmetry', (o) => o.symmetry !== 'off', (o, v) => ({ symmetry: v ? 'auto' : 'off' })],
-  ['crust', 'Hollow core (crust only)'],
-  ['islands', 'Join islands (MST tubes)'], ['bracing', 'Bracing / thickening'], ['splice', 'Splice seams'], ['bridge', 'Bridge gaps'],
-  ['supports', 'Support columns'], ['groundSupports', 'Allow ground contact'],
-  ['finish', 'Flat tiles on top (finish)'],
-];
+// the panel-2 switches: the high-level feature groups (presets.js) a model's look actually depends on. Everything else -
+// every individual option behind them - is in the "All parameters" drawer, which shows the same groups at the top.
+const SOURCE_FEATURES = ['symmetry'].map((k) => FEATURES.find((f) => f.key === k));   // a property of the mesh, so it sits with the model
+const PANEL_FEATURES = ['discs', 'curves', 'motifs', 'snot', 'crust', 'connect', 'supports', 'finish'];
+const STUDIO_FEATURES = PANEL_FEATURES.map((k) => FEATURES.find((f) => f.key === k)).filter(Boolean);
+// the kinds of the measured LDraw shapes (catalog_shapes.js) that `shapeSolo` can let compete as single parts
+const SHAPE_KINDS = [['round', 'round plates, discs, cones'], ['curved', 'curved tops'], ['shaped', 'arches, panels, wedges'],
+  ['tile', 'corner and round tiles'], ['inverted', 'inverted slopes'], ['brick', 'shaped bricks']];
+
+/** one high-level feature: a switch that writes the handful of options it owns, and says so when they have been changed by hand */
+function FeatureRow({ f, opts, patch }) {
+  const st = featureState(opts, f);
+  return (
+    <Tooltip title={f.help} placement="left">
+      <div className={'feat' + (st === 'custom' ? ' custom' : '')}>
+        <span>{f.label}{st === 'custom' && <i title="some of its parameters were changed by hand">edited</i>}</span>
+        <Switch size="small" checked={st !== 'off'} onChange={(v) => patch(featurePatch(f, v))} />
+      </div>
+    </Tooltip>
+  );
+}
 
 function StudioInner() {
   const { notification } = AntApp.useApp();
@@ -112,6 +125,7 @@ function StudioInner() {
   const [leftOpen, setLeftOpen] = useState(true), [rightOpen, setRightOpen] = useState(true);
   const [openSrc, setOpenSrc] = useState(true), [openCfg, setOpenCfg] = useState(true), [openRes, setOpenRes] = useState(true), [openRender, setOpenRender] = useState(true), [openReplay, setOpenReplay] = useState(true), [openExport, setOpenExport] = useState(true);
   const [advanced, setAdvanced] = useState(false), [partsOpen, setPartsOpen] = useState(false);
+  const [autoBusy, setAutoBusy] = useState(false), [autoRes, setAutoRes] = useState(null);
   useEffect(() => { vp.current && vp.current.setTheme(dark); }, [dark]);
   const prevRes = useRef(null);
   /** cell wave over the coloured source mesh (shown first: model colours, mesh view); also replayed when the same resolution is clicked again */
@@ -128,6 +142,25 @@ function StudioInner() {
 
   const setOpt = (k, v) => setOpts((o) => { const n = { ...o, [k]: v }; try { localStorage.setItem(STORE, JSON.stringify(n)); } catch {} return n; });
   const patchOpts = (p) => setOpts((o) => { const n = { ...o, ...p }; try { localStorage.setItem(STORE, JSON.stringify(n)); } catch {} return n; });
+
+  const setStuds = (v) => { setOpt('studs', v); if (autoRes) setAutoRes(null); };   // a hand-set resolution drops the Auto result
+  // the grid phases the solver will score: one per offset pair, both parities. A detected mirror plane leaves offsets on the free axis only
+  const nPhases = (opts.offsets || [0]).length ** 2;
+  // the parts control: core / extended catalogue, plus whether the measured shapes may be placed on their own (pipeline.shapesFor)
+  const partsMode = opts.shapeParts ? 'all' : (opts.partSet || 'limited');
+  const setPartsMode = (v) => { sfx.click(); patchOpts(v === 'all' ? { partSet: 'extended', shapeParts: true } : { partSet: v, shapeParts: false }); };
+  const nParts = useMemo(() => { const c = catalogFor(opts); return { all: c.length, solo: c.filter((x) => !x.noSolo).length }; }, [opts.partSet, opts.shapeParts, (opts.shapeSolo || []).join(','), (opts.shapeSoloIds || []).join(',')]); // eslint-disable-line
+  // "Auto": the stud count worked out from the mesh itself (engine.chooseStuds -> pipeline.autoStuds, docs/CURVES.md round 8)
+  const findStuds = async () => {
+    if (!model || autoBusy) return;
+    sfx.click(); setAutoBusy(true);
+    try {
+      const a = await chooseStuds({ tris: model.tris, vcols: model.vcols }, opts);
+      setAutoRes(a); setOpt('studs', a.studs); wave(a.studs);
+      message.success(`${a.studs} studs: ${{ lattice: 'the best fit to the lattice nearby', budget: 'as far as the piece budget reaches', detail: 'as fine as the curvature asks for' }[a.chosen] || a.chosen}`);
+    } catch (e) { sfx.error(); message.error(String(e.message || e)); }
+    setAutoBusy(false);
+  };
 
   useEffect(() => {
     vp.current = new StudioViewport(vEl.current);
@@ -611,6 +644,9 @@ function StudioInner() {
               </Tooltip>
               <Switch size="small" checked={detectIslands} onChange={toggleDetectIslands} />
             </div>
+            <div className="feats flush">
+              {SOURCE_FEATURES.map((f) => <FeatureRow key={f.key} f={f} opts={opts} patch={patchOpts} />)}
+            </div>
             {detectIslands && isl && isl.count > 1 && (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11, background: 'var(--soft)', border: '1px solid var(--bd)', borderRadius: 4, padding: '4px 8px' }}>
                 <span><b>{isl.count}</b> islands detected</span>
@@ -631,25 +667,47 @@ function StudioInner() {
             )}
             <div className="ctl">
               <div className="ctl-h"><span>Resolution</span><b>{opts.studs} studs</b>
-                <Select size="small" value={opts.ref} onChange={(v) => setOpt('ref', v)} style={{ width: 138, marginLeft: 'auto' }}
-                  options={[{ value: 'min3', label: 'smallest side' }, { value: 'maxh', label: 'longest side' }]} /></div>
-              <Slider min={4} max={64} step={1} value={Math.min(64, opts.studs)} onChange={(v) => setOpt('studs', v)} onChangeComplete={(v) => wave(v)} marks={{ 4: '4', 16: '16', 32: '32', 48: '48', 64: '64' }} />
-              <div className="presets">{[8, 12, 16, 24, 32, 48, 64].map((v) => <Button key={v} size="small" type={opts.studs === v ? 'primary' : 'default'} onClick={() => { sfx.click(); setOpt('studs', v); wave(v); }}>{v}</Button>)}</div>
+                <Tooltip title="Work out a good stud count for this mesh: a piece budget from two quick pilot solves, the curvature ceiling of its surface, then the best fit to the lattice within 15 % of the two. A few seconds.">
+                  <Button size="small" type="dashed" icon={<ExperimentOutlined />} loading={autoBusy} disabled={!model || busy}
+                    onClick={findStuds} style={{ marginLeft: 'auto' }}>Auto</Button>
+                </Tooltip></div>
+              <Slider min={4} max={64} step={1} value={Math.min(64, opts.studs)} onChange={setStuds} onChangeComplete={(v) => wave(v)} marks={{ 4: '4', 16: '16', 32: '32', 48: '48', 64: '64' }} />
+              <div className="presets">
+                {[8, 12, 16, 24, 32, 48, 64].map((v) => <Button key={v} size="small" type={opts.studs === v ? 'primary' : 'default'} onClick={() => { sfx.click(); setStuds(v); wave(v); }}>{v}</Button>)}
+              </div>
+              <div className="refrow"><span>studs along the</span>
+                <Select size="small" value={opts.ref} onChange={(v) => setOpt('ref', v)} style={{ flex: 1 }}
+                  options={[{ value: 'min3', label: 'smallest side of the box' }, { value: 'maxh', label: 'longest side of the box' }]} /></div>
+              {autoRes && (
+                <Tooltip title={`piece budget ${autoRes.budget.studs} studs (pieces grow as N^${autoRes.budget.exp} on this mesh)` +
+                  (autoRes.detail ? `, curvature ceiling ${autoRes.detail} studs` : ', no curved surface to speak of') +
+                  `. Candidates by how faithfully their voxel grid matches the mesh: ` + autoRes.candidates.map((c) => `${c.studs}: ${c.iou.toFixed(3)}`).join(', ')}>
+                  <div className="auto-hint">
+                    <b>{autoRes.studs} studs</b> — {{ lattice: 'best fit to the lattice', budget: 'the piece budget', detail: 'the curvature ceiling' }[autoRes.chosen] || autoRes.chosen}
+                    <span>{(autoRes.ms / 1000).toFixed(1)} s</span>
+                  </div>
+                </Tooltip>
+              )}
             </div>
             <div className="ctl">
-              <div className="ctl-h"><span>Precision</span><b>{opts.precision}</b><i>{{ 0: 'draft: 1 try', 4: 'balanced: 4 tries', 8: 'fine: 9 tries', 12: 'best: 16 tries' }[opts.precision]}</i></div>
-              <Slider min={0} max={12} step={null} value={opts.precision} tooltip={{ open: false }}
-                onChange={(v) => patchOpts({ precision: v, offsets: [0, 4, 8, 12].filter((x) => x <= v) })} marks={{ 0: '0', 4: '4', 8: '8', 12: '12' }} />
+              <div className="ctl-h"><span>Phases</span><b>{opts.precision}</b><i>{nPhases === 1 ? 'one grid position' : `${nPhases} grid positions`}{{ 0: ', draft', 4: ', balanced', 8: ', fine', 12: ', thorough', 16: ', exhaustive' }[opts.precision] || ''}</i></div>
+              <Slider min={0} max={16} step={null} value={opts.precision} tooltip={{ open: false }}
+                onChange={(v) => patchOpts({ precision: v, offsets: [0, 4, 8, 12, 16].filter((x) => x <= v) })} marks={{ 0: '0', 4: '4', 8: '8', 12: '12', 16: '16' }} />
             </div>
             <div className="ctl">
-              <div className="ctl-h"><span>Parts</span><b>{catalogFor(opts).length}</b><i>{opts.partSet === 'extended' ? 'extended: more shapes, slower' : 'limited: core set, fastest'}</i></div>
-              <Segmented block size="small" value={opts.partSet || 'limited'} onChange={(v) => { sfx.click(); setOpt('partSet', v); }}
-                options={[{ value: 'limited', label: 'Limited set' }, { value: 'extended', label: 'Extended set' }]} style={{ margin: '8px 0 10px' }} />
+              <div className="ctl-h"><span>Parts</span><b>{nParts.all}</b><i>{nParts.solo} usable alone</i></div>
+              <Segmented block size="small" value={partsMode} onChange={setPartsMode}
+                options={[{ value: 'limited', label: 'Core' }, { value: 'extended', label: 'Extended' }, { value: 'all', label: 'Every shape' }]} style={{ margin: '8px 0 6px' }} />
+              {partsMode !== 'all' && (
+                <Tooltip title="The measured LDraw shapes (quarter discs, cones, curved tops, corner tiles, arches, panels) are always available to the learned assemblies. These kinds may also be placed on their own; letting them all in floods the surface with fragments, which is why only the round family is on by default.">
+                  <Select size="small" mode="multiple" allowClear placeholder="measured shapes usable alone" style={{ width: '100%' }}
+                    value={opts.shapeSolo || []} onChange={(v) => setOpt('shapeSolo', v)}
+                    options={SHAPE_KINDS.map(([value, label]) => ({ value, label }))} maxTagCount="responsive" />
+                </Tooltip>
+              )}
             </div>
-            <div className="grid2">
-              {QUICK.map(([k, label, get, set]) => (
-                <Checkbox key={k} checked={get ? get(opts) : !!opts[k]} onChange={(e) => (set ? patchOpts(set(opts, e.target.checked)) : setOpt(k, e.target.checked))}>{label}</Checkbox>
-              ))}
+            <div className="feats">
+              {STUDIO_FEATURES.map((f) => <FeatureRow key={f.key} f={f} opts={opts} patch={patchOpts} />)}
             </div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <Button type="link" size="small" icon={<SettingOutlined />} onClick={() => setAdvanced(true)} style={{ padding: 0, fontSize: 12 }}>All parameters…</Button>
@@ -766,8 +824,19 @@ function StudioInner() {
       {busy && <div className="busy" style={{ left: leftOpen ? LW : 0, right: rightOpen ? RW : 0 }}><div className="chip"><div className="chip-row"><div className="spinner" /><span>{stage[0]}</span><div className="pulse" /></div>
         <div className="chip-bar"><Progress percent={Math.round(stage[1] * 100)} showInfo={false} size="small" /><span>{Math.round(stage[1] * 100)}%</span></div></div></div>}
 
-      <Drawer title="All parameters" open={advanced} onClose={() => setAdvanced(false)} size={440} className="adv">
-        <Collapse size="small" defaultActiveKey={['Scale & volume']} items={SCHEMA.map((g) => ({ key: g.panel, label: g.panel, children: g.items.map((it) => <Field key={it.key} it={it} opts={opts} setOpt={setOpt} />) }))} />
+      <Drawer title="All parameters" open={advanced} onClose={() => setAdvanced(false)} size={440} className="adv"
+        extra={<Button size="small" icon={<ReloadOutlined />} onClick={() => { localStorage.removeItem(STORE); setOpts({ ...DEFAULTS }); setAutoRes(null); }}>defaults</Button>}>
+        <div className="advtop">
+          <div className="advtop-h">What the method does<i>each switch writes the handful of parameters below that it is made of</i></div>
+          {FEATURE_GROUPS.map((g) => (
+            <div className="featgroup" key={g}>
+              <h4>{g}</h4>
+              {FEATURES.filter((f) => f.group === g).map((f) => <FeatureRow key={f.key} f={f} opts={opts} patch={patchOpts} />)}
+            </div>
+          ))}
+        </div>
+        <Divider style={{ margin: '14px 0 8px' }}><span style={{ fontSize: 11, color: 'var(--tx2)' }}>every parameter</span></Divider>
+        <Collapse size="small" items={SCHEMA.map((g) => ({ key: g.panel, label: g.panel, children: g.items.map((it) => <Field key={it.key} it={it} opts={opts} setOpt={setOpt} />) }))} />
       </Drawer>
 
       {pt && (
