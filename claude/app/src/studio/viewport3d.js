@@ -123,8 +123,18 @@ export class StudioViewport {
   setHullThickness(t) { this.hullThick = t; if (this.hullShader) this.hullShader.uniforms.uThick.value = t; }
   setTheme(dark) {
     this.dark = dark; this.scene.background = new THREE.Color(dark ? 0x1e222b : 0xe9edf3);
-    this.hullMat.color.set(dark ? 0x05070a : 0x10131a);
+    if (!this._inkPerPiece) this.hullMat.color.set(dark ? 0x05070a : 0x10131a);
     this.cyclo.material.color.set(dark ? 0x2b303b : 0xd9dde5);
+  }
+  /**
+   * Per-piece outline colour. The hull material is one dark colour for everyone; for the booklet the material goes white and
+   * each instance carries its own ink (instance colours multiply the material's), so new pieces get a black line and the
+   * already-built grey ones a soft grey line. `false` puts it back.
+   */
+  setInkPerPiece(on) {
+    this._inkPerPiece = !!on;
+    this.hullMat.color.set(on ? 0xffffff : (this.dark ? 0x05070a : 0x10131a));
+    if (!on) { const c = new THREE.Color(1, 1, 1); for (const h of this.hulls) { if (h.instanceColor) { for (let k = 0; k < h.count; k++) h.setColorAt(k, c); h.instanceColor.needsUpdate = true; } } }
   }
   resize() { const w = this.el.clientWidth || 1, h = this.el.clientHeight || 1; this.renderer.setSize(w, h); this.camera.aspect = w / h; this.camera.updateProjectionMatrix(); }
   dispose() { cancelAnimationFrame(this.raf); this.ro.disconnect(); this.clearLego(); this.clearGroup(this.src); this.clearVoxels(); this.clearHollowCubes(); this.renderer.dispose(); this.el.innerHTML = ''; this.studMat && this.studMat.dispose(); }
@@ -429,7 +439,7 @@ export class StudioViewport {
   addHull(mesh) {
     const h = new THREE.InstancedMesh(withSmoothNormals(mesh.geometry), this.hullMat, mesh.count);
     h.instanceMatrix = mesh.instanceMatrix; h.frustumCulled = false; h.visible = this.outline; h.renderOrder = -1;
-    this.lego.add(h); this.hulls.push(h);
+    mesh.userData.hull = h; this.lego.add(h); this.hulls.push(h);
   }
   /** smooth: welded geometry.computeVertexNormals() + smooth shading; off: per-face normals + flat shading */
   setSmooth(on) { this.smooth = !!on; this.applySmooth(); }
@@ -489,6 +499,7 @@ export class StudioViewport {
   }
   setColorMode(mode) {
     this.colorMode = mode; this.paintSource(); if (!this.pieces) return;
+    if (this._inkPerPiece) this.setInkPerPiece(false);
     const c = new THREE.Color();
     this.pieces.forEach((p, n) => {
       const rgb = mode === 'kind' ? (KIND_COL[p.kind] || [0.6, 0.6, 0.6]).map((x) => x * 255) : (p.rgb || [200, 200, 200]);
@@ -748,19 +759,69 @@ export class StudioViewport {
    * Show exactly the pieces flagged in `shown` (a Uint8Array over this.pieces, which setLego sorted by level), painting those
    * flagged in `hot` in the highlight colour - what instruction booklets print in red. No animation: this is for capture.
    */
-  showStep(shown, hot, hotRGB = [232, 64, 42]) {
+  showStep(shown, hot, { hotRGB = null, dimRGB = null, inkRGB = null, dimInkRGB = null } = {}) {
     if (!this.pieces) return;
-    const c = new THREE.Color(); let n_ = 0;
+    const c = new THREE.Color(), ink = new THREE.Color(); let n_ = 0;
+    const perInk = !!(inkRGB || dimInkRGB); if (perInk !== !!this._inkPerPiece) this.setInkPerPiece(perInk);
     for (let n = 0; n < this.pieces.length; n++) {
       const v = shown && shown[n] ? 1 : 0; if (v) n_++;
       if (v !== this.vis[n]) { this.vis[n] = v; this.active.delete(n); this.place(n, v, 0); }
-      const p = this.pieces[n];
-      const rgb = hot && hot[n] ? hotRGB : (this.colorMode === 'kind' ? (KIND_COL[p.kind] || [0.6, 0.6, 0.6]).map((x) => x * 255) : (p.rgb || [200, 200, 200]));
+      const p = this.pieces[n], isHot = !!(hot && hot[n]);
+      const own = this.colorMode === 'kind' ? (KIND_COL[p.kind] || [0.6, 0.6, 0.6]).map((x) => x * 255) : (p.rgb || [200, 200, 200]);
+      // hot pieces: the highlight colour, or their own when none is given; the rest: the dim colour (the already-built model
+      // drawn in grey), or their own
+      const rgb = isHot ? (hotRGB || own) : (dimRGB || own);
       c.setRGB(rgb[0] / 255, rgb[1] / 255, rgb[2] / 255, THREE.SRGBColorSpace);
-      for (const { mesh, k } of this.pe[n] || []) mesh.setColorAt(k, c);
+      if (perInk) { const i = (isHot ? inkRGB : dimInkRGB) || [16, 19, 26]; ink.setRGB(i[0] / 255, i[1] / 255, i[2] / 255, THREE.SRGBColorSpace); }
+      for (const { mesh, k } of this.pe[n] || []) { mesh.setColorAt(k, c); if (perInk && mesh.userData.hull) mesh.userData.hull.setColorAt(k, ink); }
     }
-    for (const m of this.groups) m.instanceColor && (m.instanceColor.needsUpdate = true);
+    for (const m of this.groups) { m.instanceColor && (m.instanceColor.needsUpdate = true); if (m.userData.hull && m.userData.hull.instanceColor) m.userData.hull.instanceColor.needsUpdate = true; }
     this.revealed = n_;
+  }
+  /** axis-aligned box of a set of pieces (indices into this.pieces) in LDU, lego-local: { min: [x,y,z], max: [x,y,z] } */
+  piecesBox(idx) {
+    const min = [1e9, 1e9, 1e9], max = [-1e9, -1e9, -1e9];
+    for (const n of idx) {
+      const p = this.pieces[n], lo = [p.i * STUD, p.b * PLATE, p.j * STUD], hi = [(p.i + p.w) * STUD, (p.b + p.h) * PLATE, (p.j + p.d) * STUD];
+      for (let a = 0; a < 3; a++) { min[a] = Math.min(min[a], lo[a]); max[a] = Math.max(max[a], hi[a]); }
+    }
+    return min[0] > max[0] ? { min: [0, 0, 0], max: [this.W, this.H, this.D] } : { min, max };
+  }
+  /**
+   * An isometric, orthographic picture framed on `box` (LDU, lego-local - see piecesBox): the camera looks down `dir` from
+   * infinitely far, so every step is drawn at the same angle with no perspective, as instruction booklets are, and the frame
+   * is fitted to the box - the pieces a step adds - plus `margin` studs of context and `pad` of air. `minSpan` (studs) keeps a
+   * three-piece step from being blown up to fill the page. The user's camera, the stage and the renderer size are untouched.
+   */
+  captureIso(box, { ar = 1.75, maxW = 900, pad = 0.06, margin = 1.5, minSpan = 8, dir = [1, 1, 1], bg = '#ffffff', floor = false, quality = 0.9, png = false } = {}) {
+    const r = this.renderer, cam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.01, 10);
+    const d = new THREE.Vector3(...dir).normalize();
+    const centre = this.lego.localToWorld(new THREE.Vector3(this.W / 2, this.H / 2, this.D / 2));
+    cam.up.set(0, 1, 0); cam.position.copy(centre).addScaledVector(d, 1000); cam.lookAt(centre); cam.updateMatrixWorld(true);
+    const inv = cam.matrixWorldInverse, v = new THREE.Vector3();
+    const extents = (b) => {
+      const e = { x0: 1e9, x1: -1e9, y0: 1e9, y1: -1e9, z0: 1e9, z1: -1e9 };
+      for (const X of [b.min[0], b.max[0]]) for (const Y of [b.min[1], b.max[1]]) for (const Z of [b.min[2], b.max[2]]) {
+        this.lego.localToWorld(v.set(X, Y, Z)).applyMatrix4(inv);
+        e.x0 = Math.min(e.x0, v.x); e.x1 = Math.max(e.x1, v.x); e.y0 = Math.min(e.y0, v.y); e.y1 = Math.max(e.y1, v.y); e.z0 = Math.min(e.z0, v.z); e.z1 = Math.max(e.z1, v.z);
+      }
+      return e;
+    };
+    const f = extents(box), all = extents({ min: [0, 0, 0], max: [this.W, this.H, this.D] });
+    const m = margin * STUD * S, cx = (f.x0 + f.x1) / 2, cy = (f.y0 + f.y1) / 2;
+    let w = (f.x1 - f.x0 + 2 * m) * (1 + 2 * pad), h = (f.y1 - f.y0 + 2 * m) * (1 + 2 * pad);
+    w = Math.max(w, minSpan * STUD * S); h = Math.max(h, minSpan * STUD * S / ar);
+    if (w / h < ar) w = h * ar; else h = w / ar;                                  // grow to the picture's aspect, never crop the step
+    cam.left = cx - w / 2; cam.right = cx + w / 2; cam.top = cy + h / 2; cam.bottom = cy - h / 2;
+    cam.near = Math.max(0.01, -all.z1 - 1); cam.far = -all.z0 + 1; cam.updateProjectionMatrix();
+    // draw at the picture's own size, on a plain background, without the stage
+    const W = Math.round(maxW), H = Math.round(maxW / ar), size = new THREE.Vector2(); r.getSize(size);
+    const pr = r.getPixelRatio(), bgWas = this.scene.background, cycloWas = this.cyclo.visible;
+    r.setPixelRatio(1); r.setSize(W, H, false); this.scene.background = new THREE.Color(bg); this.cyclo.visible = !!floor;
+    r.render(this.scene, cam);
+    const out = png ? r.domElement.toDataURL('image/png') : r.domElement.toDataURL('image/jpeg', quality);
+    this.scene.background = bgWas; this.cyclo.visible = cycloWas; r.setPixelRatio(pr); r.setSize(size.x, size.y, false);
+    return out;
   }
   /**
    * The finished model's bounding box in canvas pixels, grown to the aspect `ar` and padded: every step capture is cropped to
@@ -784,14 +845,17 @@ export class StudioViewport {
     return { x: cx - w / 2, y: cy - h / 2, w, h };
   }
   /** render once and return a data URI no wider than `maxW`, cropped to `rect` (canvas pixels) over an opaque background */
-  capture(maxW = 760, { quality = 0.85, png = false, rect = null } = {}) {
+  capture(maxW = 760, { quality = 0.85, png = false, rect = null, bg = null, floor = true } = {}) {
+    const bgWas = this.scene.background, cycloWas = this.cyclo.visible;
+    if (bg) this.scene.background = new THREE.Color(bg); this.cyclo.visible = cycloWas && floor;
     this.renderer.render(this.scene, this.camera);                               // no renderGizmo(): the corner gizmo is not part of a booklet picture
+    this.scene.background = bgWas; this.cyclo.visible = cycloWas;
     const src = this.renderer.domElement;
     const r = rect || { x: 0, y: 0, w: src.width, h: src.height };
     const k = Math.min(1, maxW / r.w);
     const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(r.w * k)); c.height = Math.max(1, Math.round(r.h * k));
     const g = c.getContext('2d');
-    g.fillStyle = '#' + this.scene.background.getHexString(); g.fillRect(0, 0, c.width, c.height);
+    g.fillStyle = bg || '#' + this.scene.background.getHexString(); g.fillRect(0, 0, c.width, c.height);
     g.imageSmoothingQuality = 'high'; g.drawImage(src, r.x, r.y, r.w, r.h, 0, 0, c.width, c.height);
     return png ? c.toDataURL('image/png') : c.toDataURL('image/jpeg', quality);
   }

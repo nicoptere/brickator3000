@@ -1,0 +1,21 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>booklet test</title>
+<style>html,body{margin:0;height:100%;background:#1e222b}#vp{width:960px;height:720px}</style></head>
+<body><div id="vp"></div>
+<script type="module">
+  // Shoots the booklet for a piece list (JSON from `OUT=... node test/run.mjs`) through the real viewport + booklet code.
+  // Driven by test/booklet_shoot.mjs; the result lands in window.__booklet.
+  import { StudioViewport } from '/src/studio/viewport3d.js';
+  import { FULL_CATALOG } from '/src/brickgen/pipeline.js';
+  import { shootBooklet } from '/src/studio/booklet.js';
+  const q = new URLSearchParams(location.search);
+  const pieces = await (await fetch(q.get('pieces'))).json();
+  const dims = JSON.parse(q.get('dims') || '[16,16,32]');
+  const vp = new StudioViewport(document.getElementById('vp'));
+  vp.setLego(pieces, FULL_CATALOG, dims); vp.setColorMode('piece'); vp.setOutline(true);
+  await new Promise((r) => setTimeout(r, 300));
+  const t = performance.now();
+  const r = await shootBooklet(vp, FULL_CATALOG, { title: q.get('title') || 'test model', opts: { stepTarget: +(q.get('steps') || 60) }, meta: { studs: dims[0] },
+    cover: q.get('spp') === '0' ? false : { spp: +(q.get('spp') || 24) }, onStage: (s) => console.log('stage', s, Math.round(performance.now() - t) + ' ms') });
+  window.__booklet = { ...r, ms: performance.now() - t };
+</script></body></html>

@@ -13,17 +13,23 @@ const s2l = (c) => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4
 let envPromise = null;
 const loadEnv = () => envPromise || (envPromise = new EXRLoader().loadAsync(new URL('/env/studio.exr', location.href).href).then((t) => { t.mapping = THREE.EquirectangularReflectionMapping; t.minFilter = t.magFilter = THREE.LinearFilter; return t; }));
 
-export async function createPathTrace(vp, { pieces, cat, colorMode = 'piece', dark = true, spp = 512, maxSide = 1600, source = undefined, viewMode = undefined, live = false } = {}) {
+/**
+ * Extra options for pictures that are not the viewport's own: `camera` (a THREE camera to shoot from instead of the viewport's),
+ * `transparent` (no background at all - the PNG keeps its alpha, for the booklet cover), `floor` (false = no cyclo, so nothing
+ * but the model is in the picture), `outHeight` (pixels; the width follows the model's projected box), `margin` (air around the projected box, x1.25).
+ */
+export async function createPathTrace(vp, { pieces, cat, colorMode = 'piece', dark = true, spp = 512, maxSide = 1600, source = undefined, viewMode = undefined, live = false, camera = null, transparent = false, floor = true, outHeight = 1080, margin = 1.25 } = {}) {
   const cw = vp.el.clientWidth || 1000, ch = vp.el.clientHeight || 700, k = Math.min(2, maxSide / Math.max(cw, ch));
   const W = Math.max(2, Math.round(cw * k)), H = Math.max(2, Math.round(ch * k));
-  const renderer = new THREE.WebGLRenderer({ antialias: false, preserveDrawingBuffer: true, powerPreference: 'high-performance' });
+  const renderer = new THREE.WebGLRenderer({ antialias: false, preserveDrawingBuffer: true, powerPreference: 'high-performance', alpha: transparent, premultipliedAlpha: false });
+  if (transparent) renderer.setClearColor(0x000000, 0);
   renderer.setPixelRatio(1); renderer.setSize(W, H, false);
   // three r170 + the path tracer re-define the material every sample: the async compile polls a program that was already replaced ("program is undefined"); compile synchronously instead
   renderer.compileAsync = (sc, cam) => { renderer.compile(sc, cam); return Promise.resolve(sc); };
   renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05; renderer.outputColorSpace = THREE.SRGBColorSpace;
   let pt = null, stop = false;
   try {
-    const scene = new THREE.Scene(); scene.background = new THREE.Color(dark ? 0x1e222b : 0xe9edf3);
+    const scene = new THREE.Scene(); scene.background = transparent ? null : new THREE.Color(dark ? 0x1e222b : 0xe9edf3);   // null = the path tracer writes alpha 0 where nothing is hit
     const activeMeshes = [];
 
     const hasSrcMesh = !!(vp.src && vp.src.children.some((c) => c.isMesh));
@@ -162,19 +168,18 @@ export async function createPathTrace(vp, { pieces, cat, colorMode = 'piece', da
     const size = maxDim * 1.2;
     const floorY = Math.min(0, unionBox.min.y) - 0.002;
 
-    const cy = new THREE.Mesh(cycloGeometry(size), cycloMaterial(dark));
-    cy.position.set(unionCenter.x, floorY, unionCenter.z);
-    scene.add(cy);
+    let cy = null;
+    if (floor) { cy = new THREE.Mesh(cycloGeometry(size), cycloMaterial(dark)); cy.position.set(unionCenter.x, floorY, unionCenter.z); scene.add(cy); }
 
     const al = areaLights(size);
     al.group.position.set(unionCenter.x, floorY, unionCenter.z);
     scene.add(al.group);
 
     const env = await loadEnv(); scene.environment = env; scene.environmentIntensity = dark ? 0.3 : 0.45;
-    const cam = vp.camera.clone(); // own camera (live mode re-syncs it with the viewport camera on every move)
+    const srcCam = camera || vp.camera, cam = srcCam.clone(); // own camera (live mode re-syncs it with the viewport camera on every move)
 
     const tv = new THREE.Vector3();
-    const outH = live ? Math.min(1080, Math.round(ch * (window.devicePixelRatio || 1))) : 1080;
+    const outH = live ? Math.min(outHeight, Math.round(ch * (window.devicePixelRatio || 1))) : outHeight;
     const corners = [
       new THREE.Vector3(unionBox.min.x, unionBox.min.y, unionBox.min.z),
       new THREE.Vector3(unionBox.max.x, unionBox.min.y, unionBox.min.z),
@@ -188,7 +193,7 @@ export async function createPathTrace(vp, { pieces, cat, colorMode = 'piece', da
 
     /** frame the picture on the projected bounding box of the model(s) (x 1.25 for air): same camera, cropped with a view offset; output is `outH` px tall, width follows the box */
     const frame = () => {
-      cam.copy(vp.camera); cam.clearViewOffset(); cam.aspect = cw / ch; cam.updateProjectionMatrix(); cam.updateMatrixWorld(true);
+      cam.copy(srcCam); cam.clearViewOffset(); cam.aspect = cw / ch; cam.updateProjectionMatrix(); cam.updateMatrixWorld(true);
       let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
       for (const m of activeMeshes) {
         const P = m.geometry.getAttribute('position');
@@ -207,7 +212,7 @@ export async function createPathTrace(vp, { pieces, cat, colorMode = 'piece', da
         if (tv.x < x0) x0 = tv.x; if (tv.x > x1) x1 = tv.x; if (tv.y < y0) y0 = tv.y; if (tv.y > y1) y1 = tv.y;
       }
       if (x1 > x0 && y1 > y0) {
-        const m = 1.25, wpx = ((x1 - x0) / 2) * cw * m, hpx = ((y1 - y0) / 2) * ch * m;
+        const m = margin, wpx = ((x1 - x0) / 2) * cw * m, hpx = ((y1 - y0) / 2) * ch * m;
         const cx = ((x0 + x1) / 4 + 0.5) * cw, cy = (0.5 - (y0 + y1) / 4) * ch;
         cam.setViewOffset(cw, ch, cx - wpx / 2, cy - hpx / 2, wpx, hpx);
         renderer.setSize(Math.min(4096, Math.max(64, Math.round(outH * wpx / hpx))), outH, false);

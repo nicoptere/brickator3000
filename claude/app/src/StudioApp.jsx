@@ -14,7 +14,7 @@ import { runMethod, cancel, chooseStuds, rebuildRegion, poolSize } from './engin
 import { DEFAULTS, CATALOG, FULL_CATALOG, catalogFor } from './brickgen/pipeline.js';
 import { buildMesh, toGLB, toLDR, KIND_COL } from './brickgen/export.js';
 import { snapToPalette } from './brickgen/colors.js';
-import { planSteps, stepParts, billOfMaterials, bookletHTML } from './brickgen/instructions.js';
+import { shootBooklet } from './studio/booklet.js';
 import { boxOf } from './brickgen/region.js';
 import { SCHEMA } from './schema.js';
 import { FEATURES, FEATURE_GROUPS, featureState, featurePatch } from './presets.js';
@@ -515,27 +515,13 @@ function StudioInner() {
   const exportBooklet = async () => {
     const vpc = vp.current; if (!res || !vpc || !vpc.pieces) return;
     sfx.click(); setBookBusy(true); setStage(['Drawing the instructions', 0]);
-    const P = vpc.pieces, cat = FULL_CATALOG, by = {}; for (const c of cat) by[c.id] = c;
     const wasDark = dark, wasMode = viewMode, wasOutline = outline, wasLevel = step;
     try {
-      const { steps } = planSteps(P, opts);
-      vpc.setTheme(false); vpc.setMode('lego'); vpc.setOutline(true); vpc.paused = true;
-      vpc.setAllStuds(true);                                                     // a plate must show its studs even in the steps before something covers them
-      const all = new Uint8Array(P.length).fill(1);
-      vpc.showStep(all, null);
-      const cover = vpc.capture(1100, { quality: 0.9, rect: vpc.modelRect(4 / 3, 0.1) });   // the finished model, perspective, from the user's own view
-      const rect = vpc.modelRect(4 / 3);                                         // one frame for every step: the model never moves or changes size
-      const shown = new Uint8Array(P.length), hot = new Uint8Array(P.length), images = [];
-      for (let k = 0; k < steps.length; k++) {
-        hot.fill(0); for (const n of steps[k].idx) { shown[n] = 1; hot[n] = 1; }
-        vpc.showStep(shown, hot); images.push(vpc.capture(680, { rect }));
-        if (k % 4 === 0) { setStage(['Drawing the instructions', k / steps.length]); await new Promise((r) => setTimeout(r)); }
-      }
-      const withParts = steps.map((s) => ({ ...s, parts: stepParts(P, s.idx, by) }));
-      const html = bookletHTML({ title: base, cover, steps: withParts, images, bom: billOfMaterials(P, by),
-        meta: { pieces: P.length, levels: Math.max(...P.map((p) => p.b + p.h)), studs: res.options.studs, weld: !!(res.post && res.post.weld && res.post.weld.added) } });
+      const { html, steps, pages } = await shootBooklet(vpc, FULL_CATALOG, { title: base, opts,
+        meta: { studs: res.options.studs, weld: !!(res.post && res.post.weld && res.post.weld.added) },
+        onStage: (name) => setStage([name, 0]), onProgress: (f) => setStage((st) => [st[0] || 'Drawing the instructions', f]) });
       download(html, base + '_instructions.html', 'text/html');
-      message.success(`${steps.length} steps on ${Math.ceil(steps.length / 4) + 2} pages - open it and print to PDF`);
+      message.success(`${steps} steps on ${pages} pages - open it and print to PDF`);
     } catch (e) { sfx.error(); message.error(String(e.message || e)); console.error(e); }
     vpc.setAllStuds(false);
     vpc.paused = false; vpc.setTheme(wasDark); vpc.setOutline(wasOutline); vpc.setColorMode(colorMode); vpc.setMode(wasMode); vpc.setLevel(wasLevel >= maxLevelRef.current ? Infinity : wasLevel, false);

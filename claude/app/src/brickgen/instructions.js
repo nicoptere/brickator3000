@@ -4,15 +4,19 @@
 // community's own conventions):
 //  - the build is LAYERED, rising at the same rate from bottom to top. A voxel model already is, so the steps follow the levels;
 //  - every step carries a step inventory call-out - the parts that step adds, with their count (introduced in 2003 sets);
-//  - the parts a step adds are HIGHLIGHTED on the drawing (red in modern sets), the rest stays in the model's own colours;
-//  - the camera never moves, so the builder can track the model from step to step;
+//  - the parts a step adds are drawn in their own colour and everything already built is drawn in a medium grey, so the eye
+//    goes straight to what is new (modern sets colour the new parts and leave the rest as is; on a sculpture whose every
+//    piece has its own shade the grey is what makes the new layer readable);
+//  - the camera never turns: every picture is the same isometric view (orthographic, no perspective), framed on the pieces
+//    the step adds with a little context around them - what a builder actually looks at;
 //  - official sets place 1-4 pieces per step, which for a 1,300-piece sculpture would be 400 pages. The step size here is chosen
-//    from a TARGET STEP COUNT instead (default 60) and clamped, so the leaflet stays a leaflet; the highlight and the per-step
-//    inventory are what keep a 20-piece step followable.
+//    from a TARGET STEP COUNT instead (default 60) and clamped, so the leaflet stays a leaflet; the colour-vs-grey contrast and
+//    the per-step inventory are what keep a 20-piece step followable.
 // A step never spans more than `maxLevels` levels, and the pieces inside one step are taken in a serpentine order across the
-// layer, so a step is always a contiguous run rather than a scatter.
+// layer, so a step is always a contiguous run rather than a scatter. Pages are A4 landscape, four steps to a page.
 const KIND_LABEL = { plate: 'plate', brick: 'brick', tile: 'tile', slope: 'slope', inverted: 'inverted slope', curved: 'curved slope', cheese: 'cheese slope', round: 'round', technic: 'technic', shaped: 'shaped', support: 'support' };
 const hex = (rgb) => '#' + (rgb || [200, 200, 200]).map((x) => Math.max(0, Math.min(255, Math.round(x))).toString(16).padStart(2, '0')).join('');
+const shade = (rgb, f) => hex((rgb || [200, 200, 200]).map((x) => x * f));
 
 /** pieces in build order: by level, then serpentine across the layer (so one step is a contiguous run, not a scatter) */
 export function buildOrder(pieces) {
@@ -44,135 +48,174 @@ export function planSteps(pieces, o = {}) {
   return { steps, perStep, order };
 }
 
-/** the parts a step adds, grouped by part and colour: [{ id, name, kind, w, d, h, rgb, n }] */
-export function stepParts(pieces, idx, by) {
-  const m = new Map();
-  for (const n of idx) {
-    const p = pieces[n], k = `${p.id}|${hex(p.rgb)}`;
-    let e = m.get(k);
-    if (!e) m.set(k, e = { id: p.id, name: (by[p.id] && by[p.id].name) || p.id, kind: p.kind, w: p.w, d: p.d, h: p.h, rgb: p.rgb, n: 0 });
-    e.n++;
-  }
-  return [...m.values()].sort((a, b) => b.n - a.n || a.id.localeCompare(b.id));
-}
 /**
- * The whole model's bill of materials, grouped by PART (not by part and colour): a photo-coloured model gives almost every
- * piece its own shade, so a colour-wise list would be hundreds of lines of "1x". Each row carries the colours it covers.
+ * The parts a step adds, aggregated by PART ("2x4 plate x 4"), each with the colours it comes in (most used first) - the icon
+ * takes the main colour and the swatches say when there is more than one: [{ id, name, kind, w, d, h, rgb, n, colours }]
  */
+export function stepParts(pieces, idx, by) {
+  return aggregate(idx.map((n) => pieces[n]), by);
+}
+/** the whole model's bill of materials, grouped the same way */
 export function billOfMaterials(pieces, by) {
+  return aggregate(pieces, by);
+}
+function aggregate(list, by) {
   const m = new Map();
-  for (const p of pieces) {
+  for (const p of list) {
     let e = m.get(p.id);
-    if (!e) m.set(p.id, e = { id: p.id, name: (by[p.id] && by[p.id].name) || p.id, kind: p.kind, w: p.w, d: p.d, h: p.h, rgb: p.rgb, n: 0, cols: new Map() });
-    e.n++; const k = hex(p.rgb); e.cols.set(k, (e.cols.get(k) || 0) + 1);
+    if (!e) m.set(p.id, e = { id: p.id, name: (by[p.id] && by[p.id].name) || p.id, kind: p.kind, w: p.w, d: p.d, h: p.h, n: 0, cols: new Map() });
+    e.n++; const k = hex(p.rgb); const c = e.cols.get(k) || { n: 0, rgb: p.rgb }; c.n++; e.cols.set(k, c);
   }
-  return [...m.values()].map((e) => ({ ...e, colours: [...e.cols.entries()].sort((a, b) => b[1] - a[1]) })).sort((a, b) => b.n - a.n || a.id.localeCompare(b.id));
+  return [...m.values()].map((e) => {
+    const colours = [...e.cols.entries()].sort((a, b) => b[1].n - a[1].n).map(([k, c]) => [k, c.n]);
+    const rgb = e.cols.get(colours[0][0]).rgb;
+    delete e.cols; return { ...e, rgb, colours };
+  }).sort((a, b) => b.n - a.n || a.id.localeCompare(b.id));
 }
 
-/** a small isometric icon of a part: footprint w x d, height h plates, studs on top unless it is a tile */
+/**
+ * A small isometric icon of a part: footprint w x d, height h plates, studs on top unless it is a tile or a slope. The two
+ * faces drawn are the ones that FACE the viewer (x = w on the right, z = d on the left) - the first version drew the far
+ * x = 0 wall instead, which made every icon look like an open box seen from inside. Slopes are drawn as wedges.
+ */
 export function partIcon(part, px = 34) {
-  const { w, d, h, kind } = part, S = 7, PL = 2.6, studs = kind !== 'tile' && kind !== 'slope' && kind !== 'curved' && kind !== 'cheese';
-  const cx = (x, z) => (x - z) * S * 0.866, cy = (x, z, y) => (x + z) * S * 0.5 - y;      // isometric
-  const H = h * PL, c = hex(part.rgb), dark = shade(part.rgb, 0.62), mid = shade(part.rgb, 0.82);
+  const { w, d, h, kind } = part, S = 7, PL = 2.6, H = h * PL;
+  const wedge = kind === 'slope' || kind === 'cheese' || kind === 'curved', studs = !wedge && kind !== 'tile';
+  const cx = (x, z) => (x - z) * S * 0.866, cy = (x, z, y) => (x + z) * S * 0.5 - y;      // isometric: +x to the right, +z to the left, y up
+  const c = hex(part.rgb), dark = shade(part.rgb, 0.6), mid = shade(part.rgb, 0.8), ink = '#1a1a1a';
   const P = (pts) => pts.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
-  const top = [[cx(0, 0), cy(0, 0, H)], [cx(w, 0), cy(w, 0, H)], [cx(w, d), cy(w, d, H)], [cx(0, d), cy(0, d, H)]];
-  const left = [[cx(0, 0), cy(0, 0, H)], [cx(0, d), cy(0, d, H)], [cx(0, d), cy(0, d, 0)], [cx(0, 0), cy(0, 0, 0)]];
-  const right = [[cx(w, d), cy(w, d, H)], [cx(0, d), cy(0, d, H)], [cx(0, d), cy(0, d, 0)], [cx(w, d), cy(w, d, 0)]];
-  let g = `<polygon points="${P(left)}" fill="${mid}"/><polygon points="${P(right)}" fill="${dark}"/><polygon points="${P(top)}" fill="${c}"/>`;
+  const pt = (x, z, y) => [cx(x, z), cy(x, z, y)];
+  const lip = wedge ? Math.min(H, PL * 0.7) : H;                                 // a wedge: full height at the back edge, a lip at the front
+  const top = [pt(0, 0, H), pt(w, 0, H), pt(w, d, lip), pt(0, d, lip)];
+  const right = [pt(w, 0, H), pt(w, d, lip), pt(w, d, 0), pt(w, 0, 0)];
+  const front = [pt(0, d, lip), pt(w, d, lip), pt(w, d, 0), pt(0, d, 0)];
+  const st = `stroke="${ink}" stroke-width="0.6" stroke-linejoin="round"`;
+  let g = `<polygon points="${P(front)}" fill="${dark}" ${st}/><polygon points="${P(right)}" fill="${mid}" ${st}/><polygon points="${P(top)}" fill="${c}" ${st}/>`;
   if (studs) for (let a = 0; a < w; a++) for (let b = 0; b < d; b++)
-    g += `<ellipse cx="${cx(a + 0.5, b + 0.5).toFixed(1)}" cy="${cy(a + 0.5, b + 0.5, H + 1.4).toFixed(1)}" rx="${(S * 0.38).toFixed(1)}" ry="${(S * 0.22).toFixed(1)}" fill="${c}" stroke="${dark}" stroke-width="0.7"/>`;
-  const xs = [...top, ...left, ...right].map((q) => q[0]), ys = [...top, ...left, ...right].map((q) => q[1]);
-  const x0 = Math.min(...xs) - 3, y0 = Math.min(...ys) - 4, vw = Math.max(...xs) - x0 + 3, vh = Math.max(...ys) - y0 + 4;
+    g += `<ellipse cx="${cx(a + 0.5, b + 0.5).toFixed(1)}" cy="${cy(a + 0.5, b + 0.5, H + 1.3).toFixed(1)}" rx="${(S * 0.36).toFixed(1)}" ry="${(S * 0.2).toFixed(1)}" fill="${c}" ${st}/>`;
+  const all = [...top, ...right, ...front], xs = all.map((q) => q[0]), ys = all.map((q) => q[1]);
+  const x0 = Math.min(...xs) - 2, y0 = Math.min(...ys) - 4, vw = Math.max(...xs) - x0 + 2, vh = Math.max(...ys) - y0 + 2;
   return `<svg class="ic" viewBox="${x0.toFixed(1)} ${y0.toFixed(1)} ${vw.toFixed(1)} ${vh.toFixed(1)}" width="${px}" height="${Math.round(px * vh / vw)}" aria-hidden="true">${g}</svg>`;
 }
-const shade = (rgb, f) => hex((rgb || [200, 200, 200]).map((x) => x * f));
+
+/** a faint pattern of brick outlines for the cover, the way the real leaflets have it */
+function brickPattern() {
+  const b = (x, y, w, s = 1) => `<g transform="translate(${x} ${y}) scale(${s})" fill="none" stroke="#9aa0a8" stroke-width="1.2" stroke-opacity=".35">` +
+    `<path d="M0 16 L${w * 16} 16 L${w * 16 + 10} 8 L10 8 Z M0 16 v18 h${w * 16} v-18 M${w * 16} 34 l10 -8 v-18"/>` +
+    [...Array(w)].map((_, k) => `<ellipse cx="${k * 16 + 12}" cy="8" rx="4.5" ry="2.2"/>`).join('') + `</g>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="420" height="260" viewBox="0 0 420 260">${b(20, 30, 2, 1.4)}${b(150, 120, 4, 1.1)}${b(300, 40, 1, 1.6)}${b(60, 190, 3, 0.9)}${b(330, 170, 2, 1.2)}${b(230, 10, 1, 1)}</svg>`;
+  return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+}
+/** a stable five-digit "set number" from the title and size, so the same model always gets the same one */
+const setNumber = (title, n) => { let h = 7; for (const ch of `${title}:${n}`) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return 10000 + (h % 90000); };
 
 /**
- * The booklet, as one self-contained HTML file: cover, how-to-read, the steps (image + inventory), and the parts list.
- * `images[k]` is a data URI for step k (the model built up to and including that step); `cover` one for the title page.
- * Print CSS is set up for A4 portrait, so the browser's "Save as PDF" produces the leaflet directly.
+ * The booklet, as one self-contained HTML file: cover, the steps (four to a page: number, parts call-out, picture), and the
+ * parts list. `images[k]` is a data URI for step k (the model built up to and including that step, the new pieces in colour
+ * and the rest grey, isometric); `cover` one for the title page. Print CSS is set up for A4 landscape, so the browser's
+ * "Save as PDF" produces the leaflet directly. The cover is laid out like a real set's: logo tile, the model's name as the
+ * theme, the set number, the finished model on a pale band, the booklet number, the warning box.
  */
-export function bookletHTML({ title = 'model', cover = null, steps = [], images = [], bom = [], meta = {}, perPage = 4 }) {
+export function bookletHTML({ title = 'model', cover = null, covers = null, steps = [], images = [], bom = [], meta = {}, perPage = 4, brand = 'LOGO' }) {
+  covers = covers || (cover ? [cover] : []);
   const esc = (s) => String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
   const pages = []; for (let k = 0; k < steps.length; k += perPage) pages.push(steps.slice(k, k + perPage).map((s, q) => ({ s, n: k + q })));
+  const swatches = (p) => p.colours && p.colours.length > 1 ? `<span class="sw">${p.colours.slice(0, 8).map(([c]) => `<em style="background:${c}"></em>`).join('')}</span>` : '';
   const stepCard = ({ s, n }) => `<figure class="step">
-      <div class="shot">${images[n] ? `<img src="${images[n]}" alt="step ${n + 1}">` : '<div class="miss">no image</div>'}<span class="num">${n + 1}</span></div>
-      <figcaption class="inv">${s.parts.map((p) => `<span class="pi" title="${esc(p.name)}">${partIcon(p, 30)}<b>${p.n}&times;</b></span>`).join('')}</figcaption>
+      <div class="head"><span class="num">${n + 1}</span>
+        <div class="inv">${s.parts.map((p) => `<span class="pi" title="${esc(p.name)}">${partIcon(p, 30)}<b>${p.n}&times;</b>${swatches(p)}</span>`).join('')}</div></div>
+      <div class="shot">${images[n] ? `<img src="${images[n]}" alt="step ${n + 1}">` : '<div class="miss">no image</div>'}</div>
     </figure>`;
-  const bomRow = (p) => `<li>${partIcon(p, 32)}<span class="bn">${esc(p.name)}${p.colours && p.colours.length > 1 ? `<i> ${p.colours.length} colours</i>` : ''}</span>` +
+  const bomRow = (p) => `<li>${partIcon(p, 30)}<span class="bn">${esc(p.name)}${p.colours && p.colours.length > 1 ? `<i> &middot; ${p.colours.length} colours</i>` : ''}</span>` +
     `<span class="sw">${(p.colours || []).slice(0, 6).map(([c]) => `<em style="background:${c}"></em>`).join('')}</span><b>${p.n}&times;</b></li>`;
+  const name = title.replace(/[_-]+/g, ' ').trim() || 'model';
+  const setNo = meta.setNumber || setNumber(name, meta.pieces || 0);
   return `<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><title>${esc(title)} - building instructions</title>
+<html lang="en"><head><meta charset="utf-8"><title>${esc(name)} - building instructions</title>
 <style>
-  :root { --ink: #16181d; --ink2: #6b7280; --line: #d9dbe0; --soft: #f4f5f7; --hot: #e8402a; }
+  :root { --ink: #16181d; --ink2: #6b7280; --line: #d9dbe0; --soft: #f4f5f7; --red: #d7141a; --yellow: #f8e71c; --band: #f3f0d6; }
   * { box-sizing: border-box; }
-  body { margin: 0; font: 13px/1.45 "Helvetica Neue", Arial, sans-serif; color: var(--ink); background: #e9eaee; }
-  .sheet { width: 210mm; min-height: 297mm; margin: 8mm auto; padding: 14mm 13mm; background: #fff; box-shadow: 0 1px 6px rgba(0,0,0,.18); }
+  body { margin: 0; font: 13px/1.4 "Helvetica Neue", Helvetica, Arial, sans-serif; color: var(--ink); background: #e9eaee; }
+  .sheet { width: 297mm; height: 210mm; margin: 8mm auto; padding: 10mm; background: #fff; box-shadow: 0 1px 6px rgba(0,0,0,.18); position: relative; overflow: hidden; }
   .bar { position: sticky; top: 0; z-index: 9; background: #16181d; color: #fff; padding: 8px 14px; display: flex; gap: 14px; align-items: center; font-size: 12px; }
   .bar button { font: inherit; padding: 4px 12px; border: 0; border-radius: 4px; background: #fff; color: #16181d; cursor: pointer; font-weight: 600; }
-  h1 { font-size: 30px; margin: 0 0 2px; letter-spacing: -.01em; }
-  h2 { font-size: 13px; margin: 0 0 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--ink2); }
-  .cover { display: flex; flex-direction: column; height: 269mm; }
-  .cover img { width: 100%; max-height: 132mm; object-fit: contain; border-radius: 3px; background: var(--soft); }
-  .sub { color: var(--ink2); margin: 0 0 14px; }
-  .facts { display: flex; gap: 26px; margin-top: auto; padding-top: 12px; border-top: 1px solid var(--line); }
-  .facts div b { display: block; font-size: 22px; line-height: 1.1; }
-  .facts div span { color: var(--ink2); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; }
-  .read { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 20px; margin-top: 6px; font-size: 12px; }
-  .read p { margin: 0 0 6px; }
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9mm 8mm; }
-  .step { margin: 0; break-inside: avoid; }
-  .shot { position: relative; border: 1px solid var(--line); border-radius: 3px; background: var(--soft); overflow: hidden; }
-  .shot img { display: block; width: 100%; }
-  .num { position: absolute; top: 0; left: 0; background: var(--ink); color: #fff; font-weight: 700; font-size: 15px; padding: 2px 9px; border-radius: 0 0 3px 0; }
-  .inv { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; margin-top: 5px; padding: 5px 7px; background: var(--soft); border-radius: 3px; }
+  /* ---- cover */
+  .cover { padding: 0; background: #fff url("${brickPattern()}") repeat; display: flex; flex-direction: column; }
+  .cover .top { display: flex; align-items: center; gap: 8mm; padding: 6mm 12mm 0; height: 34mm; }
+  .logo { width: 24mm; height: 24mm; background: var(--red); border-radius: 2.5mm; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 0 1.4mm #fff, inset 0 0 0 2.2mm var(--red); flex: none; }
+  .logo span { font: 900 7.8mm/1 "Arial Black", "Helvetica Neue", Arial, sans-serif; letter-spacing: -.02em; color: #fff; -webkit-text-stroke: .55mm #000; paint-order: stroke fill; text-shadow: 0 0 0 var(--yellow), 0 0 1.2mm var(--yellow); }
+  .theme { font: 900 17mm/1 "Arial Black", "Helvetica Neue", Arial, sans-serif; letter-spacing: -.03em; text-transform: uppercase; color: #111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .theme i { font-style: normal; color: var(--red); }
+  .setno { font: 700 6.5mm/1 "Helvetica Neue", Arial, sans-serif; margin-left: auto; align-self: flex-end; padding-bottom: 1mm; }
+  /* the models take 80 % of the page height: two perspective views side by side on the pale band, nothing else in the picture */
+  .hero { position: absolute; left: 0; right: 0; top: 34mm; bottom: 0; background: var(--band); display: flex; align-items: center; justify-content: center; gap: 4mm; padding: 0 10mm; }
+  .hero img { height: 168mm; max-width: 48%; object-fit: contain; }
+  .hero img:only-child { max-width: 80%; }
+  .cover .bottom { position: absolute; left: 12mm; right: 12mm; bottom: 9mm; display: flex; align-items: flex-end; gap: 6mm; }
+  .book { width: 13mm; height: 13mm; background: #fff; border: .5mm solid #888; display: flex; align-items: center; justify-content: center; font: 900 8mm/1 Arial, sans-serif; flex: none; }
+  .warn { border: .5mm solid #111; background: #fff; padding: 1.6mm 3mm; font-size: 11px; line-height: 1.25; }
+  .warn b { font-weight: 800; }
+  .facts { margin-left: auto; display: flex; gap: 6mm; background: #fff; border: .4mm solid #111; padding: 1.6mm 3mm; }
+  .facts div { text-align: center; }
+  .facts div b { display: block; font-size: 15px; line-height: 1.1; }
+  .facts div span { color: var(--ink2); font-size: 9px; letter-spacing: .06em; text-transform: uppercase; }
+  /* ---- steps */
+  .grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 4mm 8mm; height: 100%; }
+  .step { margin: 0; display: flex; flex-direction: column; min-height: 0; break-inside: avoid; }
+  .head { display: flex; align-items: flex-start; gap: 3mm; min-height: 15mm; }
+  .num { font: 900 9mm/1 "Arial Black", "Helvetica Neue", Arial, sans-serif; color: #111; padding-top: 1mm; min-width: 12mm; }
+  .inv { display: flex; flex-wrap: wrap; gap: 2px 9px; align-items: center; padding: 1.5mm 2.5mm; border: .4mm solid #111; border-radius: 1.5mm; background: #fff; max-width: 100%; }
   .pi { display: inline-flex; align-items: center; gap: 3px; }
+  .pi b { font-size: 13px; }
   .ic { vertical-align: middle; }
-  .bom { list-style: none; padding: 0; margin: 0; columns: 2; column-gap: 20px; }
-  .bom li { display: flex; align-items: center; gap: 8px; padding: 2px 0; break-inside: avoid; border-bottom: 1px solid var(--soft); }
+  .shot { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; background: #fff; }
+  .shot img { display: block; max-width: 100%; max-height: 100%; object-fit: contain; }
+  .miss { color: var(--ink2); }
+  .foot { position: absolute; left: 10mm; right: 10mm; bottom: 4mm; color: var(--ink2); font-size: 9px; display: flex; justify-content: space-between; }
+  .legend { color: var(--ink2); }
+  .legend em { display: inline-block; width: 9px; height: 9px; border-radius: 2px; vertical-align: -1px; margin: 0 2px 0 6px; }
+  /* ---- parts list */
+  h2 { font-size: 13px; margin: 0 0 6px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+  .bom { list-style: none; padding: 0; margin: 0; columns: 3; column-gap: 8mm; }
+  .bom li { display: flex; align-items: center; gap: 7px; padding: 2px 0; break-inside: avoid; border-bottom: 1px solid var(--soft); }
   .bn { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; color: var(--ink2); }
   .bn i { font-style: normal; opacity: .65; }
   .sw { display: inline-flex; gap: 1px; flex: none; }
-  .sw em { width: 7px; height: 11px; border-radius: 1px; display: block; }
-  .foot { margin-top: 8mm; padding-top: 4px; border-top: 1px solid var(--line); color: var(--ink2); font-size: 10px; display: flex; justify-content: space-between; }
-  .hot { color: var(--hot); font-weight: 600; }
+  .sw em { width: 6px; height: 10px; border-radius: 1px; display: block; border: 1px solid rgba(0,0,0,.15); }
   @media print {
     body { background: #fff; }
     .bar { display: none; }
-    .sheet { width: auto; min-height: 0; margin: 0; padding: 0; box-shadow: none; break-after: page; }
-    .cover { height: auto; min-height: 240mm; }
+    .sheet { width: 277mm; height: 190mm; margin: 0; padding: 0; box-shadow: none; break-after: page; overflow: visible; }
+    .cover { width: 297mm; height: 210mm; margin: -10mm; }
+    .foot { bottom: -6mm; left: 0; right: 0; }
     .sheet:last-child { break-after: auto; }
-    @page { size: A4 portrait; margin: 13mm; }
+    @page { size: A4 landscape; margin: 10mm; }
   }
 </style></head><body>
-<div class="bar"><b>${esc(title)}</b> building instructions &mdash; ${steps.length} steps, ${pages.length + 2} pages
+<div class="bar"><b>${esc(name)}</b> building instructions &mdash; ${steps.length} steps, ${pages.length + 2} pages
   <button onclick="window.print()">Print / Save as PDF</button></div>
 
 <section class="sheet cover">
-  <h1>${esc(title)}</h1>
-  <p class="sub">Building instructions &mdash; ${meta.pieces || 0} pieces, ${meta.levels || 0} layers, ${steps.length} steps</p>
-  ${cover ? `<img src="${cover}" alt="the finished model">` : ''}
-  <h2 style="margin-top:14px">How to read this booklet</h2>
-  <div class="read">
-    <p>Each picture shows the model <b>after</b> the step. The pieces that step adds are drawn in <span class="hot">red</span>; everything already built keeps its own colour.</p>
-    <p>Under each picture is that step's parts, with how many of each. Collect them first, then place them.</p>
-    <p>The build rises layer by layer, so a piece is always placed on top of what is already there. The view never turns.</p>
-    <p>The full parts list is on the last page. ${meta.weld ? 'Pieces marked as welds hold separate parts of the model together and may not follow the surface.' : ''}</p>
-  </div>
-  <div class="facts">
-    <div><b>${meta.pieces || 0}</b><span>pieces</span></div>
-    <div><b>${bom.length}</b><span>different parts</span></div>
-    <div><b>${meta.levels || 0}</b><span>layers</span></div>
-    <div><b>${steps.length}</b><span>steps</span></div>
-    ${meta.studs ? `<div><b>${meta.studs}</b><span>studs across</span></div>` : ''}
+  <div class="top"><div class="logo"><span>${esc(brand)}</span></div><div class="theme">${esc(name)}</div><div class="setno">${setNo}</div></div>
+  <div class="hero">${covers.map((c, k) => `<img src="${c}" alt="the finished model${covers.length > 1 ? (k ? ', from the right' : ', from the left') : ''}">`).join('')}</div>
+  <div class="bottom">
+    <div class="book">1</div>
+    <div class="warn">&#9888; <b>WARNING: CHOKING HAZARD.</b> Toy contains small parts.<br>Not for children under 3 years.</div>
+    <div class="facts">
+      <div><b>${meta.pieces || 0}</b><span>pieces</span></div>
+      <div><b>${bom.length}</b><span>parts</span></div>
+      <div><b>${meta.levels || 0}</b><span>layers</span></div>
+      <div><b>${steps.length}</b><span>steps</span></div>
+      ${meta.studs ? `<div><b>${meta.studs}</b><span>studs</span></div>` : ''}
+    </div>
   </div>
 </section>
 
 ${pages.map((pg, k) => `<section class="sheet"><div class="grid">${pg.map(stepCard).join('')}</div>
-  <div class="foot"><span>${esc(title)}</span><span>page ${k + 1} of ${pages.length}</span></div></section>`).join('\n')}
+  <div class="foot"><span>${esc(name)} &middot; ${setNo}</span><span class="legend">new pieces in colour<em style="background:#acacac"></em>already built${meta.weld ? ' &middot; weld plates hold separate parts together and may not follow the surface' : ''}</span><span>${k + 1} / ${pages.length}</span></div></section>`).join('\n')}
 
-<section class="sheet"><h2>Parts list &mdash; ${meta.pieces || 0} pieces</h2>
+<section class="sheet"><h2>Parts list &mdash; ${meta.pieces || 0} pieces, ${bom.length} different parts</h2>
   <ul class="bom">${bom.map(bomRow).join('')}</ul>
-  <div class="foot"><span>${esc(title)}</span><span>parts list</span></div></section>
+  <div class="foot"><span>${esc(name)} &middot; ${setNo}</span><span>parts list</span></div></section>
 </body></html>`;
 }
