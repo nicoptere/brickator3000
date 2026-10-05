@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ConfigProvider, App as AntApp, Select, Input, Button, Upload, Typography, Tag, Divider, Slider, Radio, Checkbox, Progress, Drawer, Modal, Table, Tooltip, Switch, Tabs, Collapse, Alert, Tree, Segmented, theme as antTheme } from 'antd';
 import { UploadOutlined, SearchOutlined, ThunderboltOutlined, DownloadOutlined, EyeOutlined, CheckCircleOutlined, AppstoreOutlined, MenuFoldOutlined, MenuUnfoldOutlined,
   DownOutlined, RightOutlined, CaretRightOutlined, PauseOutlined, StepBackwardOutlined, StepForwardOutlined, SoundOutlined, AudioMutedOutlined, AimOutlined,
-  SettingOutlined, StopOutlined, CameraOutlined, SyncOutlined, ReloadOutlined, BulbOutlined, BulbFilled, DeleteOutlined, UndoOutlined, CloseOutlined, ScissorOutlined, ExperimentOutlined } from '@ant-design/icons';
+  SettingOutlined, StopOutlined, CameraOutlined, SyncOutlined, ReloadOutlined, BulbOutlined, BulbFilled, DeleteOutlined, UndoOutlined, CloseOutlined, ScissorOutlined, ExperimentOutlined, ReadOutlined, SelectOutlined, ClearOutlined, SwapOutlined } from '@ant-design/icons';
 import './studio.css';
 import { StudioViewport } from './studio/viewport3d.js';
 import { sfx } from './studio/sfx.js';
@@ -14,6 +14,7 @@ import { runMethod, cancel, chooseStuds, poolSize } from './engine.js';
 import { DEFAULTS, CATALOG, FULL_CATALOG, catalogFor } from './brickgen/pipeline.js';
 import { buildMesh, toGLB, toLDR, KIND_COL } from './brickgen/export.js';
 import { snapToPalette } from './brickgen/colors.js';
+import { planSteps, stepParts, billOfMaterials, bookletHTML } from './brickgen/instructions.js';
 import { SCHEMA } from './schema.js';
 import { FEATURES, FEATURE_GROUPS, featureState, featurePatch } from './presets.js';
 import { Field } from './fields.jsx';
@@ -41,7 +42,7 @@ function Section({ title, open, setOpen, color = 'var(--tx)', children }) {
 // the panel-2 switches: the high-level feature groups (presets.js) a model's look actually depends on. Everything else -
 // every individual option behind them - is in the "All parameters" drawer, which shows the same groups at the top.
 const SOURCE_FEATURES = ['symmetry'].map((k) => FEATURES.find((f) => f.key === k));   // a property of the mesh, so it sits with the model
-const PANEL_FEATURES = ['discs', 'curves', 'motifs', 'snot', 'crust', 'connect', 'supports', 'finish'];
+const PANEL_FEATURES = ['discs', 'curves', 'motifs', 'snot', 'crust', 'connect', 'weld', 'supports', 'finish'];
 const STUDIO_FEATURES = PANEL_FEATURES.map((k) => FEATURES.find((f) => f.key === k)).filter(Boolean);
 // the kinds of the measured LDraw shapes (catalog_shapes.js) that `shapeSolo` can let compete as single parts
 const SHAPE_KINDS = [['round', 'round plates, discs, cones'], ['curved', 'curved tops'], ['shaped', 'arches, panels, wedges'],
@@ -126,17 +127,20 @@ function StudioInner() {
   const [openSrc, setOpenSrc] = useState(true), [openCfg, setOpenCfg] = useState(true), [openRes, setOpenRes] = useState(true), [openRender, setOpenRender] = useState(true), [openReplay, setOpenReplay] = useState(true), [openExport, setOpenExport] = useState(true);
   const [advanced, setAdvanced] = useState(false), [partsOpen, setPartsOpen] = useState(false);
   const [autoBusy, setAutoBusy] = useState(false), [autoRes, setAutoRes] = useState(null);
+  const [bookBusy, setBookBusy] = useState(false);
+  const [selMode, setSelMode] = useState(false), [selCount, setSelCount] = useState(0);
   useEffect(() => { vp.current && vp.current.setTheme(dark); }, [dark]);
   const prevRes = useRef(null);
-  /** cell wave over the coloured source mesh (shown first: model colours, mesh view); also replayed when the same resolution is clicked again */
-  const wave = (studs = opts.studs, ref = opts.ref) => {
+  /** white hollow cubes over the source mesh (shown on resolution change) */
+  const previewResolution = (studs = opts.studs, ref = opts.ref, immediate = false) => {
     if (!vp.current || !model) return;
     setViewMode('mesh'); vp.current.setMode('mesh'); setColorMode('piece'); vp.current.setColorMode('piece');
-    vp.current.voxelPreview(studs, ref);
+    vp.current.hollowPreview(studs, ref, immediate);
   };
-  useEffect(() => {                                           // voxel preview of the grid unit whenever the resolution changes
+  const wave = previewResolution;
+  useEffect(() => {                                           // hollow cubes preview of the grid unit whenever the resolution changes
     const k = `${opts.studs}|${opts.ref}`, first = prevRes.current === null; prevRes.current = k;
-    if (!first) wave(opts.studs, opts.ref);
+    if (!first) previewResolution(opts.studs, opts.ref);
   }, [opts.studs, opts.ref]); // eslint-disable-line
   const stepRef = useRef(0); stepRef.current = step;
 
@@ -156,7 +160,7 @@ function StudioInner() {
     sfx.click(); setAutoBusy(true);
     try {
       const a = await chooseStuds({ tris: model.tris, vcols: model.vcols }, opts);
-      setAutoRes(a); setOpt('studs', a.studs); wave(a.studs);
+      setAutoRes(a); setOpt('studs', a.studs); previewResolution(a.studs, opts.ref, true);
       message.success(`${a.studs} studs: ${{ lattice: 'the best fit to the lattice nearby', budget: 'as far as the piece budget reaches', detail: 'as fine as the curvature asks for' }[a.chosen] || a.chosen}`);
     } catch (e) { sfx.error(); message.error(String(e.message || e)); }
     setAutoBusy(false);
@@ -441,11 +445,58 @@ function StudioInner() {
     }
     setBusy(false);
   }
-  const stop = () => { cancellingRef.current = true; cancel(); vp.current && vp.current.clearVoxels(); setBusy(false); setStage(['', 0]); sfx.click(); };
+  const stop = () => { cancellingRef.current = true; cancel(); vp.current && (vp.current.clearVoxels(), vp.current.clearHollowCubes()); setBusy(false); setStage(['', 0]); sfx.click(); };
 
   const base = model ? model.name.replace(/\.[^.]+$/, '') + '_' + opts.studs : 'model';
   const exportLDR = () => download(toLDR(res.pieces, FULL_CATALOG, base), base + '.ldr', 'text/plain');
   const exportGLB = (mode) => { const m = buildMesh(res.pieces, FULL_CATALOG, mode); download(toGLB(m), base + (mode === 'kind' ? '_kinds' : '') + '.glb', 'model/gltf-binary'); };
+  /**
+   * The building booklet (brickgen/instructions.js): the steps are planned on the viewport's own piece list - which setLego
+   * sorted by level, so the order is already the build order - and each one is captured from the viewport with its new pieces
+   * highlighted, the camera fixed. Light theme and outlines on while capturing, since the booklet is for paper.
+   */
+  /** select mode: the left button draws a marquee over the bricks instead of orbiting (viewport3d.setSelectMode) */
+  const toggleSelect = (on) => {
+    const vpc = vp.current; if (!vpc) return;
+    sfx.click(); setSelMode(on); vpc.onSelectionChange = setSelCount; vpc.setSelectMode(on);
+    if (!on) setSelCount(vpc.clearSelection());
+  };
+  useEffect(() => {                                                   // Ctrl+I inverts while select mode is on
+    if (!selMode) return;
+    const f = (e) => { if ((e.ctrlKey || e.metaKey) && (e.key === 'i' || e.key === 'I')) { e.preventDefault(); setSelCount(vp.current.invertSelection()); } };
+    window.addEventListener('keydown', f); return () => window.removeEventListener('keydown', f);
+  }, [selMode]);
+
+  const exportBooklet = async () => {
+    const vpc = vp.current; if (!res || !vpc || !vpc.pieces) return;
+    sfx.click(); setBookBusy(true); setStage(['Drawing the instructions', 0]);
+    const P = vpc.pieces, cat = FULL_CATALOG, by = {}; for (const c of cat) by[c.id] = c;
+    const wasDark = dark, wasMode = viewMode, wasOutline = outline, wasLevel = step;
+    try {
+      const { steps } = planSteps(P, opts);
+      vpc.setTheme(false); vpc.setMode('lego'); vpc.setOutline(true); vpc.paused = true;
+      vpc.setAllStuds(true);                                                     // a plate must show its studs even in the steps before something covers them
+      const all = new Uint8Array(P.length).fill(1);
+      vpc.showStep(all, null);
+      const cover = vpc.capture(1100, { quality: 0.9, rect: vpc.modelRect(4 / 3, 0.1) });   // the finished model, perspective, from the user's own view
+      const rect = vpc.modelRect(4 / 3);                                         // one frame for every step: the model never moves or changes size
+      const shown = new Uint8Array(P.length), hot = new Uint8Array(P.length), images = [];
+      for (let k = 0; k < steps.length; k++) {
+        hot.fill(0); for (const n of steps[k].idx) { shown[n] = 1; hot[n] = 1; }
+        vpc.showStep(shown, hot); images.push(vpc.capture(680, { rect }));
+        if (k % 4 === 0) { setStage(['Drawing the instructions', k / steps.length]); await new Promise((r) => setTimeout(r)); }
+      }
+      const withParts = steps.map((s) => ({ ...s, parts: stepParts(P, s.idx, by) }));
+      const html = bookletHTML({ title: base, cover, steps: withParts, images, bom: billOfMaterials(P, by),
+        meta: { pieces: P.length, levels: Math.max(...P.map((p) => p.b + p.h)), studs: res.options.studs, weld: !!(res.post && res.post.weld && res.post.weld.added) } });
+      download(html, base + '_instructions.html', 'text/html');
+      message.success(`${steps.length} steps on ${Math.ceil(steps.length / 4) + 2} pages - open it and print to PDF`);
+    } catch (e) { sfx.error(); message.error(String(e.message || e)); console.error(e); }
+    vpc.setAllStuds(false);
+    vpc.paused = false; vpc.setTheme(wasDark); vpc.setOutline(wasOutline); vpc.setColorMode(colorMode); vpc.setMode(wasMode); vpc.setLevel(wasLevel >= maxLevelRef.current ? Infinity : wasLevel, false);
+    setBookBusy(false); setStage(['', 0]);
+  };
+
   const exportJSON = () => download(JSON.stringify({ model: model.name, options: res.options, metrics: res.metrics, post: res.post, islands: res.islands, symmetry: res.symmetry, timing: res.timing, dims: res.dims, pieces: res.pieces }, null, 1), base + '_report.json', 'application/json');
   const save = (url) => { const a = document.createElement('a'); a.href = url; a.download = base + '.png'; a.click(); };
   const ptJob = useRef(null), ptHost = useRef(null);
@@ -671,12 +722,12 @@ function StudioInner() {
                   <Button size="small" type="dashed" icon={<ExperimentOutlined />} loading={autoBusy} disabled={!model || busy}
                     onClick={findStuds} style={{ marginLeft: 'auto' }}>Auto</Button>
                 </Tooltip></div>
-              <Slider min={4} max={64} step={1} value={Math.min(64, opts.studs)} onChange={setStuds} onChangeComplete={(v) => wave(v)} marks={{ 4: '4', 16: '16', 32: '32', 48: '48', 64: '64' }} />
+              <Slider min={4} max={64} step={1} value={Math.min(64, opts.studs)} onChange={setStuds} onChangeComplete={(v) => previewResolution(v, opts.ref, true)} marks={{ 4: '4', 16: '16', 32: '32', 48: '48', 64: '64' }} />
               <div className="presets">
-                {[8, 12, 16, 24, 32, 48, 64].map((v) => <Button key={v} size="small" type={opts.studs === v ? 'primary' : 'default'} onClick={() => { sfx.click(); setStuds(v); wave(v); }}>{v}</Button>)}
+                {[8, 12, 16, 24, 32, 48, 64].map((v) => <Button key={v} size="small" type={opts.studs === v ? 'primary' : 'default'} onClick={() => { sfx.click(); setStuds(v); previewResolution(v, opts.ref, true); }}>{v}</Button>)}
               </div>
               <div className="refrow"><span>studs along the</span>
-                <Select size="small" value={opts.ref} onChange={(v) => setOpt('ref', v)} style={{ flex: 1 }}
+                <Select size="small" value={opts.ref} onChange={(v) => { setOpt('ref', v); previewResolution(opts.studs, v, true); }} style={{ flex: 1 }}
                   options={[{ value: 'min3', label: 'smallest side of the box' }, { value: 'maxh', label: 'longest side of the box' }]} /></div>
               {autoRes && (
                 <Tooltip title={`piece budget ${autoRes.budget.studs} studs (pieces grow as N^${autoRes.budget.exp} on this mesh)` +
@@ -805,6 +856,9 @@ function StudioInner() {
               <Button size="small" icon={<CameraOutlined />} disabled={!model} onClick={png}>snapshot .png</Button>
               <Select size="small" value={snapSpp} onChange={setSnapSpp} options={[64, 128, 256, 512, 1024].map((v) => ({ value: v, label: `${v} spp` }))} />
               <Button size="small" icon={<AppstoreOutlined />} onClick={() => { sfx.click(); setPartsOpen(true); }}>Parts list</Button>
+              <Tooltip title="A printable building booklet: a perspective cover, then one picture per step with the pieces it adds drawn in red and listed under it, and the full parts list at the end. Opens as an HTML file; print it to PDF from the browser.">
+                <Button size="small" icon={<ReadOutlined />} disabled={!res} loading={bookBusy} onClick={exportBooklet}>instructions</Button>
+              </Tooltip>
             </div>
           </Section>
         </div>
@@ -815,6 +869,16 @@ function StudioInner() {
         <div className="tools">
           <Tooltip title={sound ? 'Sound on' : 'Sound off'}><Button size="small" type="text" icon={sound ? <SoundOutlined /> : <AudioMutedOutlined />} onClick={() => { const v = !sound; setSound(v); sfx.setOn(v); }} /></Tooltip>
           <Tooltip title="Auto-rotate"><Button size="small" type={rotate ? 'primary' : 'text'} icon={<SyncOutlined />} onClick={() => { setRotate(!rotate); vp.current.setAutoRotate(!rotate); }} /></Tooltip>
+          {res && viewMode !== 'mesh' && (
+            <>
+              <Tooltip title={selMode ? 'Leave select mode' : 'Select bricks: drag a box. Ctrl / Shift-drag adds, Alt-drag removes, Ctrl+I inverts, double-click clears.'}>
+                <Button size="small" type={selMode ? 'primary' : 'text'} icon={<SelectOutlined />} onClick={() => toggleSelect(!selMode)} />
+              </Tooltip>
+              {selMode && <span className="selinfo">{selCount ? `${selCount} selected` : 'drag to select'}</span>}
+              {selMode && selCount > 0 && <Tooltip title="Invert (Ctrl+I)"><Button size="small" type="text" icon={<SwapOutlined />} onClick={() => setSelCount(vp.current.invertSelection())} /></Tooltip>}
+              {selMode && selCount > 0 && <Tooltip title="Clear (double-click)"><Button size="small" type="text" icon={<ClearOutlined />} onClick={() => setSelCount(vp.current.clearSelection())} /></Tooltip>}
+            </>
+          )}
           <Tooltip title="Reset view"><Button size="small" type="text" icon={<AimOutlined />} onClick={() => vp.current.frame()} /></Tooltip>
           <Tooltip title="Snapshot"><Button size="small" type="text" icon={<CameraOutlined />} onClick={png} disabled={!model} /></Tooltip>
           <Tooltip title={dark ? 'Light theme' : 'Dark theme'}><Button size="small" type="text" icon={dark ? <BulbOutlined /> : <BulbFilled />} onClick={toggleTheme} /></Tooltip>

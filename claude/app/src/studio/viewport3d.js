@@ -48,6 +48,7 @@ export class StudioViewport {
     this.cycloSize = 20; this.maxCam = 80;
 
     this.world = new THREE.Group(); this.world.scale.setScalar(S); this.scene.add(this.world);   // everything inside is in LDU
+    this.buildGizmo();
     this.src = new THREE.Group(); this.lego = new THREE.Group(); this.world.add(this.src, this.lego);
     this.gradient = toonGradient(4);
     this.toon = new THREE.MeshToonMaterial({ gradientMap: this.gradient, color: 0xffffff, side: THREE.DoubleSide });
@@ -63,17 +64,31 @@ export class StudioViewport {
     this.mode = 'lego'; this.outline = true; this.colorMode = 'piece'; this.active = new Map(); this.pieces = null; this.revealed = 0; this.W = 20 * 16; this.D = 20 * 16; this.H = 0;
     this.ray = new THREE.Raycaster(); this.mouse = new THREE.Vector2();
     this.islandLabels = null; this.selectedIsland = null; this.onSelectIsland = null;
+    this.hollow = null; this.hollowTimer = null;
+    this.selectMode = false; this.sel = null; this.onSelectionChange = null;
     let downPos = null;
     const dom = this.renderer.domElement;
-    dom.addEventListener('pointerdown', (e) => { downPos = { x: e.clientX, y: e.clientY, t: performance.now() }; });
+    const local = (e) => { const r = dom.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+    dom.addEventListener('pointerdown', (e) => {
+      downPos = { x: e.clientX, y: e.clientY, t: performance.now() };
+      const [px, py] = local(e);
+      if (e.button === 0 && this.gizmoClick(px, py)) { downPos = null; return; }     // the corner gizmo takes the click first
+      if (e.button === 0 && this.selectMode) { dom.setPointerCapture(e.pointerId); this.beginMarquee(px, py); }
+    });
     dom.addEventListener('pointerup', (e) => {
+      if (this._mq) {
+        const mode = e.ctrlKey || e.metaKey || e.shiftKey ? 'add' : e.altKey ? 'sub' : 'set';
+        const n = this.endMarquee(mode); this.onSelectionChange && this.onSelectionChange(n);
+        downPos = null; return;
+      }
       if (!downPos) return;
       const dist = Math.hypot(e.clientX - downPos.x, e.clientY - downPos.y), dt = performance.now() - downPos.t;
       downPos = null;
       if (dist > 5 || dt > 450) return;
       this.handlePointerClick(e);
     });
-    dom.addEventListener('pointermove', (e) => this.handlePointerHover(e));
+    dom.addEventListener('dblclick', () => { if (this.selectMode) { const n = this.clearSelection(); this.onSelectionChange && this.onSelectionChange(n); } });
+    dom.addEventListener('pointermove', (e) => { if (this._mq) { const [px, py] = local(e); this.moveMarquee(px, py); return; } this.handlePointerHover(e); });
     this.ro = new ResizeObserver(() => this.resize()); this.ro.observe(el); this.resize();
     this.frames = 0; this.t0 = performance.now(); this.fps = 0;
     this.loop = this.loop.bind(this); this.raf = requestAnimationFrame(this.loop);
@@ -112,15 +127,15 @@ export class StudioViewport {
     this.cyclo.material.color.set(dark ? 0x2b303b : 0xd9dde5);
   }
   resize() { const w = this.el.clientWidth || 1, h = this.el.clientHeight || 1; this.renderer.setSize(w, h); this.camera.aspect = w / h; this.camera.updateProjectionMatrix(); }
-  dispose() { cancelAnimationFrame(this.raf); this.ro.disconnect(); this.clearLego(); this.clearGroup(this.src); this.renderer.dispose(); this.el.innerHTML = ''; this.studMat && this.studMat.dispose(); }
+  dispose() { cancelAnimationFrame(this.raf); this.ro.disconnect(); this.clearLego(); this.clearGroup(this.src); this.clearVoxels(); this.clearHollowCubes(); this.renderer.dispose(); this.el.innerHTML = ''; this.studMat && this.studMat.dispose(); }
   clearGroup(g) { for (const c of [...g.children]) { g.remove(c); c.geometry && c.geometry.dispose(); if (c.material && c.material !== this.toon && c.material !== this.studMat && c.material !== this.hullMat) c.material.dispose(); } }
 
   loop(now) {
     this.raf = requestAnimationFrame(this.loop);
     this.controls.update();
     if (this.camera.position.y < 0.25) { this.camera.position.y = 0.25; }          // always above the ground
-    this.stepAnimations(now); this.stepVoxels(now);
-    if (!this.paused) this.renderer.render(this.scene, this.camera);
+    this.stepAnimations(now); this.stepVoxels(now); this.stepHollowCubes(now);
+    if (!this.paused) { this.renderer.render(this.scene, this.camera); this.renderGizmo(); }
   }
 
   // ------------------------------------------------------------- source mesh
@@ -149,7 +164,7 @@ export class StudioViewport {
       this.W = (hi[0] - lo[0]) * k; this.D = (hi[2] - lo[2]) * k; this.H = (hi[1] - lo[1]) * k;
       this.clearLego(); this.lego.position.set(0, 0, 0);
     }
-    this.srcPos = t; this.clearVoxels();
+    this.srcPos = t; this.clearVoxels(); this.clearHollowCubes();
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.BufferAttribute(t, 3)); g.setAttribute('color', new THREE.BufferAttribute(Float32Array.from(cols), 3)); g.computeVertexNormals();
     this.srcCols = cols;
@@ -163,11 +178,37 @@ export class StudioViewport {
   }
 
 
-  // ------------------------------------------------------------- voxel preview (resolution feedback)
+  // ------------------------------------------------------------- voxel preview & hollow cubes (resolution feedback)
+  computeGridCells(studs, ref = 'min3') {
+    const t = this.srcPos; if (!t || !t.length) return null;
+    const lo = [Infinity, Infinity, Infinity], hi = [-Infinity, -Infinity, -Infinity];
+    for (let k = 0; k < t.length; k += 3) for (let a = 0; a < 3; a++) { const v = t[k + a]; if (v < lo[a]) lo[a] = v; if (v > hi[a]) hi[a] = v; }
+    const ext = [hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]];
+    const base = ref === 'min3' ? Math.min(...ext) : Math.max(ext[0], ext[2]);
+    const u = base / studs, uy = u * (3 * PLATE) / STUD;                                  // cell footprint = 1 stud, height = 1 brick
+    const nx = Math.ceil(ext[0] / u) + 1, ny = Math.ceil(ext[1] / uy) + 1, nz = Math.ceil(ext[2] / u) + 1;
+    const set = new Set(), mark = (x, y, z) => {
+      const i = Math.min(nx - 1, Math.floor((x - lo[0]) / u)), j = Math.min(ny - 1, Math.floor((y - lo[1]) / uy)), k = Math.min(nz - 1, Math.floor((z - lo[2]) / u));
+      set.add((i * ny + j) * nz + k);
+    };
+    for (let k = 0; k < t.length; k += 9) {                                               // dense barycentric sampling of every triangle
+      const ax = t[k], ay = t[k + 1], az = t[k + 2], bx = t[k + 3], by = t[k + 4], bz = t[k + 5], cx = t[k + 6], cy = t[k + 7], cz = t[k + 8];
+      const L = Math.max(Math.hypot(bx - ax, by - ay, bz - az), Math.hypot(cx - ax, cy - ay, cz - az), Math.hypot(cx - bx, cy - by, cz - bz));
+      const n = Math.min(60, Math.max(1, Math.ceil(L / (Math.min(u, uy) * 0.5))));
+      for (let i = 0; i <= n; i++) for (let j = 0; j <= n - i; j++) {
+        const a = i / n, b = j / n, c = 1 - a - b;
+        mark(ax * c + bx * a + cx * b, ay * c + by * a + cy * b, az * c + bz * a + cz * b);
+      }
+      if (set.size > 60000) break;
+    }
+    return { set, lo, hi, u, uy, nx, ny, nz };
+  }
+
   /** white blocks of one grid unit (1 stud x 1 brick x 1 stud) covering the source surface at `studs` resolution; they grow from the centre in a wave, hold, then shrink away in the same wave */
   voxelPreview(studs, ref = 'min3', repeat = false, immediate = false) {
     const t = this.srcPos; if (!t || !t.length) return Promise.resolve();
     clearTimeout(this.voxTimer);
+    this.clearHollowCubes();
     if (this.vox && this.vox.resolve) { const cb = this.vox.resolve; this.vox.resolve = null; cb(); }
     return new Promise((resolve) => {
       if (immediate || repeat) {
@@ -189,29 +230,12 @@ export class StudioViewport {
     }
   }
   buildVoxels(studs, ref, repeat = false, onDone = null) {
-    const t = this.srcPos; if (!t) { onDone && onDone(); return; }
-    const lo = [Infinity, Infinity, Infinity], hi = [-Infinity, -Infinity, -Infinity];
-    for (let k = 0; k < t.length; k += 3) for (let a = 0; a < 3; a++) { const v = t[k + a]; if (v < lo[a]) lo[a] = v; if (v > hi[a]) hi[a] = v; }
-    const ext = [hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]];
-    const base = ref === 'min3' ? Math.min(...ext) : Math.max(ext[0], ext[2]);
-    const u = base / studs, uy = u * (3 * PLATE) / STUD;                                  // cell footprint = 1 stud, height = 1 brick
-    const nx = Math.ceil(ext[0] / u) + 1, ny = Math.ceil(ext[1] / uy) + 1, nz = Math.ceil(ext[2] / u) + 1;
-    const set = new Set(), mark = (x, y, z) => {
-      const i = Math.min(nx - 1, Math.floor((x - lo[0]) / u)), j = Math.min(ny - 1, Math.floor((y - lo[1]) / uy)), k = Math.min(nz - 1, Math.floor((z - lo[2]) / u));
-      set.add((i * ny + j) * nz + k);
-    };
-    for (let k = 0; k < t.length; k += 9) {                                               // dense barycentric sampling of every triangle
-      const ax = t[k], ay = t[k + 1], az = t[k + 2], bx = t[k + 3], by = t[k + 4], bz = t[k + 5], cx = t[k + 6], cy = t[k + 7], cz = t[k + 8];
-      const L = Math.max(Math.hypot(bx - ax, by - ay, bz - az), Math.hypot(cx - ax, cy - ay, cz - az), Math.hypot(cx - bx, cy - by, cz - bz));
-      const n = Math.min(60, Math.max(1, Math.ceil(L / (Math.min(u, uy) * 0.5))));
-      for (let i = 0; i <= n; i++) for (let j = 0; j <= n - i; j++) {
-        const a = i / n, b = j / n, c = 1 - a - b;
-        mark(ax * c + bx * a + cx * b, ay * c + by * a + cy * b, az * c + bz * a + cz * b);
-      }
-      if (set.size > 60000) break;
-    }
+    this.clearHollowCubes();
+    const g = this.computeGridCells(studs, ref);
+    if (!g || !g.set.size) { onDone && onDone(); return; }
+    const { set, lo, hi, u, uy, nx, ny, nz } = g;
     this.clearVoxels();
-    const N = set.size; if (!N) { onDone && onDone(); return; }
+    const N = set.size;
     const geo = new THREE.BoxGeometry(u, uy, u);
     const mat = new THREE.MeshToonMaterial({ gradientMap: this.gradient, color: 0xffffff, side: THREE.DoubleSide });
     const mesh = new THREE.InstancedMesh(geo, mat, N); mesh.castShadow = true; mesh.receiveShadow = true; mesh.frustumCulled = false;
@@ -254,17 +278,122 @@ export class StudioViewport {
     mesh.instanceMatrix.needsUpdate = true;
   }
 
+  // ------------------------------------------------------------- white hollow cubes (resolution setting change)
+  hollowPreview(studs, ref = 'min3', immediate = false) {
+    const t = this.srcPos; if (!t || !t.length) return;
+    clearTimeout(this.hollowTimer);
+    if (immediate) {
+      this.buildHollowCubes(studs, ref);
+    } else {
+      this.hollowTimer = setTimeout(() => this.buildHollowCubes(studs, ref), 35);
+    }
+  }
+  clearHollowCubes() {
+    clearTimeout(this.hollowTimer);
+    if (this.hollow) {
+      this.world.remove(this.hollow.mesh);
+      this.hollow.geo.dispose();
+      this.hollow.mat.dispose();
+      this.hollow = null;
+    }
+  }
+  buildHollowCubes(studs, ref = 'min3') {
+    this.clearVoxels();
+    this.clearHollowCubes();
+    const g = this.computeGridCells(studs, ref);
+    if (!g || !g.set.size) return;
+    const { set, lo, u, uy, nx, ny, nz } = g;
+
+    const S_k = nz + 2;
+    const S_j = (ny + 2) * S_k;
+    const S_i = (nx + 2) * S_j;
+    const edgesSet = new Set();
+
+    for (const key of set) {
+      const k = key % nz, j = Math.floor(key / nz) % ny, i = Math.floor(key / (nz * ny));
+      // 4 edges along X (dir = 0)
+      edgesSet.add(0 * S_i + i * S_j + j * S_k + k);
+      edgesSet.add(0 * S_i + i * S_j + (j + 1) * S_k + k);
+      edgesSet.add(0 * S_i + i * S_j + j * S_k + (k + 1));
+      edgesSet.add(0 * S_i + i * S_j + (j + 1) * S_k + (k + 1));
+
+      // 4 edges along Y (dir = 1)
+      edgesSet.add(1 * S_i + i * S_j + j * S_k + k);
+      edgesSet.add(1 * S_i + (i + 1) * S_j + j * S_k + k);
+      edgesSet.add(1 * S_i + i * S_j + j * S_k + (k + 1));
+      edgesSet.add(1 * S_i + (i + 1) * S_j + j * S_k + (k + 1));
+
+      // 4 edges along Z (dir = 2)
+      edgesSet.add(2 * S_i + i * S_j + j * S_k + k);
+      edgesSet.add(2 * S_i + (i + 1) * S_j + j * S_k + k);
+      edgesSet.add(2 * S_i + i * S_j + (j + 1) * S_k + k);
+      edgesSet.add(2 * S_i + (i + 1) * S_j + (j + 1) * S_k + k);
+    }
+
+    const numEdges = edgesSet.size;
+    const positions = new Float32Array(numEdges * 6);
+    let ptr = 0;
+    for (const edgeKey of edgesSet) {
+      const gk = edgeKey % S_k;
+      const gj = Math.floor(edgeKey / S_k) % (ny + 2);
+      const gi = Math.floor(edgeKey / S_j) % (nx + 2);
+      const dir = Math.floor(edgeKey / S_i);
+
+      const x0 = lo[0] + gi * u;
+      const y0 = lo[1] + gj * uy;
+      const z0 = lo[2] + gk * u;
+
+      positions[ptr++] = x0;
+      positions[ptr++] = y0;
+      positions[ptr++] = z0;
+      positions[ptr++] = dir === 0 ? x0 + u : x0;
+      positions[ptr++] = dir === 1 ? y0 + uy : y0;
+      positions[ptr++] = dir === 2 ? z0 + u : z0;
+    }
+
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    const mat = new THREE.LineBasicMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: 1.0,
+      depthTest: true,
+      depthWrite: false,
+      side: THREE.DoubleSide,
+    });
+    const mesh = new THREE.LineSegments(geo, mat);
+    mesh.frustumCulled = false;
+    this.world.add(mesh);
+    this.hollow = { mesh, mat, geo, t0: performance.now(), hold: 1000, fade: 350 };
+  }
+  stepHollowCubes(now) {
+    const h = this.hollow; if (!h) return;
+    const dt = now - h.t0;
+    if (dt < h.hold) {
+      h.mat.opacity = 1.0;
+    } else if (dt < h.hold + h.fade) {
+      const f = (dt - h.hold) / h.fade;
+      h.mat.opacity = Math.max(0, 1.0 - f);
+    } else {
+      this.clearHollowCubes();
+    }
+  }
+
   // ------------------------------------------------------------- LEGO (instanced)
   clearLego() { this.clearGroup(this.lego); this.groups = []; this.hulls = []; this.active.clear(); this.pieces = null; this.pe = null; this.revealed = 0; }
 
   setLego(pieces, cat, dims) {
     this.clearLego();
+    this._lego = { pieces, cat, dims };
     const by = {}; for (const c of cat) by[c.id] = c;
     const P = pieces.map((p, n) => ({ p, n })).sort((a, b) => a.p.b - b.p.b || a.n - b.n).map((x) => x.p);
     this.pieces = P; this.levels = P.length ? Math.max(...P.map((p) => p.b + p.h)) : 0;
     this.W = dims[0] * STUD; this.D = dims[1] * STUD; this.H = dims[2] * PLATE;
+    // Studs covered by the piece above are normally left out of the geometry. For the instruction booklet they must exist: a
+    // plate whose studs are only covered LATER would otherwise be drawn bare in the early steps and read as a tile.
+    // Keeping them costs nothing visually - a covered stud sits inside the brick above it.
     const occ = new Set();
-    for (const p of P) for (let dz = 0; dz < p.d; dz++) for (let dx = 0; dx < p.w; dx++) for (let l = 0; l < p.h; l++) occ.add(`${p.i + dx},${p.j + dz},${p.b + l}`);
+    if (!this.allStuds) for (const p of P) for (let dz = 0; dz < p.d; dz++) for (let dx = 0; dx < p.w; dx++) for (let l = 0; l < p.h; l++) occ.add(`${p.i + dx},${p.j + dz},${p.b + l}`);
     const buckets = new Map(), studs = [];
     P.forEach((p, n) => {
       const key = `${p.id}|${p.rot}`; let b = buckets.get(key);
@@ -289,6 +418,7 @@ export class StudioViewport {
       mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage); this.lego.add(mesh); this.groups.push(mesh); this.addHull(mesh);
     }
     this.vis = new Uint8Array(P.length).fill(1); this.revealed = P.length;
+    this.sel = new Uint8Array(P.length);
     this.setColorMode(this.colorMode);
     this.setOutline(this.outline);
     this.applyMode();
@@ -454,4 +584,215 @@ export class StudioViewport {
 
   visiblePieces() { return this.pieces ? this.pieces.filter((_, n) => this.vis[n]) : []; }
   snapshot() { this.renderer.render(this.scene, this.camera); return this.renderer.domElement.toDataURL('image/png'); }
+
+  // ------------------------------------------------------------- axis gizmo + marquee selection
+  /**
+   * The corner gizmo: three labelled axes in their own little scene, drawn over the top-right of the viewport after the model
+   * and turning with the camera (Blender's navigation cube in its simplest useful form). Clicking an arm looks down that axis.
+   */
+  buildGizmo() {
+    const scene = new THREE.Scene(), cam = new THREE.OrthographicCamera(-1.7, 1.7, 1.7, -1.7, 0.01, 20);
+    cam.position.set(0, 0, 6);
+    const label = (txt, color) => {
+      const c = document.createElement('canvas'); c.width = c.height = 64;
+      const x = c.getContext('2d');
+      x.fillStyle = color; x.beginPath(); x.arc(32, 32, 29, 0, 7); x.fill();
+      x.fillStyle = '#fff'; x.font = 'bold 36px Helvetica, Arial, sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle';
+      x.fillText(txt, 32, 35);
+      const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
+      const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthTest: false, transparent: true })); sp.scale.setScalar(0.72); return sp;
+    };
+    const ring = (color) => {
+      const c = document.createElement('canvas'); c.width = c.height = 64;
+      const x = c.getContext('2d'); x.strokeStyle = color; x.lineWidth = 7; x.beginPath(); x.arc(32, 32, 25, 0, 7); x.stroke();
+      const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+      const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthTest: false, transparent: true, opacity: 0.85 })); sp.scale.setScalar(0.56); return sp;
+    };
+    const arms = [];
+    for (const [name, dir, color, hex] of [['x', [1, 0, 0], 0xe05a45, '#e05a45'], ['y', [0, 1, 0], 0x7cb342, '#7cb342'], ['z', [0, 0, 1], 0x3b82f6, '#3b82f6']]) {
+      const v = new THREE.Vector3(...dir);
+      const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), v.clone()]),
+        new THREE.LineBasicMaterial({ color, depthTest: false, transparent: true, opacity: 0.9 }));
+      scene.add(line);
+      const pos = label(name.toUpperCase(), hex); pos.position.copy(v); scene.add(pos);
+      const neg = ring(hex); neg.position.copy(v).negate(); scene.add(neg);
+      arms.push({ name, dir: v.clone(), sprite: pos }, { name: '-' + name, dir: v.clone().negate(), sprite: neg });
+    }
+    this.gizmo = { scene, cam, arms, size: 92, pad: 10 };
+  }
+  /** the gizmo's rectangle in CSS pixels, measured from the top-left of the canvas */
+  gizmoRect() {
+    const v = this.renderer.getSize(new THREE.Vector2()), g = this.gizmo;
+    return { x: v.x - g.size - g.pad, y: g.pad, w: g.size, h: g.size };
+  }
+  /** called at the end of every frame: the gizmo shares the renderer through a scissored corner viewport */
+  renderGizmo() {
+    if (!this.gizmo || this.gizmoOff) return;
+    const g = this.gizmo, v = this.renderer.getSize(new THREE.Vector2()), r = this.gizmoRect();
+    const dir = this.camera.position.clone().sub(this.controls.target).normalize();
+    g.cam.position.copy(dir).multiplyScalar(6); g.cam.up.copy(this.camera.up); g.cam.lookAt(0, 0, 0);
+    this.renderer.setScissorTest(true);
+    this.renderer.setViewport(r.x, v.y - r.y - r.h, r.w, r.h);       // WebGL counts y from the bottom
+    this.renderer.setScissor(r.x, v.y - r.y - r.h, r.w, r.h);
+    this.renderer.clearDepth();
+    this.renderer.render(g.scene, g.cam);
+    this.renderer.setScissorTest(false);
+    this.renderer.setViewport(0, 0, v.x, v.y); this.renderer.setScissor(0, 0, v.x, v.y);
+  }
+  /** a click inside the gizmo: look down the nearest arm. Returns true when it handled the event. */
+  gizmoClick(px, py) {
+    if (!this.gizmo || this.gizmoOff) return false;
+    const r = this.gizmoRect();
+    if (px < r.x || px > r.x + r.w || py < r.y || py > r.y + r.h) return false;
+    const g = this.gizmo, cx = r.x + r.w / 2, cy = r.y + r.h / 2, sc = r.w / 3.4;
+    const dir = this.camera.position.clone().sub(this.controls.target).normalize();
+    g.cam.position.copy(dir).multiplyScalar(6); g.cam.up.copy(this.camera.up); g.cam.lookAt(0, 0, 0); g.cam.updateMatrixWorld();
+    let best = null, bd = 18 * 18;
+    for (const a of g.arms) {
+      const q = a.dir.clone().project(g.cam);
+      const sx = cx + q.x * sc, sy = cy - q.y * sc, d = (sx - px) ** 2 + (sy - py) ** 2;
+      if (d < bd) { bd = d; best = a; }
+    }
+    if (!best) return false;
+    const views = { x: 'side', '-x': 'side', y: 'top', '-y': 'under', z: 'front', '-z': 'front' };
+    const d = new THREE.Vector3().copy(best.dir), dist = this.camera.position.distanceTo(this.controls.target);
+    if (d.y > 0.99) d.set(0.001, 1, 0.001); if (d.y < -0.99) d.set(0.001, -1, 0.001).setY(0.2).normalize();
+    this.camera.position.copy(this.controls.target).addScaledVector(d.normalize(), dist);
+    if (this.camera.position.y < 0.25) this.camera.position.y = 0.25;
+    this.controls.update();
+    return true;
+  }
+
+  // ------------------------------------------------------------- marquee selection of pieces
+  /** select mode: the left button draws a rubber band instead of orbiting (middle / right still orbit and pan) */
+  setSelectMode(on) {
+    this.selectMode = !!on;
+    this.controls.mouseButtons.LEFT = on ? null : THREE.MOUSE.ROTATE;
+    this.renderer.domElement.style.cursor = on ? 'crosshair' : '';
+    if (!on) this.hideBand();
+    if (on && !this.sel && this.pieces) this.sel = new Uint8Array(this.pieces.length);
+    this.paintSelection();
+  }
+  band() {
+    if (!this._band) {
+      const d = document.createElement('div');
+      d.style.cssText = 'position:absolute;border:1px solid #38bdf8;background:rgba(56,189,248,.16);pointer-events:none;display:none;z-index:4;border-radius:2px';
+      this.el.appendChild(d); this._band = d;
+    }
+    return this._band;
+  }
+  hideBand() { if (this._band) this._band.style.display = 'none'; }
+  /** pointer down / move / up while select mode is on; px, py are CSS pixels inside the canvas */
+  beginMarquee(px, py) { this._mq = { x0: px, y0: py, x1: px, y1: py }; const b = this.band(); b.style.display = 'block'; this.moveMarquee(px, py); }
+  moveMarquee(px, py) {
+    if (!this._mq) return;
+    this._mq.x1 = px; this._mq.y1 = py;
+    const { x0, y0, x1, y1 } = this._mq, b = this.band();
+    b.style.left = Math.min(x0, x1) + 'px'; b.style.top = Math.min(y0, y1) + 'px';
+    b.style.width = Math.abs(x1 - x0) + 'px'; b.style.height = Math.abs(y1 - y0) + 'px';
+  }
+  /** finish the band. mode: 'set' | 'add' | 'sub'. A click with no drag clears the selection. Returns how many are selected. */
+  endMarquee(mode = 'set') {
+    const mq = this._mq; this._mq = null; this.hideBand();
+    if (!mq || !this.pieces) return this.selCount();
+    if (!this.sel || this.sel.length !== this.pieces.length) this.sel = new Uint8Array(this.pieces.length);
+    const w = Math.abs(mq.x1 - mq.x0), h = Math.abs(mq.y1 - mq.y0);
+    if (w < 3 && h < 3) { if (mode === 'set') this.sel.fill(0); this.paintSelection(); return this.selCount(); }
+    const x0 = Math.min(mq.x0, mq.x1), x1 = Math.max(mq.x0, mq.x1), y0 = Math.min(mq.y0, mq.y1), y1 = Math.max(mq.y0, mq.y1);
+    const v = this.renderer.getSize(new THREE.Vector2()), P = this.pieces, pt = new THREE.Vector3();
+    if (mode === 'set') this.sel.fill(0);
+    for (let n = 0; n < P.length; n++) {
+      if (!this.vis[n]) continue;                                    // only what is on screen at this moment
+      const p = P[n], o = pieceOrigin(p);
+      pt.set(o[0], o[1] + p.h * PLATE / 2, o[2]);                    // the piece's centre, in LDU inside `world`
+      this.world.localToWorld(pt); pt.project(this.camera);
+      const sx = (pt.x * 0.5 + 0.5) * v.x, sy = (-pt.y * 0.5 + 0.5) * v.y;
+      if (sx < x0 || sx > x1 || sy < y0 || sy > y1 || pt.z > 1) continue;
+      this.sel[n] = mode === 'sub' ? 0 : 1;
+    }
+    this.paintSelection(); return this.selCount();
+  }
+  selCount() { let n = 0; if (this.sel) for (const v of this.sel) if (v) n++; return n; }
+  clearSelection() { if (this.sel) this.sel.fill(0); this.paintSelection(); return 0; }
+  invertSelection() {
+    if (!this.pieces) return 0;
+    if (!this.sel || this.sel.length !== this.pieces.length) this.sel = new Uint8Array(this.pieces.length);
+    for (let n = 0; n < this.sel.length; n++) this.sel[n] = this.vis[n] && !this.sel[n] ? 1 : 0;
+    this.paintSelection(); return this.selCount();
+  }
+  /** the selected pieces themselves (objects, not indices) */
+  selectedPieces() { return this.pieces && this.sel ? this.pieces.filter((_, n) => this.sel[n]) : []; }
+  /** selected pieces glow; the rest keeps its colour, dimmed while anything is selected */
+  paintSelection() {
+    if (!this.pieces) return;
+    const any = this.selCount() > 0, c = new THREE.Color();
+    for (let n = 0; n < this.pieces.length; n++) {
+      const p = this.pieces[n];
+      let rgb = this.colorMode === 'kind' ? (KIND_COL[p.kind] || [0.6, 0.6, 0.6]).map((x) => x * 255) : (p.rgb || [200, 200, 200]);
+      if (any) rgb = this.sel[n] ? [56, 189, 248] : rgb.map((x) => 60 + x * 0.35);
+      c.setRGB(rgb[0] / 255, rgb[1] / 255, rgb[2] / 255, THREE.SRGBColorSpace);
+      for (const { mesh, k } of this.pe[n] || []) mesh.setColorAt(k, c);
+    }
+    for (const m of this.groups) m.instanceColor && (m.instanceColor.needsUpdate = true);
+  }
+
+  // ------------------------------------------------------------- instruction booklet (brickgen/instructions.js)
+  /** rebuild with (or without) the studs that end up covered - see setLego. Keeps the camera where it is. */
+  setAllStuds(on) {
+    if (!!this.allStuds === !!on || !this._lego) return;
+    const { pieces, cat, dims } = this._lego, cam = this.camera.position.clone(), tgt = this.controls.target.clone();
+    this.allStuds = !!on; this.setLego(pieces, cat, dims);
+    this.camera.position.copy(cam); this.controls.target.copy(tgt); this.controls.update();
+  }
+  /**
+   * Show exactly the pieces flagged in `shown` (a Uint8Array over this.pieces, which setLego sorted by level), painting those
+   * flagged in `hot` in the highlight colour - what instruction booklets print in red. No animation: this is for capture.
+   */
+  showStep(shown, hot, hotRGB = [232, 64, 42]) {
+    if (!this.pieces) return;
+    const c = new THREE.Color(); let n_ = 0;
+    for (let n = 0; n < this.pieces.length; n++) {
+      const v = shown && shown[n] ? 1 : 0; if (v) n_++;
+      if (v !== this.vis[n]) { this.vis[n] = v; this.active.delete(n); this.place(n, v, 0); }
+      const p = this.pieces[n];
+      const rgb = hot && hot[n] ? hotRGB : (this.colorMode === 'kind' ? (KIND_COL[p.kind] || [0.6, 0.6, 0.6]).map((x) => x * 255) : (p.rgb || [200, 200, 200]));
+      c.setRGB(rgb[0] / 255, rgb[1] / 255, rgb[2] / 255, THREE.SRGBColorSpace);
+      for (const { mesh, k } of this.pe[n] || []) mesh.setColorAt(k, c);
+    }
+    for (const m of this.groups) m.instanceColor && (m.instanceColor.needsUpdate = true);
+    this.revealed = n_;
+  }
+  /**
+   * The finished model's bounding box in canvas pixels, grown to the aspect `ar` and padded: every step capture is cropped to
+   * this one rectangle, so the model keeps its position and scale from picture to picture (what instruction booklets do) while
+   * none of the frame is wasted on empty background.
+   */
+  modelRect(ar = 4 / 3, pad = 0.07) {
+    const dom = this.renderer.domElement, W = dom.width, H = dom.height;
+    if (!this.pieces || !this.pieces.length) return { x: 0, y: 0, w: W, h: H };
+    // the model is centred on x = z = 0 and rises from y = 0, in world units (LDU x the viewport scale) - as zoomToFit frames it
+    const v = new THREE.Vector3(); let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+    const hw = this.W * S / 2, hd = this.D * S / 2, hh = Math.max(this.H * S, 1);
+    for (const X of [-hw, hw]) for (const Y of [0, hh]) for (const Z of [-hd, hd]) {
+      v.set(X, Y, Z).project(this.camera);
+      const px = (v.x * 0.5 + 0.5) * W, py = (-v.y * 0.5 + 0.5) * H;
+      x0 = Math.min(x0, px); x1 = Math.max(x1, px); y0 = Math.min(y0, py); y1 = Math.max(y1, py);
+    }
+    const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+    let w = (x1 - x0) * (1 + 2 * pad), h = (y1 - y0) * (1 + 2 * pad);
+    if (w / h < ar) w = h * ar; else h = w / ar;                                  // grow to the booklet's aspect, never crop the model
+    return { x: cx - w / 2, y: cy - h / 2, w, h };
+  }
+  /** render once and return a data URI no wider than `maxW`, cropped to `rect` (canvas pixels) over an opaque background */
+  capture(maxW = 760, { quality = 0.85, png = false, rect = null } = {}) {
+    this.renderer.render(this.scene, this.camera);                               // no renderGizmo(): the corner gizmo is not part of a booklet picture
+    const src = this.renderer.domElement;
+    const r = rect || { x: 0, y: 0, w: src.width, h: src.height };
+    const k = Math.min(1, maxW / r.w);
+    const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(r.w * k)); c.height = Math.max(1, Math.round(r.h * k));
+    const g = c.getContext('2d');
+    g.fillStyle = '#' + this.scene.background.getHexString(); g.fillRect(0, 0, c.width, c.height);
+    g.imageSmoothingQuality = 'high'; g.drawImage(src, r.x, r.y, r.w, r.h, 0, 0, c.width, c.height);
+    return png ? c.toDataURL('image/png') : c.toDataURL('image/jpeg', quality);
+  }
 }

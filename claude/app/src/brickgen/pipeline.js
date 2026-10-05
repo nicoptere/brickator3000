@@ -4,7 +4,7 @@ import { surfaceSamples } from './mesh.js';
 import { prepare, normalize } from './grid.js';
 import { smoothModel } from './smooth.js';
 import { solve, metrics, surface } from './run.js';
-import { mergePairs, vertical, horizontal, pillars, bracing, splice, bridge, supports, finish, untile, connectivity, retile, roundCorners, widen, dropLoose } from './post.js';
+import { mergePairs, vertical, horizontal, pillars, bracing, splice, bridge, weld, supports, finish, untile, connectivity, retile, roundCorners, widen, dropLoose } from './post.js';
 import { detectSymmetry } from './symmetry.js';
 import { PointGrid } from './nn.js';
 import { visibleSamples } from './visibility.js';
@@ -119,18 +119,48 @@ export function scoreJob(ctx, job, cat = catalogFor(ctx.o)) {
   return mt.iou - 0.002 * mt.pieces;
 }
 
+
+// What the long stage is actually doing, in words a person can read. The solver names its phases by code (`A-skin-narrow`,
+// `B2-fill`); `log` already carried them, but only after each one finished and only into the console. These are announced
+// before the work, so the progress bar names what is RUNNING. The fractions are nominal - the number of phases is known from
+// the options, their cost is not - and only ever move forward.
+const PHASE_LABEL = {
+  'A1-disc': 'laying disc layers', 'M-lib': 'building the assembly library', 'M-motif': 'placing learned assemblies', 'A0-round': 'placing round parts',
+  'A-skin-narrow': 'skinning the slopes (1-wide)', 'A-skin': 'skinning the slopes', 'A2-skin-ext': 'skinning with the extended parts',
+  'S-snot': 'hanging sideways parts', 'B-fill': 'filling the body', 'B2-fill': 'filling the body (second pass)',
+  'C-relaxed': 'mopping up the surface', 'D-fallback': 'filling the gaps with 1x1', 'E-thin': 'catching the thin features',
+  'F-tube': 'joining the islands',
+};
+/** how many solver phases this option set will run (for the fraction; a miscount only skews the bar, never the result) */
+const phaseCount = (o) => 1 + (o.discs ? 1 : 0) + (o.motifs ? 2 : 0) + (o.rounds ? 1 : 0)
+  + (o.skin ? 1 + (o.skinNarrow ? 1 : 0) + (o.partSet === 'extended' ? 1 : 0) : 0) + (o.snot ? 1 : 0)
+  + 1 + (o.fill2 ? 1 : 0) + (o.relaxed ? 1 : 0) + (o.fallback ? 1 : 0) + (o.thin ? 1 : 0) + (o.islands ? 1 : 0);
+
 /** finish the best job: colours, merges, pillars, connectivity post-process, studs finish, palette, stats */
-export function finishJob(ctx, job, cat = catalogFor(ctx.o), log = () => {}) {
+export function finishJob(ctx, job, cat = catalogFor(ctx.o), log = () => {}, progress = () => {}) {
   const { o, m, sym, symOk } = ctx, T = { ...ctx.T };
   let t = now();
   const [par, ox, oz] = job, pre = ctx.pres[par];
-  let S = solve(pre, cat, ox, oz, o, log);
+  // the stage is in three parts: the solve, the motif verification (a second solve, so it costs as much), and the post-process
+  const verify = !!(o.motifs && (o.motifVerify ?? true));
+  const SOLVE = verify ? 0.42 : 0.62, VERIFY = verify ? 0.72 : SOLVE;
+  const nPhase = phaseCount(o); let seen = 0, lo = 0, hi = SOLVE;
+  let tag = '', last = -1;
+  // `sub` is how far through the phase itself we are; a phase starts at 0, so that is where the counter advances
+  const onPhase = (name, sub = 0) => {
+    if (sub === 0) seen++;
+    const f = lo + Math.min(0.99, (seen - 1 + Math.min(1, sub)) / nPhase) * (hi - lo);
+    if (f < last) return; last = f;
+    progress(tag + (PHASE_LABEL[name] || name), f);
+  };
+  let S = solve(pre, cat, ox, oz, o, log, onPhase);
   const post = {};
   // motif verification (docs/CURVES.md): the mined assemblies are a broad-phase heuristic that pays on blocky and roof-like
   // models and leaves a chaotic skin on organic ones; the same field is solved once more without them (fast: the motif phase is
   // what costs) and the assemblies are kept only when they gain at least `motifGain` of IoU
-  if (o.motifs && (o.motifVerify ?? true)) {
-    const S2 = solve(pre, cat, ox, oz, { ...o, motifs: false }), a = metrics(S).iou, b = metrics(S2).iou;
+  if (verify) {
+    seen = 0; lo = SOLVE; hi = VERIFY; last = -1; tag = 'checking the assemblies pay: ';
+    const S2 = solve(pre, cat, ox, oz, { ...o, motifs: false }, log, (n, f) => onPhase(n, f)), a = metrics(S).iou, b = metrics(S2).iou;
     post.motifCheck = { with: +a.toFixed(4), without: +b.toFixed(4), kept: a >= b + (o.motifGain ?? 0.01) };
     if (!post.motifCheck.kept) S = S2;
     log(`motif check: IoU ${a.toFixed(3)} with, ${b.toFixed(3)} without -> ${post.motifCheck.kept ? 'kept' : 'dropped'}`);
@@ -144,34 +174,51 @@ export function finishJob(ctx, job, cat = catalogFor(ctx.o), log = () => {}) {
     const vis = visibleSamples(m.tris, m.pts), keep = []; for (let i = 0; i < vis.length; i++) if (vis[i]) keep.push(i);
     if (keep.length > 50) { cpts = new Float32Array(keep.length * 3); ccols = new Float32Array(keep.length * 3); keep.forEach((i, j) => { for (let c = 0; c < 3; c++) { cpts[j * 3 + c] = m.pts[i * 3 + c]; ccols[j * 3 + c] = m.cols[i * 3 + c]; } }); }
   }
+  tag = '';
+  progress('matching the colours', VERIFY);
   const nm = normalize(m.tris, cpts, o.studs, off[0], off[1], o.ref);
   const grid = new PointGrid(nm.pts, 64);
   const cols = ccols;
   for (const p of S.pieces) p.rgb = colourAt(grid, cols, p, o.colorK);
   T.colour = now() - t; t = now();
   const before = S.pieces.length;
+  progress('merging slopes', 0.72);
   if (o.widen) post.widen = widen(S, cat, o.colorTol);                                   // two identical 1-wide slopes side by side -> the 2-wide part
+  progress('merging stacks', 0.742);
   if (o.mergeVertical) post.vertical = vertical(S, cat, o.colorTol);
   if (o.mergeHorizontal) post.horizontal = horizontal(S, cat, 'plate', o.colorTol) + horizontal(S, cat, 'tile', o.colorTol);
+  progress('plates into bricks', 0.765);
   if (o.retile) post.retile = retile(S, cat, o.colorTol);                              // stacked plates of any footprint -> bricks
   post.merged = before - S.pieces.length;
+  progress('turning columns into poles', 0.787);
   if (o.pillars) post.pillars = pillars(S, cat, o.pillarMinLevels, o.pillarCluster ?? 0);
   post.connectedBefore = connectivity(S);
+  progress('bracing', 0.81);
   if (o.bracing) post.brace = bracing(S, cat, o);
+  progress('splicing the seams', 0.833);
   if (o.splice) post.splice = splice(S, cat, o);
+  progress('bridging the gaps', 0.855);
   if (o.bridge) post.bridge = bridge(S, cat, o);
+  progress('building the supports', 0.877);
   if (o.supports) post.supports = supports(S, cat, o).columns;
   if (o.bracing && o.supports) post.brace += bracing(S, cat, o);
   if (o.mergeVertical) post.vertical2 = vertical(S, cat, o.colorTol);                  // final re-pack: bracing / splice / bridge pieces can merge too
   if (o.retile) post.retile2 = retile(S, cat, o.colorTol);
+  progress('tidying the tiles', 0.9);
   post.untiled = untile(S, cat);                                                        // smooth tiles only on the outside skin
   if (o.mergeHorizontal) post.pairs = mergePairs(S, cat, 'plate', o.colorTol) + mergePairs(S, cat, 'brick', o.colorTol);          // union-only merges: connectivity cannot get worse
+  progress('finishing with tiles', 0.922);
   if (o.finish) { post.finish = finish(S, cat, o.finishBricks); if (o.mergeHorizontal) mergePairs(S, cat, 'tile', o.colorTol); }
   if (o.finish && o.roundCorners) post.corners = roundCorners(S, cat);                   // quarter-round tiles on the convex corners of the top layer
+  progress('dropping the loose pieces', 0.945);
   if (o.dropLoose) post.loose = dropLoose(S, o.dropLoose);                                 // single pieces touching nothing are not part of the build
+  // last: what is still in several pieces gets welded, through air if there is no way through the solid (docs/CURVES.md round 9)
+  progress('welding it into one piece', 0.968);
+  if (o.weld) { post.weld = weld(S, cat, o); if (post.weld.added && o.mergeHorizontal) mergePairs(S, cat, 'plate', o.colorTol); }
   for (const p of S.pieces) if (!p.rgb) p.rgb = colourAt(grid, cols, p, o.colorK);
   if (o.palette === 'lego') for (const p of S.pieces) { if (p.kind === 'support') continue; const c = snapToPalette(p.rgb); p.rgb = c.rgb; p.code = c.code; p.colorName = c.name; }
   T.post = now() - t;
+  progress('measuring the result', 0.99);
   const mt = metrics(S), con = connectivity(S), sf = surface(S, cat);
   let mirrored = null;
   if (S.mirror) {
@@ -216,8 +263,8 @@ export function generate(model, opts = {}, { cat = catalogFor({ ...DEFAULTS, ...
     progress('grid phases', ++k / ctx.jobs.length);
   }
   ctx.T.phases = now() - t0 - ctx.T.samples - ctx.T.symmetry - ctx.T.raycast;
-  progress('finishing', 1);
-  const r = finishJob(ctx, best, cat, log);
+  progress('finishing', 0);
+  const r = finishJob(ctx, best, cat, log, (label, f) => progress(label, f));
   r.timing.total = now() - t0; r.job = best; r.options = ctx.o;
   return r;
 }

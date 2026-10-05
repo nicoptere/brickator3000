@@ -50,8 +50,8 @@ export async function runMethod(model, opts, { workersWanted = POOL, onStage = (
   const parts = usable.map((w, k) => call(w, { type: 'score', key, jobs: jobs.filter((_, q) => q % usable.length === k) }, () => { done++; onStage(`grid phases (${jobs.length} on ${usable.length} workers)`, done / jobs.length); }));
   const scored = (await Promise.all(parts)).flatMap((r) => r.scores);
   scored.sort((a, b) => b.score - a.score);
-  onStage('solving the best phase + post-process', 1);
-  const res = await call(workers[0], { type: 'finish', key, job: scored[0].job });
+  onStage('solving the best grid phase', 0);
+  const res = await call(workers[0], { type: 'finish', key, job: scored[0].job }, (d) => d.stage && onStage(d.stage, d.frac ?? 0));
   const r = res.result;
   r.timing.total = performance.now() - t0; r.timing.setup = setups[0].ms; r.scores = scored; r.workers = usable.length;
   if (autoChoice) { r.autoChoice = autoChoice; r.options.autoChoice = autoChoice; r.timing.auto = autoChoice.ms; }

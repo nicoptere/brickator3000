@@ -655,8 +655,13 @@ export function bridge(S, cat, o) {
   // model - a skirt of plates under a dome, an L of plates hanging off a controller - where they also sat on top of the real
   // surface and kept the skin from being laid. A component that cannot be reached through the solid is left to the supports
   // and, when it is a single piece, to dropLoose.
+  // Cost of routing through a cell that is NOT inside the source volume: 0 with `bridgeOutside` (the pre-round-7 search through
+  // any empty cell), Infinity by default (blocked), or a finite penalty for the final weld pass, which may buy its way through
+  // air when no route inside exists - at `bridgeAir` hops per air cell, so an all-inside detour is always preferred.
   const fillMin = o.bridgeFill ?? 0.3, cellFill = o.bridgeOutside ? null : S.leftoverCells(S.Mfull || S.M0);
-  const inside = (x, z, l) => !cellFill || cellFill[idx(x, z, l)] >= fillMin;
+  const airPen = o.bridgeOutside ? 0 : (o.bridgeAir ?? Infinity);
+  const penalty = (x, z, l) => (!cellFill || cellFill[idx(x, z, l)] >= fillMin ? 0 : airPen);
+  const phase = o.bridgePhase || 'T-bridge';
   let added = 0; const hopeless = new Set(), flattened = new Set();
   let state = null;                                   // grid / components of the current piece list; rebuilt only after the pieces change
   for (let round = 0; round < (o.bridgeRounds ?? 120); round++) {
@@ -680,7 +685,7 @@ export function bridge(S, cat, o) {
     if (!order.length) break;
     const [A] = order[0];
     const touch = (x, z, l, out) => { out.length = 0; const v = idx(x, z, l); if (tb[v] >= 0) out.push(tb[v]); if (ta[v] >= 0) out.push(ta[v]); return out; };
-    const free = (x, z, l) => x >= 0 && x < NX && z >= 0 && z < NZ && l >= 0 && l < NL && grid[idx(x, z, l)] < 0;
+    const freeCell = (x, z, l) => x >= 0 && x < NX && z >= 0 && z < NZ && l >= 0 && l < NL && grid[idx(x, z, l)] < 0;   // NOT `free`: that is the module-level "piece is not rigid" test, which the flatten fallback below needs
     // plates are packed as ints: ((cell(x,z,l2) * 4 + dir) * 4 + (len - 1)); no per-step allocation (this BFS used to dominate the whole run)
     const DX = [1, -1, 0, 0], DZ = [0, 0, 1, -1];
     const unpack = (code) => { const len = (code & 3) + 1, dir = (code >> 2) & 3, cell = code >> 4, l = (cell / plane) | 0, r = cell - l * plane, z = (r / NX) | 0, x = r - z * NX;
@@ -694,15 +699,17 @@ export function bridge(S, cat, o) {
         if (l2 < 0 || l2 >= NL) return;
         if (base + 1 > maxCost) return;
         const head = idx(x, z, l2) * 16;
-        const nb = base + 1, bk = buckets[nb];
         for (let dir = 0; dir < 4; dir++) {
           const dx = DX[dir], dz = DZ[dir];
+          let pen = 0;
           for (let k = 0; k < 4; k++) {
             const cx = x + k * dx, cz = z + k * dz;
             if (cx < 0 || cx >= NX || cz < 0 || cz >= NZ) break;
             const v = idx(cx, cz, l2);
-            if (grid[v] >= 0 || !inside(cx, cz, l2)) break;
-            if (nb < dist[v]) { dist[v] = nb; parent[v] = from; via[v] = head + dir * 4 + k; bk.push(v); }
+            if (grid[v] >= 0) break;
+            pen += penalty(cx, cz, l2); if (!isFinite(pen)) break;
+            const nb = base + 1 + pen; if (nb > maxCost) break;
+            if (nb < dist[v]) { dist[v] = nb; parent[v] = from; via[v] = head + dir * 4 + k; buckets[nb].push(v); }
           }
         }
       };
@@ -739,8 +746,12 @@ export function bridge(S, cat, o) {
       // last resort: the component has no stud to build on (a lone slope on the ground): flatten its smooth pieces into a brick / plates of the same footprint
       // a sideways (SNOT) piece is held by the side studs of its host and sits at a fractional cell / level, so it cannot be
       // rebuilt as an upright brick of the same footprint: leave it alone (it travels with its motif's other pieces anyway)
+      // ... but only for a sliver. Flattening is destructive - it replaces the shaped parts that make the surface with boxes of
+      // the same footprint - so it is capped at `bridgeFlattenMax` pieces: a lone slope or a two-part lens, never a limb.
+      // (Until the `free` shadowing above was fixed this test always failed, so the fallback never ran at all; the first run
+      // with it working flattened 406 of the duck's skin pieces and cost 3 points of IoU.)
       const SMOOTH = new Set(['slope', 'curved', 'cheese', 'inverted', 'tile']); const idsA = []; P.forEach((p, n) => { if (uf.find(n) === A && SMOOTH.has(p.kind) && free(p)) idsA.push(n); });
-      if (idsA.length && !flattened.has(A)) {
+      if (idsA.length && !flattened.has(A) && (o.bridgeFlatten ?? true) && cnt.get(A) <= (o.bridgeFlattenMax ?? 6)) {
         flattened.add(A); const bricks = shapes(cat, 'brick'), plates = shapes(cat, 'plate'), kill = new Set(idsA), add = [];
         for (const n of idsA) {
           const p = P[n], cells = new Map(); for (let dz = 0; dz < p.d; dz++) for (let dx = 0; dx < p.w; dx++) cells.set(K2(p.i + dx, p.j + dz), p.rgb);
@@ -769,7 +780,7 @@ export function bridge(S, cat, o) {
     for (const pl of chain) {
       const xs = pl.cells.map((c) => c[0]), zs = pl.cells.map((c) => c[1]), i0 = Math.min(...xs), j0 = Math.min(...zs), len = pl.cells.length;
       const alongX = zs.every((t) => t === zs[0]) && len > 1;
-      nw.push(mk(plateOf(by, len), alongX ? len : 1, alongX ? 1 : len, i0, j0, pl.l, rgb, 'T-bridge'));
+      nw.push(mk(plateOf(by, len), alongX ? len : 1, alongX ? 1 : len, i0, j0, pl.l, rgb, phase));
     }
     if (S.mirror) {                                   // symmetric twin when its cells are free
       const [ax, pc] = S.mirror, tw = [], seen = new Set(used);
@@ -777,7 +788,7 @@ export function bridge(S, cat, o) {
         const q2 = { ...q }; if (ax === 'x') q2.i = pc - q.i - q.w; else q2.j = pc - q.j - q.d;
         if (q2.i === q.i && q2.j === q.j) continue;
         let good = true; const cells = [];
-        for (let dz = 0; dz < q2.d; dz++) for (let dx = 0; dx < q2.w; dx++) { const x = q2.i + dx, z = q2.j + dz; if (!free(x, z, q2.b) || seen.has(K(x, z, q2.b))) good = false; cells.push(K(x, z, q2.b)); }
+        for (let dz = 0; dz < q2.d; dz++) for (let dx = 0; dx < q2.w; dx++) { const x = q2.i + dx, z = q2.j + dz; if (!freeCell(x, z, q2.b) || seen.has(K(x, z, q2.b))) good = false; cells.push(K(x, z, q2.b)); }
         if (good) { tw.push(q2); cells.forEach((c) => seen.add(c)); }
       }
       nw.push(...tw);
@@ -786,6 +797,29 @@ export function bridge(S, cat, o) {
     added += nw.length; state = null;
   }
   return added;
+}
+
+/**
+ * The last word on connectivity: after everything else, the model may still be in several pieces - a pair of feet under a belly,
+ * a tail, a wing tip - because `bridge` only routes chains through cells that are inside the source volume, and between two
+ * limbs there is nothing but air. `weld` is the same search with two things changed: a much longer budget (`weldMax`), and air
+ * that costs `weldAir` hops per cell instead of being forbidden. An all-inside route is therefore always preferred and only a
+ * component that has no such route at all gets visible plates; where it does, the plates are as few as the geometry allows.
+ * Added pieces carry the phase 'T-weld', so they can be coloured, listed, or removed. Returns { added, before, after }.
+ */
+export function weld(S, cat, o) {
+  const before = connectivity(S).components;
+  if (before <= 1) return { added: 0, before, after: before, passes: 0 };
+  // an escalating ladder: each pass halves what an air cell costs and doubles the budget, so the cheap, mostly-hidden chains are
+  // found first and the long ones are only paid for when something is still loose. Stops the moment the model is one piece.
+  let added = 0, after = before, pass = 0;
+  for (; pass < (o.weldPasses ?? 3); pass++) {
+    added += bridge(S, cat, { ...o, bridge: true, bridgeOutside: false, bridgeAir: (o.weldAir ?? 8) / 2 ** pass,
+      bridgeMax: (o.weldMax ?? 40) * 2 ** pass, bridgeRounds: o.weldRounds ?? 80, bridgeReverse: o.weldReverse ?? true, bridgePhase: 'T-weld' });
+    after = connectivity(S).components;
+    if (after <= 1) { pass++; break; }
+  }
+  return { added, before, after, passes: pass };
 }
 
 // ------------------------------------------------------------------ exterior air / tiles only where the sky is

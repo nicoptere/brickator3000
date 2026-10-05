@@ -126,3 +126,4 @@ html, body, #root { margin: 0; width: 100%; height: 100%; overflow: hidden; back
 .feats.flush { margin: 0; }
 .feats.flush .feat { padding-left: 0; padding-right: 0; }
 .feats.flush .feat:hover { background: none; }
+.selinfo { font-size: 11px; color: var(--tx2); padding: 0 4px; white-space: nowrap; }

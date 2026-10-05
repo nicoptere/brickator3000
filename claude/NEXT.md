@@ -265,3 +265,88 @@ Performance: post passes dominated; packed-number keys etc. gave 7-15x, bit-iden
   `dims` now takes the whole part and goes through `oriOf`; `periodic.js`'s identity keys include the orientation (two sideways
   parts differing only by `ori` used to collide); `orientPart` throws a readable error instead of failing three frames deeper.
   `motifStretch: true` gives 2528 motifs / 12513 variants against 1174 / 5308 without it.
+
+## 15. Round 9 (2026-10-05): the model comes out in one piece (`post.weld`)
+- **The bug behind the floating parts.** Inside `post.bridge` the local cell test `const free = (x, z, l) => ...` **shadowed the
+  module-level `free(p)`** ("this piece is not part of a rigid assembly"), so the last-resort fallback's `free(p)` was calling
+  the three-argument version with a piece object and always returning false: the fallback never ran, and every component
+  without a stud to build on went straight to `hopeless`. Those are exactly the leftovers a diagnostic found - 2-3 piece
+  slivers of an inverted slope under a slope, levels n..n+6, with **no** cell of any other component adjacent on any face: a
+  slope has no studs on top and an inverted slope takes none underneath, so the chain search had nowhere to start or land.
+  Renamed to `freeCell`.
+- **The fallback needed a cap.** With it working for the first time it flattened 406 of the duck's skin pieces into boxes
+  (IoU .874 -> .843): it was written for "a lone slope on the ground" but fired on whole limbs. `bridgeFlattenMax` (6 pieces).
+- **`post.weld`** (new, last pass, after `dropLoose`): the same chain search with air **priced** instead of forbidden.
+  `bridge` now takes a per-cell penalty rather than a hard gate (`bridgeAir`, default Infinity = the round-7 behaviour,
+  unchanged), and `weld` escalates: pass k prices an air cell at `weldAir / 2^k` hops with a budget of `weldMax * 2^k`
+  (8/40, 4/80, 2/120), stopping the moment the model is one piece. A route through the solid therefore always wins and only a
+  component with no such route gets plates that show. Added pieces carry the phase `T-weld`.
+- Measured (full options, `weld` + the capped flatten against neither):
+
+  | model | components | pieces | IoU |
+  |---|---|---|---|
+  | duck @24 | 4 -> **1** | 1294 -> 1298 | .874 -> .873 |
+  | dolphin @32 | 2 -> **1** | 240 -> 243 | .691 -> .687 |
+  | table @32 | 5 -> **1** | 513 -> 540 | .820 -> .811 |
+  | chair @32 | 1 -> 1 | 1288 -> 1291 | .924 -> .924 |
+  | rafs5 @48 | 6 -> **1** | 1036 -> 1040 | .664 -> .662 |
+  | be2 @48 | 6 -> **1** | 750 -> 767 | .385 -> .384 |
+  | duck @48 | 113 -> 19 | 5998 -> 6134 | .877 -> .871 |
+
+  Every model at a resolution its mesh justifies now comes out in one piece for a handful of plates and a thousandth of IoU.
+  The duck at 48 studs is far past its curvature ceiling (29.8) and starts from 113 components; 75 s, 19 left.
+- UI: a **Weld the leftover pieces** switch in panel 2 and in the Build group of the drawer; `weldAir`, `weldMax`, `weldPasses`
+  in the schema.
+
+## 16. The build booklet (2026-10-05): `instructions` export
+- **`src/brickgen/instructions.js`** (new, pure): `planSteps` -> `stepParts` / `billOfMaterials` -> `bookletHTML`, one
+  self-contained HTML file (images inlined) with A4 print CSS, so the browser's "Save as PDF" is the leaflet. Grounded in how
+  real instructions are made (bricknerd's 1988-vs-2022 survey): the build is **layered**, every step carries its own **parts
+  call-out** (a 2003 innovation), the parts a step adds are **highlighted in red**, and **the camera never moves**.
+  Official sets place 1-4 pieces per step, which for a 1,300-piece sculpture is 400 pages, so the step size comes from a
+  **target step count** (`stepTarget`, 60) and is clamped; a step never spans more than `stepLevels` (2) levels and its pieces
+  are taken in a serpentine order across the layer, so a step is a contiguous run rather than a scatter.
+  Duck @16: 1241 pieces -> 62 steps of <= 21 -> **18 pages** (cover + 16 step pages + parts list), 3 MB.
+- **`studio/viewport3d.js`**: `showStep(shown, hot)` (reveal an exact set, paint the new ones red), `modelRect(ar, pad)` (the
+  finished model's bounding box in canvas pixels - every capture is cropped to this one rectangle, so the model keeps its
+  place and size from picture to picture and no frame is wasted), `capture(maxW, {rect, quality})`, and `setAllStuds(on)`.
+- **`setAllStuds` is the "studs vs tiles" fix**: `setLego` leaves out the studs that end up covered, so a plate whose studs are
+  covered only LATER was drawn bare in the early steps and read as a tile. The booklet rebuilds with every stud (a covered one
+  sits inside the brick above it, so nothing shows) and restores afterwards.
+- The parts list groups by **part**, not part-and-colour, with a swatch row: a photo-coloured model gives nearly every piece
+  its own shade, so a colour-wise list is hundreds of lines of "1x". The per-step call-out stays colour-wise - you need to know
+  which shade to pick up.
+- Button: *Render & export -> instructions*. Cover = the finished model from the user's own camera, in perspective.
+
+## 17. Viewport: axis gizmo and marquee selection (2026-10-05)
+- **`buildGizmo` / `renderGizmo` / `gizmoClick`** (`studio/viewport3d.js`): three labelled axes in their own scene, drawn over
+  the top-right corner through a scissored viewport after the model (one renderer, no second canvas), turning with the camera;
+  a positive arm is a filled disc, a negative one a ring, and clicking an arm looks down it. `capture()` deliberately does not
+  draw it - it is not part of a booklet picture.
+- **Marquee selection**: `setSelectMode(on)` hands the left button to a rubber band (middle / right still orbit and pan),
+  `beginMarquee / moveMarquee / endMarquee(mode)` with mode from the modifier (plain = replace, Ctrl / Shift = add,
+  Alt = remove), `invertSelection`, `clearSelection` (double-click), `selectedPieces`. A piece is caught when its centre
+  projects inside the band and it is currently visible; `paintSelection` tints the selection cyan and dims the rest.
+  Toolbar: a select button that only appears with a LEGO model on screen, the count, invert and clear; Ctrl+I inverts.
+- Next (not built): **recompute the selection**. The design is to re-prepare the same grid phase, zero the field outside the
+  selection's stud / level box, solve only that box, and splice the result back - then, since the solver is deterministic, take
+  the best of a handful of variants by the box's own IoU: `beatFlat` 0.9 / 1, a looser `skinTol.max_err`, motifs on / off, the
+  measured shapes allowed solo, and a randomised tie-break. That is what makes a second attempt give a different answer.
+
+## 18. The progress bar says what it is doing (2026-10-05)
+- "solving the best phase + post-process" covered 80 % of the wall clock in one opaque message. The solver already named every
+  phase through `log`, but only *after* each finished and only to the console. Now the name is announced **before** the work:
+  `Solver.runPhase` calls `this.onPhase(name, sub)`, `solve()` takes an `onPhase` and the phases that are not `runPhase`
+  (discs, the motif-library build, fallback, thin, tubes) announce themselves too, `finishJob` takes a `progress(label, f)`,
+  the worker posts it and `engine.js` turns it into a stage.
+- The codes become words: *laying disc layers, building the assembly library, placing learned assemblies, skinning the slopes
+  (1-wide), filling the body, mopping up the surface, catching the thin features, joining the islands*, then *checking the
+  assemblies pay: ...* for the verification solve, then the post passes - *merging slopes, splicing the seams, bridging the
+  gaps, welding it into one piece, measuring the result*.
+- The fraction is split into three sections, because the motif verification is a **second full solve** and costs as much:
+  solve 0-42 %, verification 42-72 %, post 72-100 % (0-62 % / post when there is nothing to verify). Within a phase
+  `runPhase` reports sub-progress - half for building the candidate heap, half for draining it - so the one phase that is five
+  of the twelve seconds (placing learned assemblies on the duck) moves instead of sitting still. Monotone by construction.
+- Two traps while wiring it: `candidates`' first progress call is `f = 0`, which is the same signal as "a new phase started"
+  (clamped to 1e-6), and the verification solve was passed `(n) => onPhase(n)`, dropping the sub-fraction so every sub-tick
+  counted as a new phase and the bar saturated instantly.

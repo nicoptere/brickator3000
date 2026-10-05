@@ -177,7 +177,7 @@ export class Solver {
     this.I = I; this.Iat = at; this.Iver = this.ver; return I;
   }
 
-  candidates(variants, tol) {
+  candidates(variants, tol, onProgress = null) {
     const I = this.integral(), at = this.Iat, out = [], G2 = G * G, wErr = tol.w_err ?? this.o.wErr, bonusOf = tol.bonus || {};
     // variants sharing a box (h, d, w) share the box sum, so the integral is read once per box per position
     const groups = new Map();
@@ -189,7 +189,9 @@ export class Solver {
       g.ks.push(k); g.lo = Math.min(g.lo, tol.min_cov * v.vtot - 1e-3);
     }
     const Z1 = this.NZc + 1, X1 = this.NXc + 1;
+    let gDone = 0; const gTotal = groups.size;                 // a box group is the unit of work here: enough for a progress bar
     for (const g of groups.values()) {
+      if (onProgress) onProgress(gDone++ / gTotal);
       const { h, w, d, ks, lo } = g, box = h * w * d, maxErr = tol.max_err * box + 1e-3, pz = d * G, px = w * G, loG = lo * G2;
       const roundGroup = !!this.o.roundBand && ks.every((k) => variants[k].c.kind === 'round');
       const o1 = h * Z1 * X1, o2 = d * X1, o3 = w, oL = Z1 * X1, wd = w * d * G2, beat = tol.beatFlat ?? this.o.beatFlat ?? 1;        // integral offsets of the box corners from its (b, j, i) corner; oL = one level
@@ -239,8 +241,16 @@ export class Solver {
   }
 
   runPhase(variants, tol, name) {
-    const heap = this.candidates(variants, tol); let placed = 0;
+    // the phase is announced before the work (so the bar names what is RUNNING) and then reports inside it: the first half is
+    // building the candidate heap, the second is draining it. A motif phase can be five seconds of the twelve on its own.
+    const prog = this.onPhase ? (f) => this.onPhase(name, f) : null;
+    prog && prog(0);
+    // the sub-fraction is never exactly 0 once the phase has started: 0 is what tells the counter a NEW phase began
+    const heap = this.candidates(variants, tol, prog && ((f) => prog(Math.max(1e-6, f * 0.5))));
+    let placed = 0;
+    const n0 = Math.max(1, heap.size); let tick = 0;
     while (heap.size) {
+      if (prog && (++tick & 2047) === 0) prog(0.5 + 0.5 * (1 - heap.size / n0));
       const [, k, b, j, i] = heap.pop(), v = variants[k];
       const r = this.evaluate(v, b, j, i, tol);
       if (!r) continue;

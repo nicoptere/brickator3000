@@ -20,7 +20,8 @@ self.onmessage = (e) => {
     } else if (msg.type === 'finish') {
       if (ctxKey !== msg.key) throw new Error('worker context is stale');
       const logs = [];
-      const r = finishJob(ctx, msg.job, undefined, (s) => logs.push(s));
+      // the finish is the long stage: report what it is doing (pipeline.finishJob -> solver phases, then the post passes)
+      const r = finishJob(ctx, msg.job, undefined, (s) => logs.push(s), (label, f) => self.postMessage({ type: 'progress', stage: label, frac: f }));
       r.logs = logs; r.job = msg.job; r.options = ctx.o;
       self.postMessage({ type: 'result', result: r }, [r.srcTris.buffer]);
     }

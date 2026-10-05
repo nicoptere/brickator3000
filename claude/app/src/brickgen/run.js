@@ -9,7 +9,7 @@ import { Solver } from './solver.js';
 import { motifVariants } from '../motifs/library.js';
 import { snotVariants } from '../motifs/snot.js';
 
-export function solve(pre, cat, ox, oz, o, log = () => {}) {
+export function solve(pre, cat, ox, oz, o, log = () => {}, onPhase = null) {
   const win = window(pre, ox, oz); let M = win.arr; const nxc = win.nxc, nzc = win.nzc, nl = pre.nl;
   const NZ = nzc * G, NX = nxc * G;
   // fieldCascade: the broad phases (motifs, rounds, skin, fill) see the coarse field - the SDF filtered harder - and the detail
@@ -25,21 +25,21 @@ export function solve(pre, cat, ox, oz, o, log = () => {}) {
     if (o.symField !== false) M = symmetrize(M, nl, NZ, NX, pre.mirror.ax, plane);
     if (o.symTwins !== false) mirror = [pre.mirror.ax === 0 ? 'x' : 'z', plane];
   }
-  const S = new Solver(M, nl, NZ, NX, o, mirror); S.log = log;
+  const S = new Solver(M, nl, NZ, NX, o, mirror); S.log = log; S.onPhase = onPhase;
   if (pre.Mfull) { let F = window(pre, ox, oz, 'Mfull').arr; if (pre.mirror && o.symField !== false) F = symmetrize(F, nl, NZ, NX, pre.mirror.ax, plane); S.Mfull = F; }   // hollow core: the full solid, so filling the core is not counted as overfill
   S.nxc = nxc; S.nzc = nzc;
   const tb = o.technic ? { technic: 0.02 } : {};
   const withBonus = (t, extra) => ({ ...t, bonus: { ...(t.bonus || {}), ...extra } });
   // disc layers first (discs.js): a level whose cross-section is a rounded blob is laid as rows of plates, alternating direction
   // per level - the sphere / round-top recipe - before the mined assemblies and the single parts get to it
-  if (o.discs) { const d = placeDiscs(S, cat, partVariants(cat, new Set(['plate'])), o, log); log(`phase A1-disc: ${d.layers} disc layers, ${d.pieces} plates`); }   // circular cross-sections as rows of plates (discs.js)
+  if (o.discs) { onPhase && onPhase('A1-disc', 0); const d = placeDiscs(S, cat, partVariants(cat, new Set(['plate'])), o, log); log(`phase A1-disc: ${d.layers} disc layers, ${d.pieces} plates`); }   // circular cross-sections as rows of plates (discs.js)
   // profile chains (skin.js): the sloped skin as rows of 1-wide parts chosen per row, before the assemblies and the greedy skin
   if (o.profiles && o.skin) {
     const kinds = new Set(['slope', 'curved', 'cheese']); if (o.inverted) kinds.add('inverted');
     placeProfiles(S, partVariants(cat, kinds), o, log);
   }
   // broad phase: assemblies mined from human-built models (several parts at once), before any single part is considered
-  if (o.motifs) { const lib = motifVariants(cat, o); S.runPhase(S.attachMirrors(lib.variants), o.motifTol, 'M-motif'); }
+  if (o.motifs) { onPhase && onPhase('M-lib', 0); const lib = motifVariants(cat, o); S.runPhase(S.attachMirrors(lib.variants), o.motifTol, 'M-motif'); }   // the library build is the slow half: announce it separately
   // the round family before or after the sloped skin (docs/CURVES.md round 7): on a model whose top surface is mostly sloped
   // (an animal, a dome) the slopes have priority and the quarter-round plates take what they leave; on a model of flat tops and
   // vertical walls (a table, a rounded box) the round family goes first, as before. 'auto' decides by the sloped share of the top
@@ -83,6 +83,7 @@ export function solve(pre, cat, ox, oz, o, log = () => {}) {
   const any_ = { min_cov: 0, max_err: 1, piece_pen: 0 }, any = any_;
   const NZc = nzc, NXc = nxc, cell = (l, z, x) => (l * NZc + z) * NXc + x;
   if (o.fallback) {
+    onPhase && onPhase('D-fallback', 0);
     const F = S.leftoverCells(); let n1 = 0;
     for (let l = 0; l < nl; l++) for (let z = 0; z < NZc; z++) for (let x = 0; x < NXc; x++) {
       if (F[cell(l, z, x)] < o.fallbackMin) continue;
@@ -91,6 +92,7 @@ export function solve(pre, cat, ox, oz, o, log = () => {}) {
     log(`phase D-fallback 1x1: ${n1}`);
   }
   if (o.thin) {
+    onPhase && onPhase('E-thin', 0);
     const F = S.leftoverCells(), F0 = S.leftoverCells(S.M0);
     const P = window(pre, ox, oz, 'P').arr;
     const big = new Uint8Array(F0.length); for (let k = 0; k < F0.length; k++) big[k] = F0[k] >= 0.2 ? 1 : 0;
@@ -116,6 +118,7 @@ export function solve(pre, cat, ox, oz, o, log = () => {}) {
     log(`phase E-thin 1x1: ${n2}`);
   }
   if (pre.T) {                                   // forced tube cells (MST between the islands of the source volume)
+    onPhase && onPhase('F-tube', 0);
     let Tm = window(pre, ox, oz, 'T').arr;
     if (mirror) Tm = mirrorMask(Tm, nl, NZ, NX, mirror[0] === 'x' ? 0 : 2, mirror[1], G);
     let nt = 0;

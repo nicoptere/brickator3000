@@ -98,6 +98,10 @@ export const DEFAULTS = {
   splice: true, spliceRounds: 60, spliceTries: 80, spliceTime: 6000,   // re-cut side-by-side pieces of different components so a 1x2 plate spans the seam
   bridge: true, bridgeMax: 10, bridgeRounds: 120,    // shortest plate chain (zig-zag) through free cells between two components
   bridgeOutside: false, bridgeFill: 0.3,             // chains stay inside the source volume (a cell with mean fill < bridgeFill is blocked); true = the old search through any empty cell
+  // the final weld (post.weld): what is still in several pieces after everything else is joined by the same chain search with a
+  // long budget and air priced at `weldAir` hops per cell instead of forbidden, so a route inside the solid always wins
+  weld: true, weldAir: 8, weldMax: 40, weldPasses: 3, weldRounds: 80, weldReverse: true,   // pass k prices an air cell at weldAir / 2^k hops with a budget of weldMax * 2^k: cheap hidden chains first, long ones only if something is still loose
+  bridgeFlatten: true, bridgeFlattenMax: 6,          // a component with no stud to build on (a lone slope, an inverted-plus-slope lens) is rebuilt as boxes of the same footprint so a chain can reach it; only up to this many pieces, the shaped skin is not worth losing
   vertexNormals: false,      // main-thread pre-step (three.js welded vertex normals): flips reversed triangles before the ray cast
   supports: false, groundSupports: false, supportMinFrac: 0.01, supportSpacing: 24,
   finish: false, finishBricks: 'add', // 'add' (tile on top of exposed bricks) | 'none'
