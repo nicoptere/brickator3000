@@ -25,6 +25,12 @@ export async function runMethod(model, opts, { workersWanted = POOL, onStage = (
   workers = Array.from({ length: n }, spawn);
   const key = Math.random().toString(36).slice(2);
   const t0 = performance.now();
+  let autoChoice = null;
+  if (opts.studs === 'auto' || opts.studsAuto) {    // the resolution: pilot solves + mesh descriptors on one worker, then every worker sets up at that stud count
+    onStage('choosing the resolution (pilot solves)', 0);
+    autoChoice = (await call(workers[0], { type: 'auto', key, model, opts })).choice;
+    opts = { ...opts, studs: autoChoice.studs, studsAuto: false };
+  }
   onStage('preparing (samples, symmetry, ray cast)', 0);
   const setups = await Promise.all(workers.map((w) => call(w, { type: 'setup', key, model, opts })));
   const jobs = setups[0].jobs;
@@ -38,6 +44,7 @@ export async function runMethod(model, opts, { workersWanted = POOL, onStage = (
   const res = await call(workers[0], { type: 'finish', key, job: scored[0].job });
   const r = res.result;
   r.timing.total = performance.now() - t0; r.timing.setup = setups[0].ms; r.scores = scored; r.workers = usable.length;
+  if (autoChoice) { r.autoChoice = autoChoice; r.options.autoChoice = autoChoice; r.timing.auto = autoChoice.ms; }
   workers.slice(1).forEach((w) => w.terminate()); workers = workers.slice(0, 1);
   return r;
 }

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-03T09:50:02.667Z",
+  "generatedAt": "2026-10-05T04:24:00.942Z",
   "categories": [
     {
       "name": "airplanes",
@@ -1010,124 +1010,97 @@
       "name": "objaverse",
       "title": "Objaverse",
       "icon": "",
-      "count": 13,
+      "count": 10,
       "models": [
         {
-          "id": "objaverse/00781a2bfbcc426b8db901d37409461b.glb",
-          "name": "Costume",
-          "filename": "00781a2bfbcc426b8db901d37409461b.glb",
+          "id": "objaverse/creature.glb",
+          "name": "Creature",
+          "filename": "creature.glb",
           "category": "objaverse",
-          "path": "models/clean/objaverse/00781a2bfbcc426b8db901d37409461b.glb",
-          "sizeBytes": 17256892,
-          "sizeFormatted": "16.5 MB"
-        },
-        {
-          "id": "objaverse/0098586123fc435f86c7f5cb3d3b8a79.glb",
-          "name": "Chicken",
-          "filename": "0098586123fc435f86c7f5cb3d3b8a79.glb",
-          "category": "objaverse",
-          "path": "models/clean/objaverse/0098586123fc435f86c7f5cb3d3b8a79.glb",
-          "sizeBytes": 39056,
-          "sizeFormatted": "38.1 KB"
-        },
-        {
-          "id": "objaverse/03592149579946dfa921c23c05304737.glb",
-          "name": "Mascot",
-          "filename": "03592149579946dfa921c23c05304737.glb",
-          "category": "objaverse",
-          "path": "models/clean/objaverse/03592149579946dfa921c23c05304737.glb",
-          "sizeBytes": 530120,
-          "sizeFormatted": "517.7 KB"
-        },
-        {
-          "id": "objaverse/040143111d264848949bee737058b83c.glb",
-          "name": "Owl",
-          "filename": "040143111d264848949bee737058b83c.glb",
-          "category": "objaverse",
-          "path": "models/clean/objaverse/040143111d264848949bee737058b83c.glb",
-          "sizeBytes": 928964,
-          "sizeFormatted": "907.2 KB"
-        },
-        {
-          "id": "objaverse/045d9ad885b749b1bb826e2e801b57dd.glb",
-          "name": "Ice Cream",
-          "filename": "045d9ad885b749b1bb826e2e801b57dd.glb",
-          "category": "objaverse",
-          "path": "models/clean/objaverse/045d9ad885b749b1bb826e2e801b57dd.glb",
-          "sizeBytes": 905608,
-          "sizeFormatted": "884.4 KB"
-        },
-        {
-          "id": "objaverse/04f51877ba25493d94d05f6086492f37.glb",
-          "name": "Teddy Bear",
-          "filename": "04f51877ba25493d94d05f6086492f37.glb",
-          "category": "objaverse",
-          "path": "models/clean/objaverse/04f51877ba25493d94d05f6086492f37.glb",
-          "sizeBytes": 2265212,
-          "sizeFormatted": "2.2 MB"
-        },
-        {
-          "id": "objaverse/05197c7001b343e183e561c66134c951.glb",
-          "name": "Gourd",
-          "filename": "05197c7001b343e183e561c66134c951.glb",
-          "category": "objaverse",
-          "path": "models/clean/objaverse/05197c7001b343e183e561c66134c951.glb",
-          "sizeBytes": 916696,
-          "sizeFormatted": "895.2 KB"
-        },
-        {
-          "id": "objaverse/05528d3792b944309e005d36652a30c4.glb",
-          "name": "Cape",
-          "filename": "05528d3792b944309e005d36652a30c4.glb",
-          "category": "objaverse",
-          "path": "models/clean/objaverse/05528d3792b944309e005d36652a30c4.glb",
-          "sizeBytes": 4225160,
-          "sizeFormatted": "4 MB"
-        },
-        {
-          "id": "objaverse/07aefdcb6d6e41feb2890373caf83c9d.glb",
-          "name": "Pony",
-          "filename": "07aefdcb6d6e41feb2890373caf83c9d.glb",
-          "category": "objaverse",
-          "path": "models/clean/objaverse/07aefdcb6d6e41feb2890373caf83c9d.glb",
-          "sizeBytes": 1064120,
-          "sizeFormatted": "1 MB"
-        },
-        {
-          "id": "objaverse/2b814e91374444c5bcc2dd4bc002ec69.glb",
-          "name": "Barn Owl",
-          "filename": "2b814e91374444c5bcc2dd4bc002ec69.glb",
-          "category": "objaverse",
-          "path": "models/clean/objaverse/2b814e91374444c5bcc2dd4bc002ec69.glb",
-          "sizeBytes": 1789172,
+          "path": "models/clean/objaverse/creature.glb",
+          "sizeBytes": 1789100,
           "sizeFormatted": "1.7 MB"
         },
         {
-          "id": "objaverse/326494dbe70441d790fd74d06e5b5a39.glb",
-          "name": "Rodent",
-          "filename": "326494dbe70441d790fd74d06e5b5a39.glb",
+          "id": "objaverse/felix.glb",
+          "name": "Felix",
+          "filename": "felix.glb",
           "category": "objaverse",
-          "path": "models/clean/objaverse/326494dbe70441d790fd74d06e5b5a39.glb",
-          "sizeBytes": 1435032,
+          "path": "models/clean/objaverse/felix.glb",
+          "sizeBytes": 530040,
+          "sizeFormatted": "517.6 KB"
+        },
+        {
+          "id": "objaverse/fnaf.glb",
+          "name": "FNAF",
+          "filename": "fnaf.glb",
+          "category": "objaverse",
+          "path": "models/clean/objaverse/fnaf.glb",
+          "sizeBytes": 2265128,
+          "sizeFormatted": "2.2 MB"
+        },
+        {
+          "id": "objaverse/harley.glb",
+          "name": "Harley",
+          "filename": "harley.glb",
+          "category": "objaverse",
+          "path": "models/clean/objaverse/harley.glb",
+          "sizeBytes": 17256816,
+          "sizeFormatted": "16.5 MB"
+        },
+        {
+          "id": "objaverse/hen.glb",
+          "name": "Hen",
+          "filename": "hen.glb",
+          "category": "objaverse",
+          "path": "models/clean/objaverse/hen.glb",
+          "sizeBytes": 38968,
+          "sizeFormatted": "38.1 KB"
+        },
+        {
+          "id": "objaverse/ice-cream.glb",
+          "name": "Ice Cream",
+          "filename": "ice-cream.glb",
+          "category": "objaverse",
+          "path": "models/clean/objaverse/ice-cream.glb",
+          "sizeBytes": 905540,
+          "sizeFormatted": "884.3 KB"
+        },
+        {
+          "id": "objaverse/joypad.glb",
+          "name": "Joypad",
+          "filename": "joypad.glb",
+          "category": "objaverse",
+          "path": "models/clean/objaverse/joypad.glb",
+          "sizeBytes": 328632,
+          "sizeFormatted": "320.9 KB"
+        },
+        {
+          "id": "objaverse/mouse.glb",
+          "name": "Mouse",
+          "filename": "mouse.glb",
+          "category": "objaverse",
+          "path": "models/clean/objaverse/mouse.glb",
+          "sizeBytes": 1434952,
           "sizeFormatted": "1.4 MB"
         },
         {
-          "id": "objaverse/3d442e50799b43e98d5fa5e3c81e8b2c.glb",
-          "name": "Remote Control",
-          "filename": "3d442e50799b43e98d5fa5e3c81e8b2c.glb",
+          "id": "objaverse/pony.glb",
+          "name": "Pony",
+          "filename": "pony.glb",
           "category": "objaverse",
-          "path": "models/clean/objaverse/3d442e50799b43e98d5fa5e3c81e8b2c.glb",
-          "sizeBytes": 1003092,
-          "sizeFormatted": "979.6 KB"
+          "path": "models/clean/objaverse/pony.glb",
+          "sizeBytes": 1064036,
+          "sizeFormatted": "1 MB"
         },
         {
-          "id": "objaverse/47e3fc610c2d487c98f37d6932a8ae87.glb",
-          "name": "Game Controller",
-          "filename": "47e3fc610c2d487c98f37d6932a8ae87.glb",
+          "id": "objaverse/soldier.glb",
+          "name": "Soldier",
+          "filename": "soldier.glb",
           "category": "objaverse",
-          "path": "models/clean/objaverse/47e3fc610c2d487c98f37d6932a8ae87.glb",
-          "sizeBytes": 328712,
-          "sizeFormatted": "321 KB"
+          "path": "models/clean/objaverse/soldier.glb",
+          "sizeBytes": 4225084,
+          "sizeFormatted": "4 MB"
         }
       ]
     },
@@ -1439,9 +1412,80 @@
           "sizeFormatted": "535.3 KB"
         }
       ]
+    },
+    {
+      "name": "stanford",
+      "title": "Stanford 3D Scans",
+      "icon": "",
+      "count": 7,
+      "models": [
+        {
+          "id": "stanford/armadillo.glb",
+          "name": "Armadillo",
+          "filename": "armadillo.glb",
+          "category": "stanford",
+          "path": "models/clean/stanford/armadillo.glb",
+          "sizeBytes": 9687852,
+          "sizeFormatted": "9.2 MB"
+        },
+        {
+          "id": "stanford/bunny.glb",
+          "name": "Stanford Bunny",
+          "filename": "bunny.glb",
+          "category": "stanford",
+          "path": "models/clean/stanford/bunny.glb",
+          "sizeBytes": 1949448,
+          "sizeFormatted": "1.9 MB"
+        },
+        {
+          "id": "stanford/dragon.glb",
+          "name": "Stanford Dragon",
+          "filename": "dragon.glb",
+          "category": "stanford",
+          "path": "models/clean/stanford/dragon.glb",
+          "sizeBytes": 1310304,
+          "sizeFormatted": "1.2 MB"
+        },
+        {
+          "id": "stanford/drill.glb",
+          "name": "Drill",
+          "filename": "drill.glb",
+          "category": "stanford",
+          "path": "models/clean/stanford/drill.glb",
+          "sizeBytes": 110320,
+          "sizeFormatted": "107.7 KB"
+        },
+        {
+          "id": "stanford/happy_buddha.glb",
+          "name": "Happy Buddha",
+          "filename": "happy_buddha.glb",
+          "category": "stanford",
+          "path": "models/clean/stanford/happy_buddha.glb",
+          "sizeBytes": 1842360,
+          "sizeFormatted": "1.8 MB"
+        },
+        {
+          "id": "stanford/lucy.glb",
+          "name": "Lucy",
+          "filename": "lucy.glb",
+          "category": "stanford",
+          "path": "models/clean/stanford/lucy.glb",
+          "sizeBytes": 2800552,
+          "sizeFormatted": "2.7 MB"
+        },
+        {
+          "id": "stanford/teapot.glb",
+          "name": "Teapot",
+          "filename": "teapot.glb",
+          "category": "stanford",
+          "path": "models/clean/stanford/teapot.glb",
+          "sizeBytes": 193712,
+          "sizeFormatted": "189.2 KB"
+        }
+      ]
     }
   ],
-  "totalModels": 143,
-  "totalBytes": 307893912,
-  "totalBytesFormatted": "293.6 MB"
+  "totalModels": 147,
+  "totalBytes": 322938920,
+  "totalBytesFormatted": "308 MB"
 }

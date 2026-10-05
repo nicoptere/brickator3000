@@ -1,12 +1,14 @@
 // Web Worker: runs the brickgen method off the main thread. One worker can score grid phases or finish the best one.
-import { setup, scoreJob, finishJob } from './brickgen/pipeline.js';
+import { setup, scoreJob, finishJob, autoStuds } from './brickgen/pipeline.js';
 
 let ctx = null, ctxKey = null;
 
 self.onmessage = (e) => {
   const msg = e.data;
   try {
-    if (msg.type === 'setup') {
+    if (msg.type === 'auto') {                      // studs: 'auto' - the resolution choice (pipeline.autoStuds), once, before the setups
+      self.postMessage({ type: 'auto', key: msg.key, choice: autoStuds(msg.model, msg.opts) });
+    } else if (msg.type === 'setup') {
       const t = performance.now();
       ctx = setup(msg.model, msg.opts); ctxKey = msg.key;
       self.postMessage({ type: 'setup', key: msg.key, jobs: ctx.jobs, symmetry: ctx.sym, symOk: ctx.symOk, ms: performance.now() - t, T: ctx.T });

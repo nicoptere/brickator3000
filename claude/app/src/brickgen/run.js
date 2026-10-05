@@ -4,7 +4,7 @@ import { window, symmetrize } from './grid.js';
 import { placeDiscs } from './discs.js';
 import { placeProfiles } from './skin.js';
 import { mirrorMask } from './islands.js';
-import { partVariants } from './variants.js';
+import { partVariants, pieceVariant } from './variants.js';
 import { Solver } from './solver.js';
 import { motifVariants } from '../motifs/library.js';
 import { snotVariants } from '../motifs/snot.js';
@@ -139,12 +139,11 @@ export function solve(pre, cat, ox, oz, o, log = () => {}) {
  */
 export function surface(S, cat) {
   const NL = S.NL, NZ = S.NZs, NX = S.NXs, F = S.Mfull || S.M0, g = S.gradients();
-  const vars = partVariants(cat, new Set(cat.map((c) => c.kind))), vmap = new Map(vars.map((v) => [v.c.id + '|' + v.rot, v])), byId = new Map();
-  for (const v of vars) if (!byId.has(v.c.id)) byId.set(v.c.id, v);
+  const vars = partVariants(cat.map((c) => ({ ...c, noSolo: false })), new Set(cat.map((c) => c.kind))), byId = new Map(); for (const v of vars) (byId.get(v.c.id) || byId.set(v.c.id, []).get(v.c.id)).push(v);   // every part, the motif-only ones too
   const SHAPED = new Set(['slope', 'curved', 'cheese', 'inverted', 'wedge', 'round', 'shaped']);
   const topK = new Int8Array(NZ * NX).fill(-1), topH = new Float32Array(NZ * NX).fill(-1), botK = new Int8Array(NZ * NX).fill(-1), botH = new Float32Array(NZ * NX).fill(1e9);
   for (const p of S.pieces) {
-    if (p.snot) continue; const v = vmap.get(p.id + '|' + p.rot) || byId.get(p.id); if (!v) continue;
+    if (p.snot) continue; const v = pieceVariant(p, vars, byId); if (!v) continue;
     const pz = v.d * G, px = v.w * G, sh = SHAPED.has(p.kind) ? 1 : 0;
     for (let z = 0; z < pz; z++) for (let x = 0; x < px; x++) {
       const Z = p.j * G + z, X = p.i * G + x; if (Z < 0 || X < 0 || Z >= NZ || X >= NX) continue; const q = Z * NX + X;

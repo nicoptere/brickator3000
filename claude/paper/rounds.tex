@@ -1,0 +1,308 @@
+\section{Curved surfaces}\label{sec:curves}
+The method of the previous sections was built on mechanical objects and it shows on round ones: the duck, the dome of a table
+lamp, a sphere. The question that opened this part of the work was whether the right \emph{parts} would fix it --- quarter
+circles, half discs, round plates, a catalogue cut from the LDraw library by usage --- and the answer, by measurement, was mostly
+no. Three different things were being called ``the artifacts on curved surfaces'', and parts fix only one of them.
+
+\subsection{The census, and why the tier question is moot}
+\code{claude/generator/omr\_rank.py} ranks every part placed in the 1,150 official models: 401,012 placements of 4,425 distinct
+LDraw parts. The top 1,000 cover 95.5\,\% of the placements, the top 2,000 98.7\,\% --- the ``5K / 8K / 10K catalogues'' are
+the same list. By family, solid boxes are 44.1\,\%, shaped parts (slopes, curves, rounds, wedges, arches) 21.6\,\%, sideways
+connectors 3.7\,\%: 69.5\,\% of everything ever placed is expressible in the engine's model; the rest is Technic (10.0\,\%),
+minifigures (5.3\,\%) and bars, clips, hinges, wheels and windows (15.2\,\%). The 262-part catalogue already covers 86.8\,\% of
+the solid placements, 75.3\,\% of the shaped ones and 63.3\,\% of the sideways ones, and what is missing is variants of what is
+in. Adding solo candidates was measured negative in the motif round (\code{shapeParts} floods the skin with fragments), so a
+wider catalogue only pays through the motifs, and the miner keeps only windows whose parts are all in the catalogue --- widening it
+means re-mining. The 450 official models of 100 parts or fewer were mined separately as a ``small-set'' library (680 motifs):
+measured through \code{motifLibrary}, dropped by the verification below on the duck, dolphin and table like the built-in library,
+$-0.5$ IoU on the chair. Moot too.
+
+\subsection{Three artifacts}
+\begin{enumerate}
+\item \textbf{The rim staircase.} Every horizontal cross-section of a round object is a Bresenham circle of cells, and the greedy
+  fill tiles it with the longest plates it can, leaving a necklace of 1$\times$1 fragments along the edge. Round \emph{parts} do
+  not fire on it: the solver places a 4$\times$4 round plate only where the field is a disc of radius 2.0 studs to within a
+  quarter stud, and real cross-sections never are. What works is a \emph{recipe}: \textbf{disc layers} (\code{discs.js}, phase A1,
+  before the motifs). Per level, a Kasa least-squares circle is fitted to the outline of each solid component --- the ``Hough
+  transform'' step, done the cheap way because we know we are looking for one circle per blob --- and if the component is round
+  enough (IoU $\ge .85$ against the fitted disc, outline rms $\le .45$ stud, radius $\ge 2$ studs) it is laid the way a builder
+  lays a round table top: rows of 1$\times n$ plates along $x$, the next level along $z$, no lone 1$\times$1 ($7 = 4+3$, not
+  $4+2+1$). Table 660 $\to$ 609 pieces, IoU .789 $\to$ .799; duck 1377 $\to$ 1358. \textbf{Quarter circles on corners}
+  (\code{post.roundCorners}): after the finish, every 1$\times$1 tile on a convex corner of its layer becomes the quarter-round
+  tile 25269 turned to the open side (table 12, duck 56), and an isolated 1$\times$1 tile becomes the round tile 98138. Cosmetic,
+  IoU unchanged, and the staircase reads as a curve (figure~\ref{fig:discs}).
+\item \textbf{The sloped skin of a blob.} Where the local curvature matches one of the $\sim$13 curved profiles the skin phase
+  lays slopes; where it matches nothing it falls back to steps of plates. This one took a second round and is the next subsection.
+\item \textbf{The lattice.} A round top at a fractional plate height is a layer of partial cells. The lattice fit of
+  section~\ref{sec:lattice} already took care of this one (table .690 $\to$ .789), and section~\ref{sec:resolution} returns to it.
+\end{enumerate}
+
+\begin{figure}[H]
+\centering
+\includegraphics[height=0.78\textheight]{curves_before_after.jpg}
+\caption{The table top before and after disc layers and corner rounding, coloured by piece orientation (blue plates along $x$,
+green along $z$, red 1$\times$1, orange the quarter-round corner tiles). One layer of long plates with a necklace of 1$\times$1
+at the rim becomes rows that turn $90^\circ$ on every level, no 1$\times$1 inside, quarter rounds on the convex corners.}
+\label{fig:discs}
+\end{figure}
+
+\subsection{The sloped skin: what the artifacts actually were}
+The first guess --- the catalogue has too few profiles --- was wrong in an instructive way. A per-column \emph{attribution} of the
+top surface (\code{surface()} in \code{run.js}: for every sample column, the slope of the surface there and the kind of the
+piece that ends up on top) said this about the round-4 defaults:
+\begin{center}\small
+\begin{tabular}{lccc}
+\toprule
+surface slope & duck: shaped / flat & dome & sphere \\
+\midrule
+20--30$^\circ$ & 63 / 37\,\% & 47 / 53 & 82 / 18 \\
+30--40 & 63 / 37 & 65 / 35 & 58 / 42 \\
+40--50 & 57 / 43 & 27 / 73 & \textbf{1 / 99} \\
+50--60 & 59 / 41 & 11 / 89 & 16 / 84 \\
+60--75 & 63 / 37 & 26 / 74 & 28 / 72 \\
+\bottomrule
+\end{tabular}
+\end{center}
+while a probe on the fresh field found a passing skin candidate whose top matched the surface at 100\,\% of those columns. The
+parts exist and they fit; the solver did not get to place them. Three causes, in order of size:
+\begin{enumerate}
+\item \textbf{The disc layers were eating the flanks.} The exposure test (15\,\% of a layer's cells uncovered above) is true
+  of every ring of a sphere's flank. The test is geometric now: exposed cells over outline length $\ge 1.5$ studs
+  (\code{discRing}), measured against the full solid rather than the crust-carved field. The table top (ring 9.2) still
+  qualifies; the sphere's rings (0.0--0.6) and the duck's (0.1--0.3) no longer do.
+\item \textbf{The mined assemblies do not belong on a smooth slope.} The motifs that land there are ``a slope on a long brick''
+  (3039+2456, 3040+3009) and ``a cheese on a plate''; the brick fits by volume inside the solid, imposes a straight ridge on a
+  curved surface, and everything around it has to be fragments. On the chair the same assemblies are the frame members and gain
+  4.6 points of IoU. No local measure separated the two cases (azimuth turning, gradient spread, a shaped-share filter were all
+  tried), so the engine now \textbf{verifies}: the final field is solved once more without the assemblies --- fast, the motif phase
+  is what costs --- and they are kept only when they gain \code{motifGain} $=.01$ of IoU. Kept on the chair ($+4.6$) and the
+  cylinder ($+2.1$), dropped on the dome, sphere, duck, dolphin and table.
+\item \textbf{Doubly curved surfaces need 1-wide parts along the fall line.} A 2-wide slope across a sphere fails on its cross
+  slope (at $45^\circ$ of azimuth the surface drops 14\ldu{} across one stud); a 1-wide part fits any row whose profile it
+  matches. The greedy, scoring volume alone, placed 2$\times$2 and 2$\times$4 slopes where they happened to pass, at random yaws.
+  Now the 1-wide skin parts run first (\code{skinNarrow}) with an \textbf{alignment term} in the score (\code{skinAlign}:
+  $\pm 0.6$ times the cosine between the part's own slope direction, read off its template, and the surface gradient under it,
+  from the field's height map, weighted by steepness), and \code{post.widen} fuses two identical 1-wide parts side by side back
+  into the catalogue's 2-wide version ($3040+3040 \to 3039$, $11477+11477 \to 15068$, $4286+4286 \to 3298$, found by template,
+  not by name). Axis-facing columns of the dome went from 20\,\% flat to 2\,\%.
+\end{enumerate}
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}{0.24\textwidth}\centering\includegraphics[width=\textwidth]{r_kd_dome_round4}\caption*{dome, round 4}\end{subfigure}
+\begin{subfigure}{0.24\textwidth}\centering\includegraphics[width=\textwidth]{r_kd_dome_round5}\caption*{round 5}\end{subfigure}
+\begin{subfigure}{0.24\textwidth}\centering\includegraphics[width=\textwidth]{r_kd_sphere_round4}\caption*{sphere, round 4}\end{subfigure}
+\begin{subfigure}{0.24\textwidth}\centering\includegraphics[width=\textwidth]{r_kd_sphere_round5}\caption*{round 5}\end{subfigure}\\[2pt]
+\begin{subfigure}{0.24\textwidth}\centering\includegraphics[width=\textwidth]{r_kd_duck_round4}\caption*{duck, round 4}\end{subfigure}
+\begin{subfigure}{0.24\textwidth}\centering\includegraphics[width=\textwidth]{r_kd_duck_round5}\caption*{round 5}\end{subfigure}
+\begin{subfigure}{0.24\textwidth}\centering\includegraphics[width=\textwidth]{r_kd_dolphin_round4}\caption*{dolphin, round 4}\end{subfigure}
+\begin{subfigure}{0.24\textwidth}\centering\includegraphics[width=\textwidth]{r_kd_dolphin_round5}\caption*{round 5}\end{subfigure}
+\caption{The skin before and after, coloured by kind: blue slopes, teal curved slopes, purple cheese, red inverted, grey
+plates / bricks / tiles. Round 4 is the committed state before this work (wide parts, no alignment, motifs unverified, bridges
+anywhere). Dome 393 pieces / IoU .877 $\to$ 413 / .901; sphere 734 / .853 $\to$ 777 / .856, flat columns on 20--75$^\circ$
+surfaces 62\,\% $\to$ 15\,\%; duck 1304 / .855 $\to$ 1294 / .874, 38\,\% $\to$ 19\,\%; dolphin 262 / .684 $\to$ 240 / .691,
+75\,\% $\to$ 52\,\%. Undersides (inverted slopes 4287 / 3747, added to the core catalogue): sphere 65\,\% $\to$ 38\,\% flat.}
+\label{fig:skin}
+\end{figure}
+
+\subsection{What did not make it}
+Looser skin tolerances (the tolerance is not what blocks the parts). 1-wide parts first \emph{without} alignment: the sphere
+got worse (34 $\to$ 52\,\% flat), narrow parts at random yaws block each other too. Alignment alone, with wide parts: excludes
+the misaligned parts and nothing replaces them. Motifs after the skin: worse than motifs off everywhere. Any local test for
+``this cell is on a smooth curve'' (azimuth turning, gradient spread, jumps): no threshold separates the duck from the chair.
+\textbf{Profile chains} (\code{skin.js}, option \code{profiles}): rows along the fall line, each a chain of 1-wide parts chosen by
+a dynamic programme over the row --- correct and clean on every row it takes, and still worse than the plain greedy (dome 28\,\% vs
+21\,\% flat), because the hard $x$/$z$ facing split loses the freedom the greedy keeps at 30--45$^\circ$ of azimuth and 2-wide
+parts never enter the chain. Kept as an option. A pass for the diagonal seams (double-convex corner slopes right after the narrow
+skin) placed four parts on the dome and changed nothing: at 8 studs of radius the gradient turns too slowly for a 2$\times$2
+corner. Letting the extended 1-wide parts into the narrow pass: duck 19 $\to$ 45\,\% flat, twice.
+
+\section{Three bugs that looked like features}\label{sec:round7}
+\paragraph{The bridge in the air.} \code{post.bridge} joins components with the shortest chain of $1\times k$ plates through
+\emph{free} cells, and free meant ``no piece there'', not ``inside the model''. On a round or organic model the shortest free
+route between two components is around the outside, so the chain became a skirt of plates under a dome, an L of 1$\times$6
+plates hanging off a game controller --- and, sitting on the real surface, it then kept the skin from being laid there (the knobs
+that could not be round). Measured on dome / duck / chair / rafs5 / be2: 2 / 6 / 3 / 4 / 5 bridge plates, every one of them in
+cells with field fill below 0.3. A cell whose mean fill is below \code{bridgeFill} ($.3$) is now as blocked as an occupied one;
+chains stay inside the solid. No bridge plate in the air on any model, IoU $+0.2 \ldots +0.5$ everywhere, and the components the
+air chains used to join are now what they are (be2 1 $\to$ 6: strut columns, a problem for the connectivity passes through the
+solid, not a reason to build in the air). A cost for air cells was tried first; two air plates still fit in the budget, so the
+hard rule won.
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}{0.24\textwidth}\centering\includegraphics[width=\textwidth]{r_br_duck_outside_crop}\caption*{duck, through any empty cell}\end{subfigure}
+\begin{subfigure}{0.24\textwidth}\centering\includegraphics[width=\textwidth]{r_br_duck_inside_crop}\caption*{inside the solid}\end{subfigure}
+\begin{subfigure}{0.25\textwidth}\centering\includegraphics[width=\textwidth]{r_br_dome_outside_crop}\caption*{dome, any empty cell}\end{subfigure}
+\begin{subfigure}{0.25\textwidth}\centering\includegraphics[width=\textwidth]{r_br_dome_inside_crop}\caption*{inside the solid}\end{subfigure}
+\caption{The bridge phase, bridge plates in orange. Through any empty cell the duck gets six plates and the dome two, every one
+sitting on the outside of the surface (the duck's head, the dome's shoulder); inside the solid, none in the air. Small at this
+scale, and exactly what kept the skin from being laid under them.}
+\end{figure}
+
+\paragraph{The measured shapes were hollow.} \code{lego\_catalog\_shapes.py} measures a part as the volume between its top and
+its bottom profile, and the bottom profile of an LDraw brick is the ceiling of its cavity: the 2$\times$2 quarter-round plate
+30357 came out 50\,\% full, the 4$\times$4 corner-round plate 60474 63\,\%. Against a solid field those templates never passed
+the tolerance, which is why ``the round family does not fire'' above and why \code{shapeParts} measured negative in the motif
+round. The undersides are filled solid now for everything but arches and inverted parts (20 of 51 shapes). The rounded-edge box
+goes from wedges to a stack of quarter-round plates (IoU .939 $\to$ .957), the table .809 $\to$ .820. With real templates the
+quarter-round plates then fitted the duck's body level by level \emph{before} the skin could, so the round family's turn is
+decided per model: after the sloped skin when at least 30\,\% of the top surface is sloped (an animal, a dome), before it
+otherwise (a table, a rounded box). A per-candidate steepness gate was tried first and lost on the sphere and the dolphin.
+
+\paragraph{Loose pieces.} Every extra component of be2 (3 $\to$ 8 after the narrow skin) was one loose piece --- a cheese on a
+wing tip, a tile left by the finish. Components of one piece that touch nothing are removed (\code{dropLoose}): be2 8 $\to$ 1,
+chair 5 $\to$ 1, rafs5 8 $\to$ 3.
+
+\subsection{Sideways synthesis: ``anything on walls''}
+The question was discs on a wall, and more generally anything on a vertical face. The mined SNOT motifs only ever contain the
+1$\times$1 round plate on a headlight brick, because no official set puts a 2$\times$2 disc on a wall inside a mining window. But
+the mined motifs do contain the information that matters: \emph{where the side stud is}. \code{motifs/snot.js} recovers, for
+every mined sideways part next to a host, the world position of the host's side stud (the mode over the observations --- a
+1$\times$2 plate can hang by either cell): 48 stud points for (host, host yaw, part orientation) seen five or more times, nearly
+all on 4070 (headlight) and 87087 (one stud on the side). The underside of every plate, tile, slope or round plate takes a stud in
+each cell of its footprint, so the same stud holds \emph{any} such part by \emph{any} of its cells: 548 host-plus-part assemblies,
+2192 solver variants after the yaws and mirrors, built through the same \code{assemblyVariants} as the mined motifs, placed as
+rigid assemblies, exported with their real orientation, round-tripping through the LDR exporter exactly, and reproducing all nine
+two-part mined SNOT motifs they cover. Phase \code{S-snot} after the upright skin, option \code{snot}.
+
+It is off by default, and the reason is the lesson of the skin all over again. A sideways part is chosen here by volume alone,
+like any other candidate, and the field-driven selection hangs small things wherever a partial cell lets them lower the error:
+cones and pyramids on a rounded edge until those were excluded, 1$\times$1 round plates on the corners of a box. On the boss box
+the mined SNOT motifs, kept by the verification where they pay, already do the disc-on-a-wall greeble (17 sideways round plates
+and tiles, figure~\ref{fig:snot2}); the synthesis adds pieces and nothing to the IoU. The sloped skin only became clean once the
+solver was told \emph{where a slope belongs}; a wall has no top-surface gradient, but it has a depth map per facing. The form of
+the feature is therefore \textbf{a wall is a floor turned on its side}: resample the field so that one facing becomes ``up'' (the
+4\ldu{} samples along $x$ pair up into 8\ldu{} plates, the plates split into two samples), run the narrow aligned skin there with
+the upright catalogue, and turn the result back --- its pieces become sideways pieces (their yaw composed with the frame rotation
+gives the orientation index), its ``ground'' cells become the places where the wall must carry a side-stud host instead of a plain
+brick. That is how a real SNOT hull is built: a core of side-stud bricks and sideways plating. The pieces of this exist --- the 24
+orientations, the rasteriser, the rigid groups, the exporter, now the legal stud points; the frame rotation, the host insertion
+and the merge with the upright solution are the work.
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}{0.49\textwidth}\centering\includegraphics[width=\textwidth]{r_sn_boxBoss_off}\caption{the boss box at 24 studs, defaults: 805 pieces, IoU .985; the boss is on the right face}\end{subfigure}
+\begin{subfigure}{0.49\textwidth}\centering\includegraphics[width=\textwidth]{r_sn_boxBoss_snot}\caption{with the synthesised sideways assemblies: 809 pieces, IoU .985}\end{subfigure}
+\caption{A box with a cylindrical boss on one face (the disc on a wall), coloured by kind; sideways pieces in bright teal. The
+mined sideways motifs already greeble the boss; the synthesis changes little until it is driven by the wall's own depth map.}
+\label{fig:snot2}
+\end{figure}
+
+\section{Choosing the resolution}\label{sec:resolution}
+For a given mesh some stud counts come out visibly better than others, and nothing said which. The question behind it was
+whether a metric exists for a ``good'' default --- good meaning the high-frequency detail of the mesh survives while its plain
+areas stay plain. The second half is free: a plain area costs the same few big plates at any resolution. The first half is a
+sampling question with a budget attached. And the ``some resolutions are better'' part is real, measurable before anything is
+solved, and has nothing to do with detail: it is the lattice.
+
+\subsection{What the literature says}
+A feature survives a grid when it spans about two cells (the two-voxel form of Nyquist); for surfaces the sharper statement is the
+$\varepsilon$-sampling of Amenta and Bern: the sample density must follow the \emph{local feature size}, the distance to the medial
+axis, so thin parts and tight curves need dense samples and flat parts hardly any. Our field samples the mesh at 4\ldu{} and the
+parts at 20\ldu, so the stud is the period that matters. Two descriptors give the feature sizes of a mesh: the shape diameter
+function of Shapira, Shamir and Cohen-Or measures local thickness by casting rays through the solid --- chord lengths along the
+axes are its cheap cousin and the engine's ray caster gives them for free --- and radii of curvature give the other size, how tight
+the round parts are. For the operating point itself, rate--distortion thinking applies: pieces are the rate, the error against
+the original the distortion, and the conventional choice on such a curve is its knee (Kneedle, Satopaa et al.). Testuz,
+Schwartzburg and Pauly voxelise at a user-chosen resolution and do not ask the question.
+
+\subsection{Measuring across resolutions}
+The engine's IoU is against its own field at the solution's resolution, so it cannot compare two resolutions.
+\code{test/resolution\_bench.mjs} rasterises every solution back into one fine \emph{reference} voxelisation of the mesh (96 studs,
+no lattice fit, no crust) and measures there: the IoU of the solid against the reference solid, the carved hollow counted as
+solid since it is hidden, and the same IoU restricted to a band half a stud wide around the reference surface, where the detail
+lives. The same is done for the \emph{field} alone at each stud count: what the voxel grid can represent before any part is chosen,
+so that the solver's own loss is the gap between the two. Pieces are matched to their template by id, rotation and footprint;
+without that the measure fell with resolution.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{resolution_curves}
+\caption{Left: fidelity against the 96-stud reference versus piece count, for the solution (solid) and for the field alone
+(dotted); the ring marks the automatic choice. Middle: the same within half a stud of the surface. Right: the field's fidelity at
+every stud count within $\pm 15\,\%$ of the budget --- the lattice effect; rings mark the chosen count.}
+\label{fig:rd}
+\end{figure}
+
+Three things are in figure~\ref{fig:rd}.
+\begin{enumerate}
+\item \textbf{There is no knee.} On the smooth shapes fidelity grows steadily in $\log(\text{pieces})$: every doubling of the piece
+  count buys the sphere about .02 of solid IoU and .07 of band IoU, from 8 studs to 48, and Kneedle on such a curve returns an
+  end point. The resolution is a budget decision, not a property of the mesh --- except for the next point.
+\item \textbf{The round shape has a ceiling.} The sphere gains little from 16 to 48 studs for 10$\times$ the pieces, and falls
+  apart: one component at 16, 69 at 32. Once the radius spans about 8 studs the slopes and curved parts follow the surface as well
+  as they ever will; past that the solver pays in pieces and connectivity for nothing a builder would see. The furniture is nearly
+  flat from 20 to 48: its planar faces are right at any resolution that lands them on the lattice and its fillets never span a stud
+  at any practical count.
+\item \textbf{The lattice is the ``some resolutions are better'' effect, and it is large.} A plate-thick table top or a stud-wide leg
+  either lands on the lattice or is smeared over two cells, and that error dwarfs what one more stud of resolution buys. The
+  \emph{field} shows it before any part is placed: the table's field at 43 studs is .81 against the reference, at 35 or 47 it is
+  .93; the chair's at 37 is .966, at 32 .982. The lattice fit of section~\ref{sec:lattice} ($\pm 5\,\%$ of scale) removes part
+  of it, not all: at some counts no scale within 5\,\% lands both the top and the legs.
+\end{enumerate}
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}{0.49\textwidth}\centering\includegraphics[width=\textwidth]{r_res_table_35}\caption{table at 35 studs: 562 pieces, IoU .885}\end{subfigure}
+\begin{subfigure}{0.49\textwidth}\centering\includegraphics[width=\textwidth]{r_res_table_43}\caption{at 43 studs: 772 pieces, IoU .831}\end{subfigure}\\[2pt]
+\begin{subfigure}{0.49\textwidth}\centering\includegraphics[width=\textwidth]{r_res_sphere_14}\caption{sphere at 14 studs (the automatic choice): 562 pieces, 1 component}\end{subfigure}
+\begin{subfigure}{0.49\textwidth}\centering\includegraphics[width=\textwidth]{r_res_sphere_32}\caption{at 32 studs: 3553 pieces, 69 components}\end{subfigure}
+\caption{The same meshes at neighbouring or larger stud counts. The table at 43 studs is worse than at 35 by every measure ---
+the lattice --- and the sphere past its curvature ceiling buys fragments.}
+\end{figure}
+
+\subsection{The automatic stud count}
+\code{pipeline.autoStuds} (\code{studs: 'auto'}, or the \emph{Stud count: automatic} switch) combines three numbers, in
+2--9\,s on the test models:
+\begin{itemize}
+\item \textbf{A piece budget.} Two quick pilot solves (no motifs, no post passes) at 12 and 20 studs give the piece counts there
+  and the growth exponent, pieces $\propto N^{e}$ with $e$ fitted per model: sphere 2.6, duck 2.6, chair 2.4, table 3.1 (a thin
+  model grows fastest while its struts appear), rounded box 1.6. The budget \code{autoPieces} (1200) gives $N_{\text{budget}}$. One
+  pilot with a fixed exponent overshot the table by 50\,\%: it vanishes at 12 studs.
+\item \textbf{A curvature ceiling.} The radius of curvature across every smooth edge of the welded mesh --- the dihedral angle
+  between its two faces over the width of the two-face strip, creases above $35^\circ$ excluded since a box edge is sharp at any
+  resolution --- weighted by edge length; its median must span 8 studs, so a sphere of radius $R$ asks for 16 studs across. Exact on
+  the synthetic shapes (sphere 16, cylinder 26.7, rounded box of $R = W/4$: 32, boss 44.8). It applies only when at least 10\,\%
+  of the smooth surface is curved: the chair is 26\,\% fillets of radius $W/24$ and would ask for 194 studs, which is not what the
+  ceiling is for. Vertex normals were the first attempt and fail on exactly these meshes: averaged across a crease they tilt by
+  $45^\circ$, so every flat wall of a box read as a curve of radius $W/4$. Chord thickness is computed and reported --- at $N$ studs
+  it says how much of the model is thinner than a stud --- but does not set the count: its 10th percentile is grazing chords and
+  fillets and asks for 160--900 studs on every real model.
+\item \textbf{The lattice tie-break.} Around $N = \min(N_{\text{budget}}, N_{\text{curv}})$ the seven stud counts within
+  $\pm 15\,\%$ are each prepared exactly as the engine will (lattice fit included) and their \emph{fields} measured against a
+  reference voxelisation of twice the finest candidate; the IoU, less $.02$ per doubling of the pieces so that fewer pieces win
+  ties (a smooth shape gains about $.005$), picks the count. The field is pulled rather than splatted (every reference cell takes
+  the field cell under its centre), 0.3\,s per candidate.
+\end{itemize}
+
+\begin{table}[H]
+\centering\small
+\begin{tabular}{lrlrrl}
+\toprule
+model & chosen & by & $N_{\text{budget}}$ & $N_{\text{curv}}$ & field IoU of the candidates \\
+\midrule
+sphere & 14 & lattice & 18.9 & 16 & 14 .964 \ 15 .967 \ 16 .969 \ 17 .971 \ 18 .973 \\
+dome & 14 & lattice & 25.4 & 16 & 14 .967 \ldots 18 .975 \\
+cylinder & 24 & lattice & 37.8 & 26.7 & 23 .967 \ \textbf{24 .975} \ 26 .977 \ 27 .978 \ 28 .979 \ 30 .981 \ 31 .981 \\
+rounded box $R = W/4$ & 30 & lattice & 38.6 & 32 & 27 .990 \ 29 .990 \ \textbf{30 .999} \ 32 .999 \ 34 .999 \ 35 .995 \ 37 .990 \\
+rounded box $R = 0.15W$ & 33 & lattice & 39.2 & 53.3 & \textbf{33 .998} \ 35 .990 \ 37 .990 \ 39 .995 \ 41 .998 \ 43 .998 \ 45 .998 \\
+boss on a box & 34 & lattice & 40.3 & -- & \textbf{34 .998} \ 36 .997 \ 38 .989 \ 40 .998 \ 42 .998 \ 44 .998 \ 46 .993 \\
+duck & 20 & lattice & 22.5 & 29.8 & \textbf{20 .964} \ 21 .964 \ 22 .964 \ 23 .967 \ 24 .969 \ 25 .969 \ 26 .972 \\
+dolphin & 54 & lattice & 72.5 & 74.2 & \textbf{54 .943} \ 58 .943 \ 61 .943 \ 64 .949 \\
+table & 35 & lattice & 40.7 & 93.6 & \textbf{35 .926} \ 37 .921 \ 39 .928 \ 41 .896 \ 43 .811 \ 45 .914 \ 47 .934 \\
+chair & 32 & lattice & 33.7 & 194 & 29 .971 \ 31 .971 \ \textbf{32 .982} \ 34 .979 \ 36 .974 \ 37 .966 \ 39 .977 \\
+rafs5 & 61 & lattice & 70.6 & 328 & 54 .817 \ 58 .823 \ \textbf{61 .826} \ 64 .828 \\
+be2 & 64 & budget & 97.1 & 191 & 54 .571 \ 58 .586 \ 61 .577 \ \textbf{64 .631} \\
+\bottomrule
+\end{tabular}
+\caption{What the automatic choice does on the test models. $N_{\text{curv}}$ is the curvature ceiling (applied when the curved
+share of the surface is at least 10\,\%; the chair's and the aircraft's fillets do not count). The table at 43 studs and the
+rounded box at 35 are the counts a user would have seen as ``worse''; they are found in 0.3\,s each and skipped. The biplane's
+field is .63 against the reference even at 64 studs: its struts are thinner than a stud at any count the budget allows.}
+\end{table}
+
+What did not work, briefly: vertex-normal curvature; Kneedle on the solution curves (no knee to find); one pilot and a fixed
+exponent; the chord-thickness percentile as a criterion; the lattice \emph{score} of section~\ref{sec:lattice} as the tie-break
+--- it ranks the chair right (2.24 at 32) but is blind to plate heights and to the thin elements that make the table's 43 bad,
+and the field fidelity sees both.

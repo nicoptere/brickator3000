@@ -9,6 +9,7 @@ import { detectSymmetry } from './symmetry.js';
 import { PointGrid } from './nn.js';
 import { visibleSamples } from './visibility.js';
 import { snapToPalette } from './colors.js';
+import { featureStuds, referenceField, fieldFidelity } from './resolution.js';
 import CATALOG from './catalog.js';
 import EXT from './catalog_ext.js';
 import SHAPES from './catalog_shapes.js';
@@ -38,9 +39,57 @@ export const catalogFor = (o) => {
 export { DEFAULTS, CATALOG, SHAPES };
 const now = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
 
+/**
+ * Which resolution? (resolution.js, docs/CURVES.md round 8.) Three numbers, combined:
+ *  - a piece budget: two quick pilot solves at `autoPilot` studs give the piece counts there and the growth exponent (pieces grow
+ *    as N^2..3: the skin dominates, thin models grow fastest while their struts appear), so the budget `autoPieces` gives N_budget;
+ *  - the detail ceiling: the median radius of curvature of the curved surface must span `autoCurv` studs (a round shape reads as
+ *    round; past that a sphere gains .1 of shell fidelity for 4x the pieces and falls apart into components) - a round shape
+ *    needs no more than that, however large the budget. Creases do not count: a box edge is sharp at any resolution;
+ *  - the lattice: among the stud counts within `autoSpan` of the choice, the one whose FIELD (the voxelisation the solver sees,
+ *    lattice fit included) is most faithful to a fine reference voxelisation of the mesh, detrended by the smooth gain of
+ *    resolution (`autoTrend` of shell IoU per doubling). This is why, for a given mesh, some resolutions come out cleaner than
+ *    others: a plate-thick table top or a stud-wide leg either lands on the lattice or is smeared over two cells, and the
+ *    difference (table: shell IoU .54 at 24 studs, .80 at 28) dwarfs what one more stud of resolution buys.
+ * Returns { studs, chosen, budget, feature, detail, candidates, ms }.
+ */
+export function autoStuds(model, opts = {}) {
+  const o = { ...DEFAULTS, ...opts }, t0 = now();
+  const lo = o.autoMin ?? 8, hi = o.autoMax ?? 64, budget = o.autoPieces ?? 1200, [eLo, eHi] = o.autoExpRange ?? [1.5, 3.5];
+  const pilots = Array.isArray(o.autoPilot) ? o.autoPilot : [o.autoPilot ?? 12];
+  const feat = featureStuds(model, o);
+  // the piece budget: quick pilot solves (no motifs, no post passes) at one or two coarse stud counts. One pilot extrapolates with
+  // the measured exponent autoExp; two fit it per model (a thin model - a table, an aircraft - vanishes at 12 studs and its
+  // pieces grow much faster than N^2.25 while its struts appear, so the single pilot overestimates how far the budget reaches)
+  const quick = { ...o, studs: 16, studsAuto: false, motifs: false, motifVerify: false, bracing: false, splice: false, bridge: false, supports: false, finish: false, snot: false };
+  const counts = pilots.map((n) => Math.max(1, generate(model, { ...quick, studs: n }).metrics.pieces));
+  let exp = o.autoExp ?? 2.25;
+  if (pilots.length > 1 && counts[1] > counts[0]) exp = Math.min(eHi, Math.max(eLo, Math.log(counts[1] / counts[0]) / Math.log(pilots[1] / pilots[0])));
+  const n0 = pilots[pilots.length - 1], p0 = counts[counts.length - 1], nBudget = n0 * Math.pow(budget / p0, 1 / exp), tPilot = now();
+  // the detail ceiling: only when a real share of the surface is curved (a chair's fillets are not what the resolution is for)
+  const detail = feat.curv.share >= (o.autoCurvShare ?? 0.1) && feat.curv.studs > 0 ? Math.max(lo, feat.curv.studs) : Infinity;
+  const n = Math.round(Math.min(hi, Math.max(lo, Math.min(nBudget, detail))));
+  // the lattice tie-break by field fidelity: the candidates within +-autoSpan, each prepared as the engine will (lattice fit on)
+  // the trend: the IoU of a smooth shape's field grows ~.014 per doubling of N (sphere .928 -> .946 -> .956 -> .961 from 8 to 48),
+  // ~.005 per doubling of the pieces; `autoTrend` (.02) is set above that so that, lattice luck being equal, fewer pieces win
+  const span = o.autoSpan ?? 0.15, steps = o.autoSteps ?? 3, trend = o.autoTrend ?? 0.02, cands = new Set();
+  for (let k = -steps; k <= steps; k++) cands.add(Math.min(hi, Math.max(lo, Math.round(n * (1 + span * k / steps)))));
+  const ref = referenceField(model, Math.min(o.autoRefMax ?? 112, Math.max(o.autoRef ?? 80, 2 * Math.max(...cands))), o), rows = [];   // at least twice the finest candidate, within memory
+  for (const k of [...cands].sort((a, b) => a - b)) {
+    const pre = prepare({ tris: model.tris, pts: new Float32Array(0) }, k, { ...o, crust: false, islands: false, decimate: false });
+    const fid = fieldFidelity(pre, ref);
+    rows.push({ studs: k, iou: +fid.iou.toFixed(4), score: +(fid.iou - trend * exp * Math.log2(k / n)).toFixed(4), lattice: pre.align ? +pre.align.score.toFixed(3) : 0, rescaled: pre.align ? +(pre.align.s / pre.align.s0).toFixed(3) : 1 });
+  }
+  const best = rows.reduce((a, b) => (b.score > a.score ? b : a), rows[0]);
+  return { studs: best.studs, chosen: best.studs === n ? (nBudget < detail ? 'budget' : 'detail') : 'lattice', centre: n,
+    budget: { pieces: budget, pilotStuds: pilots, pilotPieces: counts, exp: +exp.toFixed(2), studs: +nBudget.toFixed(1) }, feature: feat, detail: isFinite(detail) ? +detail.toFixed(1) : null,
+    candidates: rows, refStuds: ref.studs, ms: Math.round(now() - t0), msPilots: Math.round(tPilot - t0) };
+}
+
 /** shared preparation (samples, symmetry, padded ray-cast volumes per parity) and the list of grid-phase jobs */
 export function setup(model, opts) {
   const o = { ...DEFAULTS, ...opts }, T = {};
+  if (o.studs === 'auto' || o.studsAuto) { const a = autoStuds(model, { ...opts, studsAuto: false }); o.studs = a.studs; o.studsAuto = false; o.autoChoice = a; }
   let t = now();
   if (o.meshSmooth > 0) { model = smoothModel(model, o.meshSmooth, o.meshLambda, o.meshMu); T.smooth = now() - t; t = now(); }   // mesh pre-pass (smooth.js), before sampling and casting
   const smp = model.pts ? { pts: model.pts, cols: model.cols } : surfaceSamples(model.tris, model.vcols, o.surfaceSamples, o.seed);

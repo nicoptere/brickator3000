@@ -63,3 +63,11 @@ export function partVariants(cat, kinds) {
   cache.set(key, out);
   return out;
 }
+
+/** the variant a placed piece was built from: same id and yaw when the list has it (identical volumes are deduplicated across
+ *  yaws), else the one with the piece's footprint, else any of the part */
+export function pieceVariant(p, variants, index = null) {
+  const byId = index || variants.reduce((m, v) => { (m.get(v.c.id) || m.set(v.c.id, []).get(v.c.id)).push(v); return m; }, new Map());
+  const vs = byId.get(p.id); if (!vs) return null;
+  return vs.find((v) => v.rot === p.rot && v.w === p.w && v.d === p.d) || vs.find((v) => v.w === p.w && v.d === p.d) || vs[0];
+}

@@ -8,7 +8,8 @@ export const PAD = 16.0;            // grid phases (offsets) are multiples of SA
 /** every tunable of the method, with the values used by the Python reference */
 export const DEFAULTS = {
   // scale
-  studs: 16,                 // stud count of the reference side
+  studs: 16,                 // stud count of the reference side; 'auto' (or studsAuto) = chosen per model by pipeline.autoStuds (round 8)
+  studsAuto: false,          // UI affordance for studs: 'auto': the stud count is chosen from the mesh (piece budget, feature sizes, lattice)
   ref: 'min3',               // 'min3' = smallest side of the bounding box, 'maxh' = longest horizontal side
   // volume
   mode: 'hollow',            // 'hollow' (surface orientation) | 'envelope' (lowest..highest hit)
@@ -55,6 +56,9 @@ export const DEFAULTS = {
   motifVerify: true, motifGain: 0.01,   // the final field is also solved without the assemblies; they are kept only if they gain this much IoU (docs/CURVES.md)
   // SNOT synthesis (motifs/snot.js, docs/CURVES.md round 7): sideways parts on side-stud hosts, every part of an observed footprint
   snot: false, snotTol: { min_cov: 0.85, max_err: 0.06, piece_pen: 0.3, beatFlat: 0.8 }, snotMinCount: 5, snotMaxThick: 3, snotBonus: 0.2,
+  // auto resolution (pipeline.autoStuds, resolution.js, docs/CURVES.md round 8): studs: 'auto' resolves to a stud count
+  autoPieces: 1200, autoPilot: [12, 20], autoExp: 2.25, autoExpRange: [1.5, 3.5], autoCurv: 8, autoCurvPct: 0.5, autoCurvShare: 0.1, autoThick: 1, autoThickPct: 0.1, autoCrease: 35, autoMin: 8, autoMax: 64,
+  autoSpan: 0.15, autoSteps: 3, autoTrend: 0.02, autoRef: 80, autoRefMax: 112,   // the tie-break: 7 candidates within +-15 %, each field measured (IoU) against a reference of >= 2x the finest (80..112 studs), detrended by .02 per doubling of the pieces (above the ~.005 a smooth shape gains: fewer pieces win ties)
   // phases
   dropLoose: 1,              // post: components of at most this many pieces that touch nothing are removed (a cheese on a wing tip); 0 = keep
   roundCorners: true,        // after finish: exposed 1x1 tiles on convex corners become quarter-round tiles (post.roundCorners); IoU unchanged, table 12 / duck 56 corners

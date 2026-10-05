@@ -30,9 +30,10 @@
 \setlist{nosep,leftmargin=1.4em}
 \graphicspath{{fig/}}
 
-\title{\vspace{-1.2cm}\textbf{Brickator: from a triangle mesh to a buildable LEGO model}\\[0.3em]
-\large The volume field, the placement kernel, motifs learned from official sets, sideways building, and where the ``mechanical'' look actually comes from}
-\author{\small brickator3000 --- branches \code{next} and \code{siren} --- state of the method as of 4 October 2026}
+\title{\vspace{-1.2cm}\textbf{BRICKAGEN 3000: from a triangle mesh to a buildable LEGO model}\\[0.3em]
+\large The volume field, the placement kernel, motifs learned from official sets, sideways building, where the ``mechanical'' look
+comes from, how curved surfaces are skinned, and which resolution to build at}
+\author{\small brickator3000 --- branches \code{next} and \code{siren} --- state of the method as of 5 October 2026}
 \date{}
 
 \begin{document}
@@ -51,6 +52,16 @@ post-process; and (3)~that the ``parasitic noise on flat surfaces'' is mostly no
 with the model's planar faces, and a lattice fit of the scale and origin raises the chair's IoU from 0.872 to 0.922 with 9\,\%
 fewer pieces. A signed-distance representation (and a SIREN fitter for the GPU) is built and measured along the way: it works,
 it denoises real grain, and it only pays off once the field is quantised exactly like the part templates.
+The second half of the document is about round things and about scale. Curved surfaces turned out to be three different
+problems: the rim staircase of every round cross-section (fixed by a \emph{recipe}, disc layers, not by round parts, which never
+fit a real outline), the sloped skin of a blob (fixed by letting 1-wide parts run first with a term that aligns a slope with the
+surface gradient, and by \emph{verifying} the mined motifs, which ruin smooth slopes and build chairs), and the lattice. Three bugs
+that looked like features are then taken apart --- bridges built through the air, a shape catalogue measured hollow, and the
+order of the round family --- and a sideways-building synthesis is built from the side-stud positions recovered from the mined
+motifs. Finally the question ``which resolution?'' is answered by measurement: fidelity against a fine reference grows without a
+knee in $\log(\text{pieces})$, round shapes have a curvature ceiling past which they fall apart, and the stud counts a user sees as
+``better'' are the ones where the model's plate-thick and stud-wide features land on the lattice --- which the field alone
+reveals in a third of a second per count, before anything is solved. An automatic stud count is built from these three facts.
 \end{abstract}
 
 \tableofcontents
@@ -295,9 +306,11 @@ stud-less 1$\times$1 curved parts --- the first bug found in this project, and t
 \toprule
 phase & parts & role, tolerances \\
 \midrule
-M-motif & compound assemblies & the broad phase, Section~\ref{sec:motifs}; \code{min\_cov} .85, \code{max\_err} .06, per-part penalty, beatFlat .8 \\
-A0-round & round bricks / plates & \code{max\_err} .12, bonus .4 --- pillars and bosses before anything flat \\
-A-skin, A2 & slopes, curves, cheese, inverted; then the extended shapes & the surface; \code{min\_cov} .65, \code{max\_err} .14, kind bonuses \\
+A1-disc & rows of $1\times n$ plates & disc layers: a level whose solid component is a circle is laid as rows that turn $90^\circ$ per level (Section~\ref{sec:curves}) \\
+M-motif & compound assemblies & the broad phase, Section~\ref{sec:motifs}; \code{min\_cov} .85, \code{max\_err} .06, per-part penalty, beatFlat .8; kept only if the solve without them is worse by \code{motifGain} (Section~\ref{sec:curves}) \\
+A0-round & round bricks / plates & \code{max\_err} .12, bonus .4 --- pillars and bosses before anything flat; runs after the skin instead when $\ge 30\,\%$ of the top surface is sloped \\
+A-skin-narrow, A-skin, A2 & 1-wide slopes first, then the 2-wide ones, curves, cheese, inverted; then the extended shapes & the surface; \code{min\_cov} .65, \code{max\_err} .14, kind bonuses, $\pm 0.6$ alignment with the surface gradient (Section~\ref{sec:curves}) \\
+S-snot & sideways assemblies & optional, Section~\ref{sec:round7} \\
 B-fill, B2 & bricks, plates, shaped boxes (and technic bricks) & the body; \code{max\_err} .06 then .16 \\
 C-relaxed & 1-plate parts & \code{max\_err} .5, small penalty: the mop-up of the surface \\
 D-fallback & 1x1 plates & every cell still $\ge$ \code{fallbackMin} \\
@@ -567,24 +580,35 @@ a grid in the model's frame; the engine resamples it (\code{sdfGrid}) in 0.26\,s
 validated end to end with the raw sampled SDF (duck: 1,400 pieces / IoU 0.866 vs 1,377 / 0.859 for the rays); a 400-step CPU fit
 runs but is undertrained --- the real runs are the 4090's, with $\omega_0$ as the knob to turn.
 
+\input{rounds}
+
 \section{Results}
 \begin{table}[H]
 \centering\small
-\begin{tabular}{lrrrrrrr}
+\begin{tabular}{lrrrrrrrr}
 \toprule
-model & studs & pieces & IoU & recall & comps & from motifs & sideways \\
+model & studs & pieces & IoU & recall & comps & shaped & round & from motifs / sideways \\
 \midrule
-duck & 24 & 1377 & 0.859 & 0.952 & 8 & 337 & 43 \\
-bieder\_chair & 32 & 1369 & 0.922 & 0.986 & 5 & 567 & 61 \\
-be2 (biplane) & 48 & 770 & 0.385 & 0.901 & 3 & 13 & 1 \\
-table\_baked & 32 & 660 & 0.789 & 0.976 & 8 & 58 & 10 \\
-dolphin & 32 & 272 & 0.672 & 0.936 & 3 & 71 & 13 \\
-rafs5 & 48 & 1042 & 0.661 & 0.937 & 8 & 168 & 17 \\
+duck & 24 & 1294 & 0.874 & 0.938 & 4 & 479 & 3 & 0 / 0 (dropped by the verification) \\
+bieder\_chair & 32 & 1288 & 0.924 & 0.985 & 1 & 273 & 42 & 502 / 55 \\
+be2 (biplane) & 48 & 750 & 0.385 & 0.884 & 6 & 14 & 138 & 0 / 0 \\
+table\_baked & 32 & 513 & 0.820 & 0.969 & 5 & 66 & 35 & 0 / 0 \\
+dolphin & 32 & 240 & 0.691 & 0.920 & 2 & 65 & 5 & 0 / 0 \\
+rafs5 & 48 & 1036 & 0.664 & 0.937 & 6 & 60 & 28 & 168 / 17 \\
+\midrule
+duck & auto 20 & 937 & 0.870 & & 10 & & & reference IoU .903 (.913 at 24 for 1294 pieces) \\
+table\_baked & auto 35 & 562 & 0.885 & & 5 & & & 43 studs: 772 pieces, .831 \\
+bieder\_chair & auto 32 & 1288 & 0.924 & & 1 & & & \\
+dolphin & auto 54 & 922 & 0.801 & & 7 & & & \\
 \bottomrule
 \end{tabular}
-\caption{The six benchmark models with every default of this document (extended part set, motifs, crust, bracing, splice, bridge,
-supports, finish, lattice fit, symmetry off). IoU is against the model's own field; the biplane's low IoU is its thin struts and
-wings, which the cast under-represents and the metric then over-penalises.}
+\caption{The six benchmark models with every default of this document (extended part set, motifs with verification, disc layers,
+narrow aligned skin, crust, bracing, splice, bridges inside the solid, supports, finish, lattice fit, symmetry off), at the stud
+counts of the earlier sections, and four of them at the automatic stud count. IoU is against the model's own field; ``shaped'' counts
+slopes, curved slopes, inverted slopes and cheese slopes. Against the state of the first half of this document: duck 1377 / .859
+$\to$ 1294 / .874, chair 1369 / .922 $\to$ 1288 / .924 in one component, table 660 / .789 $\to$ 513 / .820, dolphin 272 / .672
+$\to$ 240 / .691. The biplane's low IoU is its thin struts and wings, which the cast under-represents at 48 studs and the metric
+then over-penalises; the automatic choice puts it at 64.}
 \end{table}
 
 \begin{figure}[p]
@@ -612,31 +636,40 @@ export with real LDraw part geometry.}
 
 \section{What next, by leverage}
 \begin{enumerate}
+\item \textbf{A wall is a floor turned on its side.} The sideways synthesis of section~\ref{sec:round7} has every piece but the
+frame rotation: resample the field per facing, run the narrow aligned skin there, turn the pieces back over side-stud hosts. That
+is how a real SNOT hull is built, and it is what would make ``anything on walls'' a feature rather than a candidate set.
 \item \textbf{Side-stud contact in the connectivity model.} Today an assembly id is what holds a sideways piece; measuring the
-connectors' side studs would let the solver place a sideways part against \emph{any} host in the model and let bracing repair those
-assemblies.
-\item \textbf{The fitter as the default field.} BACON-style multi-bandwidth outputs from one network, exported as several grids; the
-denoising knob becomes ``which output'', with no crease rounding. Needs the GPU and an evaluation set with ground-truth clean meshes
-(the house generator is the start of one).
-\item \textbf{Lattice fit for $y$ by scale, per component}, and a thickness-aware filter so the SDF filters are safe on thin
-features.
-\item \textbf{Catalogue coverage}: a third of OMR placements are parts the engine cannot express; windows touching them are refused.
-\item \textbf{Context in the motif score}: a mined window knows whether each face was air or solid; a slope motif always had air over
-its slope.
+connectors' side studs would let bracing repair those assemblies and let the solver place a sideways part against \emph{any} host.
+\item \textbf{Connectivity through the solid.} The strut models (be2, rafs5) lose components wherever the narrow skin leaves a
+loose run of parts; the bridge phase now refuses the air, so the chains have to be found inside thin struts --- a search that should
+prefer the stud-aligned route over the shortest one.
+\item \textbf{The lattice fit for $y$ by scale, per component}, and a thickness-aware filter so the SDF filters are safe on thin
+features. The resolution work shows how much the lattice is worth: the candidate fields of section~\ref{sec:resolution} are a
+cheap way to score any proposed frame, not only the stud count.
+\item \textbf{The fitter as the default field.} BACON-style multi-bandwidth outputs from one network, exported as several grids;
+the denoising knob becomes ``which output'', with no crease rounding. Needs the GPU and an evaluation set with ground-truth clean
+meshes (the house generator is the start of one).
+\item \textbf{A dataset of small handmade organic builds} (an animal in 40 pieces). The official sets cannot give it; the duck
+needs it; nobody has built it.
+\item \textbf{Context in the motif score}: a mined window knows whether each face was air or solid; a slope motif always had air
+over its slope. The verification of section~\ref{sec:curves} is the blunt version of this.
 \item \textbf{The look.} None of the metrics measures whether the result looks less mechanical; the stills and the LDR exports are
-there for that judgement, which is still by eye.
+there for that judgement, which is still by eye. The surface attribution (\code{stairs}, \code{under}) is the closest thing to a
+number for it so far.
 \end{enumerate}
 
 \section*{Code map}
 \small
 \begin{tabular}{p{3.6cm}p{13.2cm}}
-\code{claude/app/src/brickgen/} & \code{grid.js} (cast, lattice fit, crust), \code{sdf.js}, \code{smooth.js}, \code{solver.js}, \code{run.js} (phases), \code{post.js}, \code{export.js}, \code{variants.js} \\
-\code{claude/app/src/motifs/} & \code{ldraw.js}, \code{placements.js}, \code{mine.js}, \code{library.js}, \code{orient.js}, \code{periodic.js}, \code{motifs.js} (the library) \\
-\code{claude/app/test/} & \code{noise\_bench.mjs}, \code{field\_bench.mjs}, \code{motifs\_bench.mjs}, \code{roundtrip.mjs}, \code{roundtrip\_snot.mjs}, \code{synthetic.mjs} \\
+\code{claude/app/src/brickgen/} & \code{grid.js} (cast, lattice fit, crust), \code{sdf.js}, \code{smooth.js}, \code{solver.js} (kernel, alignment term), \code{run.js} (phases, surface attribution), \code{discs.js} (disc layers), \code{skin.js} (profile chains), \code{post.js} (merges, widen, bridge, corners), \code{resolution.js} (feature sizes, cross-resolution fidelity), \code{pipeline.js} (\code{autoStuds}, motif verification), \code{export.js}, \code{variants.js} \\
+\code{claude/app/src/motifs/} & \code{ldraw.js}, \code{placements.js}, \code{mine.js}, \code{library.js}, \code{orient.js}, \code{snot.js} (sideways synthesis), \code{periodic.js}, \code{motifs.js} (the library) \\
+\code{claude/app/test/} & \code{noise\_bench.mjs}, \code{field\_bench.mjs}, \code{motifs\_bench.mjs}, \code{curves\_bench.mjs}, \code{resolution\_bench.mjs}, \code{roundtrip.mjs}, \code{roundtrip\_snot.mjs}, \code{synthetic.mjs} (dome, sphere, cylinder, rounded boxes, boss box) \\
 \code{claude/app/tools/} & \code{mine\_motifs.mjs}, \code{omr\_stats.mjs}, \code{omr\_fetch.mjs}, \code{sdf\_grid.mjs} \\
 \code{claude/siren/} & \code{fit\_siren.py} (GPU fitter), \code{README.md} \\
-\code{claude/paper/} & this document: \code{paper.tex}, \code{export\_scenes.mjs}, \code{figures.py}, \code{ldraw\_mesh.py}, \code{render.html}, \code{shoot.py} \\
-\code{docs/} & \code{MOTIFS.md}, \code{IMPLICIT.md}, \code{papers/}, \code{omr/} (the index), \code{omr\_gallery/} (the models) \\
+\code{claude/paper/} & this document: \code{paper.tex}, \code{rounds.tex}, \code{export\_scenes.mjs}, \code{export\_rounds.mjs}, \code{auto\_candidates.mjs}, \code{figures.py}, \code{figures\_rounds.py}, \code{ldraw\_mesh.py}, \code{render.html}, \code{shoot.py} \\
+\code{claude/generator/} & \code{lego\_catalog.py}, \code{lego\_catalog\_shapes.py} (the measured part templates), \code{omr\_rank.py} (the part census) \\
+\code{docs/} & \code{MOTIFS.md}, \code{IMPLICIT.md}, \code{CURVES.md} (rounds 4--8, every table of the second half), \code{papers/}, \code{omr/} (the index), \code{omr\_gallery/} (the models) \\
 \end{tabular}
 
 \section*{References}
@@ -652,5 +685,9 @@ there for that judgement, which is still by eye.
 \item C.~Ericson. \emph{Real-Time Collision Detection}, 5.1.5 (closest point on a triangle). 2004.
 \item A.~Walsman et al. Break and Make (LTRON). \emph{ECCV} 2022 --- uses the OMR as its dataset.
 \item P.~Merrell, Model synthesis (2007); M.~Gumin, WaveFunctionCollapse / MarkovJunior --- the ``learn local patterns from an example'' family our motifs belong to.
+\item N.~Amenta, M.~Bern. Surface reconstruction by Voronoi filtering. \emph{Discrete \& Computational Geometry} 22, 1999 (the local feature size and $\varepsilon$-sampling).
+\item L.~Shapira, A.~Shamir, D.~Cohen-Or. Consistent mesh partitioning and skeletonisation using the shape diameter function. \emph{The Visual Computer} 24, 2008.
+\item V.~Satopaa, J.~Albrecht, D.~Irwin, B.~Raghavan. Finding a ``kneedle'' in a haystack: detecting knee points in system behavior. \emph{ICDCS workshops} 2011.
+\item I.~K\'{a}sa. A circle fitting procedure and its error analysis. \emph{IEEE Trans.\ Instrumentation and Measurement} 25, 1976 (the disc-layer fit).
 \end{itemize}
 \end{document}

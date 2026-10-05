@@ -136,7 +136,7 @@ Performance: post passes dominated; packed-number keys etc. gave 7-15x, bit-iden
 - Tests: `test/noise_bench.mjs house 12 0,1,2,4` (synthetic watertight house + Gaussian grain, graded against the CLEAN field in
   the same frame - both of those were bugs in the first versions of the bench), `test/field_bench.mjs` (real models, variants via
   VARIANTS=, external grid via GRID=). HF `DylanRiden/sets_lego_omr_full` = subset of our OMR gallery (1,367 vs 1,470 sets) + theme/year.
-- **The paper**: `docs/BRICKATOR.pdf` (16 pages, 26 figures), sources and the whole figure pipeline in `claude/paper/`
+- **The paper**: `docs/BRICKATOR.pdf` (16 pages, 26 figures; superseded by `docs/BRICKAGEN3000.pdf`, 24 pages, §13), sources and the whole figure pipeline in `claude/paper/`
   (`export_scenes.mjs` -> `figures.py` -> `pdflatex`; `ldraw_mesh.py` is a standalone LDraw -> triangles reader, `render.html` +
   `shoot.py` a three.js/Playwright still renderer that works for any scene JSON). Rebuild instructions in `claude/paper/README.md`.
 
@@ -214,3 +214,32 @@ Performance: post passes dominated; packed-number keys etc. gave 7-15x, bit-iden
   the aligned narrow skin there, turn the pieces back into sideways ones over side-stud hosts) - is written in CURVES.md §12.
 - `library.assemblyVariants` factored out (shared by motifs and snot.js); `test/synthetic.mjs` has `boxBoss` (disc on a wall)
   and `boxRoundEdge` / `boxRoundEdge24` (rounded vertical edge) as SNOT test shapes.
+
+## 13. Round 8 (2026-10-04, late night): which resolution? `studs: 'auto'`. Write-up: `docs/CURVES.md` §13
+- **The question** ("some resolutions are better than others for a given mesh; a metric for a good default that keeps the
+  high-frequency detail and simplifies the plain areas?") has three answers, all measured (`test/resolution_bench.mjs`: every
+  solution and every field rasterised into one 96-stud reference voxelisation; solid IoU with the hollow counted as solid, and
+  the same within half a stud of the surface, comparable across counts):
+  1. no knee: fidelity grows steadily in log(pieces) on smooth shapes (sphere .02 solid / .06 band per doubling of the pieces)
+     - the resolution is a budget; 2. a round shape has a ceiling: once its radius spans ~8 studs the sphere gains .06 for 10x
+     the pieces and falls into 69 components; 3. **the lattice**: a plate-thick top or a stud-wide leg either lands on the
+     lattice or smears over two cells, and that error (table field .811 at 43 studs vs .926 at 35; rounded box loses at every
+     count that is not a multiple of 8) dwarfs what one more stud buys. The field shows it before any part is placed.
+- **`pipeline.autoStuds`** (2-9 s): piece budget from two pilot solves (12 / 20 studs, exponent fitted per model: 1.6 box ...
+  3.1 table) -> N_budget; curvature ceiling from the dihedral-angle radii of the welded mesh (creases excluded, length-weighted
+  median spans `autoCurv` = 8 studs; applies when >= 10 % of the surface is curved) -> N_curv; then the seven counts within
+  +-15 % of min(N_budget, N_curv) are prepared as the engine will and compared by the IoU of their *field* against a reference
+  of twice the finest (pull, 0.3 s each), less .02 x exponent per doubling of the pieces. Choices: sphere 14, rounded box 30,
+  boss box 34, duck 20, chair 32, table 35 (43 would lose .12), dolphin 54, aircraft 61-64.
+- UI: `studsAuto` switch in Scale & volume (schema), `auto*` options; the engine runs the choice once on one worker before the
+  setups (`worker.js` message `auto`); `result.autoChoice` carries the budget, ceiling and candidate table.
+- Traps: vertex-normal curvature tilts 45 degrees across creases (every box wall reads as a curve of radius ~1/4 width); one
+  pilot overshoots thin models by 50 %; the chord-thickness percentile is grazing chords (asks 160-900 studs) - reported, not
+  used; a shell-only fidelity is sub-cell noise (and empty on a box); a crust mask that depends on the candidate's own depth is
+  not comparable across counts (the hollow is counted as solid instead); the bench's `prepare()` without `DEFAULTS` gave table
+  fields of .2-.3 that looked like a dramatic lattice effect and were garbage.
+- `resolution.js` exports `referenceField / fieldFidelity / solutionFidelity / bandFor / knee` (shared by `autoStuds` and the
+  bench) and `chords / curvatureRadii / featureStuds / latticeScores`.
+- **The paper** is now `docs/BRICKAGEN3000.pdf` (+ `-mobile`): title BRICKAGEN 3000, three new sections (curved surfaces, the
+  three bugs + SNOT synthesis, choosing the resolution), results refreshed; `claude/paper/rounds.tex`, `export_rounds.mjs`,
+  `auto_candidates.mjs`, `figures_rounds.py` added to the pipeline (README).
