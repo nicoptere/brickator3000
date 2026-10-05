@@ -25,11 +25,22 @@ export function mk(c, w, d, i, j, b, rgb, phase, kind = null) {
 // brick) whose box is identical to a plain brick's but which must never be substituted for one; `noSolo` keeps out motif-only
 // parts for the same reason. Every footprint lookup in the post passes must go through here - see `vertical`.
 function shapes(cat, kind) { return cat.filter((c) => c.kind === kind && c.source === 'analytic' && !c.noSolo).sort((a, b) => b.w * b.d - a.w * a.d); }
+/**
+ * the whole cells a piece's box touches, [i0, i1, j0, j1, b0, b1) - its own footprint for an upright piece, and for a sideways
+ * one (fractional i / j / b, motifs/orient.js) every cell its box overlaps. EVERY pass that walks a piece's cells must go
+ * through this: `for (let l = p.b; l < p.b + p.h; l++)` silently does nothing for a piece at b = 52.5, which is how `bridge`
+ * and `exteriorAir` came to treat the sideways skin as empty air and routed plates straight through it (pony @16 with the
+ * skin: 790 overlapping samples in 47 cells).
+ */
+export function cellBox(p) {
+  if (!p.snot) return [p.i, p.i + p.w, p.j, p.j + p.d, p.b, p.b + p.h];
+  return [Math.floor(p.i + 1e-6), Math.ceil(p.i + p.w - 1e-6), Math.floor(p.j + 1e-6), Math.ceil(p.j + p.d - 1e-6), Math.floor(p.b + 1e-6), Math.ceil(p.b + p.h - 1e-6)];
+}
 export function occupancy(pieces) {
   const occ = new Map();
   pieces.forEach((p, n) => {
     if (p.snot) {                               // sideways part (motifs/orient.js): fractional position and size, mark every cell its box touches
-      const i0 = Math.floor(p.i + 1e-6), i1 = Math.ceil(p.i + p.w - 1e-6), j0 = Math.floor(p.j + 1e-6), j1 = Math.ceil(p.j + p.d - 1e-6), b0 = Math.floor(p.b + 1e-6), b1 = Math.ceil(p.b + p.h - 1e-6);
+      const [i0, i1, j0, j1, b0, b1] = cellBox(p);
       for (let x = i0; x < i1; x++) for (let z = j0; z < j1; z++) for (let l = b0; l < b1; l++) if (!occ.has(K(x, z, l))) occ.set(K(x, z, l), n);
       return;
     }
@@ -667,7 +678,11 @@ export function bridge(S, cat, o) {
   for (let round = 0; round < (o.bridgeRounds ?? 120); round++) {
     if (!state) {
     const P = S.pieces, grid = new Int32Array(N).fill(-1);
-    P.forEach((p, n) => { for (let l = p.b; l < p.b + p.h; l++) for (let dz = 0; dz < p.d; dz++) for (let dx = 0; dx < p.w; dx++) { const x = p.i + dx, z = p.j + dz; if (x >= 0 && x < NX && z >= 0 && z < NZ && l >= 0 && l < NL) grid[idx(x, z, l)] = n; } });
+    // a sideways piece blocks every cell its fractional box touches (cellBox); its own index only goes in where nothing else is,
+    // so the `grid[...] === n` stud tests below still see the upright piece that owns the cell
+    P.forEach((p, n) => { const [i0, i1, j0, j1, b0, b1] = cellBox(p);
+      for (let l = b0; l < b1; l++) for (let z = j0; z < j1; z++) for (let x = i0; x < i1; x++)
+        if (x >= 0 && x < NX && z >= 0 && z < NZ && l >= 0 && l < NL && (!p.snot || grid[idx(x, z, l)] < 0)) grid[idx(x, z, l)] = n; });
     const uf = components(P, occupancy(P)), cnt = new Map(), members = new Map(); P.forEach((_, n) => { const r = uf.find(n); cnt.set(r, (cnt.get(r) || 0) + 1); let mm = members.get(r); if (!mm) members.set(r, mm = []); mm.push(n); });
     // per-cell component reachable by a plate placed on (x,z,l): via the stud of the piece below (tb) or the underside of the piece above (ta)
     const root = new Int32Array(P.length); P.forEach((_, n) => { root[n] = uf.find(n); });
@@ -838,9 +853,10 @@ export function weld(S, cat, o) {
 export function exteriorAir(S) {
   const NX = S.NXc + 2, NZ = S.NZc + 2, NL = S.NL + 2, N = NX * NZ * NL, occ = new Uint8Array(N);
   const id = (x, z, l) => (l * NZ + z) * NX + x;
-  for (const p of S.pieces) for (let l = p.b; l < p.b + p.h; l++) for (let dz = 0; dz < p.d; dz++) for (let dx = 0; dx < p.w; dx++) {
-    const x = p.i + dx + 1, z = p.j + dz + 1, L = l + 1; if (x >= 0 && x < NX && z >= 0 && z < NZ && L >= 0 && L < NL) occ[id(x, z, L)] = 1;
-  }
+  for (const p of S.pieces) { const [i0, i1, j0, j1, b0, b1] = cellBox(p);
+    for (let l = b0; l < b1; l++) for (let z = j0; z < j1; z++) for (let x = i0; x < i1; x++) {
+      const X = x + 1, Z = z + 1, L = l + 1; if (X >= 0 && X < NX && Z >= 0 && Z < NZ && L >= 0 && L < NL) occ[id(X, Z, L)] = 1;
+    } }
   const ext = new Uint8Array(N), st = new Int32Array(N); let sp = 0;
   const push = (x, z, l) => { const k = id(x, z, l); if (!occ[k] && !ext[k]) { ext[k] = 1; st[sp++] = k; } };
   push(0, 0, NL - 1);                                       // every padding cell is connected to the corner
