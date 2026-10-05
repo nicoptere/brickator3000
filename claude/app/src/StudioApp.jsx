@@ -21,7 +21,7 @@ import { FEATURES, FEATURE_GROUPS, featureState, featurePatch } from './presets.
 import { Field } from './fields.jsx';
 
 const { Text, Title } = Typography;
-const STORE = 'brickgen.studio.v3';
+const STORE = 'brickgen.studio.v4';
 const loadOpts = () => { try { return { ...DEFAULTS, ...JSON.parse(localStorage.getItem(STORE) || '{}') }; } catch { return { ...DEFAULTS }; } };
 const download = (data, name, type) => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([data], { type })); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 5000); };
 const fmt = (v, d = 3) => (typeof v === 'number' ? +v.toFixed(d) : v);
@@ -120,7 +120,7 @@ function StudioInner() {
     setRes((r) => r && { ...r, pieces: [...r.pieces] });
   };
   const [step, setStep] = useState(0), [playing, setPlaying] = useState(false), [speed, setSpeed] = useState(1), [autoBuild, setAutoBuild] = useState(true);
-  const [sound, setSound] = useState(sfx.on), [rotate, setRotate] = useState(false);
+  const [sound, setSound] = useState(sfx.on), [rotate, setRotate] = useState(false), [hasRot, setHasRot] = useState(false);
     const [dark, setDark] = useState(() => { try { return localStorage.getItem('brickgen.theme') !== 'light'; } catch { return true; } });
   const [snapSpp, setSnapSpp] = useState(128), [thick, setThick] = useState(1), [expanded, setExpanded] = useState([]);
   const [workers, setWorkers] = useState(poolSize);
@@ -183,6 +183,7 @@ function StudioInner() {
     vp.current = new StudioViewport(vEl.current);
     vp.current.setTheme(dark);
     vp.current.onSelectIsland = (id, faceIdx) => onSelectIslandRef.current && onSelectIslandRef.current(id, faceIdx);
+    vp.current.onModelRotated = (has) => setHasRot(has);
     fetch('/api/models').then((r) => r.json()).then((d) => setModels((d.models || []).sort((a, b) => a.path.localeCompare(b.path)))).catch(() => setModels([]));
     return () => vp.current && vp.current.dispose();
   }, []);
@@ -357,7 +358,8 @@ function StudioInner() {
   const showModel = (mm, computeIsl = detectIslandsRef.current) => {
     setRes(null); setPlaying(false); setStep(0); setViewMode('mesh'); sfx.click();
     setSelectedIsland(null); setHistory([]);
-    if (vp.current) vp.current.setSelectedIsland(null);
+    if (vp.current) { vp.current.setSelectedIsland(null); vp.current.resetRotation(); }
+    setHasRot(false);
     vp.current.setSource(mm.tris, mm.vcols, { raw: true });
     if (computeIsl) {
       const il = meshIslands(mm.tris); setIsl({ count: il.count, labels: il.labels });
@@ -435,6 +437,9 @@ function StudioInner() {
     if (cancellingRef.current) return;
     try {
       let src = { tris: model.tris, vcols: model.vcols };
+      if (vp.current && vp.current.hasRotation()) {
+        src = vp.current.getRotatedSource(src);
+      }
       if (opts.vertexNormals) {
         setStage(['Recomputing vertex normals', 0]); await new Promise((r) => setTimeout(r, 30));
         const f = fixWinding(model.tris, model.vcols); src = f;
@@ -444,6 +449,8 @@ function StudioInner() {
       vp.current.clearVoxels();
       if (officialColors) applyOfficialPalette(r.pieces, true);
       setRes(r);
+      if (vp.current) vp.current.resetRotation();
+      setHasRot(false);
       vp.current.setSource(r.srcTris, r.srcCols); vp.current.setLego(r.pieces, FULL_CATALOG, r.dims); vp.current.setColorMode(colorMode); vp.current.setOutline(outline);
       if (colorMode !== 'islands') { setViewMode('lego'); vp.current.setMode('lego'); }
       vp.current.zoomToFit();
@@ -806,14 +813,9 @@ function StudioInner() {
             </div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <Button type="link" size="small" icon={<SettingOutlined />} onClick={() => setAdvanced(true)} style={{ padding: 0, fontSize: 12 }}>All parameters…</Button>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: 'var(--tx2)' }}>
-                workers <Input size="small" type="number" min={1} max={16} value={workers} onChange={(e) => e.target.value && setWorkers(+e.target.value)} style={{ width: 52 }} />
-                <Button size="small" type="text" icon={<ReloadOutlined />} onClick={() => { localStorage.removeItem(STORE); setOpts({ ...DEFAULTS }); }}>defaults</Button>
-              </div>
+              <Button size="small" type="text" icon={<ReloadOutlined />} onClick={() => { localStorage.removeItem(STORE); setOpts({ ...DEFAULTS }); }}>defaults</Button>
             </div>
           </Section>
-
-          <div style={{ fontSize: 10, color: 'var(--tx2)', textAlign: 'right' }}><a href="#/dev">dev UI</a></div>
         </div>
       </aside>
 
@@ -912,7 +914,10 @@ function StudioInner() {
       <div className="toolbar" style={{ left: leftOpen ? LW : 0, right: rightOpen ? RW : 0 }}>
         <div className="tools">
           <Tooltip title={sound ? 'Sound on' : 'Sound off'}><Button size="small" type="text" icon={sound ? <SoundOutlined /> : <AudioMutedOutlined />} onClick={() => { const v = !sound; setSound(v); sfx.setOn(v); }} /></Tooltip>
-          <Tooltip title="Auto-rotate"><Button size="small" type={rotate ? 'primary' : 'text'} icon={<SyncOutlined />} onClick={() => { setRotate(!rotate); vp.current.setAutoRotate(!rotate); }} /></Tooltip>
+          <Tooltip title={rotate ? 'Hide rotation gizmo' : 'Rotation gizmo'}><Button size="small" type={rotate ? 'primary' : 'text'} icon={<SyncOutlined />} onClick={() => { const v = !rotate; setRotate(v); vp.current.setRotateGizmo(v); }} /></Tooltip>
+          {hasRot && (
+            <Tooltip title="Reset rotation"><Button size="small" type="text" icon={<UndoOutlined />} onClick={() => { if (vp.current) { vp.current.resetRotation(); setHasRot(false); } }} /></Tooltip>
+          )}
           {res && viewMode !== 'mesh' && (
             <>
               <Tooltip title={selMode ? 'Leave select mode' : 'Select bricks: drag a box. Ctrl / Shift-drag adds, Alt-drag removes, Ctrl+I inverts, double-click clears.'}>
@@ -952,7 +957,13 @@ function StudioInner() {
       )}
 
       <Drawer title="All parameters" open={advanced} onClose={() => setAdvanced(false)} size={440} className="adv"
-        extra={<Button size="small" icon={<ReloadOutlined />} onClick={() => { localStorage.removeItem(STORE); setOpts({ ...DEFAULTS }); setAutoRes(null); }}>defaults</Button>}>
+        extra={
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: 'var(--tx2)' }}>
+            <span>workers</span>
+            <Input size="small" type="number" min={1} max={16} value={workers} onChange={(e) => e.target.value && setWorkers(+e.target.value)} style={{ width: 52 }} />
+            <Button size="small" icon={<ReloadOutlined />} onClick={() => { localStorage.removeItem(STORE); setOpts({ ...DEFAULTS }); setAutoRes(null); }}>defaults</Button>
+          </div>
+        }>
         <div className="advtop">
           <div className="advtop-h">What the method does<i>each switch writes the handful of parameters below that it is made of</i></div>
           {FEATURE_GROUPS.map((g) => (

@@ -2,6 +2,7 @@
 // (one per part x rotation, one for the visible studs) in a cell-shaded (toon) material plus ink outlines. Pieces pop in with a small spring when revealed.
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js';
 import { template, templateOri, pieceOrigin, pieceCentre, KIND_COL } from '../brickgen/export.js';
 import { STUD, PLATE } from '../brickgen/constants.js';
 import { smoothNormals } from './meshtools.js';
@@ -47,9 +48,27 @@ export class StudioViewport {
     this.cyclo = new THREE.Mesh(cycloGeometry(20), cycloMaterial(true)); this.cyclo.receiveShadow = true; this.cyclo.position.y = -0.01; this.scene.add(this.cyclo);
     this.cycloSize = 20; this.maxCam = 80;
 
-    this.world = new THREE.Group(); this.world.scale.setScalar(S); this.scene.add(this.world);   // everything inside is in LDU
+    this.modelPivot = new THREE.Group(); this.scene.add(this.modelPivot);
+    this.world = new THREE.Group(); this.world.scale.setScalar(S); this.modelPivot.add(this.world);   // everything inside is in LDU
     this.buildGizmo();
     this.src = new THREE.Group(); this.lego = new THREE.Group(); this.world.add(this.src, this.lego);
+
+    this.transformControls = new TransformControls(this.camera, this.renderer.domElement);
+    this.transformControls.setMode('rotate');
+    this.transformControls.size = 0.85;
+    this.transformControls.space = 'world';
+    const tcHelper = this.transformControls.getHelper();
+    tcHelper.visible = false;
+    this.scene.add(tcHelper);
+    this.transformControls.addEventListener('dragging-changed', (event) => {
+      this.controls.enabled = !event.value;
+    });
+    this.transformControls.addEventListener('change', () => {
+      if (this.onModelRotated) this.onModelRotated(this.hasRotation());
+    });
+    this.rotateGizmo = false;
+    this.onModelRotated = null;
+
     this.gradient = toonGradient(4);
     this.toon = new THREE.MeshToonMaterial({ gradientMap: this.gradient, color: 0xffffff, side: THREE.DoubleSide });
     this.studMat = new THREE.MeshToonMaterial({ gradientMap: this.gradient, color: 0xffffff, side: THREE.DoubleSide });
@@ -70,12 +89,17 @@ export class StudioViewport {
     const dom = this.renderer.domElement;
     const local = (e) => { const r = dom.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
     dom.addEventListener('pointerdown', (e) => {
+      if (this.transformControls && this.transformControls.axis) return;
       downPos = { x: e.clientX, y: e.clientY, t: performance.now() };
       const [px, py] = local(e);
       if (e.button === 0 && this.gizmoClick(px, py)) { downPos = null; return; }     // the corner gizmo takes the click first
       if (e.button === 0 && this.selectMode) { dom.setPointerCapture(e.pointerId); this.beginMarquee(px, py); }
     });
     dom.addEventListener('pointerup', (e) => {
+      if (this.transformControls && this.transformControls.dragging) {
+        downPos = null;
+        return;
+      }
       if (this._mq) {
         const mode = e.ctrlKey || e.metaKey || e.shiftKey ? 'add' : e.altKey ? 'sub' : 'set';
         const n = this.endMarquee(mode); this.onSelectionChange && this.onSelectionChange(n);
@@ -94,6 +118,7 @@ export class StudioViewport {
     this.loop = this.loop.bind(this); this.raf = requestAnimationFrame(this.loop);
   }
   handlePointerHover(e) {
+    if (this.transformControls && this.transformControls.axis) return;
     if (!this.srcMesh || !this.src.visible || this.colorMode !== 'islands') {
       if (this.renderer.domElement.style.cursor === 'pointer') this.renderer.domElement.style.cursor = '';
       return;
@@ -137,7 +162,7 @@ export class StudioViewport {
     if (!on) { const c = new THREE.Color(1, 1, 1); for (const h of this.hulls) { if (h.instanceColor) { for (let k = 0; k < h.count; k++) h.setColorAt(k, c); h.instanceColor.needsUpdate = true; } } }
   }
   resize() { const w = this.el.clientWidth || 1, h = this.el.clientHeight || 1; this.renderer.setSize(w, h); this.camera.aspect = w / h; this.camera.updateProjectionMatrix(); }
-  dispose() { cancelAnimationFrame(this.raf); this.ro.disconnect(); this.clearLego(); this.clearGroup(this.src); this.clearVoxels(); this.clearHollowCubes(); this.renderer.dispose(); this.el.innerHTML = ''; this.studMat && this.studMat.dispose(); }
+  dispose() { cancelAnimationFrame(this.raf); this.ro.disconnect(); this.clearLego(); this.clearGroup(this.src); this.clearVoxels(); this.clearHollowCubes(); this.transformControls && this.transformControls.dispose(); this.renderer.dispose(); this.el.innerHTML = ''; this.studMat && this.studMat.dispose(); }
   clearGroup(g) { for (const c of [...g.children]) { g.remove(c); c.geometry && c.geometry.dispose(); if (c.material && c.material !== this.toon && c.material !== this.studMat && c.material !== this.hullMat) c.material.dispose(); } }
 
   loop(now) {
@@ -172,7 +197,7 @@ export class StudioViewport {
         t[i + 2] = (tris[i + 2] - baseLo[2]) * k;
       }
       this.W = (hi[0] - lo[0]) * k; this.D = (hi[2] - lo[2]) * k; this.H = (hi[1] - lo[1]) * k;
-      this.clearLego(); this.lego.position.set(0, 0, 0);
+      this.clearLego(); this.lego.position.set(0, 0, 0); this.resetRotation();
     }
     this.srcPos = t; this.clearVoxels(); this.clearHollowCubes();
     const g = new THREE.BufferGeometry();
@@ -184,6 +209,11 @@ export class StudioViewport {
     this.flatN = Float32Array.from(g.attributes.normal.array); this.smoothN = null;
     this.paintSource(); this.applySmooth();
     this.applyMode();
+    if (this.rotateGizmo) {
+      this.transformControls.attach(this.modelPivot);
+      this.transformControls.enabled = true;
+      this.transformControls.getHelper().visible = true;
+    }
     if (raw && !keepScale) this.zoomToFit(false);
   }
 
@@ -555,12 +585,19 @@ export class StudioViewport {
     this.lego.position.set(0, 0, 0); this.src.position.set(0, 0, 0);
     if (this.srcMat) { this.srcMat.transparent = m === 'both'; this.srcMat.opacity = m === 'both' ? 0.32 : 1; this.srcMat.depthWrite = m !== 'both'; this.srcMat.needsUpdate = true; }
     const span = m === 'split' && hasL ? this.W * 2.2 : this.W;
-    this.world.position.set(-span / 2 * S, 0, -this.D / 2 * S);
+    const cenY = (this.H * S) / 2;
+    this.modelPivot.position.set(0, cenY, 0);
+    this.world.position.set(-span / 2 * S, -cenY, -this.D / 2 * S);
     if (m === 'split' && hasL) this.lego.position.x = this.W * 1.2;
     const size = Math.max(span, this.D, this.H) * S;
     this.rebuildCyclo(size);
     const q = size * 0.75 + 4; Object.assign(this.key.shadow.camera, { left: -q, right: q, top: q, bottom: -q, near: 0.5, far: size * 6 + 80 }); this.key.shadow.camera.updateProjectionMatrix();
     this.key.position.set(size * 0.8, size * 1.3, size * 0.9); this.key.target.position.set(0, 0, 0);
+    if (this.rotateGizmo && (this.srcPos?.length || this.pieces?.length)) {
+      this.transformControls.attach(this.modelPivot);
+      this.transformControls.enabled = true;
+      this.transformControls.getHelper().visible = true;
+    }
   }
   rebuildCyclo(size) {
     if (Math.abs(size - this.cycloSize) < 1e-6) return;
@@ -595,7 +632,59 @@ export class StudioViewport {
     const dirs = { front: [0, 0.15, 1], side: [1, 0.15, 0], top: [0, 1, 0.001], under: [0.3, -0.8, 0.5], iso: [0.45, 0.55, 1] };
     this.camera.position.copy(c).addScaledVector(new THREE.Vector3(...dirs[name]).normalize(), d); this.controls.update();
   }
-  setAutoRotate(on) { this.controls.autoRotate = on; this.controls.autoRotateSpeed = 1.6; }
+  setRotateGizmo(on) {
+    this.rotateGizmo = !!on;
+    this.controls.autoRotate = false;
+    if (!this.transformControls) return;
+    const helper = this.transformControls.getHelper();
+    if (this.rotateGizmo && (this.srcPos?.length || this.pieces?.length)) {
+      this.transformControls.attach(this.modelPivot);
+      this.transformControls.enabled = true;
+      helper.visible = true;
+    } else {
+      this.transformControls.detach();
+      this.transformControls.enabled = false;
+      helper.visible = false;
+    }
+  }
+  setAutoRotate(on) {
+    this.setRotateGizmo(on);
+  }
+  resetRotation() {
+    if (!this.modelPivot) return;
+    this.modelPivot.rotation.set(0, 0, 0);
+    this.modelPivot.quaternion.identity();
+    this.modelPivot.updateMatrixWorld(true);
+    if (this.onModelRotated) this.onModelRotated(false);
+  }
+  hasRotation() {
+    if (!this.modelPivot) return false;
+    const q = this.modelPivot.quaternion;
+    return Math.abs(q.x) > 1e-4 || Math.abs(q.y) > 1e-4 || Math.abs(q.z) > 1e-4 || Math.abs(q.w - 1) > 1e-4;
+  }
+  getRotatedSource(src) {
+    if (!this.hasRotation() || !src || !src.tris) return src;
+    const q = this.modelPivot.quaternion;
+    const tris = src.tris;
+    const out = new Float32Array(tris.length);
+    const lo = [Infinity, Infinity, Infinity], hi = [-Infinity, -Infinity, -Infinity];
+    for (let k = 0; k < tris.length; k += 3) {
+      for (let a = 0; a < 3; a++) {
+        if (tris[k + a] < lo[a]) lo[a] = tris[k + a];
+        if (tris[k + a] > hi[a]) hi[a] = tris[k + a];
+      }
+    }
+    const cx = (lo[0] + hi[0]) / 2, cy = (lo[1] + hi[1]) / 2, cz = (lo[2] + hi[2]) / 2;
+    const v = new THREE.Vector3();
+    for (let k = 0; k < tris.length; k += 3) {
+      v.set(tris[k] - cx, tris[k + 1] - cy, tris[k + 2] - cz);
+      v.applyQuaternion(q);
+      out[k] = v.x + cx;
+      out[k + 1] = v.y + cy;
+      out[k + 2] = v.z + cz;
+    }
+    return { tris: out, vcols: src.vcols };
+  }
 
   visiblePieces() { return this.pieces ? this.pieces.filter((_, n) => this.vis[n]) : []; }
   snapshot() { this.renderer.render(this.scene, this.camera); return this.renderer.domElement.toDataURL('image/png'); }
@@ -649,8 +738,11 @@ export class StudioViewport {
     this.renderer.setScissorTest(true);
     this.renderer.setViewport(r.x, v.y - r.y - r.h, r.w, r.h);       // WebGL counts y from the bottom
     this.renderer.setScissor(r.x, v.y - r.y - r.h, r.w, r.h);
+    const prevAutoClear = this.renderer.autoClear;
+    this.renderer.autoClear = false;
     this.renderer.clearDepth();
     this.renderer.render(g.scene, g.cam);
+    this.renderer.autoClear = prevAutoClear;
     this.renderer.setScissorTest(false);
     this.renderer.setViewport(0, 0, v.x, v.y); this.renderer.setScissor(0, 0, v.x, v.y);
   }
@@ -821,8 +913,12 @@ export class StudioViewport {
     // draw at the picture's own size, on a plain background, without the stage
     const W = Math.round(maxW), H = Math.round(maxW / ar), size = new THREE.Vector2(); r.getSize(size);
     const pr = r.getPixelRatio(), bgWas = this.scene.background, cycloWas = this.cyclo.visible;
+    const tcHelper = this.transformControls ? this.transformControls.getHelper() : null;
+    const tcWas = tcHelper ? tcHelper.visible : false;
+    if (tcHelper) tcHelper.visible = false;
     r.setPixelRatio(1); r.setSize(W, H, false); this.scene.background = new THREE.Color(bg); this.cyclo.visible = !!floor;
     r.render(this.scene, cam);
+    if (tcHelper) tcHelper.visible = tcWas;
     const out = png ? r.domElement.toDataURL('image/png') : r.domElement.toDataURL('image/jpeg', quality);
     this.scene.background = bgWas; this.cyclo.visible = cycloWas; r.setPixelRatio(pr); r.setSize(size.x, size.y, false);
     return out;
@@ -839,7 +935,9 @@ export class StudioViewport {
     const v = new THREE.Vector3(); let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
     const hw = this.W * S / 2, hd = this.D * S / 2, hh = Math.max(this.H * S, 1);
     for (const X of [-hw, hw]) for (const Y of [0, hh]) for (const Z of [-hd, hd]) {
-      v.set(X, Y, Z).project(this.camera);
+      v.set(X, Y - hh / 2, Z);
+      if (this.modelPivot) this.modelPivot.localToWorld(v);
+      v.project(this.camera);
       const px = (v.x * 0.5 + 0.5) * W, py = (-v.y * 0.5 + 0.5) * H;
       x0 = Math.min(x0, px); x1 = Math.max(x1, px); y0 = Math.min(y0, py); y1 = Math.max(y1, py);
     }
@@ -851,9 +949,13 @@ export class StudioViewport {
   /** render once and return a data URI no wider than `maxW`, cropped to `rect` (canvas pixels) over an opaque background */
   capture(maxW = 760, { quality = 0.85, png = false, rect = null, bg = null, floor = true } = {}) {
     const bgWas = this.scene.background, cycloWas = this.cyclo.visible;
+    const tcHelper = this.transformControls ? this.transformControls.getHelper() : null;
+    const tcWas = tcHelper ? tcHelper.visible : false;
+    if (tcHelper) tcHelper.visible = false;
     if (bg) this.scene.background = new THREE.Color(bg); this.cyclo.visible = cycloWas && floor;
     this.renderer.render(this.scene, this.camera);                               // no renderGizmo(): the corner gizmo is not part of a booklet picture
     this.scene.background = bgWas; this.cyclo.visible = cycloWas;
+    if (tcHelper) tcHelper.visible = tcWas;
     const src = this.renderer.domElement;
     const r = rect || { x: 0, y: 0, w: src.width, h: src.height };
     const k = Math.min(1, maxW / r.w);
