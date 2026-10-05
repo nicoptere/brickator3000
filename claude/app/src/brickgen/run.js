@@ -8,6 +8,7 @@ import { partVariants, pieceVariant } from './variants.js';
 import { Solver } from './solver.js';
 import { motifVariants } from '../motifs/library.js';
 import { snotVariants } from '../motifs/snot.js';
+import { wallSkin } from '../motifs/wall.js';
 
 export function solve(pre, cat, ox, oz, o, log = () => {}, onPhase = null) {
   const S = solverFor(pre, cat, ox, oz, o, log, onPhase);
@@ -45,6 +46,12 @@ export function runPhases(S, pre, cat, ox, oz, o, log = () => {}, onPhase = null
   const Msharp = S.Msharp;
   const tb = o.technic ? { technic: 0.02 } : {};
   const withBonus = (t, extra) => ({ ...t, bonus: { ...(t.bonus || {}), ...extra } });
+  // the sideways skin first (motifs/wall.js): the remaining field seen from each horizontal facing as if that facing were up,
+  // the narrow aligned skin run there, its pieces turned into sideways parts on side-stud host bricks. Only where the surface
+  // is steep (the upright skin's slopes stop at ~65 degrees) and the cells are partial (a wall on the stud lattice is a
+  // brick's face already); it goes before the disc layers and the upright skin, which would otherwise pave the steep belt
+  // with the rim plates the sideways parts are meant to replace
+  if (o.wall) { onPhase && onPhase('W-wall', 0); S.wall = wallSkin(S, cat, o, log, onPhase); }
   // disc layers first (discs.js): a level whose cross-section is a rounded blob is laid as rows of plates, alternating direction
   // per level - the sphere / round-top recipe - before the mined assemblies and the single parts get to it
   if (o.discs) { onPhase && onPhase('A1-disc', 0); const d = placeDiscs(S, cat, partVariants(cat, new Set(['plate'])), o, log); log(`phase A1-disc: ${d.layers} disc layers, ${d.pieces} plates`); }   // circular cross-sections as rows of plates (discs.js)
@@ -84,6 +91,9 @@ export function runPhases(S, pre, cat, ox, oz, o, log = () => {}, onPhase = null
     if (skinV.some((v) => v.c.ext)) S.runPhase(S.attachMirrors(skinV.filter((v) => v.c.ext)), o.skinTol, 'A2-skin-ext');
   }
   if (roundsAfter) roundPhase();
+  // the sideways skin (motifs/wall.js): the remaining field seen from each horizontal facing as if that facing were up, the
+  // narrow aligned skin run there, its pieces turned into sideways parts on side-stud host bricks. After the upright skin
+  // (it takes only what no upright part explained) and before the fill (which builds around the hosts)
   // sideways parts on side studs (motifs/snot.js): every catalogue part of a footprint that an official set hung on a headlight
   // brick / side-stud brick / bracket, as one rigid assembly with its host - a disc on a wall, a curved slope rounding a
   // vertical edge. After the upright skin, before the fill: they take only what no upright part explained

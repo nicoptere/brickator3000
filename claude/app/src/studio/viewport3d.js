@@ -2,7 +2,7 @@
 // (one per part x rotation, one for the visible studs) in a cell-shaded (toon) material plus ink outlines. Pieces pop in with a small spring when revealed.
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { template, pieceOrigin, KIND_COL } from '../brickgen/export.js';
+import { template, templateOri, pieceOrigin, pieceCentre, KIND_COL } from '../brickgen/export.js';
 import { STUD, PLATE } from '../brickgen/constants.js';
 import { smoothNormals } from './meshtools.js';
 import { cycloDims, cycloGeometry, cycloMaterial } from './cyclo.js';
@@ -403,13 +403,17 @@ export class StudioViewport {
     // plate whose studs are only covered LATER would otherwise be drawn bare in the early steps and read as a tile.
     // Keeping them costs nothing visually - a covered stud sits inside the brick above it.
     const occ = new Set();
-    if (!this.allStuds) for (const p of P) for (let dz = 0; dz < p.d; dz++) for (let dx = 0; dx < p.w; dx++) for (let l = 0; l < p.h; l++) occ.add(`${p.i + dx},${p.j + dz},${p.b + l}`);
+    if (!this.allStuds) for (const p of P) { if (p.ori >= 4) continue; for (let dz = 0; dz < p.d; dz++) for (let dx = 0; dx < p.w; dx++) for (let l = 0; l < p.h; l++) occ.add(`${p.i + dx},${p.j + dz},${p.b + l}`); }
     const buckets = new Map(), studs = [];
+    // a sideways (SNOT) piece carries an orientation index (motifs/orient.js) and sits at a fractional cell: its template is
+    // the part turned by that orientation, placed by its box centre (as export.buildMesh does); its studs face sideways and are
+    // part of the turned template's body already
+    const origin = (p) => (p.ori >= 4 ? pieceCentre(p) : pieceOrigin(p));
     P.forEach((p, n) => {
-      const key = `${p.id}|${p.rot}`; let b = buckets.get(key);
-      if (!b) { b = { t: template(by[p.id], p.rot), list: [] }; buckets.set(key, b); }
+      const side = p.ori >= 4, key = side ? `${p.id}|o${p.ori}` : `${p.id}|${p.rot}`; let b = buckets.get(key);
+      if (!b) { b = { t: side ? templateOri(by[p.id], p.ori) : template(by[p.id], p.rot), list: [] }; buckets.set(key, b); }
       b.list.push(n);
-      const [ox, oy, oz] = pieceOrigin(p), top = p.b + p.h;
+      const [ox, oy, oz] = origin(p), top = p.b + p.h;
       for (const [x, y, z] of b.t.studs) if (!occ.has(`${Math.floor((x + ox) / STUD)},${Math.floor((z + oz) / STUD)},${top}`)) studs.push([n, ox + x, oy + y, oz + z]);
     });
     this.pe = new Array(P.length);                      // per piece: [{mesh, k}] parts that move with it
@@ -419,7 +423,7 @@ export class StudioViewport {
       g.setAttribute('position', new THREE.BufferAttribute(b.t.pos, 3)); g.setIndex(new THREE.BufferAttribute(b.t.idx, 1));
       const ng = g.toNonIndexed(); g.dispose(); ng.computeVertexNormals();               // flat normals: crisp toon bands
       const mesh = new THREE.InstancedMesh(ng, this.toon, b.list.length); mesh.castShadow = true; mesh.receiveShadow = true; mesh.userData.pieces = b.list;
-      b.list.forEach((n, k) => { const o = pieceOrigin(P[n]); dummy.position.set(o[0], o[1], o[2]); dummy.scale.setScalar(1); dummy.updateMatrix(); mesh.setMatrixAt(k, dummy.matrix); (this.pe[n] = this.pe[n] || []).push({ mesh, k, base: o }); });
+      b.list.forEach((n, k) => { const o = origin(P[n]); dummy.position.set(o[0], o[1], o[2]); dummy.scale.setScalar(1); dummy.updateMatrix(); mesh.setMatrixAt(k, dummy.matrix); (this.pe[n] = this.pe[n] || []).push({ mesh, k, base: o }); });
       mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage); this.lego.add(mesh); this.groups.push(mesh); this.addHull(mesh);
     }
     if (studs.length) {

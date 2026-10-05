@@ -36,8 +36,8 @@ export const DEFAULTS = {
   surfaceSamples: 200000,
   seed: 1,
   // grid phase search
-  offsets: [0, 4, 8],        // LDU, tried on both axes (multiples of 4); the Precision slider (0/4/8/12) sets it to every multiple of 4 up to its value
-  precision: 8,
+  offsets: [0, 4],           // LDU, tried on both axes (multiples of 4); the Precision slider (0/4/8/12) sets it to every multiple of 4 up to its value
+  precision: 4,
   partSet: 'limited',   // 'limited' (core catalogue) | 'extended' (+ extra LDraw shapes)
   shapeSolo: ['round'],      // kinds of the measured shape parts (catalog_shapes.js) allowed as solo candidates: discs / quarter discs / cones
   shapeParts: false,    // let the frequent shapes compete as single parts too (they are always available to motifs): arches, panels, dishes, corner tiles, curved-top bricks (catalog_shapes.js)
@@ -55,6 +55,13 @@ export const DEFAULTS = {
   motifScoring: false,       // also run the motif phase while scoring the grid phases (9x slower); off = only the final solve uses motifs
   motifVerify: true, motifGain: 0.01,   // the final field is also solved without the assemblies; they are kept only if they gain this much IoU (docs/CURVES.md)
   // SNOT synthesis (motifs/snot.js, docs/CURVES.md round 7): sideways parts on side-stud hosts, every part of an observed footprint
+  // the sideways skin (motifs/wall.js, docs/CURVES.md round 10): each horizontal facing solved as if it were up, its 1-wide
+  // slopes / tiles turned into sideways parts on 1x1 side-stud bricks (87087) behind them. wallOffsets: row lattice offsets
+  // along y (4-LDU samples; each makes a different set of rows hostable); wallFoffs: level lattice offsets along the facing
+  // (0 / 4 LDU: host faces at 40k / 40k + 20); wallHostLevels: hosts only on levels that are multiples of this (3 = brick
+  // layers, in phase with the fill); wallSteep / wallPartial: where the silhouette is steep and the cell is off the lattice
+  wall: false, wallTol: { min_cov: 0.65, max_err: 0.14, piece_pen: 0.35, bonus: { slope: 0.6, curved: 0.5, cheese: 0.4 } }, wallKinds: ['slope', 'curved', 'cheese', 'tile'], wallSteep: 60, wallPartial: 0.12,
+  wallOffsets: [4, 3, 2, 1, 0], wallFoffs: [0, 1], wallHostLevels: 3, wallHostFill: 0.3, wallHost: '87087', wallWide: false,
   snot: false, snotTol: { min_cov: 0.85, max_err: 0.06, piece_pen: 0.3, beatFlat: 0.8 }, snotMinCount: 5, snotMaxThick: 3, snotBonus: 0.2,
   // auto resolution (pipeline.autoStuds, resolution.js, docs/CURVES.md round 8): studs: 'auto' resolves to a stud count
   autoPieces: 1200, autoPilot: [12, 20], autoExp: 2.25, autoExpRange: [1.5, 3.5], autoCurv: 8, autoCurvPct: 0.5, autoCurvShare: 0.1, autoThick: 1, autoThickPct: 0.1, autoCrease: 35, autoMin: 8, autoMax: 64,
@@ -90,6 +97,7 @@ export const DEFAULTS = {
   islands: true, tubeWidth: 4, islandDrop: 0.002, islandDropMax: 40, islandOcc: 0.25, islandThinPoints: 2,
   // post-process
   retile: true,              // three levels of plates -> bricks, committed per level only if connectivity holds
+  tallBricks: false,         // after retile: stacked plain bricks of one footprint -> the tall part (1x1x3, 1x1x5, 2x2x3 ...). Measured: 0.5-1.3 % fewer pieces, IoU unchanged except the teapot (-.003: two more welds); off until that is understood
   mergeVertical: true, mergeHorizontal: true, colorTol: 22,
   pillars: true, pillarMinLevels: 3,
   pillarCluster: 2,          // thin (1x1) neighbours a pole may touch per level: 0 = only a fully isolated column (old

@@ -31,8 +31,8 @@ export const FEATURES = [
     help: 'multi-part assemblies mined from 1,148 LDraw models, placed as compound parts before any single part. Verification solves the model a second time without them and keeps them only where they pay (they build chairs and ruin smooth slopes)',
     on: { motifs: true, motifVerify: true }, off: { motifs: false } },
   { key: 'snot', label: 'Sideways building (SNOT)', group: 'Shape',
-    help: 'parts hung on the side studs of headlight bricks and brackets, synthesised from the side-stud positions recovered from the mined motifs. Experimental: it hangs small parts wherever a partial cell lets it, for little fidelity',
-    on: { snot: true }, off: { snot: false } },
+    help: 'the sideways skin: each horizontal facing of the model is solved as if it were up, and the 1-wide slopes / tiles that fit its steep, off-lattice surfaces are turned into sideways parts on 1x1 side-stud bricks (87087), in rows at the heights a brick layer can host. Measured +0.01..0.02 IoU on the dolphin and the teapot, neutral elsewhere, 3-4x the solve time (docs/CURVES.md round 10). The older SNOT synthesis (snot) stays a separate, low-level option',
+    on: { wall: true }, off: { wall: false } },
 
   { key: 'crust', label: 'Hollow core', group: 'Build',
     help: 'erase the interior deeper than two studs below the surface, so only the shell is built: far fewer pieces, same look',

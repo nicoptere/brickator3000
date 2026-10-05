@@ -28,6 +28,7 @@ export class Solver {
     // around the box, so a slope at its edge still matches the surface it is part of. Masking the field instead cuts the solid
     // flat at the box faces and the phases then pave those faces with flat parts (measured: duck IoU .852 -> .832).
     this.box = opts && opts.regionBox ? opts.regionBox : null;
+    this.allow = null;               // optional (b, j, i, h, d, w) => bool: a lattice restriction on where a part may sit (motifs/wall.js)
   }
   /**
    * May a part of this footprint sit here? (always true outside a region edit.) The test is OVERLAP, not containment: the
@@ -157,6 +158,7 @@ export class Solver {
     if (b + v.h > this.NL || (j + v.d) * G > this.NZs || (i + v.w) * G > this.NXs || b < 0 || j < 0 || i < 0) return null;
     if (this.mirror && this.straddles(v, b, j, i)) return null;
     if (!this.roundOk(v, j, i)) return null;
+    if (this.allow && !this.allow(b, j, i, v.h, v.d, v.w)) return null;
     const pz = v.d * G, px = v.w * G, V = v.V, M = this.M, C = this.C;
     let ov = 0, over = 0;
     for (let l = 0; l < v.h; l++) for (let z = 0; z < pz; z++) {
@@ -218,6 +220,7 @@ export class Solver {
           const swG = I[c0 + o1 + o2 + o3] - I[c0 + o2 + o3] - I[c0 + o1 + o3] - I[c0 + o1 + o2] + I[c0 + o3] + I[c0 + o2] + I[c0 + o1] - I[c0];
           if (swG < loG) continue;
           if (this.box && !this.fits(b, j, i, h, d, w)) continue;
+          if (this.allow && !this.allow(b, j, i, h, d, w)) continue;
           if (roundGroup && !this.roundOk(variants[ks[0]], j, i)) continue;
           const sw = swG / G2;
           for (let q = 0; q < ks.length; q++) {

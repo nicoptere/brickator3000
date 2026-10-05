@@ -5,7 +5,7 @@
  *  studs ARE that neighbour, so merging it away would change the trick and cut the sideways piece loose from the only thing
  *  holding it (post.components groups an assembly by `mi`, which a merged piece no longer carries). */
 const free = (p) => !p.snot && !p.rigid;
-import { partVariants } from './variants.js';
+import { partVariants, pieceVariant } from './variants.js';
 import { G } from './constants.js';
 
 // cell keys are packed numbers (string keys made the connectivity passes allocation-bound): i, j in [-1024, 3072), l in [-1, ...)
@@ -753,12 +753,23 @@ export function bridge(S, cat, o) {
       const SMOOTH = new Set(['slope', 'curved', 'cheese', 'inverted', 'tile']); const idsA = []; P.forEach((p, n) => { if (uf.find(n) === A && SMOOTH.has(p.kind) && free(p)) idsA.push(n); });
       if (idsA.length && !flattened.has(A) && (o.bridgeFlatten ?? true) && cnt.get(A) <= (o.bridgeFlattenMax ?? 6)) {
         flattened.add(A); const bricks = shapes(cat, 'brick'), plates = shapes(cat, 'plate'), kill = new Set(idsA), add = [];
+        // the boxes may only take cells nothing else holds: two wedge plates or corner tiles share a bounding box (their
+        // triangles tile it), and flattening both into full boxes put two bricks in the same cells - the overlaps seen in
+        // finished models. Occupancy of everything that stays, plus what this flatten has already added.
+        const taken = occupancy(P.filter((_, n) => !kill.has(n)));
         for (const n of idsA) {
-          const p = P[n], cells = new Map(); for (let dz = 0; dz < p.d; dz++) for (let dx = 0; dx < p.w; dx++) cells.set(K2(p.i + dx, p.j + dz), p.rgb);
-          let l = p.b; const top = p.b + Math.max(1, Math.round(p.h));
-          while (l < top) { const brick = top - l >= 3 ? bricks.find((c) => (c.w === p.w && c.d === p.d) || (c.w === p.d && c.d === p.w)) : null;
-            if (brick) { add.push(mk(brick, brick.w === p.w ? p.w : p.d, brick.w === p.w ? p.d : p.w, p.i, p.j, l, p.rgb, 'T-flatten')); l += 3; }
-            else { add.push(...pack(cells, plates, l, 1e9).map((x) => ({ ...x, phase: 'T-flatten' }))); l += 1; } }
+          const p = P[n]; let l = p.b; const top = p.b + Math.max(1, Math.round(p.h));
+          while (l < top) {
+            const cells = new Map(); for (let dz = 0; dz < p.d; dz++) for (let dx = 0; dx < p.w; dx++) if (!taken.has(K(p.i + dx, p.j + dz, l))) cells.set(K2(p.i + dx, p.j + dz), p.rgb);
+            let whole = cells.size === p.w * p.d;                            // ... on all three levels of a brick, not only the first
+            if (whole && top - l >= 3) for (let t = 1; t < 3 && whole; t++) for (let dz = 0; dz < p.d && whole; dz++) for (let dx = 0; dx < p.w; dx++) if (taken.has(K(p.i + dx, p.j + dz, l + t))) { whole = false; break; }
+            const brick = whole && top - l >= 3 ? bricks.find((c) => (c.w === p.w && c.d === p.d) || (c.w === p.d && c.d === p.w)) : null;
+            // mk takes the PLACED footprint (it works out the yaw from the part's own): this used to pass the footprint transposed
+            // whenever the brick's canonical w/d were the other way round, so a 3x1 curved slope became a 1x3 brick across its
+            // neighbours - the overlapping bricks seen in finished models
+            if (brick) { const q = mk(brick, p.w, p.d, p.i, p.j, l, p.rgb, 'T-flatten'); add.push(q); for (let dz = 0; dz < p.d; dz++) for (let dx = 0; dx < p.w; dx++) for (let t = 0; t < 3; t++) taken.set(K(p.i + dx, p.j + dz, l + t), -1); l += 3; }
+            else { if (cells.size) { const ps = pack(cells, plates, l, 1e9).map((x) => ({ ...x, phase: 'T-flatten' })); add.push(...ps); for (const q of ps) for (let dz = 0; dz < q.d; dz++) for (let dx = 0; dx < q.w; dx++) taken.set(K(q.i + dx, q.j + dz, l), -1); } l += 1; }
+          }
         }
         S.pieces = P.filter((_, n) => !kill.has(n)).concat(add); added += add.length - idsA.length; state = null; continue;
       }
@@ -977,4 +988,72 @@ export function mergePairs(S, cat, kind, tol, passes = 12) {
     S.pieces = P.filter((_, n) => !dead.has(n)).concat(add); total += did;
   }
   return total;
+}
+
+// ------------------------------------------------------------------ buildability audit
+/**
+ * Do any two pieces claim the same volume? Every piece is rasterised at the engine's 4-LDU sample resolution (upright parts by
+ * their template volume, sideways parts by their oriented fine volume) into a fresh coverage array, and a sample over 1.01 is
+ * an overlap. Returns { samples (overlapping samples), cells (stud cells with any), pairs: [[n, m, samples]...] (the worst
+ * ten) } - the pieces are left alone; `dedupe` removes them.
+ */
+export function audit(S, cat, variants) {
+  const NL = S.NL, NZ = S.NZs, NX = S.NXs, C = new Float32Array(NL * NZ * NX), owner = new Int32Array(NL * NZ * NX).fill(-1);
+  const pairs = new Map(); let samples = 0; const cells = new Set();
+  const add = (n, l, z, x, v) => {
+    if (l < 0 || l >= NL || z < 0 || z >= NZ || x < 0 || x >= NX || v <= 0) return;
+    const q = (l * NZ + z) * NX + x; C[q] += v;
+    if (C[q] > 1.01) { samples++; cells.add(K(Math.floor(x / G), Math.floor(z / G), l)); const o = owner[q]; if (o >= 0 && o !== n) { const k = o < n ? o * 1e6 + n : n * 1e6 + o; pairs.set(k, (pairs.get(k) || 0) + 1); } }
+    if (owner[q] < 0) owner[q] = n;
+  };
+  S.pieces.forEach((p, n) => {
+    if (p.snot) {
+      const ob = p.ob || null; const i0 = Math.round(p.i * G), b0 = Math.round(p.b * 2), j0 = Math.round(p.j * G);
+      const w = Math.round(p.w * G), h = Math.round(p.h * 2), d = Math.round(p.d * G);
+      for (let y = 0; y < h; y++) for (let z = 0; z < d; z++) for (let x = 0; x < w; x++) add(n, (b0 + y) >> 1, j0 + z, i0 + x, 0.5);   // box approximation of a sideways part
+      return;
+    }
+    const v = variants ? pieceVariant(p, variants) : null;
+    const pz = p.d * G, px = p.w * G;
+    for (let l = 0; l < p.h; l++) for (let z = 0; z < pz; z++) for (let x = 0; x < px; x++) add(n, p.b + l, p.j * G + z, p.i * G + x, v && v.V.length === p.h * pz * px ? v.V[(l * pz + z) * px + x] : 1);
+  });
+  const top = [...pairs.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10).map(([k, s]) => [Math.floor(k / 1e6), k % 1e6, s]);
+  return { samples, cells: cells.size, pairs: top };
+}
+
+// ------------------------------------------------------------------ tall bricks: stacks of plain bricks -> one tall part
+/**
+ * The catalogue's tall solid boxes (1x1x3 14716, 1x1x5 2453a, 1x2x2 3245a, 2x2x3 30145, 2x4x3 30144, 1x4x3 49311, 2x6x3
+ * 6213 ...: every solid part taller than a brick) replace a stack of plain bricks (or 2 / 3 / 5 of them) of exactly that
+ * footprint and close colours. A merge of whole pieces only - nothing is re-cut - so connectivity cannot get worse: the stud
+ * contacts that disappear were inside the stack. What it does for the eye: a wall or a pillar reads as one piece instead
+ * of a pile of layers; what it does for the count: 1 part for 2-5. Runs after retile (plates have become bricks by then).
+ */
+export function tallBricks(S, cat, tol) {
+  // a tall solid: a height profile that is flat at the full height everywhere (the EXT catalogue's measured boxes), studs on every cell, no cutouts
+  const solid = (c) => c.kind !== 'inverted' && (c.cover ? c.cover.every((lv) => lv.every((row) => row.every((v) => v >= 0.999))) : c.top && c.top.every((row) => row.every((t) => Math.abs(t - c.h * 8) < 0.5)));   // (bot is the cavity ceiling of a measured brick; the engine fills it, variants.baseVolume)
+  const talls = cat.filter((c) => !c.noSolo && c.h > 3 && c.h % 3 === 0 && c.w * c.d <= 12 && solid(c) && (c.stud_cells || []).length === c.w * c.d);
+  if (!talls.length) return 0;
+  const byFoot = new Map(); for (const c of talls) { for (const k of [`${c.w},${c.d}`, `${c.d},${c.w}`]) (byFoot.get(k) || byFoot.set(k, []).get(k)).push(c); }
+  for (const l of byFoot.values()) l.sort((a, b) => b.h - a.h);
+  const plain = (p) => p.kind === 'brick' && p.h === 3 && free(p) && p.studs.length === p.w * p.d && !p.host;
+  const P = S.pieces, at = new Map();                                       // "i,j,w,d,b" -> piece index, plain bricks only
+  P.forEach((p, n) => { if (plain(p)) at.set(`${p.i},${p.j},${p.w},${p.d},${p.b}`, n); });
+  const kill = new Set(), add = [];
+  const order = P.map((p, n) => n).filter((n) => plain(P[n])).sort((a, b) => P[a].b - P[b].b);
+  for (const n of order) {
+    if (kill.has(n)) continue;
+    const p = P[n], opts = byFoot.get(`${p.w},${p.d}`); if (!opts) continue;
+    for (const c of opts) {
+      const k = c.h / 3, run = [n]; let ok = true;
+      for (let t = 1; t < k && ok; t++) { const m = at.get(`${p.i},${p.j},${p.w},${p.d},${p.b + 3 * t}`); if (m === undefined || kill.has(m) || !close(P[m].rgb, p.rgb, tol)) ok = false; else run.push(m); }
+      if (!ok) continue;
+      run.forEach((m) => kill.add(m));
+      add.push({ ...mk(c, p.w, p.d, p.i, p.j, p.b, meanRgb(run.map((m) => P[m].rgb)), 'M-tall'), kind: 'brick', h: c.h, studs: p.studs.map((s) => s.slice()) });
+      break;
+    }
+  }
+  if (!kill.size) return 0;
+  S.pieces = P.filter((_, n) => !kill.has(n)).concat(add);
+  return kill.size - add.length;
 }

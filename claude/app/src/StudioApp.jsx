@@ -145,6 +145,17 @@ function StudioInner() {
     if (!first) previewResolution(opts.studs, opts.ref);
   }, [opts.studs, opts.ref]); // eslint-disable-line
   const stepRef = useRef(0); stepRef.current = step;
+  // Progress goes through a throttle: a worker, the region rebuild or the path tracer can report many times a second, and
+  // every report is a render of this whole component - enough of them back to back and React gives up with "Maximum update
+  // depth exceeded" (seen on a fast GPU with the booklet's path-traced cover reporting every sample). At most one state
+  // update per 120 ms; the last report always lands; `stageDone` clears it.
+  const stageRef = useRef({ t: 0, timer: null, next: null });
+  const pushStage = useCallback((label, f) => {
+    const st = stageRef.current, now = performance.now(); st.next = [label, f];
+    if (now - st.t >= 120 && !st.timer) { st.t = now; setStage(st.next); }
+    else if (!st.timer) st.timer = setTimeout(() => { st.timer = null; st.t = performance.now(); setStage(st.next); }, Math.max(0, 120 - (now - st.t)));
+  }, []);
+  const stageDone = useCallback(() => { const st = stageRef.current; if (st.timer) { clearTimeout(st.timer); st.timer = null; } st.next = null; setStage(['', 0]); }, []);
 
   const setOpt = (k, v) => setOpts((o) => { const n = { ...o, [k]: v }; try { localStorage.setItem(STORE, JSON.stringify(n)); } catch {} return n; });
   const patchOpts = (p) => setOpts((o) => { const n = { ...o, ...p }; try { localStorage.setItem(STORE, JSON.stringify(n)); } catch {} return n; });
@@ -429,7 +440,7 @@ function StudioInner() {
         const f = fixWinding(model.tris, model.vcols); src = f;
         message.info(f.flipped ? `vertex normals: ${f.flipped} flipped triangle${f.flipped === 1 ? '' : 's'} corrected` : 'vertex normals: no flipped triangle found');
       }
-      const r = await runMethod(src, opts, { workersWanted: workers, onStage: (s, f) => setStage([s, f]) });
+      const r = await runMethod(src, opts, { workersWanted: workers, onStage: pushStage });
       vp.current.clearVoxels();
       if (officialColors) applyOfficialPalette(r.pieces, true);
       setRes(r);
@@ -447,7 +458,7 @@ function StudioInner() {
     }
     setBusy(false);
   }
-  const stop = () => { cancellingRef.current = true; cancel(); vp.current && (vp.current.clearVoxels(), vp.current.clearHollowCubes()); setBusy(false); setStage(['', 0]); sfx.click(); };
+  const stop = () => { cancellingRef.current = true; cancel(); vp.current && (vp.current.clearVoxels(), vp.current.clearHollowCubes()); setBusy(false); stageDone(); sfx.click(); };
 
   const base = model ? model.name.replace(/\.[^.]+$/, '') + '_' + opts.studs : 'model';
   const exportLDR = () => download(toLDR(res.pieces, FULL_CATALOG, base), base + '.ldr', 'text/plain');
@@ -468,12 +479,12 @@ function StudioInner() {
     sfx.click(); setBusy(true); setStage(['Rebuilding the selection', 0]);
     try {
       const box = boxOf(sel);
-      const r = await rebuildRegion(box, res, { onStage: (s2, f) => setStage([s2, f]) });
+      const r = await rebuildRegion(box, res, { onStage: pushStage });
       if (!r) throw new Error('the model has to be computed again before an area can be rebuilt');
       setRebuild(r); setRebuildPick(0);
       message.success(`${r.replaced} bricks, ${r.attempts.length - 1} alternatives`);
     } catch (e) { sfx.error(); message.error(String(e.message || e)); console.error(e); }
-    setBusy(false); setStage(['', 0]);
+    setBusy(false); stageDone();
   };
   /** show one alternative in the viewport without committing to it (0 = what is there now) */
   const previewRebuild = (k) => {
@@ -512,20 +523,22 @@ function StudioInner() {
     window.addEventListener('keydown', f); return () => window.removeEventListener('keydown', f);
   }, [selMode]);
 
+  const bookStageRef = useRef('Drawing the instructions');
   const exportBooklet = async () => {
     const vpc = vp.current; if (!res || !vpc || !vpc.pieces) return;
-    sfx.click(); setBookBusy(true); setStage(['Drawing the instructions', 0]);
+    sfx.click(); setBookBusy(true); bookStageRef.current = 'Drawing the instructions'; pushStage('Drawing the instructions', 0);
     const wasDark = dark, wasMode = viewMode, wasOutline = outline, wasLevel = step;
     try {
       const { html, steps, pages } = await shootBooklet(vpc, FULL_CATALOG, { title: base, opts,
         meta: { studs: res.options.studs, weld: !!(res.post && res.post.weld && res.post.weld.added) },
-        onStage: (name) => setStage([name, 0]), onProgress: (f) => setStage((st) => [st[0] || 'Drawing the instructions', f]) });
+        cover: { spp: window.__spp || 256, ...(window.__coverH ? { outHeight: window.__coverH } : {}) },
+        onStage: (name) => { bookStageRef.current = name; pushStage(name, 0); }, onProgress: (f) => pushStage(bookStageRef.current, f) });
       download(html, base + '_instructions.html', 'text/html');
       message.success(`${steps} steps on ${pages} pages - open it and print to PDF`);
     } catch (e) { sfx.error(); message.error(String(e.message || e)); console.error(e); }
     vpc.setAllStuds(false);
     vpc.paused = false; vpc.setTheme(wasDark); vpc.setOutline(wasOutline); vpc.setColorMode(colorMode); vpc.setMode(wasMode); vpc.setLevel(wasLevel >= maxLevelRef.current ? Infinity : wasLevel, false);
-    setBookBusy(false); setStage(['', 0]);
+    setBookBusy(false); stageDone();
   };
 
   const exportJSON = () => download(JSON.stringify({ model: model.name, options: res.options, metrics: res.metrics, post: res.post, islands: res.islands, symmetry: res.symmetry, timing: res.timing, dims: res.dims, pieces: res.pieces }, null, 1), base + '_report.json', 'application/json');
@@ -917,7 +930,7 @@ function StudioInner() {
         </div>
       </div>
 
-      {busy && <div className="busy" style={{ left: leftOpen ? LW : 0, right: rightOpen ? RW : 0 }}><div className="chip"><div className="chip-row"><div className="spinner" /><span>{stage[0]}</span><div className="pulse" /></div>
+      {(busy || bookBusy) && <div className="busy" style={{ left: leftOpen ? LW : 0, right: rightOpen ? RW : 0 }}><div className="chip"><div className="chip-row"><div className="spinner" /><span>{stage[0]}</span><div className="pulse" /></div>
         <div className="chip-bar"><Progress percent={Math.round(stage[1] * 100)} showInfo={false} size="small" /><span>{Math.round(stage[1] * 100)}%</span></div></div></div>}
 
       {rebuild && (

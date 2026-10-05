@@ -1,8 +1,10 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
+import StudioApp from './StudioApp.jsx';
 
-// routes (hash based): "#/" = Studio (layout and look of the original app), "#/dev" = the first frontend (every parameter in a side panel)
-const route = () => (location.hash.replace(/^#\/?/, '').split(/[/?]/)[0] || 'studio');
-const load = route() === 'dev' ? import('./DevApp.jsx') : import('./StudioApp.jsx');
-window.addEventListener('hashchange', () => location.reload());
-load.then((m) => createRoot(document.getElementById('root')).render(React.createElement(m.default)));
+// Clean up legacy hash routes (e.g. #/dev) and fallback to index.html / Studio
+if (location.hash && location.hash.includes('dev')) {
+  history.replaceState(null, '', location.pathname + location.search);
+}
+
+createRoot(document.getElementById('root')).render(React.createElement(StudioApp));

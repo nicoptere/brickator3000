@@ -94,9 +94,11 @@ export function flattenModel(text, lib, { main = null, maxDepth = 32 } = {}) {
     if (depth > maxDepth) return;
     for (const r of f.refs) {
       const M2 = mul3(M, r.M), t2 = apply(M, t, r.t), col = r.color === 16 ? color : r.color;
-      const sub = byName.get(r.file);
-      if (sub) { walk(sub, M2, t2, col, depth + 1); continue; }
       let name = r.file.replace(/^.*\//, ''), M3 = M2, t3 = t2;
+      // a sub-model of the MPD - unless the file embeds copies of the library parts it uses (BrickLink Studio exports do: every
+      // part as its own `0 FILE 3023.dat` section): a section named after a library part IS that part, not a model to descend
+      const sub = byName.get(r.file);
+      if (sub && !(lib && lib.isPart(name))) { walk(sub, M2, t2, col, depth + 1); continue; }
       if (lib && !lib.isPart(name)) { unresolved.set(name, (unresolved.get(name) || 0) + 1); continue; }
       // "~Moved to xxx" and "=" alias parts hold a single reference to the real part: follow it
       for (let k = 0; k < 4 && lib; k++) {

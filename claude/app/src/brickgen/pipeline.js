@@ -4,7 +4,7 @@ import { surfaceSamples } from './mesh.js';
 import { prepare, normalize } from './grid.js';
 import { smoothModel } from './smooth.js';
 import { solve, solverFor, runPhases, metrics, surface } from './run.js';
-import { mergePairs, vertical, horizontal, pillars, bracing, splice, bridge, weld, supports, finish, untile, connectivity, retile, roundCorners, widen, dropLoose } from './post.js';
+import { mergePairs, vertical, horizontal, pillars, bracing, splice, bridge, weld, supports, finish, untile, connectivity, retile, roundCorners, widen, dropLoose, audit, tallBricks } from './post.js';
 import { detectSymmetry } from './symmetry.js';
 import { PointGrid } from './nn.js';
 import { visibleSamples } from './visibility.js';
@@ -187,13 +187,13 @@ export function scoreJob(ctx, job, cat = catalogFor(ctx.o)) {
 const PHASE_LABEL = {
   'A1-disc': 'laying disc layers', 'M-lib': 'building the assembly library', 'M-motif': 'placing learned assemblies', 'A0-round': 'placing round parts',
   'A-skin-narrow': 'skinning the slopes (1-wide)', 'A-skin': 'skinning the slopes', 'A2-skin-ext': 'skinning with the extended parts',
-  'S-snot': 'hanging sideways parts', 'B-fill': 'filling the body', 'B2-fill': 'filling the body (second pass)',
+  'W-wall': 'skinning the walls sideways', 'S-snot': 'hanging sideways parts', 'B-fill': 'filling the body', 'B2-fill': 'filling the body (second pass)',
   'C-relaxed': 'mopping up the surface', 'D-fallback': 'filling the gaps with 1x1', 'E-thin': 'catching the thin features',
   'F-tube': 'joining the islands',
 };
 /** how many solver phases this option set will run (for the fraction; a miscount only skews the bar, never the result) */
 const phaseCount = (o) => 1 + (o.discs ? 1 : 0) + (o.motifs ? 2 : 0) + (o.rounds ? 1 : 0)
-  + (o.skin ? 1 + (o.skinNarrow ? 1 : 0) + (o.partSet === 'extended' ? 1 : 0) : 0) + (o.snot ? 1 : 0)
+  + (o.skin ? 1 + (o.skinNarrow ? 1 : 0) + (o.partSet === 'extended' ? 1 : 0) : 0) + (o.snot ? 1 : 0) + (o.wall ? 1 : 0)
   + 1 + (o.fill2 ? 1 : 0) + (o.relaxed ? 1 : 0) + (o.fallback ? 1 : 0) + (o.thin ? 1 : 0) + (o.islands ? 1 : 0);
 
 /** finish the best job: colours, merges, pillars, connectivity post-process, studs finish, palette, stats */
@@ -216,6 +216,7 @@ export function finishJob(ctx, job, cat = catalogFor(ctx.o), log = () => {}, pro
   // `adopt`: a piece list solved elsewhere (a region edit) takes the place of the solve, on a bare solver over the full field
   let S = adopt ? solve(pre, cat, ox, oz, { ...o, noPhases: true }).adopt(adopt, allVariants(cat)) : solve(pre, cat, ox, oz, o, log, onPhase);
   const post = {};
+  if (S.wall) post.wall = S.wall;
   // motif verification (docs/CURVES.md): the mined assemblies are a broad-phase heuristic that pays on blocky and roof-like
   // models and leaves a chaotic skin on organic ones; the same field is solved once more without them (fast: the motif phase is
   // what costs) and the assemblies are kept only when they gain at least `motifGain` of IoU
@@ -265,6 +266,7 @@ export function finishJob(ctx, job, cat = catalogFor(ctx.o), log = () => {}, pro
   if (o.bracing && o.supports) post.brace += bracing(S, cat, o);
   if (o.mergeVertical) post.vertical2 = vertical(S, cat, o.colorTol);                  // final re-pack: bracing / splice / bridge pieces can merge too
   if (o.retile) post.retile2 = retile(S, cat, o.colorTol);
+  if (o.tallBricks) post.tall = tallBricks(S, cat, o.colorTol);                           // stacks of plain bricks -> one tall part (1x1x3, 1x1x5, 2x2x3 ...)
   progress('tidying the tiles', 0.9);
   post.untiled = untile(S, cat);                                                        // smooth tiles only on the outside skin
   if (o.mergeHorizontal) post.pairs = mergePairs(S, cat, 'plate', o.colorTol) + mergePairs(S, cat, 'brick', o.colorTol);          // union-only merges: connectivity cannot get worse
@@ -272,7 +274,7 @@ export function finishJob(ctx, job, cat = catalogFor(ctx.o), log = () => {}, pro
   if (o.finish) { post.finish = finish(S, cat, o.finishBricks); if (o.mergeHorizontal) mergePairs(S, cat, 'tile', o.colorTol); }
   if (o.finish && o.roundCorners) post.corners = roundCorners(S, cat);                   // quarter-round tiles on the convex corners of the top layer
   progress('dropping the loose pieces', 0.945);
-  if (o.dropLoose) post.loose = dropLoose(S, o.dropLoose);                                 // single pieces touching nothing are not part of the build
+  if (o.dropLoose) post.loose = dropLoose(S, o.wall ? Math.max(2, o.dropLoose) : o.dropLoose);   // single pieces touching nothing are not part of the build (with the sideways skin: a plate + tile left standing on a sideways part are two)
   // last: what is still in several pieces gets welded, through air if there is no way through the solid (docs/CURVES.md round 9)
   progress('welding it into one piece', 0.968);
   if (o.weld) { post.weld = weld(S, cat, o); if (post.weld.added && o.mergeHorizontal) mergePairs(S, cat, 'plate', o.colorTol); }
@@ -281,6 +283,10 @@ export function finishJob(ctx, job, cat = catalogFor(ctx.o), log = () => {}, pro
   T.post = now() - t;
   progress('measuring the result', 0.99);
   const mt = metrics(S), con = connectivity(S), sf = surface(S, cat);
+  // buildability: no two pieces may claim the same volume (post.audit rasterises every piece afresh). Zero on every bench
+  // model since the flatten fallback was fixed (it used to transpose its footprint and ignore the levels above); reported so
+  // a regression shows up as a number, not as a brick through a slope in the booklet
+  const ov = audit(S, cat, allVariants(cat)); post.overlap = { samples: ov.samples, cells: ov.cells }; if (ov.samples) log(`buildability: ${ov.samples} overlapping samples in ${ov.cells} cells`);
   let mirrored = null;
   if (S.mirror) {
     const [ax, c2] = S.mirror, keys = new Set(S.pieces.map((q) => `${q.id},${q.b},${q.j},${q.i},${q.w},${q.d}`));

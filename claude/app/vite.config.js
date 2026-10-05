@@ -38,6 +38,9 @@ const modelsPlugin = {
         res.setHeader('Cache-Control', 'no-cache');
         return fs.createReadStream(f).pipe(res);
       }
+      if (url === '/dev' || url === '/dev/ui' || url.startsWith('/dev/')) {
+        req.url = '/index.html';
+      }
       next();
     });
   },

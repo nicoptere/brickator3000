@@ -1,0 +1,23 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>shot</title>
+<style>html,body{margin:0;height:100%;background:#1e222b}#vp{width:960px;height:720px}</style></head>
+<body><div id="vp"></div>
+<script type="module">
+  // Pictures of a piece list through the real viewport: isometric from the four corners plus a front / side elevation,
+  // sideways (SNOT) pieces and their hosts tinted. Driven by test/shot.mjs; the data URIs land in window.__shots.
+  import { StudioViewport } from '/src/studio/viewport3d.js';
+  import { FULL_CATALOG } from '/src/brickgen/pipeline.js';
+  const q = new URLSearchParams(location.search);
+  const pieces = await (await fetch(q.get('pieces'))).json();
+  const dims = JSON.parse(q.get('dims') || '[16,16,32]');
+  const tint = q.get('tint') !== '0';
+  if (tint) for (const p of pieces) { if (p.snot) p.rgb = [20, 220, 190]; else if (p.host) p.rgb = [240, 60, 200]; else if (!p.rgb) p.rgb = [200, 200, 200]; }
+  const vp = new StudioViewport(document.getElementById('vp'));
+  vp.setLego(pieces, FULL_CATALOG, dims); vp.setColorMode('piece'); vp.setOutline(true); vp.setTheme(false); vp.paused = true;
+  await new Promise((r) => setTimeout(r, 300));
+  const box = { min: [0, 0, 0], max: [vp.W, vp.H, vp.D] }, ar = 1.33;
+  const dirs = { iso: [1, 1, 1], iso2: [-1, 1, 1], iso3: [1, 1, -1], iso4: [-1, 1, -1], front: [0, 0.001, 1], side: [1, 0.001, 0] };
+  const out = {};
+  for (const [k, dir] of Object.entries(dirs)) out[k] = vp.captureIso(box, { ar, maxW: 1400, margin: 0.3, pad: 0.02, minSpan: 0, dir, floor: false });
+  window.__shots = out;
+</script></body></html>
