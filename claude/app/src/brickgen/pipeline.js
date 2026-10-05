@@ -174,7 +174,11 @@ export function setup(model, opts) {
 /** score of one grid phase (used to pick the best phase; cheap enough to run in several workers) */
 export function scoreJob(ctx, job, cat = catalogFor(ctx.o)) {
   const [par, ox, oz] = job;
-  const S = solve(ctx.pres[par], cat, ox, oz, ctx.o.motifs && !ctx.o.motifScoring ? { ...ctx.o, motifs: false } : ctx.o);
+  // the grid phase is chosen without the motifs (unless motifScoring) and without the sideways skin: both are expensive, and
+  // the wall pass on top of the scoring solves picked a worse phase for the rounded box (1184 pieces against 954 on the phase
+  // the plain solve picks) - the phase is a property of the field's lattice, not of the skin that goes on it
+  const so = { ...ctx.o, wall: false }; if (ctx.o.motifs && !ctx.o.motifScoring) so.motifs = false;
+  const S = solve(ctx.pres[par], cat, ox, oz, so);
   const mt = metrics(S);
   return mt.iou - 0.002 * mt.pieces;
 }
@@ -198,11 +202,41 @@ const phaseCount = (o) => 1 + (o.discs ? 1 : 0) + (o.motifs ? 2 : 0) + (o.rounds
 
 /** finish the best job: colours, merges, pillars, connectivity post-process, studs finish, palette, stats */
 export function finishJob(ctx, job, cat = catalogFor(ctx.o), log = () => {}, progress = () => {}, adopt = null) {
+  // The sideways skin (motifs/wall.js) pays on some models and costs on others (a rounded box: +36 % pieces for nothing), and
+  // only the FINISHED models can be compared - the merge passes compress an upright solution far more than one with rigid
+  // sideways assemblies (rounded box: 1392 vs 1425 pieces raw, 1184 vs 890 finished). So with `wallVerify` the whole finish
+  // runs twice, with and without, and the one that wins on the job score (IoU - 0.002 x pieces) is returned.
+  if (ctx.o.wall && (ctx.o.wallVerify ?? true) && !adopt && !ctx.o._wallInner) {
+    const a = finishJob({ ...ctx, o: { ...ctx.o, _wallInner: true } }, job, cat, log, (l, f) => progress(l, f * 0.5), adopt);
+    if (!a.post.wall || !a.post.wall.pieces) return a;
+    const b = finishJob({ ...ctx, o: { ...ctx.o, wall: false, _wallInner: true } }, job, cat, log, (l, f) => progress('without the sideways skin: ' + l, 0.5 + f * 0.5), adopt);
+    const sa = a.metrics.iou - 0.002 * a.metrics.pieces, sb = b.metrics.iou - 0.002 * b.metrics.pieces, kept = sa >= sb + (ctx.o.wallGain ?? 0);
+    const r = kept ? a : b;
+    r.post.wallCheck = { with: +a.metrics.iou.toFixed(4), without: +b.metrics.iou.toFixed(4), pieces: [a.metrics.pieces, b.metrics.pieces], kept };
+    if (!kept) r.post.wall = { ...a.post.wall, dropped: true };
+    log(`wall check: IoU ${a.metrics.iou.toFixed(3)} / ${a.metrics.pieces} p with, ${b.metrics.iou.toFixed(3)} / ${b.metrics.pieces} p without -> ${kept ? 'kept' : 'dropped'}`);
+    r.timing.wallCheck = (a.timing.solve || 0) + (a.timing.post || 0) + (b.timing.solve || 0) + (b.timing.post || 0);
+    return r;
+  }
+  // The mined assemblies, the same way (motifScore, docs/MOCS.md §6.6): the solver-level check below compared raw solves on
+  // IoU alone, and the raw solve with motifs has MORE pieces (rigid assemblies) than the one without, while the finished one
+  // has fewer (ice cream, 16 studs: 1751 vs 1742 raw, 1131 vs 1157 finished). Only finished models compare, on the job score.
+  if (ctx.o.motifs && (ctx.o.motifVerify ?? true) && (ctx.o.motifScore ?? true) && !adopt && !ctx.o._motifInner) {
+    const a = finishJob({ ...ctx, o: { ...ctx.o, _motifInner: true } }, job, cat, log, (l, f) => progress(l, f * 0.5), adopt);
+    if (!a.pieces.some((p) => p.motif)) return a;
+    const b = finishJob({ ...ctx, o: { ...ctx.o, motifs: false, _motifInner: true } }, job, cat, log, (l, f) => progress('checking the assemblies pay: ' + l, 0.5 + f * 0.5), adopt);
+    const sa = a.metrics.iou - 0.002 * a.metrics.pieces, sb = b.metrics.iou - 0.002 * b.metrics.pieces, kept = sa >= sb + (ctx.o.motifGain ?? 0);
+    const r = kept ? a : b;
+    r.post.motifCheck = { with: +a.metrics.iou.toFixed(4), without: +b.metrics.iou.toFixed(4), pieces: [a.metrics.pieces, b.metrics.pieces], kept, finished: true };
+    log(`motif check: IoU ${a.metrics.iou.toFixed(3)} / ${a.metrics.pieces} p with, ${b.metrics.iou.toFixed(3)} / ${b.metrics.pieces} p without -> ${kept ? 'kept' : 'dropped'}`);
+    r.timing.motifCheck = (a.timing.solve || 0) + (a.timing.post || 0) + (b.timing.solve || 0) + (b.timing.post || 0);
+    return r;
+  }
   const { o, m, sym, symOk } = ctx, T = { ...ctx.T };
   let t = now();
   const [par, ox, oz] = job, pre = ctx.pres[par];
   // the stage is in three parts: the solve, the motif verification (a second solve, so it costs as much), and the post-process
-  const verify = !!(o.motifs && (o.motifVerify ?? true));
+  const verify = !!(o.motifs && (o.motifVerify ?? true) && !(o.motifScore ?? true));   // the motifScore check wraps the whole finish (above)
   const SOLVE = verify ? 0.42 : 0.62, VERIFY = verify ? 0.72 : SOLVE;
   const nPhase = phaseCount(o); let seen = 0, lo = 0, hi = SOLVE;
   let tag = '', last = -1;
@@ -217,15 +251,15 @@ export function finishJob(ctx, job, cat = catalogFor(ctx.o), log = () => {}, pro
   let S = adopt ? solve(pre, cat, ox, oz, { ...o, noPhases: true }).adopt(adopt, allVariants(cat)) : solve(pre, cat, ox, oz, o, log, onPhase);
   const post = {};
   if (S.wall) post.wall = S.wall;
-  // motif verification (docs/CURVES.md): the mined assemblies are a broad-phase heuristic that pays on blocky and roof-like
+  // motif verification, the older rule (motifScore off; docs/CURVES.md): the mined assemblies are a broad-phase heuristic that pays on blocky and roof-like
   // models and leaves a chaotic skin on organic ones; the same field is solved once more without them (fast: the motif phase is
   // what costs) and the assemblies are kept only when they gain at least `motifGain` of IoU
   if (verify && !adopt) {
     seen = 0; lo = SOLVE; hi = VERIFY; last = -1; tag = 'checking the assemblies pay: ';
-    const S2 = solve(pre, cat, ox, oz, { ...o, motifs: false }, log, (n, f) => onPhase(n, f)), a = metrics(S).iou, b = metrics(S2).iou;
-    post.motifCheck = { with: +a.toFixed(4), without: +b.toFixed(4), kept: a >= b + (o.motifGain ?? 0.01) };
+    const S2 = solve(pre, cat, ox, oz, { ...o, motifs: false }, log, (n, f) => onPhase(n, f)), ma = metrics(S), mb = metrics(S2);
+    post.motifCheck = { with: +ma.iou.toFixed(4), without: +mb.iou.toFixed(4), pieces: [ma.pieces, mb.pieces], kept: ma.iou >= mb.iou + (o.motifGain ?? 0.01), finished: false };
     if (!post.motifCheck.kept) S = S2;
-    log(`motif check: IoU ${a.toFixed(3)} with, ${b.toFixed(3)} without -> ${post.motifCheck.kept ? 'kept' : 'dropped'}`);
+    log(`motif check: IoU ${ma.iou.toFixed(3)} / ${ma.pieces} p with, ${mb.iou.toFixed(3)} / ${mb.pieces} p without -> ${post.motifCheck.kept ? 'kept' : 'dropped'}`);
   }
   const off = [ox + pre.shift[0], oz + pre.shift[1]];
   T.solve = now() - t; t = now();

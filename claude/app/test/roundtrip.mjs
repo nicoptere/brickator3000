@@ -5,7 +5,10 @@ import { FULL_CATALOG } from '../src/brickgen/pipeline.js';
 import { toLDR } from '../src/brickgen/export.js';
 import { Library, flattenModel } from '../src/motifs/ldraw.js';
 import { toGrid, partFrames } from '../src/motifs/placements.js';
-const pieces = JSON.parse(fs.readFileSync(process.argv[2]));
+const raw = JSON.parse(fs.readFileSync(process.argv[2]));
+// toGrid shifts the model to the origin; a solved model may start at i = 1 (the field's margin), so shift the input the same way
+const m0 = [Math.floor(Math.min(...raw.map((p) => p.i))), Math.floor(Math.min(...raw.map((p) => p.j))), Math.floor(Math.min(...raw.map((p) => p.b)))];
+const pieces = raw.map((p) => ({ ...p, i: p.i - m0[0], j: p.j - m0[1], b: p.b - m0[2] }));
 const lib = new Library(process.env.LDRAW), frames = partFrames(FULL_CATALOG, lib);
 const text = toLDR(pieces, FULL_CATALOG, 'roundtrip');
 const g = toGrid(flattenModel(text, lib).placements, FULL_CATALOG, lib, frames, { snot: true });

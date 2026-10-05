@@ -37,15 +37,22 @@ export const FACINGS = [[1, 0, 0], [-1, 0, 0], [0, 0, 1], [0, 0, -1]].map((f) =>
   return { f, R, ori, name: (f[0] || f[2]) > 0 ? '+' : '-', axis: f[0] ? 'x' : 'z' };
 });
 
-// side studs of the host bricks in the part's own frame (engine: y up from the bottom face, footprint centred), from the LDraw
-// files: 87087 / 11211 / 30414 put the stud(s) 10 LDU below the top on the face that is +z here; 4733 on all four faces; 47905
-// on +z and -z. The headlight brick 4070 is left out: its stud face is recessed 4 LDU, so the part it holds overlaps its cell.
-export const SIDE_STUDS = {
-  '87087': [{ p: [0, 14, 10], dir: [0, 0, 1] }],
-  '47905': [{ p: [0, 14, 10], dir: [0, 0, 1] }, { p: [0, 14, -10], dir: [0, 0, -1] }],
-  '4733': [{ p: [0, 14, 10], dir: [0, 0, 1] }, { p: [0, 14, -10], dir: [0, 0, -1] }, { p: [10, 14, 0], dir: [1, 0, 0] }, { p: [-10, 14, 0], dir: [-1, 0, 0] }],
+// Side studs of the host bricks in the part's own frame (engine: y up from the bottom face, footprint centred; +z here is
+// LDraw's -z), read off the LDraw files: 87087 / 47905 / 4733 carry `stud2a` 10 LDU below the top (y = 14) on the face(s);
+// the 1.667 bricks (40 LDU, the MOC builders' SNOT host) carry a `stug2` group at y = 10 AND 30 - two stud rows one stud
+// apart, so a stack of them is a continuous side-stud lattice (levels 0, 5, 10 ... reach every sideways row). `levelMod`: a
+// host may only sit on levels that are multiples of it (3 = brick layers, 5 = stacks of 1.667 bricks), so the fill around it
+// stays in phase. The headlight brick 4070 is left out: its stud face is recessed 4 LDU, so the part it holds overlaps its cell.
+export const HOSTS = {
+  '22885': { levelMod: 5, studs: [{ p: [-10, 10, 10], dir: [0, 0, 1] }, { p: [10, 10, 10], dir: [0, 0, 1] }, { p: [-10, 30, 10], dir: [0, 0, 1] }, { p: [10, 30, 10], dir: [0, 0, 1] }] },
+  '32952': { levelMod: 5, studs: [{ p: [0, 10, 10], dir: [0, 0, 1] }, { p: [0, 30, 10], dir: [0, 0, 1] }] },
+  '67329': { levelMod: 5, studs: [{ p: [-10, 10, 10], dir: [0, 0, 1] }, { p: [10, 10, 10], dir: [0, 0, 1] }, { p: [-10, 30, 10], dir: [0, 0, 1] }, { p: [10, 30, 10], dir: [0, 0, 1] },
+    { p: [20, 10, 0], dir: [1, 0, 0] }, { p: [20, 30, 0], dir: [1, 0, 0] }, { p: [-20, 10, 0], dir: [-1, 0, 0] }, { p: [-20, 30, 0], dir: [-1, 0, 0] }] },
+  '87087': { levelMod: 3, studs: [{ p: [0, 14, 10], dir: [0, 0, 1] }] },
+  '47905': { levelMod: 3, studs: [{ p: [0, 14, 10], dir: [0, 0, 1] }, { p: [0, 14, -10], dir: [0, 0, -1] }] },
+  '4733': { levelMod: 3, studs: [{ p: [0, 14, 10], dir: [0, 0, 1] }, { p: [0, 14, -10], dir: [0, 0, -1] }, { p: [10, 14, 0], dir: [1, 0, 0] }, { p: [-10, 14, 0], dir: [-1, 0, 0] }] },
 };
-const STUD_Y = 14;                                                         // LDU above the host's bottom face
+export const SIDE_STUDS = Object.fromEntries(Object.entries(HOSTS).map(([k, v]) => [k, v.studs]));   // (round-10 name)
 
 /** the world fine (4 LDU) box of a local fine box under frame R, given the world fine extents n (x, y, z) */
 function toWorldBox(R, n, lo, hi) {
@@ -87,18 +94,15 @@ function hostVariant(c, rot) {
   const v = { c, rot, V: r.V, studs: r.studs, w: r.w, d: r.d, h, vtot: sum / (G * G), vsum: sum };
   hostVariants.set(k, v); return v;
 }
-/** the yaw of host `c` that points one of its side studs along world direction `dir`, and that stud's offset (LDU) from the box min */
-function hostYaw(c, dir) {
-  for (let r = 0; r < 4; r++) {
-    const Y = ORIENTATIONS[r];
-    for (const s of SIDE_STUDS[c.id]) {
-      const d = [Y[0] * s.dir[0] + Y[2] * s.dir[2], 0, Y[6] * s.dir[0] + Y[8] * s.dir[2]];
-      if (d[0] !== dir[0] || d[2] !== dir[2]) continue;
-      const p = [Y[0] * s.p[0] + Y[2] * s.p[2] + c.w * STUD / 2, s.p[1], Y[6] * s.p[0] + Y[8] * s.p[2] + c.d * STUD / 2];   // 1x1: w = d = 1
-      return { rot: r * 90, p };
-    }
+/** the side studs of host `c` at yaw r (0..3), in world LDU from the host's box min corner: [{ p: [x, y, z], dir }] */
+function hostStuds(c, r) {
+  const Y = ORIENTATIONS[r], out = [];
+  for (const s of HOSTS[c.id].studs) {
+    const d = [Y[0] * s.dir[0] + Y[2] * s.dir[2], 0, Y[6] * s.dir[0] + Y[8] * s.dir[2]];
+    const yaw = r === 1 || r === 3, cw = (yaw ? c.d : c.w) * STUD / 2, cd = (yaw ? c.w : c.d) * STUD / 2;
+    out.push({ p: [Y[0] * s.p[0] + Y[2] * s.p[2] + cw, s.p[1], Y[6] * s.p[0] + Y[8] * s.p[2] + cd], dir: d });
   }
-  return null;
+  return out;
 }
 
 /**
@@ -112,9 +116,20 @@ function hostYaw(c, dir) {
  */
 export function wallSkin(S, cat, o, log = () => {}, onPhase = null) {
   const by = new Map(cat.map((c) => [c.id, c]));
-  const hostId = o.wallHost || '87087';
-  const host = by.get(hostId) || SHAPES.find((c) => c.id === hostId);
-  if (!host || !SIDE_STUDS[hostId]) { log(`wall: no host ${hostId} in the catalogue`); return { pieces: 0, hosts: 0, tried: 0, unhosted: 0 }; }
+  // the host types in order of preference: the 1.667 bricks first (a continuous lattice, several studs each), the 1x1 brick last
+  const hostIds = (o.wallHosts || ['22885', '32952', '87087']).filter((id) => HOSTS[id]);
+  const hostParts = hostIds.map((id) => by.get(id) || SHAPES.find((c) => c.id === id)).filter(Boolean);
+  if (!hostParts.length) { log('wall: no host part in the catalogue'); return { pieces: 0, hosts: 0, tried: 0, unhosted: 0 }; }
+  // per host type and yaw facing f: its studs (world LDU from the box min) - the row heights they offer and the lateral offsets
+  const hostPlans = new Map();                                             // facing name -> [{ c, rot, studs, w, d, h, mod }]
+  for (const F of FACINGS) {
+    const list = [];
+    for (const c of hostParts) for (let r = 0; r < 4; r++) {
+      const st = hostStuds(c, r).filter((s) => s.dir[0] === F.f[0] && s.dir[2] === F.f[2]); if (!st.length) continue;
+      const yaw = r === 1 || r === 3; list.push({ c, rot: r * 90, studs: st, w: yaw ? c.d : c.w, d: yaw ? c.w : c.d, h: Math.round(c.h), mod: o.wallHostLevels ?? HOSTS[c.id].levelMod });
+    }
+    hostPlans.set(F.name + F.axis, list);
+  }
   const kinds = new Set(o.wallKinds || ['slope', 'curved', 'cheese']);
   const vars = partVariants(cat, kinds).filter((v) => !v.c.ext && (o.wallWide || v.w === 1 || v.d === 1));   // core 1-wide parts, as the upright narrow skin
   const tol = o.wallTol || o.skinTol;
@@ -165,7 +180,6 @@ export function wallSkin(S, cat, o, log = () => {}, onPhase = null) {
   const fillTol = o.wallFillTol || o.fillTol;
   const hostUsed = new Map();                                              // world cell key -> piece index of the host already there
   const total = facings.length * offsets.length * foffs.length;
-  const hostMod = o.wallHostLevels ?? 3;                                   // hosts only at levels that are multiples of this (3 = brick layers, in phase with the fill's own layering); 1 = any level
   for (const F of facings) for (const foff of foffs) {
     const R = F.R; mask = maskFor(F);
     if (o.wallDebug) { let nm = 0; for (const v of mask) nm += v; log(`  wall ${F.name}${F.axis}: mask ${nm} cells`);
@@ -203,7 +217,9 @@ export function wallSkin(S, cat, o, log = () => {}, onPhase = null) {
     // a local level's underside plane is a stud-cell face along the facing (a host's face) when its world coordinate is a multiple of 20 LDU
     const faceOk = (b) => { const [wlo, whi] = localBox(b, 0, 0, 1, 1, 1), ax = F.f[0] ? 0 : 2; const edge = F.f[ax] > 0 ? wlo[ax] : whi[ax]; return edge % G === 0; };
     const rowY = (j) => (j + 0.5) * STUD - oy * SAMP;                      // world y (LDU) of the centre of local row j
-    const rowOk = (y) => ((y - STUD_Y) % (PLATE * hostMod) + PLATE * hostMod) % (PLATE * hostMod) === 0 && y >= STUD_Y;
+    // a row (world y of a stud row centre) is hostable when some host type, on an allowed level, has a stud at that height
+    const plans = hostPlans.get(F.name + F.axis);
+    const rowOk = (y) => { for (const pl of plans) for (const st of pl.studs) { const hb = (y - st.p[1]) / PLATE; if (hb >= 0 && Number.isInteger(hb) && hb % pl.mod === 0 && hb + pl.h <= NL) return true; } return false; };
     const inside = (b, j, i, h, d, w) => !((i + w) * G > nlx || j * G < oy || (j + d) * G > nlz || b * 2 - foff < 0 || (b + h) * 2 - foff > nl[1]);   // inside the real world box, not the padding
     // the skin: slopes / tiles whose underside is on a face (one hostable row under them) or anywhere in the slab above a face -
     // what holds them is settled at commit time, bottom-up: a host brick behind, or the sideways piece beneath
@@ -240,38 +256,43 @@ export function wallSkin(S, cat, o, log = () => {}, onPhase = null) {
       // held from below by a committed sideways piece with studs?
       for (let r = 0; r < q.d && mi === null; r++) for (let a = 0; a < q.w; a++) { const t = top.get(`${q.i + a},${q.j + r}`); if (t && t.top === q.b && t.studs) { mi = t.mi; break; } }
       if (mi === null && faceOk(q.b)) {
-        // the host: the cell behind the first hostable underside cell
-        let hostAt = null;
-        for (let r = 0; r < q.d && !hostAt; r++) {
+        // the host: a host type, yawed to face the piece, with one of its studs exactly under one of the piece's hostable
+        // underside cells and the cell behind that cell inside its box. Host types in order of preference; a host already
+        // placed for an earlier piece is reused when its box matches (that is what a 4-stud host is for)
+        let placedHost = null, why = 'norow';
+        for (let r = 0; r < q.d && !placedHost; r++) {
           const y = rowY(q.j + r); if (!rowOk(y)) continue;
-          for (let a = 0; a < q.w; a++) {
+          for (let a = 0; a < q.w && !placedHost; a++) {
             const [clo, chi] = localBox(q.b, q.j + r, q.i + a, 0.5, 1, 1);   // the underside slab of that cell: along the facing its plane, laterally the cell
             const face = (sgn > 0 ? clo[ax] : chi[ax]) * SAMP;             // LDU of the underside plane along the facing
             const lat = ax === 0 ? 2 : 0, latC = (clo[lat] + chi[lat]) / 2 * SAMP;   // lateral (horizontal) centre, LDU
-            const cellF = sgn > 0 ? face / STUD - 1 : face / STUD, cellL = Math.floor(latC / STUD), hb = Math.round((y - STUD_Y) / PLATE);
-            const ix = ax === 0 ? cellF : cellL, iz = ax === 0 ? cellL : cellF;
-            if (ix < 0 || iz < 0 || ix >= S.NXc || iz >= S.NZc || hb < 0 || hb + 3 > S.NL) continue;
-            hostAt = { ix, iz, hb }; break;
-          }
-        }
-        if (hostAt) {
-          const hk = `${hostAt.ix},${hostAt.iz},${hostAt.hb}`;
-          let hn = hostUsed.get(hk);
-          if (hn === undefined) {
-            const yaw = hostYaw(host, F.f);
-            const hlo = [hostAt.ix * G, hostAt.hb * 2, hostAt.iz * G], hhi = [(hostAt.ix + 1) * G, (hostAt.hb + 3) * 2, (hostAt.iz + 1) * G];
-            if (!yaw) fail('yaw');
-            else if (boxMean(S, S.C, hlo, hhi) > 1e-6) fail('hostBusy');
-            else if (boxMean(S, S.M0, hlo, hhi) < (o.wallHostFill ?? 0.3)) fail('hostAir');
-            else {
-              const hv = hostVariant(host, yaw.rot), r = S.evaluate(hv, hostAt.hb, hostAt.iz, hostAt.ix, { min_cov: 0, max_err: 1, piece_pen: 0 });
-              S._place(hv, hostAt.hb, hostAt.iz, hostAt.ix, r ? r[1] : 0, r ? r[2] : 0, 'W-host');
-              hn = S.pieces.length - 1; const hp = S.pieces[hn];
-              hp.rigid = true; hp.mi = S.mi = (S.mi || 0) + 1; hp.host = true; hostUsed.set(hk, hn); hosts++;
+            for (const pl of plans) {
+              for (const st of pl.studs) {
+                const hb = (y - st.p[1]) / PLATE; if (!(hb >= 0 && Number.isInteger(hb) && hb % pl.mod === 0 && hb + pl.h <= NL)) continue;
+                // the host's box min (world LDU) puts this stud at (face, y, latC): along the facing the stud is on the face (st.p[ax] is 0 or the box extent)
+                const minF = face - st.p[ax], minL = latC - st.p[lat];
+                if (minF % STUD !== 0 || minL % STUD !== 0) continue;
+                const ix = ax === 0 ? minF / STUD : minL / STUD, iz = ax === 0 ? minL / STUD : minF / STUD;
+                if (ix < 0 || iz < 0 || ix + pl.w > S.NXc || iz + pl.d > S.NZc) continue;
+                const hk = `${pl.c.id}|${ix},${iz},${hb}`;
+                let hn = hostUsed.get(hk);
+                if (hn === undefined) {
+                  const hlo = [ix * G, hb * 2, iz * G], hhi = [(ix + pl.w) * G, (hb + pl.h) * 2, (iz + pl.d) * G];
+                  if (boxMean(S, S.C, hlo, hhi) > 1e-6) { why = 'hostBusy'; continue; }
+                  if (boxMean(S, S.M0, hlo, hhi) < (o.wallHostFill ?? 0.3)) { why = 'hostAir'; continue; }
+                  const hv = hostVariant(pl.c, pl.rot), rr = S.evaluate(hv, hb, iz, ix, { min_cov: 0, max_err: 1, piece_pen: 0 });
+                  if (!rr) { why = 'hostBusy'; continue; }
+                  S._place(hv, hb, iz, ix, rr[1], rr[2], 'W-host');
+                  hn = S.pieces.length - 1; const hp = S.pieces[hn];
+                  hp.rigid = true; hp.mi = S.mi = (S.mi || 0) + 1; hp.host = true; hostUsed.set(hk, hn); hosts++;
+                }
+                placedHost = hn; break;
+              }
+              if (placedHost !== null) break;
             }
           }
-          if (hn !== undefined) mi = S.pieces[hn].mi;
-        } else fail('norow');
+        }
+        if (placedHost !== null) mi = S.pieces[placedHost].mi; else fail(why);
       } else if (mi === null) fail('unheld');
       if (mi === null) continue;
       // commit the sideways piece: its world volume into the coverage, the record with its orientation

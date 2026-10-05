@@ -53,7 +53,7 @@ export const DEFAULTS = {
   motifBonus: 0.2, motifBonusLog: 0.1, motifMinPartH: 2,   // these three had been swallowed by the comment above and the library's own fallbacks (0.2 / 0.1 / 2) applied; written out with those values so nothing changes
   motifShapedMin: 0,         // min share of an assembly's volume in shaped parts (0 = off): .5 drops "a slope on a long brick"; +.8 IoU on the chair for +26 % pieces, so off (docs/CURVES.md)
   motifScoring: false,       // also run the motif phase while scoring the grid phases (9x slower); off = only the final solve uses motifs
-  motifVerify: true, motifGain: 0.01,   // the final field is also solved without the assemblies; they are kept only if they gain this much IoU (docs/CURVES.md)
+  motifVerify: true, motifScore: true, motifGain: 0,   // the model is also finished without the assemblies; kept only if they gain motifGain on the job score of the FINISHED models (IoU - 0.002 x pieces; motifScore false: raw solves on IoU alone, where .01 was the rule - docs/CURVES.md, docs/MOCS.md §6.6)
   // SNOT synthesis (motifs/snot.js, docs/CURVES.md round 7): sideways parts on side-stud hosts, every part of an observed footprint
   // the sideways skin (motifs/wall.js, docs/CURVES.md round 10): each horizontal facing solved as if it were up, its 1-wide
   // slopes / tiles turned into sideways parts on 1x1 side-stud bricks (87087) behind them. wallOffsets: row lattice offsets
@@ -61,7 +61,7 @@ export const DEFAULTS = {
   // (0 / 4 LDU: host faces at 40k / 40k + 20); wallHostLevels: hosts only on levels that are multiples of this (3 = brick
   // layers, in phase with the fill); wallSteep / wallPartial: where the silhouette is steep and the cell is off the lattice
   wall: false, wallTol: { min_cov: 0.65, max_err: 0.14, piece_pen: 0.35, bonus: { slope: 0.6, curved: 0.5, cheese: 0.4 } }, wallKinds: ['slope', 'curved', 'cheese', 'tile'], wallSteep: 60, wallPartial: 0.12,
-  wallOffsets: [4, 3, 2, 1, 0], wallFoffs: [0, 1], wallHostLevels: 3, wallHostFill: 0.3, wallHost: '87087', wallWide: false,
+  wallOffsets: [0], wallFoffs: [0, 1], wallHosts: ['22885', '32952', '87087'], wallHostFill: 0.3, wallWide: false, wallVerify: true, wallGain: 0,
   snot: false, snotTol: { min_cov: 0.85, max_err: 0.06, piece_pen: 0.3, beatFlat: 0.8 }, snotMinCount: 5, snotMaxThick: 3, snotBonus: 0.2,
   // auto resolution (pipeline.autoStuds, resolution.js, docs/CURVES.md round 8): studs: 'auto' resolves to a stud count
   autoPieces: 1200, autoPilot: [12, 20], autoExp: 2.25, autoExpRange: [1.5, 3.5], autoCurv: 8, autoCurvPct: 0.5, autoCurvShare: 0.1, autoThick: 1, autoThickPct: 0.1, autoCrease: 35, autoMin: 8, autoMax: 64,

@@ -12,7 +12,7 @@ const [n, ...files] = process.argv.slice(2);
 const list = files.length ? files.map((f) => [f, +n || 24]) : [['synth:sphere', 16], ['synth:egg', 16], ['synth:cylinderX', 16], ['synth:boxRoundEdge24', 24], ['models/hen.glb', 16], ['models/delfin.glb', 32], ['models/pony.glb', 24], ['models/teapot.glb', 24]];
 const extra = {}; for (const kv of (process.env.OPTS || '').split(' ').filter(Boolean)) { const [k, v] = kv.split('='); extra[k] = v.startsWith('{') || v.startsWith('[') ? JSON.parse(v) : isNaN(+v) ? (v === 'true' ? true : v === 'false' ? false : v) : +v; }
 const FULL = { ref: 'maxh', partSet: 'extended', precision: 4, offsets: [0, 4], motifs: true, crust: true, islands: true, bracing: true, splice: true, bridge: true, supports: true, groundSupports: false, finish: true, symmetry: 'off' };
-const ALL = { off: { wall: false }, on: { wall: true }, on2: { wall: true, wallOffsets: [4, 3, 2, 1, 0] }, tiles: { wall: true, wallKinds: ['slope', 'curved', 'cheese', 'tile'] } };
+const ALL = { off: { wall: false }, on: { wall: true }, nover: { wall: true, wallVerify: false }, five: { wall: true, wallOffsets: [4, 3, 2, 1, 0] }, old: { wall: true, wallHosts: ['87087'] }, tiles: { wall: true, wallKinds: ['slope', 'curved', 'cheese', 'tile'] } };
 const pick = process.env.VARIANTS ? process.env.VARIANTS.split(',') : ['off', 'on'];
 const load = (f) => (f.startsWith('synth:') ? CURVED[f.slice(6)]() : (() => { const b = fs.readFileSync(f); return parseGLB(b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength)); })());
 const colour = (p) => (p.snot ? [20, 240, 190] : p.host ? [240, 40, 200] : (KIND_COL[p.kind] || [0.6, 0.6, 0.6]).map((x) => Math.round(x * 255)));

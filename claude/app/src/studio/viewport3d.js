@@ -85,6 +85,7 @@ export class StudioViewport {
     this.islandLabels = null; this.selectedIsland = null; this.onSelectIsland = null;
     this.hollow = null; this.hollowTimer = null;
     this.selectMode = false; this.sel = null; this.onSelectionChange = null;
+    this.eraserMode = false; this.onDeletePiece = null; this._hoveredPiece = null;
     let downPos = null;
     const dom = this.renderer.domElement;
     const local = (e) => { const r = dom.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
@@ -119,6 +120,19 @@ export class StudioViewport {
   }
   handlePointerHover(e) {
     if (this.transformControls && this.transformControls.axis) return;
+    if (this.eraserMode && this.pieces && this.pieces.length && this.lego.visible) {
+      const rect = this.renderer.domElement.getBoundingClientRect();
+      const px = e.clientX - rect.left, py = e.clientY - rect.top;
+      const hit = this.pickPiece(px, py);
+      if (hit) {
+        this.highlightPiece(hit.pieceIndex);
+        this.renderer.domElement.style.cursor = 'pointer';
+      } else {
+        this.clearHoverPiece();
+        this.renderer.domElement.style.cursor = 'default';
+      }
+      return;
+    }
     if (!this.srcMesh || !this.src.visible || this.colorMode !== 'islands') {
       if (this.renderer.domElement.style.cursor === 'pointer') this.renderer.domElement.style.cursor = '';
       return;
@@ -131,6 +145,25 @@ export class StudioViewport {
     this.renderer.domElement.style.cursor = hits.length > 0 && typeof hits[0].faceIndex === 'number' ? 'pointer' : '';
   }
   handlePointerClick(e) {
+    if (this.eraserMode && this.pieces && this.pieces.length && this.lego.visible) {
+      const rect = this.renderer.domElement.getBoundingClientRect();
+      const px = e.clientX - rect.left, py = e.clientY - rect.top;
+      const hit = this.pickPiece(px, py);
+      if (hit) {
+        this.clearHoverPiece();
+        this.onDeletePiece && this.onDeletePiece(hit.pieceIndex, hit.piece);
+        if (this.eraserMode && this.pieces && this.pieces.length) {
+          const nextHit = this.pickPiece(px, py);
+          if (nextHit) {
+            this.highlightPiece(nextHit.pieceIndex);
+            this.renderer.domElement.style.cursor = 'pointer';
+          } else {
+            this.renderer.domElement.style.cursor = 'default';
+          }
+        }
+        return;
+      }
+    }
     if (!this.srcMesh || !this.src.visible) return;
     const rect = this.renderer.domElement.getBoundingClientRect();
     this.mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
@@ -143,6 +176,63 @@ export class StudioViewport {
       this.onSelectIsland && this.onSelectIsland(islandId, faceIndex);
     } else {
       this.onSelectIsland && this.onSelectIsland(null);
+    }
+  }
+  setEraserMode(on) {
+    this.eraserMode = !!on;
+    if (!on) {
+      this.clearHoverPiece();
+      this.renderer.domElement.style.cursor = '';
+    } else {
+      this.renderer.domElement.style.cursor = 'default';
+    }
+  }
+  pickPiece(px, py) {
+    if (!this.groups || !this.groups.length || !this.pieces) return null;
+    const rect = this.renderer.domElement.getBoundingClientRect();
+    this.mouse.x = (px / rect.width) * 2 - 1;
+    this.mouse.y = -(py / rect.height) * 2 + 1;
+    this.ray.setFromCamera(this.mouse, this.camera);
+    const hits = this.ray.intersectObjects(this.groups, false);
+    for (const h of hits) {
+      if (typeof h.instanceId === 'number' && h.object.userData && h.object.userData.pieces) {
+        const pieceIndex = h.object.userData.pieces[h.instanceId];
+        if (pieceIndex != null && (!this.vis || this.vis[pieceIndex])) {
+          return { pieceIndex, piece: this.pieces[pieceIndex], hit: h };
+        }
+      }
+    }
+    return null;
+  }
+  highlightPiece(pieceIndex) {
+    if (this._hoveredPiece === pieceIndex) return;
+    this.clearHoverPiece();
+    if (pieceIndex == null || !this.pe || !this.pe[pieceIndex]) return;
+    this._hoveredPiece = pieceIndex;
+    const red = new THREE.Color(0.92, 0.22, 0.22);
+    for (const { mesh, k } of (this.pe[pieceIndex] || [])) {
+      if (mesh && mesh.instanceColor) {
+        mesh.setColorAt(k, red);
+        mesh.instanceColor.needsUpdate = true;
+      }
+    }
+  }
+  clearHoverPiece() {
+    if (this._hoveredPiece == null) return;
+    const n = this._hoveredPiece;
+    this._hoveredPiece = null;
+    if (!this.pieces || !this.pieces[n] || !this.pe || !this.pe[n]) return;
+    const p = this.pieces[n];
+    const rgb = this.colorMode === 'kind'
+      ? (KIND_COL[p.kind] || [0.6, 0.6, 0.6]).map((x) => x * 255)
+      : (p.rgb || [200, 200, 200]);
+    const c = new THREE.Color();
+    c.setRGB(rgb[0] / 255, rgb[1] / 255, rgb[2] / 255, THREE.SRGBColorSpace);
+    for (const { mesh, k } of (this.pe[n] || [])) {
+      if (mesh && mesh.instanceColor) {
+        mesh.setColorAt(k, c);
+        mesh.instanceColor.needsUpdate = true;
+      }
     }
   }
   setHullThickness(t) { this.hullThick = t; if (this.hullShader) this.hullShader.uniforms.uThick.value = t; }
@@ -197,7 +287,8 @@ export class StudioViewport {
         t[i + 2] = (tris[i + 2] - baseLo[2]) * k;
       }
       this.W = (hi[0] - lo[0]) * k; this.D = (hi[2] - lo[2]) * k; this.H = (hi[1] - lo[1]) * k;
-      this.clearLego(); this.lego.position.set(0, 0, 0); this.resetRotation();
+      this.clearLego(); this.lego.position.set(0, 0, 0);
+      if (!keepScale) this.resetRotation();
     }
     this.srcPos = t; this.clearVoxels(); this.clearHollowCubes();
     const g = new THREE.BufferGeometry();
@@ -420,9 +511,9 @@ export class StudioViewport {
   }
 
   // ------------------------------------------------------------- LEGO (instanced)
-  clearLego() { this.clearGroup(this.lego); this.groups = []; this.hulls = []; this.active.clear(); this.pieces = null; this.pe = null; this.revealed = 0; }
+  clearLego() { this.clearHoverPiece(); this.clearGroup(this.lego); this.groups = []; this.hulls = []; this.active.clear(); this.pieces = null; this.pe = null; this.revealed = 0; }
 
-  setLego(pieces, cat, dims) {
+  setLego(pieces, cat, dims, keepCamera = false) {
     this.clearLego();
     this._lego = { pieces, cat, dims };
     const by = {}; for (const c of cat) by[c.id] = c;
@@ -466,7 +557,7 @@ export class StudioViewport {
     this.setColorMode(this.colorMode);
     this.setOutline(this.outline);
     this.applyMode();
-    this.zoomToFit(true);
+    if (!keepCamera) this.zoomToFit(true);
   }
 
   /** black back-face shell sharing the instance matrices of `mesh` (so pop-in / hiding follows for free) */

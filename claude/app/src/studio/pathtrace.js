@@ -191,33 +191,137 @@ export async function createPathTrace(vp, { pieces, cat, colorMode = 'piece', da
       new THREE.Vector3(unionBox.max.x, unionBox.max.y, unionBox.max.z),
     ];
 
-    /** frame the picture on the projected bounding box of the model(s) (x 1.25 for air): same camera, cropped with a view offset; output is `outH` px tall, width follows the box */
+    /**
+     * Frame the camera:
+     * - In render 'pathtracer' mode (!camera): move the camera much closer to the subject, targeting unionCenter,
+     *   snugly fitting the model's bounds with a clean 4% margin, adapting the output aspect ratio.
+     * - When an explicit camera is provided (e.g. booklet cover): frame the picture on the projected bounding box with view offset.
+     */
     const frame = () => {
-      cam.copy(srcCam); cam.clearViewOffset(); cam.aspect = cw / ch; cam.updateProjectionMatrix(); cam.updateMatrixWorld(true);
-      let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
-      for (const m of activeMeshes) {
-        const P = m.geometry.getAttribute('position');
-        const step = Math.max(1, Math.floor(P.count / 100000));
-        for (let i = 0; i < P.count; i += step) {
-          tv.fromBufferAttribute(P, i).applyMatrix4(m.matrixWorld).applyMatrix4(cam.matrixWorldInverse);
-          if (tv.z > -1e-3) continue; // behind the camera
+      if (!camera) {
+        // Render 'pathtracer' mode: move camera much closer to the subject to snugly fit the model
+        const target = vp.controls ? vp.controls.target : unionCenter;
+        let dir = vp.camera.position.clone().sub(target);
+        if (dir.lengthSq() < 1e-4) dir = vp.camera.position.clone().sub(unionCenter);
+        if (dir.lengthSq() < 1e-4) dir.set(0.45, 0.55, 1);
+        dir.normalize();
+        if (dir.y < 0.08) { dir.y = 0.08; dir.normalize(); }
+
+        const camUp = (vp.camera.up || new THREE.Vector3(0, 1, 0)).clone().normalize();
+        const fwd = dir.clone().negate(); // camera looks towards unionCenter
+        let right = new THREE.Vector3().crossVectors(fwd, camUp);
+        if (right.lengthSq() < 1e-4) right.crossVectors(fwd, new THREE.Vector3(0, 0, 1));
+        if (right.lengthSq() < 1e-4) right.crossVectors(fwd, new THREE.Vector3(1, 0, 0));
+        right.normalize();
+        const up = new THREE.Vector3().crossVectors(right, fwd).normalize();
+
+        const fov = vp.camera.fov || 45;
+        cam.fov = fov;
+        const tanHalfFovY = Math.tan(((fov / 2) * Math.PI) / 180);
+        const fitMargin = margin !== 1.25 ? margin : 1.04;
+
+        let maxDistY = 0;
+        let maxZ = -Infinity;
+
+        const checkPtY = (pt) => {
+          const rx = pt.x - unionCenter.x, ry = pt.y - unionCenter.y, rz = pt.z - unionCenter.z;
+          const y = rx * up.x + ry * up.y + rz * up.z;
+          const z = rx * dir.x + ry * dir.y + rz * dir.z;
+          if (z > maxZ) maxZ = z;
+          const dY = (Math.abs(y) * fitMargin) / tanHalfFovY + z;
+          if (dY > maxDistY) maxDistY = dY;
+        };
+
+        for (const pt of corners) checkPtY(pt);
+        for (const m of activeMeshes) {
+          const P = m.geometry.getAttribute('position');
+          const step = Math.max(1, Math.floor(P.count / 20000));
+          for (let i = 0; i < P.count; i += step) {
+            tv.fromBufferAttribute(P, i).applyMatrix4(m.matrixWorld);
+            checkPtY(tv);
+          }
+        }
+
+        let dist = Math.max(maxDistY, maxZ + 0.2);
+
+        // Find required aspect ratio to fit width at this distance
+        let maxXAngle = 0;
+        const checkPtX = (pt) => {
+          const rx = pt.x - unionCenter.x, ry = pt.y - unionCenter.y, rz = pt.z - unionCenter.z;
+          const x = rx * right.x + ry * right.y + rz * right.z;
+          const z = rx * dir.x + ry * dir.y + rz * dir.z;
+          const depth = Math.max(0.01, dist - z);
+          const angleX = (Math.abs(x) * fitMargin) / depth;
+          if (angleX > maxXAngle) maxXAngle = angleX;
+        };
+
+        for (const pt of corners) checkPtX(pt);
+        for (const m of activeMeshes) {
+          const P = m.geometry.getAttribute('position');
+          const step = Math.max(1, Math.floor(P.count / 20000));
+          for (let i = 0; i < P.count; i += step) {
+            tv.fromBufferAttribute(P, i).applyMatrix4(m.matrixWorld);
+            checkPtX(tv);
+          }
+        }
+
+        const rawAspect = maxXAngle / tanHalfFovY;
+        const aspect = Math.min(2.4, Math.max(0.65, rawAspect));
+
+        // If aspect was clamped below rawAspect, adjust distance so width fits within clamped aspect
+        const tanHalfFovX = tanHalfFovY * aspect;
+        let maxDistX = 0;
+        const checkDistX = (pt) => {
+          const rx = pt.x - unionCenter.x, ry = pt.y - unionCenter.y, rz = pt.z - unionCenter.z;
+          const x = rx * right.x + ry * right.y + rz * right.z;
+          const z = rx * dir.x + ry * dir.y + rz * dir.z;
+          const dX = (Math.abs(x) * fitMargin) / tanHalfFovX + z;
+          if (dX > maxDistX) maxDistX = dX;
+        };
+        for (const pt of corners) checkDistX(pt);
+
+        dist = Math.max(dist, maxDistX, maxZ + 0.2);
+
+        cam.position.copy(unionCenter).addScaledVector(dir, dist);
+        if (cam.position.y < floorY + 0.1) cam.position.y = floorY + 0.1;
+        cam.up.copy(up);
+        cam.lookAt(unionCenter);
+        cam.aspect = aspect;
+        cam.near = Math.max(0.05, (dist - maxZ) * 0.4);
+        cam.far = Math.max(dist * 6, dist + unionSize.length() * 4);
+        cam.clearViewOffset();
+        cam.updateProjectionMatrix();
+        cam.updateMatrixWorld(true);
+
+        const outW = Math.min(4096, Math.max(64, Math.round(outH * aspect)));
+        renderer.setSize(outW, outH, false);
+      } else {
+        cam.copy(srcCam); cam.clearViewOffset(); cam.aspect = cw / ch; cam.updateProjectionMatrix(); cam.updateMatrixWorld(true);
+        let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+        for (const m of activeMeshes) {
+          const P = m.geometry.getAttribute('position');
+          const step = Math.max(1, Math.floor(P.count / 100000));
+          for (let i = 0; i < P.count; i += step) {
+            tv.fromBufferAttribute(P, i).applyMatrix4(m.matrixWorld).applyMatrix4(cam.matrixWorldInverse);
+            if (tv.z > -1e-3) continue; // behind the camera
+            tv.applyMatrix4(cam.projectionMatrix);
+            if (tv.x < x0) x0 = tv.x; if (tv.x > x1) x1 = tv.x; if (tv.y < y0) y0 = tv.y; if (tv.y > y1) y1 = tv.y;
+          }
+        }
+        for (const pt of corners) {
+          tv.copy(pt).applyMatrix4(cam.matrixWorldInverse);
+          if (tv.z > -1e-3) continue;
           tv.applyMatrix4(cam.projectionMatrix);
           if (tv.x < x0) x0 = tv.x; if (tv.x > x1) x1 = tv.x; if (tv.y < y0) y0 = tv.y; if (tv.y > y1) y1 = tv.y;
         }
+        if (x1 > x0 && y1 > y0) {
+          const m = margin, wpx = ((x1 - x0) / 2) * cw * m, hpx = ((y1 - y0) / 2) * ch * m;
+          const cx = ((x0 + x1) / 4 + 0.5) * cw, cy = (0.5 - (y0 + y1) / 4) * ch;
+          cam.setViewOffset(cw, ch, cx - wpx / 2, cy - hpx / 2, wpx, hpx);
+          renderer.setSize(Math.min(4096, Math.max(64, Math.round(outH * wpx / hpx))), outH, false);
+        }
+        cam.updateProjectionMatrix(); cam.updateMatrixWorld(true);
       }
-      for (const pt of corners) {
-        tv.copy(pt).applyMatrix4(cam.matrixWorldInverse);
-        if (tv.z > -1e-3) continue;
-        tv.applyMatrix4(cam.projectionMatrix);
-        if (tv.x < x0) x0 = tv.x; if (tv.x > x1) x1 = tv.x; if (tv.y < y0) y0 = tv.y; if (tv.y > y1) y1 = tv.y;
-      }
-      if (x1 > x0 && y1 > y0) {
-        const m = margin, wpx = ((x1 - x0) / 2) * cw * m, hpx = ((y1 - y0) / 2) * ch * m;
-        const cx = ((x0 + x1) / 4 + 0.5) * cw, cy = (0.5 - (y0 + y1) / 4) * ch;
-        cam.setViewOffset(cw, ch, cx - wpx / 2, cy - hpx / 2, wpx, hpx);
-        renderer.setSize(Math.min(4096, Math.max(64, Math.round(outH * wpx / hpx))), outH, false);
-      }
-      cam.updateProjectionMatrix(); cam.updateMatrixWorld(true);
     };
     frame();
     pt = new WebGLPathTracer(renderer);

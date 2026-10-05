@@ -27,6 +27,18 @@ const download = (data, name, type) => { const a = document.createElement('a'); 
 const fmt = (v, d = 3) => (typeof v === 'number' ? +v.toFixed(d) : v);
 const kindRgb = (k) => `rgb(${(KIND_COL[k] || [0.6, 0.6, 0.6]).map((x) => Math.round(x * 255))})`;
 
+function EraserIcon() {
+  return (
+    <span className="anticon" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21" />
+        <path d="M22 21H7" />
+        <path d="m5 11 9 9" />
+      </svg>
+    </span>
+  );
+}
+
 function Section({ title, open, setOpen, color = 'var(--tx)', children }) {
   return (
     <div>
@@ -82,6 +94,9 @@ function StudioInner() {
   const [detectIslands, setDetectIslands] = useState(false);
   const detectIslandsRef = useRef(false);
   detectIslandsRef.current = detectIslands;
+  const [eraserMode, setEraserMode] = useState(false);
+  const [pieceHistory, setPieceHistory] = useState([]);
+  const onDeletePieceRef = useRef(null);
   const cancellingRef = useRef(false);
   const onSelectIslandRef = useRef(null);
   onSelectIslandRef.current = (id) => {
@@ -184,6 +199,7 @@ function StudioInner() {
     vp.current.setTheme(dark);
     vp.current.onSelectIsland = (id, faceIdx) => onSelectIslandRef.current && onSelectIslandRef.current(id, faceIdx);
     vp.current.onModelRotated = (has) => setHasRot(has);
+    vp.current.onDeletePiece = (idx, p) => onDeletePieceRef.current && onDeletePieceRef.current(idx, p);
     fetch('/api/models').then((r) => r.json()).then((d) => setModels((d.models || []).sort((a, b) => a.path.localeCompare(b.path)))).catch(() => setModels([]));
     return () => vp.current && vp.current.dispose();
   }, []);
@@ -357,8 +373,8 @@ function StudioInner() {
 
   const showModel = (mm, computeIsl = detectIslandsRef.current) => {
     setRes(null); setPlaying(false); setStep(0); setViewMode('mesh'); sfx.click();
-    setSelectedIsland(null); setHistory([]);
-    if (vp.current) { vp.current.setSelectedIsland(null); vp.current.resetRotation(); }
+    setSelectedIsland(null); setHistory([]); setEraserMode(false); setPieceHistory([]);
+    if (vp.current) { vp.current.setSelectedIsland(null); vp.current.resetRotation(); vp.current.setEraserMode(false); }
     setHasRot(false);
     vp.current.setSource(mm.tris, mm.vcols, { raw: true });
     if (computeIsl) {
@@ -430,6 +446,8 @@ function StudioInner() {
   async function generate() {
     if (!model) return message.info('Load a model first');
     cancellingRef.current = false;
+    setEraserMode(false); setPieceHistory([]);
+    if (vp.current) vp.current.setEraserMode(false);
     sfx.start(); setBusy(true); setPlaying(false); setStage(['Preparing', 0]);
     setViewMode('mesh'); vp.current.setMode('mesh');
     setStage(['Previewing grid', 0]);
@@ -437,20 +455,15 @@ function StudioInner() {
     if (cancellingRef.current) return;
     try {
       let src = { tris: model.tris, vcols: model.vcols };
-      if (vp.current && vp.current.hasRotation()) {
-        src = vp.current.getRotatedSource(src);
-      }
       if (opts.vertexNormals) {
         setStage(['Recomputing vertex normals', 0]); await new Promise((r) => setTimeout(r, 30));
-        const f = fixWinding(model.tris, model.vcols); src = f;
+        const f = fixWinding(src.tris, src.vcols); src = f;
         message.info(f.flipped ? `vertex normals: ${f.flipped} flipped triangle${f.flipped === 1 ? '' : 's'} corrected` : 'vertex normals: no flipped triangle found');
       }
       const r = await runMethod(src, opts, { workersWanted: workers, onStage: pushStage });
       vp.current.clearVoxels();
       if (officialColors) applyOfficialPalette(r.pieces, true);
       setRes(r);
-      if (vp.current) vp.current.resetRotation();
-      setHasRot(false);
       vp.current.setSource(r.srcTris, r.srcCols); vp.current.setLego(r.pieces, FULL_CATALOG, r.dims); vp.current.setColorMode(colorMode); vp.current.setOutline(outline);
       if (colorMode !== 'islands') { setViewMode('lego'); vp.current.setMode('lego'); }
       vp.current.zoomToFit();
@@ -469,7 +482,23 @@ function StudioInner() {
 
   const base = model ? model.name.replace(/\.[^.]+$/, '') + '_' + opts.studs : 'model';
   const exportLDR = () => download(toLDR(res.pieces, FULL_CATALOG, base), base + '.ldr', 'text/plain');
-  const exportGLB = (mode) => { const m = buildMesh(res.pieces, FULL_CATALOG, mode); download(toGLB(m), base + (mode === 'kind' ? '_kinds' : '') + '.glb', 'model/gltf-binary'); };
+  const exportGLB = (mode) => {
+    const m = buildMesh(res.pieces, FULL_CATALOG, mode);
+    if (vp.current && vp.current.hasRotation() && res?.dims) {
+      const q = vp.current.modelPivot.quaternion;
+      const P = m.pos;
+      const v = new THREE.Vector3();
+      const cx = (res.dims[0] * 20) / 2, cy = (res.dims[2] * 8) / 2, cz = (res.dims[1] * 20) / 2;
+      for (let k = 0; k < P.length; k += 3) {
+        v.set(P[k] - cx, P[k + 1] - cy, P[k + 2] - cz);
+        v.applyQuaternion(q);
+        P[k] = v.x + cx;
+        P[k + 1] = v.y + cy;
+        P[k + 2] = v.z + cz;
+      }
+    }
+    download(toGLB(m), base + (mode === 'kind' ? '_kinds' : '') + '.glb', 'model/gltf-binary');
+  };
   /**
    * The building booklet (brickgen/instructions.js): the steps are planned on the viewport's own piece list - which setLego
    * sorted by level, so the order is already the build order - and each one is captured from the viewport with its new pieces
@@ -521,7 +550,12 @@ function StudioInner() {
   /** select mode: the left button draws a marquee over the bricks instead of orbiting (viewport3d.setSelectMode) */
   const toggleSelect = (on) => {
     const vpc = vp.current; if (!vpc) return;
-    sfx.click(); setSelMode(on); vpc.onSelectionChange = setSelCount; vpc.setSelectMode(on);
+    sfx.click();
+    if (on && eraserMode) {
+      setEraserMode(false);
+      vpc.setEraserMode(false);
+    }
+    setSelMode(on); vpc.onSelectionChange = setSelCount; vpc.setSelectMode(on);
     if (!on) setSelCount(vpc.clearSelection());
   };
   useEffect(() => {                                                   // Ctrl+I inverts while select mode is on
@@ -529,6 +563,130 @@ function StudioInner() {
     const f = (e) => { if ((e.ctrlKey || e.metaKey) && (e.key === 'i' || e.key === 'I')) { e.preventDefault(); setSelCount(vp.current.invertSelection()); } };
     window.addEventListener('keydown', f); return () => window.removeEventListener('keydown', f);
   }, [selMode]);
+
+  /** eraser mode: clicking on any LEGO piece deletes it and updates model configuration, metrics, and BOM */
+  const deletePiece = useCallback((pieceIndex, pieceObj) => {
+    if (!res || !res.pieces || !res.pieces.length) return;
+    const p = pieceObj || (vp.current?.pieces ? vp.current.pieces[pieceIndex] : res.pieces[pieceIndex]);
+    if (!p) return;
+
+    let targetIdx = res.pieces.indexOf(p);
+    if (targetIdx === -1 && pieceIndex >= 0 && pieceIndex < res.pieces.length) {
+      targetIdx = pieceIndex;
+    }
+    if (targetIdx === -1) return;
+    const deletedPiece = res.pieces[targetIdx];
+
+    setPieceHistory((prev) => [...prev, { piece: deletedPiece, res }]);
+
+    const newPieces = res.pieces.filter((_, i) => i !== targetIdx);
+
+    const oldMetrics = res.metrics || {};
+    const oldKinds = { ...(oldMetrics.kinds || {}) };
+    if (oldKinds[deletedPiece.kind]) {
+      oldKinds[deletedPiece.kind]--;
+      if (oldKinds[deletedPiece.kind] <= 0) delete oldKinds[deletedPiece.kind];
+    }
+    const oldIds = { ...(oldMetrics.ids || {}) };
+    if (oldIds[deletedPiece.id]) {
+      oldIds[deletedPiece.id]--;
+      if (oldIds[deletedPiece.id] <= 0) delete oldIds[deletedPiece.id];
+    }
+
+    const newMetrics = {
+      ...oldMetrics,
+      pieces: newPieces.length,
+      kinds: oldKinds,
+      ids: oldIds,
+    };
+
+    const newRes = {
+      ...res,
+      pieces: newPieces,
+      metrics: newMetrics,
+    };
+
+    const newMax = newPieces.length ? Math.max(...newPieces.map((x) => x.b + x.h)) : 0;
+    maxLevelRef.current = newMax;
+    setRes(newRes);
+
+    if (vp.current) {
+      vp.current.clearHoverPiece();
+      vp.current.setLego(newPieces, FULL_CATALOG, res.dims, true);
+      vp.current.setColorMode(colorMode);
+      vp.current.setOutline(outline);
+      if (step < newMax) {
+        vp.current.setLevel(step, false);
+      }
+    }
+
+    sfx.click();
+    message.info(`Deleted ${deletedPiece.name || deletedPiece.id} (${deletedPiece.kind})`);
+  }, [res, colorMode, outline, step, message]);
+
+  onDeletePieceRef.current = deletePiece;
+
+  const undoDeletePiece = useCallback(() => {
+    if (!pieceHistory.length) return;
+    const last = pieceHistory[pieceHistory.length - 1];
+    setPieceHistory((prev) => prev.slice(0, -1));
+
+    const restoredRes = last.res;
+    const newMax = restoredRes.pieces.length ? Math.max(...restoredRes.pieces.map((x) => x.b + x.h)) : 0;
+    maxLevelRef.current = newMax;
+    setRes(restoredRes);
+
+    if (vp.current) {
+      vp.current.clearHoverPiece();
+      vp.current.setLego(restoredRes.pieces, FULL_CATALOG, restoredRes.dims, true);
+      vp.current.setColorMode(colorMode);
+      vp.current.setOutline(outline);
+      if (step < newMax) {
+        vp.current.setLevel(step, false);
+      }
+    }
+
+    sfx.click();
+    message.info(`Restored ${last.piece.name || last.piece.id}`);
+  }, [pieceHistory, colorMode, outline, step, message]);
+
+  const toggleEraser = useCallback((on) => {
+    sfx.click();
+    setEraserMode(on);
+    if (on) {
+      if (selMode) {
+        setSelMode(false);
+        if (vp.current) {
+          vp.current.setSelectMode(false);
+          setSelCount(vp.current.clearSelection());
+        }
+      }
+      if (rotate) {
+        setRotate(false);
+        if (vp.current) vp.current.setRotateGizmo(false);
+      }
+      if (viewMode === 'mesh') {
+        setViewMode('lego');
+        if (vp.current) vp.current.setMode('lego');
+      }
+    }
+    if (vp.current) vp.current.setEraserMode(on);
+  }, [selMode, rotate, viewMode]);
+
+  useEffect(() => {
+    const handleUndoKey = (e) => {
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'Z') && !e.shiftKey) {
+        const tag = document.activeElement?.tagName?.toLowerCase();
+        if (tag === 'input' || tag === 'textarea') return;
+        if (pieceHistory.length > 0) {
+          e.preventDefault();
+          undoDeletePiece();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleUndoKey);
+    return () => window.removeEventListener('keydown', handleUndoKey);
+  }, [pieceHistory, undoDeletePiece]);
 
   const bookStageRef = useRef('Drawing the instructions');
   const exportBooklet = async () => {
@@ -826,7 +984,16 @@ function StudioInner() {
         <div className="dock-b">
           <Section title="Rendering" open={openRender} setOpen={setOpenRender}>
             <Text style={{ fontSize: 11, color: 'var(--tx2)' }}>Display</Text>
-            <Radio.Group size="small" value={viewMode} onChange={(e) => { sfx.click(); setViewMode(e.target.value); vp.current.setMode(e.target.value); }} style={{ display: 'flex', width: '100%' }}>
+            <Radio.Group size="small" value={viewMode} onChange={(e) => {
+              sfx.click();
+              const v = e.target.value;
+              if (v === 'mesh' && eraserMode) {
+                setEraserMode(false);
+                vp.current && vp.current.setEraserMode(false);
+              }
+              setViewMode(v);
+              vp.current.setMode(v);
+            }} style={{ display: 'flex', width: '100%' }}>
               {[['mesh', 'Mesh'], ['lego', 'LEGO'], ['both', 'Overlay'], ['split', 'Split']].map(([v, l]) => <Radio.Button key={v} value={v} style={{ flex: 1, textAlign: 'center' }}>{l}</Radio.Button>)}
             </Radio.Group>
             <Text style={{ fontSize: 11, color: 'var(--tx2)' }}>Colours</Text>
@@ -914,19 +1081,40 @@ function StudioInner() {
       <div className="toolbar" style={{ left: leftOpen ? LW : 0, right: rightOpen ? RW : 0 }}>
         <div className="tools">
           <Tooltip title={sound ? 'Sound on' : 'Sound off'}><Button size="small" type="text" icon={sound ? <SoundOutlined /> : <AudioMutedOutlined />} onClick={() => { const v = !sound; setSound(v); sfx.setOn(v); }} /></Tooltip>
-          <Tooltip title={rotate ? 'Hide rotation gizmo' : 'Rotation gizmo'}><Button size="small" type={rotate ? 'primary' : 'text'} icon={<SyncOutlined />} onClick={() => { const v = !rotate; setRotate(v); vp.current.setRotateGizmo(v); }} /></Tooltip>
+          <Tooltip title={rotate ? 'Hide rotation gizmo' : 'Rotation gizmo'}><Button size="small" type={rotate ? 'primary' : 'text'} icon={<SyncOutlined />} onClick={() => {
+            const v = !rotate;
+            if (v && eraserMode) {
+              setEraserMode(false);
+              vp.current && vp.current.setEraserMode(false);
+            }
+            setRotate(v);
+            vp.current.setRotateGizmo(v);
+          }} /></Tooltip>
           {hasRot && (
             <Tooltip title="Reset rotation"><Button size="small" type="text" icon={<UndoOutlined />} onClick={() => { if (vp.current) { vp.current.resetRotation(); setHasRot(false); } }} /></Tooltip>
           )}
-          {res && viewMode !== 'mesh' && (
+          {res && (
             <>
-              <Tooltip title={selMode ? 'Leave select mode' : 'Select bricks: drag a box. Ctrl / Shift-drag adds, Alt-drag removes, Ctrl+I inverts, double-click clears.'}>
-                <Button size="small" type={selMode ? 'primary' : 'text'} icon={<SelectOutlined />} onClick={() => toggleSelect(!selMode)} />
+              {viewMode !== 'mesh' && (
+                <>
+                  <Tooltip title={selMode ? 'Leave select mode' : 'Select bricks: drag a box. Ctrl / Shift-drag adds, Alt-drag removes, Ctrl+I inverts, double-click clears.'}>
+                    <Button size="small" type={selMode ? 'primary' : 'text'} icon={<SelectOutlined />} onClick={() => toggleSelect(!selMode)} />
+                  </Tooltip>
+                  {selMode && <span className="selinfo">{selCount ? `${selCount} selected` : 'drag to select'}</span>}
+                  {selMode && selCount > 0 && <Tooltip title="Invert (Ctrl+I)"><Button size="small" type="text" icon={<SwapOutlined />} onClick={() => setSelCount(vp.current.invertSelection())} /></Tooltip>}
+                  {selMode && selCount > 0 && <Tooltip title="Clear (double-click)"><Button size="small" type="text" icon={<ClearOutlined />} onClick={() => setSelCount(vp.current.clearSelection())} /></Tooltip>}
+                  {selMode && selCount > 0 && !rebuild && <Tooltip title="Build this area again, several ways, and choose"><Button size="small" type="text" icon={<SyncOutlined />} onClick={rebuildSelection} disabled={busy}>rebuild</Button></Tooltip>}
+                </>
+              )}
+              <Tooltip title={eraserMode ? 'Leave eraser mode' : 'Erase piece: click any LEGO part to delete it'}>
+                <Button size="small" type={eraserMode ? 'primary' : 'text'} icon={<EraserIcon />} onClick={() => toggleEraser(!eraserMode)} />
               </Tooltip>
-              {selMode && <span className="selinfo">{selCount ? `${selCount} selected` : 'drag to select'}</span>}
-              {selMode && selCount > 0 && <Tooltip title="Invert (Ctrl+I)"><Button size="small" type="text" icon={<SwapOutlined />} onClick={() => setSelCount(vp.current.invertSelection())} /></Tooltip>}
-              {selMode && selCount > 0 && <Tooltip title="Clear (double-click)"><Button size="small" type="text" icon={<ClearOutlined />} onClick={() => setSelCount(vp.current.clearSelection())} /></Tooltip>}
-              {selMode && selCount > 0 && !rebuild && <Tooltip title="Build this area again, several ways, and choose"><Button size="small" type="text" icon={<SyncOutlined />} onClick={rebuildSelection} disabled={busy}>rebuild</Button></Tooltip>}
+              {eraserMode && <span className="selinfo" style={{ color: '#ef4444' }}>click brick to delete</span>}
+              {pieceHistory.length > 0 && (
+                <Tooltip title="Undo deleted piece (Ctrl+Z)">
+                  <Button size="small" type="text" icon={<UndoOutlined />} onClick={undoDeletePiece} />
+                </Tooltip>
+              )}
             </>
           )}
           <Tooltip title="Reset view"><Button size="small" type="text" icon={<AimOutlined />} onClick={() => vp.current.frame()} /></Tooltip>
