@@ -10,11 +10,12 @@ import { StudioViewport } from './studio/viewport3d.js';
 import { sfx } from './studio/sfx.js';
 import { fixWinding, meshIslands, islandColors, islandPalette } from './studio/meshtools.js';
 import { loadModel, reorient } from './loaders.js';
-import { runMethod, cancel, chooseStuds, poolSize } from './engine.js';
+import { runMethod, cancel, chooseStuds, rebuildRegion, poolSize } from './engine.js';
 import { DEFAULTS, CATALOG, FULL_CATALOG, catalogFor } from './brickgen/pipeline.js';
 import { buildMesh, toGLB, toLDR, KIND_COL } from './brickgen/export.js';
 import { snapToPalette } from './brickgen/colors.js';
 import { planSteps, stepParts, billOfMaterials, bookletHTML } from './brickgen/instructions.js';
+import { boxOf } from './brickgen/region.js';
 import { SCHEMA } from './schema.js';
 import { FEATURES, FEATURE_GROUPS, featureState, featurePatch } from './presets.js';
 import { Field } from './fields.jsx';
@@ -129,6 +130,7 @@ function StudioInner() {
   const [autoBusy, setAutoBusy] = useState(false), [autoRes, setAutoRes] = useState(null);
   const [bookBusy, setBookBusy] = useState(false);
   const [selMode, setSelMode] = useState(false), [selCount, setSelCount] = useState(0);
+  const [rebuild, setRebuild] = useState(null), [rebuildPick, setRebuildPick] = useState(0);   // the region alternatives and which one is previewed
   useEffect(() => { vp.current && vp.current.setTheme(dark); }, [dark]);
   const prevRes = useRef(null);
   /** white hollow cubes over the source mesh (shown on resolution change) */
@@ -455,6 +457,49 @@ function StudioInner() {
    * sorted by level, so the order is already the build order - and each one is captured from the viewport with its new pieces
    * highlighted, the camera fixed. Light theme and outlines on while capturing, since the booklet is for paper.
    */
+  /**
+   * Rebuild the selected area several ways (engine.rebuildRegion -> pipeline.regionAttempts) and let the user pick. It does
+   * not choose for them: measured on the duck, no local attempt beats the IoU the global solve reached there, so the point is
+   * a different character for the area - more shaped parts, no learned assemblies, a looser skin - not a better number.
+   */
+  const rebuildSelection = async () => {
+    const vpc = vp.current; if (!vpc || !res) return;
+    const sel = vpc.selectedPieces(); if (!sel.length) return message.info('Select some bricks first');
+    sfx.click(); setBusy(true); setStage(['Rebuilding the selection', 0]);
+    try {
+      const box = boxOf(sel);
+      const r = await rebuildRegion(box, res, { onStage: (s2, f) => setStage([s2, f]) });
+      if (!r) throw new Error('the model has to be computed again before an area can be rebuilt');
+      setRebuild(r); setRebuildPick(0);
+      message.success(`${r.replaced} bricks, ${r.attempts.length - 1} alternatives`);
+    } catch (e) { sfx.error(); message.error(String(e.message || e)); console.error(e); }
+    setBusy(false); setStage(['', 0]);
+  };
+  /** show one alternative in the viewport without committing to it (0 = what is there now) */
+  const previewRebuild = (k) => {
+    const vpc = vp.current, r = rebuild; if (!vpc || !r) return;
+    setRebuildPick(k);
+    const a = r.attempts[k], pieces = k === 0 ? res.pieces : a.result.pieces;
+    if (officialColors) applyOfficialPalette(pieces, true);
+    vpc.setLego(pieces, FULL_CATALOG, (k === 0 ? res : a.result).dims || res.dims);
+    vpc.setColorMode(colorMode); vpc.setOutline(outline);
+  };
+  /** keep the previewed alternative: it becomes the model */
+  const applyRebuild = () => {
+    const r = rebuild, k = rebuildPick; if (!r) return;
+    // the attempt carries the solve's own fields; everything about the SOURCE and the run stays as it was (the worker strips
+    // srcTris / srcCols from the message, and an attempt has no options / job / scores of its own)
+    if (k > 0) {
+      const a = r.attempts[k].result;
+      setRes({ ...res, pieces: a.pieces, metrics: a.metrics, post: a.post, islands: a.islands, crust: a.crust,
+        dims: a.dims || res.dims, offset: a.offset || res.offset, scale: a.scale || res.scale, timing: { ...res.timing, ...(a.timing || {}) } });
+      sfx.done();
+    }
+    setRebuild(null); setSelCount(vp.current.clearSelection());
+    message.success(k > 0 ? `kept: ${r.attempts[k].name}` : 'left as it was');
+  };
+  const cancelRebuild = () => { previewRebuild(0); setRebuild(null); };
+
   /** select mode: the left button draws a marquee over the bricks instead of orbiting (viewport3d.setSelectMode) */
   const toggleSelect = (on) => {
     const vpc = vp.current; if (!vpc) return;
@@ -615,7 +660,7 @@ function StudioInner() {
                         <div className="kv"><span>Recall:</span><b>{fmt(mt.recall, 3)}</b></div>
                         <div className="kv"><span>Overfill:</span><b>{fmt(mt.overfill, 3)}</b></div>
                         <div className="kv"><span>Execution:</span><b>{(res.timing.total / 1000).toFixed(1)} s</b></div>
-                        <div className="kv" style={{ gridColumn: '1 / 3' }}><span>Grid:</span><b>{res.dims[0]} x {res.dims[1]} studs, {res.dims[2]} plates</b></div>
+                        <div className="kv" style={{ gridColumn: '1 / 3' }}><span>Grid:</span><b>{(res.dims || [0, 0, 0])[0]} x {(res.dims || [0, 0, 0])[1]} studs, {(res.dims || [0, 0, 0])[2]} plates</b></div>
                       </div>
                       <div>
                         {Object.entries(mt.kinds).map(([k, c]) => <Tag key={k} style={{ background: kindRgb(k), color: '#111', border: 0, fontSize: 10 }}>{k} {c}</Tag>)}
@@ -877,6 +922,7 @@ function StudioInner() {
               {selMode && <span className="selinfo">{selCount ? `${selCount} selected` : 'drag to select'}</span>}
               {selMode && selCount > 0 && <Tooltip title="Invert (Ctrl+I)"><Button size="small" type="text" icon={<SwapOutlined />} onClick={() => setSelCount(vp.current.invertSelection())} /></Tooltip>}
               {selMode && selCount > 0 && <Tooltip title="Clear (double-click)"><Button size="small" type="text" icon={<ClearOutlined />} onClick={() => setSelCount(vp.current.clearSelection())} /></Tooltip>}
+              {selMode && selCount > 0 && !rebuild && <Tooltip title="Build this area again, several ways, and choose"><Button size="small" type="text" icon={<SyncOutlined />} onClick={rebuildSelection} disabled={busy}>rebuild</Button></Tooltip>}
             </>
           )}
           <Tooltip title="Reset view"><Button size="small" type="text" icon={<AimOutlined />} onClick={() => vp.current.frame()} /></Tooltip>
@@ -887,6 +933,24 @@ function StudioInner() {
 
       {busy && <div className="busy" style={{ left: leftOpen ? LW : 0, right: rightOpen ? RW : 0 }}><div className="chip"><div className="chip-row"><div className="spinner" /><span>{stage[0]}</span><div className="pulse" /></div>
         <div className="chip-bar"><Progress percent={Math.round(stage[1] * 100)} showInfo={false} size="small" /><span>{Math.round(stage[1] * 100)}%</span></div></div></div>}
+
+      {rebuild && (
+        <div className="rebuild" style={{ left: leftOpen ? LW + 16 : 16 }}>
+          <div className="rb-h"><b>Rebuild this area</b><span>{rebuild.replaced} bricks re-solved, {rebuild.kept} kept</span></div>
+          <div className="rb-list">
+            {rebuild.attempts.map((a, k) => (
+              <button key={k} className={'rb-item' + (k === rebuildPick ? ' on' : '')} onClick={() => previewRebuild(k)}>
+                <span className="rb-n">{a.name}</span>
+                <span className="rb-m">{a.pieces} pieces<i>IoU {a.iou.toFixed(3)}</i></span>
+              </button>
+            ))}
+          </div>
+          <div className="rb-f">
+            <span>None of these is "better": the whole-model solve already found the best fit here. Pick the look you want.</span>
+            <div><Button size="small" onClick={cancelRebuild}>Cancel</Button><Button size="small" type="primary" onClick={applyRebuild}>Keep</Button></div>
+          </div>
+        </div>
+      )}
 
       <Drawer title="All parameters" open={advanced} onClose={() => setAdvanced(false)} size={440} className="adv"
         extra={<Button size="small" icon={<ReloadOutlined />} onClick={() => { localStorage.removeItem(STORE); setOpts({ ...DEFAULTS }); setAutoRes(null); }}>defaults</Button>}>

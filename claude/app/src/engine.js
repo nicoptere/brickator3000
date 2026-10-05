@@ -1,6 +1,7 @@
 // Main-thread driver: a pool of workers scores the grid phases in parallel, the first worker finishes the best one.
 const POOL = Math.max(1, Math.min(8, (navigator.hardwareConcurrency || 4) - 1));
 let workers = [];
+let ctxKey = null, ctxJob = null;        // the finished run's worker context: a region rebuild reuses it
 const spawn = () => new Worker(new URL('./worker.js', import.meta.url), { type: 'module' });
 
 function call(w, msg, onProgress) {
@@ -33,7 +34,7 @@ export async function runMethod(model, opts, { workersWanted = POOL, onStage = (
   cancel();
   const n = Math.max(1, workersWanted);
   workers = Array.from({ length: n }, spawn);
-  const key = Math.random().toString(36).slice(2);
+  const key = Math.random().toString(36).slice(2); ctxKey = key; ctxJob = null;
   const t0 = performance.now();
   let autoChoice = null;
   if (opts.studs === 'auto' || opts.studsAuto) {    // the resolution: pilot solves + mesh descriptors on one worker, then every worker sets up at that stud count
@@ -51,11 +52,23 @@ export async function runMethod(model, opts, { workersWanted = POOL, onStage = (
   const scored = (await Promise.all(parts)).flatMap((r) => r.scores);
   scored.sort((a, b) => b.score - a.score);
   onStage('solving the best grid phase', 0);
+  ctxJob = scored[0].job;
   const res = await call(workers[0], { type: 'finish', key, job: scored[0].job }, (d) => d.stage && onStage(d.stage, d.frac ?? 0));
   const r = res.result;
   r.timing.total = performance.now() - t0; r.timing.setup = setups[0].ms; r.scores = scored; r.workers = usable.length;
   if (autoChoice) { r.autoChoice = autoChoice; r.options.autoChoice = autoChoice; r.timing.auto = autoChoice.ms; }
   workers.slice(1).forEach((w) => w.terminate()); workers = workers.slice(0, 1);
+  return r;
+}
+/**
+ * Rebuild one stud / level box of the finished model several ways and return them all to choose from (see
+ * pipeline.regionAttempts). Runs on the worker that still holds the run's context, so the field and the grid phase are the
+ * ones the model was built with. Returns null when that context is gone (a new model was loaded, or the page was reloaded).
+ */
+export async function rebuildRegion(box, prev, { onStage = () => {} } = {}) {
+  if (!workers.length || !ctxKey || !ctxJob) return null;
+  const r = await call(workers[0], { type: 'region', key: ctxKey, job: ctxJob, box, prev: { pieces: prev.pieces, metrics: prev.metrics, post: prev.post } },
+    (d) => d.stage && onStage(d.stage, d.frac ?? 0));
   return r;
 }
 export const poolSize = POOL;

@@ -1,5 +1,6 @@
 // Lazy-greedy part selection on the fractional volume field.
 import { G } from './constants.js';
+import { pieceVariant } from './variants.js';
 
 class Heap {                       // min-heap on [key, k, b, j, i] compared lexicographically (same tie-break as the Python reference)
   constructor() { this.a = []; }
@@ -23,6 +24,21 @@ export class Solver {
     this.M0 = M.slice(); this.M = M.slice(); this.C = new Float32Array(M.length);
     this.NL = nl; this.NZs = nz; this.NXs = nx; this.NZc = nz / G; this.NXc = nx / G;
     this.pieces = []; this.o = opts; this.mirror = mirror; this.ver = 0; this.Iver = -1; this.log = () => {};
+    // a region edit confines placement to a stud / level box WITHOUT touching the field: the solver still sees the real solid
+    // around the box, so a slope at its edge still matches the surface it is part of. Masking the field instead cuts the solid
+    // flat at the box faces and the phases then pave those faces with flat parts (measured: duck IoU .852 -> .832).
+    this.box = opts && opts.regionBox ? opts.regionBox : null;
+  }
+  /**
+   * May a part of this footprint sit here? (always true outside a region edit.) The test is OVERLAP, not containment: the
+   * pieces that were removed stick out of the box, so the hole does too, and a part must be able to cross the faces to fill
+   * it - which is also what the global solve could do. Requiring containment is a real handicap: on the duck's head every
+   * attempt then lost to the solution already there (.8475 against .8520).
+   * Nothing can be overwritten: the kept pieces are already in C and the collision test refuses anything that touches them.
+   */
+  fits(b, j, i, h, d, w) {
+    const B = this.box;
+    return !B || (b < B.b1 && b + h > B.b0 && j < B.j1 && j + d > B.j0 && i < B.i1 && i + w > B.i0);
   }
   idx(l, z, x) { return (l * this.NZs + z) * this.NXs + x; }
   /** swap the target field mid-solve (run.js fieldCascade): what was consumed stays consumed, the remainder is re-derived from the new field */
@@ -201,6 +217,7 @@ export class Solver {
         for (let i = 0; i + w <= this.NXc; i++, c0++) {
           const swG = I[c0 + o1 + o2 + o3] - I[c0 + o2 + o3] - I[c0 + o1 + o3] - I[c0 + o1 + o2] + I[c0 + o3] + I[c0 + o2] + I[c0 + o1] - I[c0];
           if (swG < loG) continue;
+          if (this.box && !this.fits(b, j, i, h, d, w)) continue;
           if (roundGroup && !this.roundOk(variants[ks[0]], j, i)) continue;
           const sw = swG / G2;
           for (let q = 0; q < ks.length; q++) {
@@ -263,6 +280,31 @@ export class Solver {
     return placed;
   }
 
+  /**
+   * Take an arbitrary piece list as this solver's solution and rebuild the coverage from it. A region edit solves a masked
+   * field (so it only produces pieces inside the box) and splices them with the pieces that were kept outside; the post
+   * passes and the metrics then need a solver whose C / M match that combined list, which is what this restores.
+   */
+  adopt(pieces, variants) {
+    this.pieces = pieces.slice();      // a COPY: the phases push onto this.pieces, and the caller's list is reused for the next attempt
+    this.C.fill(0); this.M.set(this.M0); this.ver++; this.Iver = -1;
+    for (const p of pieces) {
+      const v = pieceVariant(p, variants);
+      if (!v || p.snot) {                                        // a sideways part sits at a fractional cell: mark its box
+        const i0 = Math.floor(p.i), j0 = Math.floor(p.j), b0 = Math.floor(p.b);
+        for (let l = b0; l < Math.ceil(p.b + p.h) && l < this.NL; l++) for (let z = j0 * G; z < Math.ceil(p.j + p.d) * G && z < this.NZs; z++)
+          for (let x = i0 * G; x < Math.ceil(p.i + p.w) * G && x < this.NXs; x++) { const q = (l * this.NZs + z) * this.NXs + x; this.C[q] = Math.min(1, this.C[q] + 1); this.M[q] = 0; }
+        continue;
+      }
+      const pz = v.d * G, px = v.w * G;
+      for (let l = 0; l < v.h; l++) for (let z = 0; z < pz; z++) {
+        if (p.b + l >= this.NL || p.j * G + z >= this.NZs) continue;
+        const base = this.idx(p.b + l, p.j * G + z, p.i * G), vb = (l * pz + z) * px;
+        for (let x = 0; x < px && p.i * G + x < this.NXs; x++) { const vv = v.V[vb + x]; this.C[base + x] += vv; this.M[base + x] = Math.min(1, Math.max(0, this.M[base + x] - vv)); }
+      }
+    }
+    return this;
+  }
   place(v, b, j, i, ov, over, phase, isMirror = false) {
     this._place(v, b, j, i, ov, over, phase);
     if (isMirror || !this.mirror || !v.mv) return;

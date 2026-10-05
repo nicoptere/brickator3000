@@ -350,3 +350,65 @@ Performance: post passes dominated; packed-number keys etc. gave 7-15x, bit-iden
 - Two traps while wiring it: `candidates`' first progress call is `f = 0`, which is the same signal as "a new phase started"
   (clamped to 1e-6), and the verification solve was passed `(n) => onPhase(n)`, dropping the sub-fraction so every sub-tick
   counted as a new phase and the bar saturated instantly.
+
+## 19. Rebuilding one area of a model (2026-10-05): `pipeline.regionAttempts`
+- **The mechanism.** `brickgen/region.js` (`boxOf`, `inBox`, `regionScore`, `regionVariants`) + `Solver.adopt(pieces, variants)`
+  + `Solver.box` + `run.solverFor` / `run.runPhases` (the old `solve` split in two, bit-identical: duck @24 1298 / .873,
+  table @32 540 / .811 before and after). A rebuild takes the model's own prepared field and grid phase, **adopts the pieces
+  outside the box as already placed**, and runs the phases again: the hole the selection left is then the only thing still to
+  cover, and the surface around it is still real, so the parts at its edge match what they are part of.
+- **Three things had to be right**, each measured:
+  1. *Mask the placement, not the field.* Zeroing the field outside the box cuts the solid flat at its faces and the phases
+     pave them with flat parts (duck .852 -> .832). The field stays true; only placement is restricted.
+  2. *Overlap, not containment.* Requiring a part to fit entirely inside the box is a real handicap - the pieces that were
+     removed stick out of it, and so does the hole - and every attempt then lost to the solution already there (.8475 vs
+     .8520). `Solver.fits` tests overlap. Nothing can be overwritten: the kept pieces are in the coverage and the collision
+     test refuses anything touching them.
+  3. *Compare finished models.* A raw solve flatters itself against a post-processed one (an attempt won by .008 raw and lost
+     by .002 once both were finished), and a box-only IoU ratio can disagree with the objective outright (box .790 -> .828
+     while the model went .8520 -> .8508). Every attempt is finished exactly as the original, and compared on the model's IoU.
+- **It does not choose for you, and that is the finding.** On the duck, *every* attempt - including one with the model's own
+  settings - lands at or below the IoU the global solve reached there. A local rebuild is not a better optimiser than the
+  global one; what it is good for is giving an area a different **character** - more shaped parts, no learned assemblies, a
+  looser skin, overfill tolerated - which is a judgement, not a number. So the UI offers the alternatives with their piece
+  count and IoU, previews each one live in the viewport, and says plainly that none of them is "better".
+- Traps: `adopt` aliased the caller's array, so each attempt appended to the next one's input (copy it); the motif
+  verification may have dropped the assemblies for the whole model, and turning them back on inside the box compares a
+  different method, so `regionAttempts` reads `post.motifCheck.kept` first; and **`S.dims` was assigned at the END of the
+  phases**, so a solver built with `noPhases` never got one - every rebuilt attempt came back with `dims: undefined`, the
+  results panel threw on `res.dims[0]`, and React re-rendered the throw until it gave up with "Maximum update depth exceeded"
+  (the flood of progress messages was the trigger, not the cause). `dims` is geometry, so it is set in `solverFor` now.
+- Hardening after that: the worker **throttles progress** to a change worth drawing (a new label, 0.5 % of the bar, or 60 ms -
+  the solver reports thousands of times inside one phase); `applyRebuild` names the fields it takes from an attempt instead of
+  spreading the whole object over the run's own (`srcTris`, `options`, `job` are not an attempt's to give); and the results
+  panel no longer indexes `res.dims` unguarded.
+- UI: *select mode -> drag -> **rebuild*** in the header toolbar; the picker lists the alternatives, clicking one shows it,
+  Keep commits it. Engine: `rebuildRegion(box, prev)` on the worker that still holds the run's context.
+
+## 20. Where things stand (2026-10-05 afternoon) — start here in a new session
+**Read first:** this file §13-19 (today's work), then `docs/CURVES.md` §13 (the resolution round). The tree is
+`/mnt/storage/projects/brickator3000`, branch `siren`; the app is `claude/app` (`npm run dev`, `MODELS_DIR=` points at the
+model library). Nico commits to git himself — never commit for him, write files and say what changed.
+
+**Shipped today, all committed and measured:** `post.weld` (every model comes out in one piece), `studs: 'auto'` +
+`resolution.js`, the panel-2 / drawer revamp on `presets.js` feature groups, the `instructions` booklet export, the axis gizmo
+and marquee selection, `pipeline.regionAttempts` (rebuild an area several ways and choose), and the phase-by-phase progress bar.
+
+**Known open items, roughly by value:**
+- **The paper is one round behind.** `docs/BRICKAGEN3000.pdf` covers rounds 4-8; the weld (§15), the booklet (§16) and the
+  region rebuild (§19) are not in it. `claude/paper/README.md` has the whole figure pipeline.
+- **`docs/BRICKATOR.pdf` and `-mobile.pdf` are superseded** by `BRICKAGEN3000*.pdf` and still on disk; `git rm` them when you
+  are happy with the new one.
+- **duck @48 still leaves 19 components** after the weld (from 113). It is far past its curvature ceiling of 29.8 - the
+  automatic stud count says 20 - so it may not be worth chasing.
+- **The region rebuild offers 4 alternatives by default** (`level: 1` in `StudioApp.exportBooklet`'s sibling
+  `rebuildSelection`); `level: 2` gives 7 and costs about twice the time. No UI for the level yet.
+- **SNOT is still off by default** and the "a wall is a floor turned on its side" design (CURVES.md §12) is unbuilt - the
+  biggest single piece of unclaimed value left.
+- The handmade small-model dataset (CURVES.md §10 item 9) is still not started.
+
+**Two traps that bit more than once today**, worth knowing before editing:
+- Nico edits the app while a session is running. **Always stage a file from the device and diff it before writing**, or his
+  work is silently overwritten (it nearly was, twice: `StudioApp.jsx` and `studio/viewport3d.js`).
+- A local copy of the repo in the session container goes stale the moment he touches a file. Stage what you need, when you
+  need it, rather than trusting a mirror from earlier in the session.

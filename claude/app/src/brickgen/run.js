@@ -10,6 +10,12 @@ import { motifVariants } from '../motifs/library.js';
 import { snotVariants } from '../motifs/snot.js';
 
 export function solve(pre, cat, ox, oz, o, log = () => {}, onPhase = null) {
+  const S = solverFor(pre, cat, ox, oz, o, log, onPhase);
+  return o.noPhases ? S : runPhases(S, pre, cat, ox, oz, o, log, onPhase);
+}
+
+/** the solver over this field, with no piece placed yet (the setup half of `solve`) */
+export function solverFor(pre, cat, ox, oz, o, log = () => {}, onPhase = null) {
   const win = window(pre, ox, oz); let M = win.arr; const nxc = win.nxc, nzc = win.nzc, nl = pre.nl;
   const NZ = nzc * G, NX = nxc * G;
   // fieldCascade: the broad phases (motifs, rounds, skin, fill) see the coarse field - the SDF filtered harder - and the detail
@@ -25,9 +31,18 @@ export function solve(pre, cat, ox, oz, o, log = () => {}, onPhase = null) {
     if (o.symField !== false) M = symmetrize(M, nl, NZ, NX, pre.mirror.ax, plane);
     if (o.symTwins !== false) mirror = [pre.mirror.ax === 0 ? 'x' : 'z', plane];
   }
-  const S = new Solver(M, nl, NZ, NX, o, mirror); S.log = log; S.onPhase = onPhase;
+  const S = new Solver(M, nl, NZ, NX, o, mirror); S.log = log; S.onPhase = onPhase; S.Msharp = Msharp;
   if (pre.Mfull) { let F = window(pre, ox, oz, 'Mfull').arr; if (pre.mirror && o.symField !== false) F = symmetrize(F, nl, NZ, NX, pre.mirror.ax, plane); S.Mfull = F; }   // hollow core: the full solid, so filling the core is not counted as overfill
-  S.nxc = nxc; S.nzc = nzc;
+  S.nxc = nxc; S.nzc = nzc; S.win = { nxc, nzc, nl, NZ, NX, plane: pre.mirror ? plane : 0 };
+  S.dims = [nxc, nzc, nl];      // geometry, not a result: a region rebuild builds the solver without running the phases
+  return S;
+}
+
+/** the phases, over a solver that may already hold pieces (a region edit adopts the ones outside the box first) */
+export function runPhases(S, pre, cat, ox, oz, o, log = () => {}, onPhase = null) {
+  const { nxc, nzc, nl, NZ, NX } = S.win;
+  const mirror = S.mirror, plane = S.win.plane;
+  const Msharp = S.Msharp;
   const tb = o.technic ? { technic: 0.02 } : {};
   const withBonus = (t, extra) => ({ ...t, bonus: { ...(t.bonus || {}), ...extra } });
   // disc layers first (discs.js): a level whose cross-section is a rounded blob is laid as rows of plates, alternating direction
@@ -49,7 +64,7 @@ export function solve(pre, cat, ox, oz, o, log = () => {}, onPhase = null) {
   if (o.roundsAfterSkin === 'auto' || o.roundsAfterSkin === undefined) {
     const g = S.gradients().top; let sloped = 0, tops = 0;
     for (let cz = 0; cz < nzc; cz++) for (let cx = 0; cx < nxc; cx++) {
-      let has = false; for (let l = nl - 1; l >= 0 && !has; l--) for (let dz = 0; dz < G && !has; dz++) for (let dx = 0; dx < G; dx++) if (M[S.idx(l, cz * G + dz, cx * G + dx)] > 0.05) { has = true; break; }
+      let has = false; for (let l = nl - 1; l >= 0 && !has; l--) for (let dz = 0; dz < G && !has; dz++) for (let dx = 0; dx < G; dx++) if (S.M0[S.idx(l, cz * G + dz, cx * G + dx)] > 0.05) { has = true; break; }
       if (!has) continue; tops++; if (Math.hypot(g.gx[cz * nxc + cx], g.gz[cz * nxc + cx]) >= 0.07) sloped++;
     }
     roundsAfter = tops > 0 && sloped / tops >= (o.roundsSlopedShare ?? 0.5);
@@ -86,7 +101,7 @@ export function solve(pre, cat, ox, oz, o, log = () => {}, onPhase = null) {
     onPhase && onPhase('D-fallback', 0);
     const F = S.leftoverCells(); let n1 = 0;
     for (let l = 0; l < nl; l++) for (let z = 0; z < NZc; z++) for (let x = 0; x < NXc; x++) {
-      if (F[cell(l, z, x)] < o.fallbackMin) continue;
+      if (F[cell(l, z, x)] < o.fallbackMin || !S.fits(l, z, x, 1, 1, 1)) continue;
       const r = S.evaluate(one, l, z, x, any); if (r) { S.place(one, l, z, x, r[1], r[2], 'D-fallback'); n1++; }
     }
     log(`phase D-fallback 1x1: ${n1}`);
@@ -112,7 +127,7 @@ export function solve(pre, cat, ox, oz, o, log = () => {}, onPhase = null) {
         for (let dz = 0; dz < G; dz++) for (let dx = 0; dx < G; dx++) pc += P[(l * NZ + z * G + dz) * NX + x * G + dx];
         thin = pc >= o.thinPoints && !nearBig(l, z, x);
       }
-      if (!thin) continue;
+      if (!thin || !S.fits(l, z, x, 1, 1, 1)) continue;
       const r = S.evaluate(one, l, z, x, any); if (r) { S.place(one, l, z, x, r[1], r[2], 'E-thin'); n2++; }
     }
     log(`phase E-thin 1x1: ${n2}`);
@@ -125,13 +140,12 @@ export function solve(pre, cat, ox, oz, o, log = () => {}, onPhase = null) {
     for (let l = 0; l < nl; l++) for (let z = 0; z < NZc; z++) for (let x = 0; x < NXc; x++) {
       let any = false;
       for (let dz = 0; dz < G && !any; dz++) { const base = (l * NZ + z * G + dz) * NX + x * G; for (let dx = 0; dx < G; dx++) if (Tm[base + dx]) { any = true; break; } }
-      if (!any) continue;
+      if (!any || !S.fits(l, z, x, 1, 1, 1)) continue;
       const r = S.evaluate(one, l, z, x, any_);
       if (r) { S.place(one, l, z, x, r[1], r[2], 'F-tube'); nt++; }
     }
     log(`phase F-tube 1x1: ${nt}`);
   }
-  S.dims = [nxc, nzc, nl];
   return S;
 }
 

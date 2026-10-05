@@ -127,3 +127,21 @@ html, body, #root { margin: 0; width: 100%; height: 100%; overflow: hidden; back
 .feats.flush .feat { padding-left: 0; padding-right: 0; }
 .feats.flush .feat:hover { background: none; }
 .selinfo { font-size: 11px; color: var(--tx2); padding: 0 4px; white-space: nowrap; }
+
+/* ---------------------------------------------------------------- region rebuild picker (pipeline.regionAttempts) */
+.rebuild { position: absolute; bottom: 86px; z-index: 6; width: 320px; background: var(--bg-dock); color: var(--tx); border: 1px solid var(--bd);
+  border-radius: 8px; box-shadow: 0 8px 30px var(--shadow); overflow: hidden; }
+.rb-h { padding: 8px 10px 6px; display: flex; flex-direction: column; border-bottom: 1px solid var(--bd); }
+.rb-h b { font-size: 12px; }
+.rb-h span { font-size: 11px; color: var(--tx2); }
+.rb-list { max-height: 260px; overflow: auto; padding: 4px; display: flex; flex-direction: column; gap: 2px; }
+.rb-item { display: flex; align-items: baseline; gap: 8px; width: 100%; text-align: left; font: inherit; font-size: 12px;
+  color: var(--tx); background: none; border: 1px solid transparent; border-radius: 4px; padding: 5px 8px; cursor: pointer; }
+.rb-item:hover { background: var(--soft); }
+.rb-item.on { background: #2563eb; color: #fff; border-color: #2563eb; }
+.rb-n { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rb-m { font-size: 11px; opacity: .8; white-space: nowrap; }
+.rb-m i { font-style: normal; margin-left: 8px; }
+.rb-f { padding: 7px 10px; border-top: 1px solid var(--bd); display: flex; flex-direction: column; gap: 6px; }
+.rb-f span { font-size: 10.5px; color: var(--tx2); line-height: 1.35; }
+.rb-f div { display: flex; gap: 6px; justify-content: flex-end; }

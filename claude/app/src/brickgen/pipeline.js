@@ -3,13 +3,15 @@ import { DEFAULTS, STUD, PLATE } from './constants.js';
 import { surfaceSamples } from './mesh.js';
 import { prepare, normalize } from './grid.js';
 import { smoothModel } from './smooth.js';
-import { solve, metrics, surface } from './run.js';
+import { solve, solverFor, runPhases, metrics, surface } from './run.js';
 import { mergePairs, vertical, horizontal, pillars, bracing, splice, bridge, weld, supports, finish, untile, connectivity, retile, roundCorners, widen, dropLoose } from './post.js';
 import { detectSymmetry } from './symmetry.js';
 import { PointGrid } from './nn.js';
 import { visibleSamples } from './visibility.js';
 import { snapToPalette } from './colors.js';
 import { featureStuds, referenceField, fieldFidelity } from './resolution.js';
+import { boxOf, inBox, regionScore, regionVariants } from './region.js';
+import { partVariants } from './variants.js';
 import CATALOG from './catalog.js';
 import EXT from './catalog_ext.js';
 import SHAPES from './catalog_shapes.js';
@@ -37,6 +39,7 @@ export const catalogFor = (o) => {
   return [...base, ...shapesFor(o)];
 };
 export { DEFAULTS, CATALOG, SHAPES };
+export { boxOf, inBox } from './region.js';
 const now = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
 
 /**
@@ -84,6 +87,63 @@ export function autoStuds(model, opts = {}) {
   return { studs: best.studs, chosen: best.studs === n ? (nBudget < detail ? 'budget' : 'detail') : 'lattice', centre: n,
     budget: { pieces: budget, pilotStuds: pilots, pilotPieces: counts, exp: +exp.toFixed(2), studs: +nBudget.toFixed(1) }, feature: feat, detail: isFinite(detail) ? +detail.toFixed(1) : null,
     candidates: rows, refStuds: ref.studs, ms: Math.round(now() - t0), msPilots: Math.round(tPilot - t0) };
+}
+
+
+/** every variant of every part, the motif-only ones too: what Solver.adopt needs to rebuild coverage from a piece list */
+const varCache = new WeakMap();
+const allVariants = (cat) => {
+  let v = varCache.get(cat);
+  if (!v) varCache.set(cat, v = partVariants(cat.map((c) => ({ ...c, noSolo: false })), new Set(cat.map((c) => c.kind))));
+  return v;
+};
+
+/**
+ * Re-solve one box of an existing solution and keep the best attempt (brickgen/region.js).
+ *
+ * The field is the model's own - the same preparation, the same grid phase - masked to the box, so the pieces that come out
+ * land on the same lattice as the rest and no seam appears. Everything that touches the box is dropped and re-solved; the
+ * pieces outside are kept untouched. Each variant of `regionVariants` is scored by the IoU of the BOX alone, the winner is
+ * spliced back, and the whole post-process (merges, connectivity, weld) runs over the combined model, which is what repairs
+ * the join. Returns the finished result with `region` describing what was tried.
+ */
+/**
+ * Rebuild one box of an existing solution several ways, and hand all of them back to be chosen from (brickgen/region.js).
+ *
+ * The field is the model's own - same preparation, same grid phase - and the pieces outside the box are adopted as already
+ * placed, so the only thing left to cover is the hole the selection left. A part may cross the box faces, as the global solve
+ * could; nothing outside can be overwritten, because the kept pieces are in the coverage and the collision test refuses
+ * anything that touches them. Every attempt is then finished the same way as the original (merges, connectivity, weld), so the
+ * numbers compare like with like.
+ *
+ * It does NOT pick for you, and the measurement is why: on the duck, every attempt - including one with the model's own
+ * settings - came out at or below the IoU the global solve reached there (.8502 against .8520). A local rebuild is simply not
+ * a better optimiser than the global one; what it is good for is giving the same area a different CHARACTER - more shaped
+ * parts, no learned assemblies, a looser skin - which is a judgement, not a number. The IoU of each is reported so the cost of
+ * a choice is visible.
+ */
+export function regionAttempts(ctx, job, box, prev, cat = catalogFor(ctx.o), { log = () => {}, progress = () => {}, level = 1 } = {}) {
+  const { o } = ctx, [par, ox, oz] = job, pre = ctx.pres[par];
+  const B = { ...box }, vars = allVariants(cat), pieces = prev.pieces;
+  const keep = pieces.filter((p) => !inBox(p, B)), inside = pieces.length - keep.length;
+  // what the model actually used: the motif verification may have dropped the assemblies for the whole model, and turning them
+  // back on inside the box would be offering a different method rather than a different setting
+  const motifsKept = prev.post && prev.post.motifCheck ? prev.post.motifCheck.kept : true;
+  const o0 = { ...o, motifs: !!o.motifs && motifsKept };
+  const attempts = [{ name: 'as it is now', iou: +prev.metrics.iou.toFixed(4), pieces: prev.metrics.pieces, current: true }];
+  const variants = regionVariants(o0, level);
+  variants.forEach((v, k) => {
+    progress(`building: ${v.name}`, 0.03 + 0.94 * k / variants.length);
+    const ro = { ...o0, ...v.opts, regionBox: B, discs: false, motifVerify: false };
+    const R = runPhases(solverFor(pre, cat, ox, oz, ro, log).adopt(keep, vars), pre, cat, ox, oz, ro, log);
+    const made = R.pieces.slice(keep.length);
+    const merged = keep.concat(made.map((p) => ({ ...p, phase: 'R-' + (p.phase || 'region'), region: true })));
+    const fin = finishJob(ctx, job, cat, log, () => {}, merged);
+    attempts.push({ name: v.name, iou: +fin.metrics.iou.toFixed(4), pieces: fin.metrics.pieces, made: made.length,
+      components: fin.metrics.components, result: fin });
+  });
+  progress('done', 1);
+  return { box: B, kept: keep.length, replaced: inside, attempts };
 }
 
 /** shared preparation (samples, symmetry, padded ray-cast volumes per parity) and the list of grid-phase jobs */
@@ -137,7 +197,7 @@ const phaseCount = (o) => 1 + (o.discs ? 1 : 0) + (o.motifs ? 2 : 0) + (o.rounds
   + 1 + (o.fill2 ? 1 : 0) + (o.relaxed ? 1 : 0) + (o.fallback ? 1 : 0) + (o.thin ? 1 : 0) + (o.islands ? 1 : 0);
 
 /** finish the best job: colours, merges, pillars, connectivity post-process, studs finish, palette, stats */
-export function finishJob(ctx, job, cat = catalogFor(ctx.o), log = () => {}, progress = () => {}) {
+export function finishJob(ctx, job, cat = catalogFor(ctx.o), log = () => {}, progress = () => {}, adopt = null) {
   const { o, m, sym, symOk } = ctx, T = { ...ctx.T };
   let t = now();
   const [par, ox, oz] = job, pre = ctx.pres[par];
@@ -153,12 +213,13 @@ export function finishJob(ctx, job, cat = catalogFor(ctx.o), log = () => {}, pro
     if (f < last) return; last = f;
     progress(tag + (PHASE_LABEL[name] || name), f);
   };
-  let S = solve(pre, cat, ox, oz, o, log, onPhase);
+  // `adopt`: a piece list solved elsewhere (a region edit) takes the place of the solve, on a bare solver over the full field
+  let S = adopt ? solve(pre, cat, ox, oz, { ...o, noPhases: true }).adopt(adopt, allVariants(cat)) : solve(pre, cat, ox, oz, o, log, onPhase);
   const post = {};
   // motif verification (docs/CURVES.md): the mined assemblies are a broad-phase heuristic that pays on blocky and roof-like
   // models and leaves a chaotic skin on organic ones; the same field is solved once more without them (fast: the motif phase is
   // what costs) and the assemblies are kept only when they gain at least `motifGain` of IoU
-  if (verify) {
+  if (verify && !adopt) {
     seen = 0; lo = SOLVE; hi = VERIFY; last = -1; tag = 'checking the assemblies pay: ';
     const S2 = solve(pre, cat, ox, oz, { ...o, motifs: false }, log, (n, f) => onPhase(n, f)), a = metrics(S).iou, b = metrics(S2).iou;
     post.motifCheck = { with: +a.toFixed(4), without: +b.toFixed(4), kept: a >= b + (o.motifGain ?? 0.01) };
