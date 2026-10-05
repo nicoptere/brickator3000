@@ -206,11 +206,22 @@ export class Solver {
       let g = groups.get(key); if (!g) { g = { h: v.h, d: v.d, w: v.w, ks: [], lo: Infinity }; groups.set(key, g); }
       g.ks.push(k); g.lo = Math.min(g.lo, tol.min_cov * v.vtot - 1e-3);
     }
+    // Inside a box group the two cheap tests - enough mass for the variant (sw >= min_cov x vtot) and not too much of it
+    // (|sw - vtot| <= maxErr) - are both monotone in the variant's own volume, so the variants a given position can accept are a
+    // contiguous run once the group is sorted by volume. With motifs a group holds up to 362 variants and the group's `lo` is the
+    // weakest one's, so every position used to walk all of them; the binary search below leaves ~5 per position (hen @16: 4.1 M
+    // variant tests from 0.77 M positions).
+    for (const g of groups.values()) {
+      g.ks.sort((a, b) => variants[a].vtot - variants[b].vtot);
+      g.vt = Float64Array.from(g.ks, (k) => variants[k].vtot);
+    }
     const Z1 = this.NZc + 1, X1 = this.NXc + 1;
     let gDone = 0; const gTotal = groups.size;                 // a box group is the unit of work here: enough for a progress bar
     for (const g of groups.values()) {
       if (onProgress) onProgress(gDone++ / gTotal);
-      const { h, w, d, ks, lo } = g, box = h * w * d, maxErr = tol.max_err * box + 1e-3, pz = d * G, px = w * G, loG = lo * G2;
+      const { h, w, d, ks, vt, lo } = g, box = h * w * d, maxErr = tol.max_err * box + 1e-3, pz = d * G, px = w * G, loG = lo * G2;
+      const maxOverG2 = tol.max_err * box * G2;                       // the acceptance cap on `over`, in the G^2 units the cell loop sums
+      const nk = ks.length, invCov = 1 / tol.min_cov;
       const roundGroup = !!this.o.roundBand && ks.every((k) => variants[k].c.kind === 'round');
       const o1 = h * Z1 * X1, o2 = d * X1, o3 = w, oL = Z1 * X1, wd = w * d * G2, beat = tol.beatFlat ?? this.o.beatFlat ?? 1;        // integral offsets of the box corners from its (b, j, i) corner; oL = one level
       const levM = new Float64Array(h); let levAt = -1;
@@ -223,7 +234,11 @@ export class Solver {
           if (this.allow && !this.allow(b, j, i, h, d, w)) continue;
           if (roundGroup && !this.roundOk(variants[ks[0]], j, i)) continue;
           const sw = swG / G2;
-          for (let q = 0; q < ks.length; q++) {
+          // the admissible volume window for this position, as a run of the volume-sorted group
+          const loV = sw - maxErr, hiV = Math.min(sw + maxErr, (sw + 1e-3) * invCov);
+          let q0 = 0, q1 = nk;                                            // lower bound of loV in vt
+          while (q0 < q1) { const mid = (q0 + q1) >> 1; if (vt[mid] < loV) q0 = mid + 1; else q1 = mid; }
+          for (let q = q0; q < nk && vt[q] <= hiV; q++) {
             const k = ks[q], v = variants[k], vs = v.vsum / G2;
             if (sw < tol.min_cov * v.vtot - 1e-3 || Math.abs(sw - vs) > maxErr) continue;
             // exact test (without the collision / tile rules, re-checked at pop time)
@@ -242,11 +257,18 @@ export class Solver {
                 for (let l = 0; l < h; l++) { below += wd - levM[l]; above -= levM[l]; const e = below + above; if (e < flat) flat = e; }
                 flatErr = flat;
               }
-              const V = v.V, M = this.M;
-              for (let l = 0; l < h; l++) for (let z = 0; z < pz; z++) {
+              // The error only grows, so the cell loop stops the moment it has failed: every test it could still pass needs
+              // `over` below the acceptance cap (and below what a flat stack costs, when the shaped parts have to beat one).
+              // 92 % of the exact tests fail, and they were running every cell to find out: hen @16 with motifs, 628 M cells
+              // -> 124 M, the whole run 6.8 s -> 5.0 s, piece for piece the same model.
+              const V = v.V, M = this.M, cap = flatErr >= 0 ? (beat * flatErr < maxOverG2 ? beat * flatErr : maxOverG2) : maxOverG2;
+              let bail = false;
+              for (let l = 0; l < h && !bail; l++) for (let z = 0; z < pz; z++) {
                 const base = this.idx(b + l, j * G + z, i * G), vb = (l * pz + z) * px;
-                for (let x = 0; x < px; x++) { const vv = V[vb + x], m = M[base + x]; ov += m < vv ? m : vv; over += Math.abs(vv - m); }
+                for (let x = 0; x < px; x++) { const vv = V[vb + x], m = M[base + x]; ov += m < vv ? m : vv; over += vv > m ? vv - m : m - vv; }
+                if (over > cap) { bail = true; break; }
               }
+              if (bail) continue;
             }
             if (flatErr >= 0 && over > beat * flatErr) continue;
             ov /= G2; over /= G2;
