@@ -31,6 +31,7 @@ try {
   await p2.goto('file://' + path.resolve(html));
   await p2.pdf({ path: path.join(outdir, 'booklet.pdf'), format: 'A4', landscape: true, printBackground: true, margin: { top: '10mm', bottom: '10mm', left: '10mm', right: '10mm' } });
   const sheets = await p2.$$('.sheet');
-  for (const [k, s] of [[0, sheets[0]], [1, sheets[1]], [2, sheets[2]], [sheets.length - 1, sheets[sheets.length - 1]]]) if (s) await s.screenshot({ path: path.join(outdir, `page${k}.png`) });
-  console.log(`pdf + ${Math.min(4, sheets.length)} page shots in ${outdir}/`);
+  const want = [0, 1, 2, sheets.length - 2, sheets.length - 1];   // cover, two step pages, the finished model, the parts list
+  for (const k of [...new Set(want)]) if (sheets[k]) await sheets[k].screenshot({ path: path.join(outdir, `page${k}.png`) });
+  console.log(`pdf + ${Math.min(5, sheets.length)} page shots in ${outdir}/`);
 } finally { await browser.close(); await server.close(); }

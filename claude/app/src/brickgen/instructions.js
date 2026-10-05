@@ -14,15 +14,30 @@
 //    the per-step inventory are what keep a 20-piece step followable.
 // A step never spans more than `maxLevels` levels, and the pieces inside one step are taken in a serpentine order across the
 // layer, so a step is always a contiguous run rather than a scatter. Pages are A4 landscape, four steps to a page.
+// A sideways piece is built with (after) the host it hangs on, not at its own level (`buildLevels`).
 const KIND_LABEL = { plate: 'plate', brick: 'brick', tile: 'tile', slope: 'slope', inverted: 'inverted slope', curved: 'curved slope', cheese: 'cheese slope', round: 'round', technic: 'technic', shaped: 'shaped', support: 'support' };
 const hex = (rgb) => '#' + (rgb || [200, 200, 200]).map((x) => Math.max(0, Math.min(255, Math.round(x))).toString(16).padStart(2, '0')).join('');
 const shade = (rgb, f) => hex((rgb || [200, 200, 200]).map((x) => x * f));
 
-/** pieces in build order: by level, then serpentine across the layer (so one step is a contiguous run, not a scatter) */
-export function buildOrder(pieces) {
+/**
+ * The level a piece is BUILT at. An upright piece: its own level. A sideways piece (the SNOT skin, a sideways motif part)
+ * hangs on a side stud of its host and may start below the host's bottom (a 1x2 tile standing on a 22885's lower stud
+ * reaches 10 LDU under the brick): ordered by its own level it would be placed before anything holds it and float in the
+ * picture. The host and its sideways pieces share a rigid-assembly id `mi`, so a sideways piece is built at the level of the
+ * highest upright piece of its assembly at the earliest, and after the upright pieces of that level.
+ */
+export function buildLevels(pieces) {
+  const hostLevel = new Map();
+  for (const p of pieces) if (p.mi != null && !p.snot) hostLevel.set(p.mi, Math.max(hostLevel.get(p.mi) ?? -Infinity, p.b));
+  return pieces.map((p) => (p.snot && p.mi != null && hostLevel.has(p.mi) ? Math.max(p.b, hostLevel.get(p.mi)) : p.b));
+}
+
+/** pieces in build order: by build level, upright before sideways, then serpentine across the layer (so one step is a contiguous run, not a scatter) */
+export function buildOrder(pieces, levels = buildLevels(pieces)) {
   return pieces.map((p, n) => n).sort((a, b) => {
     const p = pieces[a], q = pieces[b];
-    if (p.b !== q.b) return p.b - q.b;
+    if (levels[a] !== levels[b]) return levels[a] - levels[b];
+    if (!!p.snot !== !!q.snot) return p.snot ? 1 : -1;              // the host first, what hangs on it after
     if (p.j !== q.j) return p.j - q.j;
     return (p.j % 2 ? -1 : 1) * (p.i - q.i);                       // serpentine: alternate rows run the other way
   });
@@ -33,13 +48,13 @@ export function buildOrder(pieces) {
  * from the target step count. Returns [{ from, to, idx, levels: [lo, hi] }].
  */
 export function planSteps(pieces, o = {}) {
-  const order = buildOrder(pieces);
+  const levels = buildLevels(pieces), order = buildOrder(pieces, levels);
   const target = o.stepTarget ?? 60, maxLevels = o.stepLevels ?? 2;
   const perStep = Math.max(o.stepMin ?? 3, Math.min(o.stepMax ?? 40, Math.ceil(pieces.length / Math.max(1, target))));
   const steps = []; let cur = [], lo = null, hi = null;
   const flush = () => { if (cur.length) steps.push({ idx: cur, levels: [lo, hi] }); cur = []; lo = hi = null; };
   for (const n of order) {
-    const b = pieces[n].b;
+    const b = levels[n];
     if (cur.length && (cur.length >= perStep || b - lo >= maxLevels)) flush();
     if (!cur.length) lo = b;
     hi = Math.max(hi ?? b, b); cur.push(n);
@@ -116,8 +131,11 @@ const setNumber = (title, n) => { let h = 7; for (const ch of `${title}:${n}`) h
  * "Save as PDF" produces the leaflet directly. The cover is laid out like a real set's: logo tile, the model's name as the
  * theme, the set number, the finished model on a pale band, the booklet number, the warning box.
  */
-export function bookletHTML({ title = 'model', cover = null, covers = null, steps = [], images = [], bom = [], meta = {}, perPage = 4, brand = 'LOGO' }) {
+export function bookletHTML({ title = 'model', cover = null, covers = null, final = null, steps = [], images = [], bom = [], meta = {}, perPage = 4, brand = 'LOGO' }) {
   covers = covers || (cover ? [cover] : []);
+  // the last page of the build is the finished model: its own picture when one was shot, else the last cover view (so the
+  // page is not the same image as the one next to it on the cover)
+  const done = final || covers[covers.length - 1] || null;
   const esc = (s) => String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
   const pages = []; for (let k = 0; k < steps.length; k += perPage) pages.push(steps.slice(k, k + perPage).map((s, q) => ({ s, n: k + q })));
   const swatches = (p) => p.colours && p.colours.length > 1 ? `<span class="sw">${p.colours.slice(0, 8).map(([c]) => `<em style="background:${c}"></em>`).join('')}</span>` : '';
@@ -140,18 +158,19 @@ export function bookletHTML({ title = 'model', cover = null, covers = null, step
   .bar { position: sticky; top: 0; z-index: 9; background: #16181d; color: #fff; padding: 8px 14px; display: flex; gap: 14px; align-items: center; font-size: 12px; }
   .bar button { font: inherit; padding: 4px 12px; border: 0; border-radius: 4px; background: #fff; color: #16181d; cursor: pointer; font-weight: 600; }
   /* ---- cover */
-  .cover { padding: 0; background: #fff url("${brickPattern()}") repeat; display: flex; flex-direction: column; }
-  .cover .top { display: flex; align-items: center; gap: 8mm; padding: 6mm 12mm 0; height: 34mm; }
+  .cover { padding: 0; background: var(--band) url("${brickPattern()}") repeat; display: flex; flex-direction: column; }
+  .cover .top { position: absolute; left: 0; right: 0; top: 0; z-index: 2; display: flex; align-items: center; gap: 8mm; padding: 6mm 12mm 0; height: 34mm; }
   .logo { width: 24mm; height: 24mm; background: var(--red); border-radius: 2.5mm; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 0 1.4mm #fff, inset 0 0 0 2.2mm var(--red); flex: none; }
   .logo span { font: 900 7.8mm/1 "Arial Black", "Helvetica Neue", Arial, sans-serif; letter-spacing: -.02em; color: #fff; -webkit-text-stroke: .55mm #000; paint-order: stroke fill; text-shadow: 0 0 0 var(--yellow), 0 0 1.2mm var(--yellow); }
   .theme { font: 900 17mm/1 "Arial Black", "Helvetica Neue", Arial, sans-serif; letter-spacing: -.03em; text-transform: uppercase; color: #111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .theme i { font-style: normal; color: var(--red); }
   .setno { font: 700 6.5mm/1 "Helvetica Neue", Arial, sans-serif; margin-left: auto; align-self: flex-end; padding-bottom: 1mm; }
-  /* the models take 80 % of the page height: two perspective views side by side on the pale band, nothing else in the picture */
-  .hero { position: absolute; left: 0; right: 0; top: 34mm; bottom: 0; background: var(--band); display: flex; align-items: center; justify-content: center; gap: 4mm; padding: 0 10mm; }
-  .hero img { height: 168mm; max-width: 48%; object-fit: contain; }
+  /* the models take 95 % of the page height: two perspective views side by side on the pale band, which is the whole page;
+     the logo row and the bottom row sit over it */
+  .hero { position: absolute; left: 0; right: 0; top: 0; bottom: 0; display: flex; align-items: center; justify-content: center; gap: 4mm; padding: 0 10mm; }
+  .hero img { height: 199.5mm; max-width: 48%; object-fit: contain; }
   .hero img:only-child { max-width: 80%; }
-  .cover .bottom { position: absolute; left: 12mm; right: 12mm; bottom: 9mm; display: flex; align-items: flex-end; gap: 6mm; }
+  .cover .bottom { position: absolute; left: 12mm; right: 12mm; bottom: 7mm; z-index: 2; display: flex; align-items: flex-end; gap: 6mm; }
   .book { width: 13mm; height: 13mm; background: #fff; border: .5mm solid #888; display: flex; align-items: center; justify-content: center; font: 900 8mm/1 Arial, sans-serif; flex: none; }
   .warn { border: .5mm solid #111; background: #fff; padding: 1.6mm 3mm; font-size: 11px; line-height: 1.25; }
   .warn b { font-weight: 800; }
@@ -174,6 +193,14 @@ export function bookletHTML({ title = 'model', cover = null, covers = null, step
   .foot { position: absolute; left: 10mm; right: 10mm; bottom: 4mm; color: var(--ink2); font-size: 9px; display: flex; justify-content: space-between; }
   .legend { color: var(--ink2); }
   .legend em { display: inline-block; width: 9px; height: 9px; border-radius: 2px; vertical-align: -1px; margin: 0 2px 0 6px; }
+  /* ---- the finished model (last page of the build) */
+  .done { display: flex; flex-direction: column; align-items: center; }
+  .done .big { flex: 1; min-height: 0; width: 100%; display: flex; align-items: center; justify-content: center; }
+  .done .big img { max-height: 100%; max-width: 100%; object-fit: contain; }
+  .done .cap { display: flex; align-items: flex-end; gap: 6mm; width: 100%; padding-top: 3mm; }
+  .done h1 { font: 900 11mm/1 "Arial Black", "Helvetica Neue", Arial, sans-serif; letter-spacing: -.03em; text-transform: uppercase; margin: 0; }
+  .done h1 i { font-style: normal; color: var(--red); }
+  .done .cap p { margin: 1.5mm 0 0; color: var(--ink2); font-size: 11px; }
   /* ---- parts list */
   h2 { font-size: 13px; margin: 0 0 6px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
   .bom { list-style: none; padding: 0; margin: 0; columns: 3; column-gap: 8mm; }
@@ -192,7 +219,7 @@ export function bookletHTML({ title = 'model', cover = null, covers = null, step
     @page { size: A4 landscape; margin: 10mm; }
   }
 </style></head><body>
-<div class="bar"><b>${esc(name)}</b> building instructions &mdash; ${steps.length} steps, ${pages.length + 2} pages
+<div class="bar"><b>${esc(name)}</b> building instructions &mdash; ${steps.length} steps, ${pages.length + (done ? 3 : 2)} pages
   <button onclick="window.print()">Print / Save as PDF</button></div>
 
 <section class="sheet cover">
@@ -213,6 +240,19 @@ export function bookletHTML({ title = 'model', cover = null, covers = null, step
 
 ${pages.map((pg, k) => `<section class="sheet"><div class="grid">${pg.map(stepCard).join('')}</div>
   <div class="foot"><span>${esc(name)} &middot; ${setNo}</span><span class="legend">new pieces in colour<em style="background:#acacac"></em>already built${meta.weld ? ' &middot; weld plates hold separate parts together and may not follow the surface' : ''}</span><span>${k + 1} / ${pages.length}</span></div></section>`).join('\n')}
+
+${done ? `<section class="sheet done">
+  <div class="big"><img src="${done}" alt="the finished model"></div>
+  <div class="cap">
+    <div><h1>Finished<i>.</i></h1><p>${esc(name)} &middot; ${meta.pieces || 0} pieces in ${steps.length} steps</p></div>
+    <div class="facts">
+      <div><b>${meta.pieces || 0}</b><span>pieces</span></div>
+      <div><b>${bom.length}</b><span>parts</span></div>
+      <div><b>${meta.levels || 0}</b><span>layers</span></div>
+      ${meta.studs ? `<div><b>${meta.studs}</b><span>studs</span></div>` : ''}
+    </div>
+  </div>
+  <div class="foot"><span>${esc(name)} &middot; ${setNo}</span><span>the finished model</span></div></section>` : ''}
 
 <section class="sheet"><h2>Parts list &mdash; ${meta.pieces || 0} pieces, ${bom.length} different parts</h2>
   <ul class="bom">${bom.map(bomRow).join('')}</ul>
