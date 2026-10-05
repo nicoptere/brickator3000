@@ -31,6 +31,24 @@ export async function shootCover(vpc, cat, { spp = 256, azimuth = 38, elevation 
 }
 
 /**
+ * identity of everything a booklet is made of: the piece list (what, where, what colour) and the settings that shape the pages
+ * or the pictures. Two exports with the same signature produce the same file, so the second one is handed back from the cache
+ * instead of re-shooting sixty captures and three path-traced views.
+ */
+function bookletSig(P, o) {
+  let h1 = 0x811c9dc5, h2 = 0x9e3779b9;
+  const mix = (x) => { h1 = Math.imul(h1 ^ x, 0x01000193); h2 = Math.imul(h2 + x, 0x85ebca6b) ^ (h2 >>> 13); };
+  for (let k = 0; k < P.length; k++) {
+    const p = P[k];
+    for (let q = 0; q < p.id.length; q++) mix(p.id.charCodeAt(q));
+    mix((p.i * 10) | 0); mix((p.j * 10) | 0); mix((p.b * 2) | 0); mix(((p.ori ?? 0) << 10) + ((p.rot || 0) / 90 | 0));
+    const c = p.rgb || [0, 0, 0]; mix((c[0] << 16) | (c[1] << 8) | c[2]);
+  }
+  return `${P.length}|${h1 >>> 0}|${h2 >>> 0}|${JSON.stringify(o)}`;
+}
+let lastBooklet = null;                                   // { sig, out } - the previous export, reused while nothing changed
+
+/**
  * Plan the steps on the viewport's own piece list (setLego sorted it by level, so that order is already the build order),
  * shoot the cover (path-traced, two views - or, when the path tracer is not available, the toon viewport from the user's
  * view) and every step as an isometric orthographic picture framed on the pieces it adds - the new pieces in their own
@@ -40,10 +58,16 @@ export async function shootCover(vpc, cat, { spp = 256, azimuth = 38, elevation 
  *   cover: { spp } or false for the quick toon cover
  * The last page of the build is the finished model, large: a third path-traced view from a nearer-front angle, so it is not
  * the same picture as the cover's (`hero: false` skips it and the page falls back to a cover view).
+ * The result is cached: calling it again with the same pieces and the same settings returns the same file (`cached: true`)
+ * without shooting anything.
  */
 export async function shootBooklet(vpc, cat, { title = 'model', opts = {}, meta = {}, onProgress = null, onStage = null, cover: coverOpt = {},
   dimRGB = [160, 160, 160], dimInkRGB = [112, 112, 112], inkRGB = [16, 19, 26], ar = 1.75, maxW = 900 } = {}) {
   const P = vpc.pieces, by = {}; for (const c of cat) by[c.id] = c;
+  // nothing to redo when neither the model nor the settings moved: shooting a booklet is a minute of captures and path traces
+  const sig = bookletSig(P, { title, cover: coverOpt, meta, dimRGB, dimInkRGB, inkRGB, ar, maxW,
+    step: [opts.stepTarget, opts.stepLevels, opts.stepMin, opts.stepMax] });
+  if (lastBooklet && lastBooklet.sig === sig) { onStage && onStage('The booklet is already up to date'); return { ...lastBooklet.out, cached: true }; }
   const { steps } = planSteps(P, opts);
   vpc.setTheme(false); vpc.setMode('lego'); vpc.setOutline(true); vpc.paused = true;
   vpc.setAllStuds(true);                                                       // a plate must show its studs even in the steps before something covers them
@@ -77,5 +101,7 @@ export async function shootBooklet(vpc, cat, { title = 'model', opts = {}, meta 
   const html = bookletHTML({ title, covers, final, steps: withParts, images, bom: billOfMaterials(P, by),
     meta: { pieces: P.length, levels: Math.max(...P.map((p) => p.b + p.h)), ...meta } });
   vpc.setAllStuds(false); vpc.setInkPerPiece(false);
-  return { html, steps: steps.length, pages: Math.ceil(steps.length / 4) + 3 };
+  const out = { html, steps: steps.length, pages: Math.ceil(steps.length / 4) + 3 };
+  lastBooklet = { sig, out };
+  return { ...out, cached: false };
 }

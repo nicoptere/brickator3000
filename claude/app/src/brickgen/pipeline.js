@@ -200,6 +200,20 @@ const phaseCount = (o) => 1 + (o.discs ? 1 : 0) + (o.motifs ? 2 : 0) + (o.rounds
   + (o.skin ? 1 + (o.skinNarrow ? 1 : 0) + (o.partSet === 'extended' ? 1 : 0) : 0) + (o.snot ? 1 : 0) + (o.wall ? 1 : 0)
   + 1 + (o.fill2 ? 1 : 0) + (o.relaxed ? 1 : 0) + (o.fallback ? 1 : 0) + (o.thin ? 1 : 0) + (o.islands ? 1 : 0);
 
+// The colour reference (which samples are visible from outside, and the point grid of the normalised model) depends on the mesh
+// and the job, not on the pieces - and a job is now finished more than once: with and without the sideways skin, with and
+// without the mined assemblies. Both are memoised per mesh, so a verification finish reuses them instead of recomputing the
+// 26-direction visibility buffer and the point grid (0.3 s on a small model, seconds on a dense one).
+const visCache = new WeakMap(), fieldCache = new WeakMap();
+const visibleRef = (m) => { let v = visCache.get(m); if (!v) visCache.set(m, v = visibleSamples(m.tris, m.pts)); return v; };
+function colourField(m, o, off, cpts, ccols) {
+  let per = fieldCache.get(m); if (!per) fieldCache.set(m, per = new Map());
+  const key = `${o.studs}|${o.ref}|${off[0]},${off[1]}|${cpts.length}`;
+  let e = per.get(key);
+  if (!e) { const nm = normalize(m.tris, cpts, o.studs, off[0], off[1], o.ref); per.set(key, e = { nm, grid: new PointGrid(nm.pts, 64), cols: ccols }); }
+  return e;
+}
+
 /** finish the best job: colours, merges, pillars, connectivity post-process, studs finish, palette, stats */
 export function finishJob(ctx, job, cat = catalogFor(ctx.o), log = () => {}, progress = () => {}, adopt = null) {
   // The sideways skin (motifs/wall.js) pays on some models and costs on others (a rounded box: +36 % pieces for nothing), and
@@ -267,14 +281,12 @@ export function finishJob(ctx, job, cat = catalogFor(ctx.o), log = () => {}, pro
   // only surfaces visible from outside colour the skin (interior ice cream under a glass wall must not bleed through)
   let cpts = m.pts, ccols = m.cols;
   if (o.colorVisible ?? true) {
-    const vis = visibleSamples(m.tris, m.pts), keep = []; for (let i = 0; i < vis.length; i++) if (vis[i]) keep.push(i);
+    const vis = visibleRef(m), keep = []; for (let i = 0; i < vis.length; i++) if (vis[i]) keep.push(i);
     if (keep.length > 50) { cpts = new Float32Array(keep.length * 3); ccols = new Float32Array(keep.length * 3); keep.forEach((i, j) => { for (let c = 0; c < 3; c++) { cpts[j * 3 + c] = m.pts[i * 3 + c]; ccols[j * 3 + c] = m.cols[i * 3 + c]; } }); }
   }
   tag = '';
   progress('matching the colours', VERIFY);
-  const nm = normalize(m.tris, cpts, o.studs, off[0], off[1], o.ref);
-  const grid = new PointGrid(nm.pts, 64);
-  const cols = ccols;
+  const { grid, cols, nm } = colourField(m, o, off, cpts, ccols);
   for (const p of S.pieces) p.rgb = colourAt(grid, cols, p, o.colorK);
   T.colour = now() - t; t = now();
   const before = S.pieces.length;

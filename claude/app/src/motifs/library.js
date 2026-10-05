@@ -5,8 +5,41 @@
 import { G } from '../brickgen/constants.js';
 import { rotate, baseVolume } from '../brickgen/variants.js';
 import { orientPart, ORI_YAW } from './orient.js';
-import MOTIFS from './motifs.js';
+import MOTIF_TEXT from './motifs.js';
 import { stretch } from './periodic.js';
+
+/**
+ * The built-in library ships as TEXT, one motif per line: `<canonical key>\t<n>\t<models>`, the key being what mine.js wrote
+ * (`w,d,h|id:rot:i,j,b id:o<ori>:i,j,b ...`, offsets in tenths of a stud and half plates). The key already holds every part, so
+ * the JSON's `parts` array was pure duplication: the same library is 0.9 MB of text against 8.1 MB of JSON, it parses as one
+ * string literal instead of 20k object literals (45 MB of heap on load, in every worker, whether or not motifs were on), and
+ * nothing is turned into objects until a run asks for the library.
+ */
+export function parseLibrary(text, { minCount = 1, minModels = 1, maxParts = 64 } = {}) {
+  if (typeof text !== 'string') return text || [];                          // already a list (a custom library, or the old format)
+  const out = [];
+  for (const line of text.split('\n')) {
+    if (line.length < 3) continue;
+    const t1 = line.lastIndexOf('\t'), t0 = line.lastIndexOf('\t', t1 - 1);
+    const n = +line.slice(t0 + 1, t1), models = +line.slice(t1 + 1);
+    if (n < minCount || models < minModels) continue;
+    const key = line.slice(0, t0), bar = key.indexOf('|');
+    const toks = key.slice(bar + 1).split(' ');
+    if (toks.length > maxParts) continue;
+    const dims = key.slice(0, bar).split(',');
+    out.push({ key, w: +dims[0], d: +dims[1], h: +dims[2], n, models, parts: toks.map(parsePart) });
+  }
+  return out;
+}
+function parsePart(t) {
+  const a = t.indexOf(':'), b = t.indexOf(':', a + 1), xs = t.slice(b + 1).split(','), o = t.slice(a + 1, b);
+  const p = { id: t.slice(0, a), i: +xs[0] / 10, j: +xs[1] / 10, b: +xs[2] / 2 };
+  if (o.charCodeAt(0) === 111) p.ori = +o.slice(1); else p.rot = +o;         // `o11` = orientation index (sideways), else a yaw
+  return p;
+}
+let BUILTIN = null;
+/** the built-in motif list, parsed on first use (and kept) */
+export function builtinMotifs() { return BUILTIN || (BUILTIN = parseLibrary(MOTIF_TEXT)); }
 
 const partCache = new Map();
 /** variant of one catalogue part at one yaw (no dedup: the motif stores canonical rots already) */
@@ -49,6 +82,21 @@ function rasterise(parts, w, d, h) {
   return V;
 }
 
+/**
+ * identity of a rasterised volume, as a short string. Two 32-bit FNV-1a walks (different seeds and strides) over the cells
+ * quantised to 1/4096 - the volumes are sums of exact fractions, so quantising is safe. The first version joined
+ * `x.toFixed(4)` over every cell, which built a ~16 KB string per variant and was most of the library build time.
+ */
+function volSig(V, w, d) {
+  let h1 = 0x811c9dc5, h2 = 0x01000193;
+  for (let q = 0; q < V.length; q++) {
+    const x = (V[q] * 4096) | 0;
+    h1 = Math.imul(h1 ^ x, 0x01000193);
+    h2 = Math.imul(h2 ^ (x + q), 0x85ebca6b);
+  }
+  return `${w},${d},${V.length},${h1 >>> 0},${h2 >>> 0}`;
+}
+
 const oriOf = (p) => (p.ori !== undefined ? p.ori : Math.round((p.rot || 0) / 90) % 4);   // a sideways part carries `ori` (0..23) and no `rot`
 /** +90 yaw of a motif's part list inside its w x d window (same convention as mine.js canonicalKey / variants.rotate) */
 function turn(parts, w, by) {
@@ -87,9 +135,10 @@ const HOST_RE = /stud(s)? on .{0,20}side|headlight|^bracket/i;
  * compound variants for a catalogue: { variants, kept, dropped }. Options: minModels (motif seen in at least this many source models),
  * minCount, maxParts, solid (keep solid-box motifs), bonusLog (per-variant score bonus = base + bonusLog * log2(models))
  */
-export function motifVariants(cat, { motifMinModels = 2, motifMinCount = 3, motifMaxParts = 12, motifSolid = false, motifBonus = 0.2, motifBonusLog = 0.1, motifMinPartH = 2, motifShapedOnly = true, motifShapedMin = 0, motifMirror = true, motifStretch = true, motifStretchMax = 8, motifStretchCells = 512, motifSnot = true, motifLibrary = null } = {}) {
-  const LIB = motifLibrary || MOTIFS;         // motifLibrary: another mined list (tools/mine_motifs.mjs output) in place of the built-in one
-  const key = `${LIB === MOTIFS ? 'builtin' : 'custom' + LIB.length}|${cat.length}|${motifMinModels}|${motifMinCount}|${motifMaxParts}|${motifSolid}|${motifBonus}|${motifBonusLog}|${motifMinPartH}|${motifShapedOnly}|${motifShapedMin}|${motifMirror}|${motifStretch}|${motifStretchMax}|${motifStretchCells}|${motifSnot}`;
+export function motifVariants(cat, { motifMinModels = 2, motifMinCount = 3, motifMaxParts = 12, motifSolid = false, motifBonus = 0.2, motifBonusLog = 0.1, motifMinPartH = 2, motifShapedOnly = true, motifShapedMin = 0, motifMirror = true, motifStretch = true, motifStretchMax = 8, motifStretchCells = 512, motifSnot = true, motifMaxKeep = 0, motifLibrary = null } = {}) {
+  // motifLibrary: another mined list (tools/mine_motifs.mjs output, a list or the packed text) in place of the built-in one
+  const LIB = motifLibrary ? parseLibrary(motifLibrary) : builtinMotifs();
+  const key = `${motifLibrary ? 'custom' + LIB.length : 'builtin'}|${cat.length}|${motifMinModels}|${motifMinCount}|${motifMaxParts}|${motifSolid}|${motifBonus}|${motifBonusLog}|${motifMinPartH}|${motifShapedOnly}|${motifShapedMin}|${motifMirror}|${motifStretch}|${motifStretchMax}|${motifStretchCells}|${motifSnot}|${motifMaxKeep}`;
   const FLAT = new Set(['brick', 'plate', 'tile', 'technic']), HOST = HOST_RE;
   if (libCache.has(key)) return libCache.get(key);
   const by = new Map(cat.map((c) => [c.id, c]));
@@ -117,7 +166,10 @@ export function motifVariants(cat, { motifMinModels = 2, motifMinCount = 3, moti
     return true;
   };
   const variants = []; let kept = 0, dropped = 0;
-  const mined = LIB.filter((m) => { const k = keep(m); if (!k) dropped++; return k; });
+  let mined = LIB.filter((m) => { const k = keep(m); if (!k) dropped++; return k; });
+  // motifMaxKeep: only the K most frequent assemblies. The phase's cost is linear in the number of variants it scans, and the
+  // tail of the library is motifs seen three times in two models - measured in docs/MOCS.md §7.
+  if (motifMaxKeep > 0 && mined.length > motifMaxKeep) { mined = mined.slice().sort((a, b) => b.n - a.n).slice(0, motifMaxKeep); dropped += LIB.length - dropped - mined.length; }
   // a motif that repeats along one axis is a unit x n, so the lengths no set happened to contain are valid assemblies too
   const dims = (p) => { const v = oriented(by.get(p.id), oriOf(p)); return [v.w, v.d, Math.ceil(v.h)]; };   // takes the part: `rot` alone is undefined on a sideways one (NaN orientation -> crash in orientPart)
   const studded = (id) => (by.get(id).stud_cells || []).length > 0;
@@ -143,7 +195,7 @@ export function assemblyVariants(by, m, bonus, out, { mirror: doMirror = true, s
     for (let r = 0; r < 4 && !isSolid; r++) {
       const resolved = parts.map((p) => { const v = oriented(by.get(p.id), oriOf(p)); return { v, studs: v.studs, di: p.i, dj: p.j, db: p.b }; });
       const V = rasterise(resolved, w, d, m.h);
-      const sig = `${w},${d},${Array.from(V).map((x) => x.toFixed(4)).join(',')}`;
+      const sig = volSig(V, w, d);
       if (!seen.has(sig)) {
         seen.add(sig);
         let sum = 0, full = true; const lev = new Float64Array(m.h), per = V.length / m.h;

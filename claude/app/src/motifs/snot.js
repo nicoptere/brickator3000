@@ -15,8 +15,7 @@
 //    assembly, scored by the field, exported with its real orientation. Legal by construction: the stud is where a set put it.
 import { G, STUD, PLATE } from '../brickgen/constants.js';
 import { ORIENTATIONS } from './orient.js';
-import { oriented, assemblyVariants, HOST } from './library.js';
-import MOTIFS from './motifs.js';
+import { oriented, assemblyVariants, HOST, builtinMotifs } from './library.js';
 
 const SAMP = STUD / G;
 const UNIT = [STUD, PLATE, STUD];                                          // LDU per grid unit along world x, y, z
@@ -38,7 +37,7 @@ const boxMinLDU = (p) => [p.i * STUD, p.b * PLATE, p.j * STUD];
  */
 export function studPoints(cat, { minCount = 5 } = {}) {
   const by = new Map(cat.map((c) => [c.id, c])), votes = new Map();
-  for (const m of MOTIFS) {
+  for (const m of builtinMotifs()) {
     if (!m.parts.some((p) => (p.ori ?? 0) >= 4)) continue;
     const hosts = m.parts.filter((p) => (p.ori ?? 0) < 4 && by.has(p.id) && HOST.test(by.get(p.id).name));
     if (!hosts.length) continue;
