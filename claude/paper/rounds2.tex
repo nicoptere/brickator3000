@@ -1,0 +1,429 @@
+\section{A wall is a floor turned on its side}\label{sec:wall}
+The leverage list of the previous part opened with that sentence, and this section is what happened when it was built. The
+sideways synthesis of section~\ref{sec:round7} could already place a part in any of the 24 orientations, but it chose those parts
+the way the upright phases choose theirs --- one at a time, against the field, with a host invented for each --- and on a curved
+flank it mostly declined. What was missing was not a candidate set. It was the \emph{frame}: on a vertical flank the stud axis of
+the model is the wrong axis, and every phase the engine already has (the narrow aligned skin, the plate fill, the merges) is
+written for a floor. Turn the field instead of the parts and all of them apply unchanged.
+
+\subsection{The construction}
+\code{motifs/wall.js}, the option \code{wall} (the \emph{Sideways building (SNOT)} switch), runs \textbf{first}, before the disc
+layers and before the upright skin. That order is forced: after those two there is nothing left for it to take, because the rim
+plates of a disc layer are exactly the staircase the sideways parts are there to replace (on the sphere, running it last leaves
+173 candidates of which 166 report ``host busy''). Per facing it does five things.
+
+\begin{enumerate}
+\item \textbf{Resample.} The four horizontal facings $\pm x$, $\pm z$ are frames (\code{FACINGS}): local $+y$ is the facing, local
+$+z$ is world $+y$, so a local \emph{row} is a world \emph{level} and a local \emph{level} is a slab of the model along the facing.
+Each frame is one of the 24 orientation matrices of \code{orient.js}, which is what lets a piece be turned back exactly. The
+remaining field is resampled in that frame: the 4\ldu{} samples along the facing pair into 8\ldu{} ``plates'', the plates along $y$
+split into two samples.
+\item \textbf{Solve.} A \code{Solver} is built over the resampled field and the ordinary phases run in it: the narrow aligned skin
+(slopes, curved slopes, cheese, tiles, 1-wide, core parts only) and then a local fill of sideways plates and bricks that stacks
+back onto the host face the way upright plates stack up.
+\item \textbf{Turn back.} A local piece's yaw composed with the frame rotation is one of the 24 orientations; its box is the mapped
+local box, with fractional $i$, $j$, $b$ in the world grid.
+\item \textbf{Commit, bottom-up.} A piece is kept only if something holds it: a side-stud host brick in the cell behind its
+underside, yawed so the stud faces it, or the studs of a sideways piece already committed beneath it. The host and everything on
+it share an assembly id (\code{mi}) and are marked \code{rigid}, so \code{post.components} knows what holds what and no later pass
+re-cuts them.
+\item \textbf{Give up the cells.} The residual field in a committed piece's cells \emph{and in the level above} is zeroed. Without
+the level above, the mop-up phases set 1$\times$1 plates down on sideways parts that have no stud under them --- 30 such orphans in
+the first version, which the weld then paid for in plates.
+\end{enumerate}
+
+\subsection{Two lattices and a mask}
+Where a sideways piece may sit is not a matter of taste; it is two exact lattices, and the local solver is told about them through
+a new \code{Solver.allow} hook (figure~\ref{fig:walllattice}).
+
+\textbf{Along the facing}, the underside of a sideways piece must land on a brick face --- a stud-cell boundary of the world grid.
+The local level lattice is 8\ldu, so the whole pass runs twice with the levels offset by 0 and 4\ldu{} (\code{wallFoffs}); between
+them they reach every face.
+
+\textbf{Along $y$}, every LEGO side stud sits 14\ldu{} above the bottom of its brick. That number is read off the LDraw files
+(\code{stud2a} 10\ldu{} below the top of 87087, 4070, 30414, 11211, 4733, 47905) and it agrees with every stud point the SNOT
+synthesis of section~\ref{sec:round7} had recovered from the mined motifs (brackets: 30 of 40). A sideways part's own stud rows are
+20\ldu{} apart, so only rows at $14 + 8k$ can meet a host at all, and with hosts restricted to brick layers --- \code{levelMod},
+without which 26 of 33 hosts came out floating --- only rows at $14 + 24k$. Five offsets of the row lattice (\code{wallOffsets}, in
+4\ldu{} samples) cover them: 4 hosts rows at $14 + 120k$, 3 at 38, 2 at 62, 1 at 86, 0 at 110.
+
+A \textbf{mask} per facing says where it is allowed at all. A cell qualifies when it holds the \emph{silhouette} along the facing
+(the outermost solid sample of its row at that level), when it is \emph{partial} (\code{wallPartial} $.12\ldots.88$) and when the
+silhouette there is \emph{steep} (within \code{wallSteep} $60^\circ$ of vertical, read one level up and one down). The silhouette
+rather than the top-surface gradient, because the gradient is blind exactly at the rim, where the neighbouring columns have no
+surface at all. Partial, because a wall that already sits on the stud lattice is a brick's own face --- full or empty cells, nothing
+to gain. And \emph{every} world cell a piece touches must be in the mask: a sideways part half inside a full cell would leave the
+other half of that cell to upright parts that then cannot fit beside it.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[x=1cm,y=1cm,font=\scriptsize]
+  % ---- left: the facing frame, seen from above
+  \begin{scope}
+    \fill[grey2] (0,0) -- (2.0,0) -- (2.45,1.5) -- (2.0,3.0) -- (0,3.0) -- cycle;
+    \node[ink2,anchor=south west] at (0,3.25) {the model, seen from above};
+    \node[ink2] at (0.95,1.9) {solid};
+    \draw[->,blue1,thick] (2.2,1.5) -- (2.2,2.8) node[above,blue1]{local $+x$};
+    \draw[->,orange1,thick] (2.2,1.5) -- (3.5,1.5);
+    \node[orange1,anchor=south west,align=left] at (2.45,1.6) {local $+y$:\\the facing $f$};
+    \node[ink2,anchor=north west,align=left] at (0,0.6) {local $+z$ = world $+y$, so a local row\\is a world level and every phase\\written for a floor runs unchanged};
+  \end{scope}
+  % ---- right: the elevation, the host and the two lattices (y in LDU)
+  \begin{scope}[shift={(8.2,-0.55)},y=0.0155cm]
+    \fill[grey2] (-0.8,0) rectangle (0,290); \draw[grey1] (-0.8,0) rectangle (0,290);
+    \node[ink2,rotate=90] at (-0.4,215) {inside the model};
+    \foreach \l in {0,8,...,288} \draw[grey2] (0,\l) -- (1.3,\l);        % world levels, 8 LDU
+    % the host brick, 24 LDU, with its side stud 14 LDU up
+    \fill[violet1!20] (-0.8,96) rectangle (0,120); \draw[violet1] (-0.8,96) rectangle (0,120);
+    \fill[violet1] (0,110) rectangle (0.14,118);
+    \draw[violet1] (-0.4,96) -- (-0.4,34); \node[violet1,anchor=north,align=center] at (-0.4,32) {a host brick,\\24\ldu, on a\\brick level};
+    \draw[<->,violet1] (-1.0,96) -- (-1.0,114); \node[violet1,anchor=east] at (-1.05,105) {14\ldu};
+    % the sideways pieces, their stud rows on the host's stud row and 20 LDU above it
+    \fill[aqua1!30] (0.14,104) rectangle (1.15,124); \draw[aqua1] (0.14,104) rectangle (1.15,124);
+    \fill[aqua1!30] (0.14,124) rectangle (0.85,144); \draw[aqua1] (0.14,124) rectangle (0.85,144);
+    \draw[<->,aqua1] (1.28,114) -- (1.28,134); \node[aqua1,anchor=west] at (1.34,124) {20\ldu};
+    \node[aqua1,anchor=west,align=left] at (1.34,225) {sideways pieces, stacking\\outward from the host face;\\their stud rows are 20\ldu{} apart};
+    % the rows a host can offer
+    \foreach \y in {14,38,62,86} \draw[orange1,thick] (-0.12,\y) -- (0.26,\y);
+    \node[orange1,anchor=west,align=left] at (1.34,50) {hostable rows: $14 + 24k$};
+    \draw[ink2,->] (-1.55,0) -- (-1.55,290) node[above,ink2]{world $y$};
+  \end{scope}
+\end{tikzpicture}
+\caption{The frame and the two lattices. Left: per facing the field is resampled with the facing as ``up'', so the ordinary phases
+--- written for a floor --- run on a wall unchanged. Right, in elevation: a side-stud host brick offers its stud 14\ldu{} above its
+own bottom, and only brick levels may carry one, so the rows a sideways piece can hang from are $14 + 24k$; its own stud rows are
+20\ldu{} apart, so it stacks \emph{outward} from the host face in 20\ldu{} steps, and the pass is repeated at five offsets of this
+row lattice and two offsets of the level lattice along the facing.}
+\label{fig:walllattice}
+\end{figure}
+
+\subsection{Hosts}
+A host is a brick with studs on a vertical face. \code{HOSTS} in \code{wall.js} records their stud positions in the part's own
+frame, read off the LDraw files, with \code{levelMod}: the 1$\times$1 brick \textbf{87087} (one stud, 14\ldu{} up, brick layers), and
+the two bricks of height $1\frac{2}{3}$, \textbf{22885} (1$\times$2) and \textbf{32952} (1$\times$1), whose 40\ldu{} height \emph{is}
+the sideways lattice --- they carry two stud rows, at 10 and 30\ldu, so a stack of them offers a side stud every two studs, and
+every hostable row is reachable. 67329, 47905 and 4733 are in the table as well. The headlight brick 4070 is left out: its stud
+face is recessed 4\ldu, so the part it holds would overlap its own cell.
+
+The choice was made before the corpus of section~\ref{sec:mocs} could confirm it, and the confirmation is one of the pleasant
+results of this work: the most frequent multi-model shaped motifs mined from 969 user-built models include \emph{stacked 22885
+rows} (35 models, 304 uses), stacked 32952 (19 models), and ``22885 plus two sideways tiles'' --- that is, human builders build the
+same host lattice, and the engine's sideways skin is a rediscovery of a known habit rather than an invention.
+
+\subsection{Verifying it on the finished model}
+A skin that wins on the raw solve can lose on the finished one, and the other way round, because the post-process is where most of
+the pieces are decided. So the skin is checked the way the motifs are (section~\ref{sec:motifscore}): the \emph{whole finish} runs
+with it and without it, and the job score $\mathrm{IoU} - 0.002\,\lvert\text{pieces}\rvert$ decides (\code{wallVerify}, on by
+default; the grid phase is scored without the skin). On models whose flanks happen to land on the stud lattice --- the lying
+cylinder, the rounded box --- the check simply drops it, which is the correct answer and not a failure.
+
+\begin{table}[H]
+\centering\small
+\begin{tabular}{lrrrrrrl}
+\toprule
+ & \multicolumn{2}{c}{without the skin} & \multicolumn{2}{c}{with it} & \multicolumn{2}{c}{the skin itself} & \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
+model & pieces & IoU & pieces & IoU & pieces & hosts & the check \\
+\midrule
+teapot @24        & 583 & .7956 & \textbf{546} & \textbf{.8028} & 48 & 43 & kept \\
+pony @24          & 618 & .6740 & \textbf{547} & .6713 & 52 & 39 & kept \\
+sphere @16        & 766 & .8633 & \textbf{744} & .8552 & 58 & 50 & kept \\
+dolphin @32       & 219 & .6704 & 221 & \textbf{.6813} & 21 & 14 & kept \\
+\midrule
+egg @16           & \textbf{967} & \textbf{.8554} & 972 & .8507 & 91 & 73 & dropped \\
+hen @16           & \textbf{753} & \textbf{.8132} & 769 & .8099 & 64 & 58 & dropped \\
+rounded box @24   & \textbf{616} & .9430 & 632 & .9435 & 10 & 6 & dropped \\
+lying cylinder @16 & \multicolumn{2}{c}{186 p, .9144} & \multicolumn{4}{c}{never fires: its flank is on the stud lattice} & --- \\
+\bottomrule
+\end{tabular}
+\caption{The sideways skin with every default of this document, both branches of its own verification. The teapot is the row to
+read: \textbf{37 fewer pieces and more fidelity at the same time}, because a staircase of rim plates is replaced rather than
+re-tiled; the pony pays .003 of IoU for 71 pieces, which the job score accepts. On the egg, the hen and the rounded box the skin
+loses and is thrown away --- that is the check working, not the phase failing. The cost is 3--4$\times$ the solve time (40 local
+solves: 4 facings $\times$ 2 level offsets $\times$ 5 row lattices) plus the second finish, which is why it is a switch and not a
+default.}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}{0.49\textwidth}\centering\includegraphics[width=\textwidth]{r_wall_teapot_off}\caption*{\small without: 583 pieces, IoU .796}\end{subfigure}
+\begin{subfigure}{0.49\textwidth}\centering\includegraphics[width=\textwidth]{r_wall_teapot_on}\caption*{\small with: 546 pieces, IoU .803}\end{subfigure}
+\caption{The teapot at 24 studs, rendered from the LDR export with real part geometry. Right: sideways pieces in aqua, the
+side-stud host bricks that hold them in magenta (the 1$\times$2$\times$1$\frac{2}{3}$ bricks, their side studs visible). The skin is
+a \emph{belt} around the steep part of the flank --- a Lowell sphere, not a SNOT hull --- because that is where the silhouette is
+both steep and off the lattice. The top and the shoulder are left to the disc layers and the upright skin, which already do them
+well.}
+\label{fig:wallteapot}
+\end{figure}
+
+\subsection{What was measured and left out}
+Two obvious extensions do not pay, and it is worth saying so.
+
+\textbf{Wider hosts.} A row of 1$\times$1 hosts could be one 1$\times$2 (\textbf{11211}) or 1$\times$4 (\textbf{30414}) brick with
+two or four side studs --- fewer pieces for the same studs. Both are now in \code{HOSTS} and reachable through \code{wallHosts}, and
+on the eight benchmark models they are worth nothing. Behind 22885 they never fire at all: 22885 fails \emph{laterally}, in a
+footprint a wider brick cannot fit either, and the 1$\times$1 hosts already cover the single-stud cases. Ahead of it the models
+trade against each other inside $\pm.01$ of job score (the teapot and the dolphin gain, the sphere loses by as much). They stay
+out of the default list.
+
+\textbf{Brackets} (44728, 99780, 36840) are the hosts the corpus actually uses most after the headlight, and they need something
+the engine cannot say yet: a piece whose body rises above --- or hangs below --- its own level. That is a change to the piece record,
+not to this phase.
+
+\section{What people build: the MOC corpus}\label{sec:mocs}
+The motif library of section~\ref{sec:motifs} was mined from official sets. Official sets are designed by professionals under
+constraints a hobbyist does not have (part budgets, moulds in production, a model that must survive a child), and the obvious
+question is whether people building for themselves do something different. \code{docs/mocs/} holds 2,000+ Rebrickable MOC exports;
+this section is the 1,069 of them under 1\,MB, 512\,MB of LDraw text, and what they changed.
+
+\subsection{Reading a Studio export}
+Three things had to be fixed before a single number was trustworthy, and all three are the difference between a file written by
+LDraw's own tooling and one exported by BrickLink Studio, which is what people actually use.
+
+\textbf{Embedded parts.} Studio writes every part it uses as its own \code{0 FILE 3023.dat} section inside the model, so a
+100-part bench is 35\,KB of part geometry. The flattener was descending into those sections and reporting every primitive as an
+unresolved sub-model; it now treats a section named after a library part as that part.
+
+\textbf{A global offset.} The model sits where it was built: $-542.39$\ldu{} on $x$, $115.70$ on $z$ --- fractional LDU, not even a
+stud multiple --- or 4\ldu{} up because it stands on a baseplate. Every part is then off the grid by the same residue.
+\code{gridOffset} takes the modal 1\ldu{} residue of the upright catalogue parts' origins modulo a stud (in $x$, $z$) or a plate (in
+$y$), uses the mean inside the modal bin as the offset (Studio writes fractional LDU, so 7.6 is 7.6, not 8), and subtracts it before
+snapping. Modulo a \emph{whole} stud, not a half: measured modulo a half stud the registration settles on the jumper lattice and
+16\,\% of all parts read as ``half'', where the true share is 3\,\%.
+
+\textbf{A model built on its side.} A standing mosaic, or a file whose camera ``up'' became the model's up: all 2,953 parts
+sideways, all off-grid. \code{modelUpright} counts the parts' up-vectors and, when more than half of the axis-aligned catalogue
+parts agree on another axis, turns the whole model before registering.
+
+Together these took the models with at least two grid pieces from 679 to 969 of 1,069, and the expressible share of the census from
+47\,\% to 67\,\%. Neither touches how a model is \emph{solved}: they change what the census counts and what the miner sees.
+
+\subsection{The census}
+\begin{table}[H]
+\centering\small
+\begin{tabular}{lrrr}
+\toprule
+ & OMR (1,150 official) & 150 small MOCs & \textbf{1,069 MOCs $<$ 1\,MB} \\
+\midrule
+placements & 401,012 & 9,157 & \textbf{321,159} \\
+expressible (placed + aliased) & 69.5\,\% & 69.5\,\% & \textbf{66.7\,\%} \\
+sideways on the grid (SNOT) & 3.7\,\% & 10.9\,\% & \textbf{10.4\,\%} \\
+sideways, off the grid & --- & 11.8\,\% & 5.6\,\% \\
+tilted (hinges, clips on bars) & --- & 13.0\,\% & 10.4\,\% \\
+off-grid after registration & --- & 9.7\,\% & 4.8\,\% \\
+half-stud (jumpers, offset sub-assemblies) & --- & --- & 3.3\,\% \\
+uncovered parts & 30.5\,\% & 15.7\,\% & 18.1\,\% \\
+\bottomrule
+\end{tabular}
+\caption{The part census of \code{tools/omr\_stats.mjs} on the official sets and on the MOC corpus. The share of placements the
+engine's model can express is the same; \emph{how} the rest is built is not.}
+\end{table}
+
+Two numbers carry the section. People build \textbf{three times as much sideways} as the official sets do --- 10.4\,\% of all
+placements against 3.7\,\% --- and a tenth of everything they place is at an angle the stud grid cannot hold at all (hinges, clips
+on bars, parts on pins). The first says the sideways skin of section~\ref{sec:wall} is aimed at the right thing and should
+eventually be a default rather than a switch. The second is an honest ceiling on this whole method: a seventh of what a human
+builder does is not a lattice problem and no catalogue will make it one.
+
+\subsection{What the catalogue lacks, by family}
+The 18\,\% uncovered placements sort into four families, and only one of them is fixed by measuring more parts.
+\textbf{Connectors} (pins, clips, bars, handles, hinges: $\sim$9,000 uses) and \textbf{plants} are not shapes.
+\textbf{Windows} --- a frame plus its glass filling a 1$\times$2$\times$2 or 1$\times$2$\times$3 box, 2,900 uses --- would matter for
+buildings and for nothing organic; they are a volume part waiting to be made. \textbf{Tall solids and wedge plates} are shapes, and
+14 of them were measured into the shape catalogue for this round (54 $\to$ 68 measured shapes, 266 $\to$ 280 parts): brick
+1$\times$2$\times$5 (2454), 1$\times$2$\times$3 (22886), slope 75 2$\times$1$\times$3 (4460b) and 2$\times$2$\times$3 (3684a), slope
+65 2$\times$2$\times$2 (3678b), and nine wings. The bulk-alias rule now reads a height suffix and the \code{\~{} \ldots{} (Obsolete)}
+prefix, so ``\~{}Brick 1 x 2 x 5 without Centre Studs'' resolves to 2454 and brings 792 more placements with it. The brackets
+(99780, 36840, 36841) were measured too and left out, for the reason given at the end of section~\ref{sec:wall}.
+
+\subsection{Mining, merging, and whether it pays}
+Mined with the same window miner as the official sets (3+ occurrences in 2+ models): 969 models, 246,909 pieces, 963,443 windows,
+144,862 distinct groups, \textbf{9,223 motifs}, 222 of them sideways, and \textbf{6,226 that the official-set library does not
+contain}. Merging is addition --- the same canonical key means the same assembly, so counts and model counts add up --- and gives
+\textbf{20,313 motifs}.
+
+What is genuinely new is less exciting than the count suggests, and the honest reading matters more than the number. The bulk of
+the new multi-model motifs are \textbf{tilings}: grids of 2$\times$2 plates, rows of 2$\times$6, stacks of 2$\times$4 bricks, tile
+floors --- the modular-building habit, and a mosaic contributes thousands of windows that are all the same. Of the shaped ones, the
+informative group is the sideways lattice already quoted in section~\ref{sec:wall}, plus rows of inverted tiles, pairs of
+round-end plates, and 2$\times$3 wings stacked in pairs as a two-plate-thick wedge.
+
+\begin{table}[H]
+\centering\small
+\begin{tabular}{lrrrrr}
+\toprule
+8 models, 16 studs, verification \emph{off} & pieces & mean IoU & mean job score & from motifs & s \\
+\midrule
+motifs off & 10,988 & .7330 & $-2.014$ & 0 & 28 \\
+the official-set library & 11,140 & .7334 & $-2.052$ & 2,435 & 54 \\
+the MOC library alone & 11,401 & .7366 & $-2.114$ & 3,121 & 43 \\
+merged & 11,320 & .7355 & $-2.095$ & 3,027 & 65 \\
+\bottomrule
+\end{tabular}
+\caption{Every library buys IoU with pieces, and on the job score every one of them loses to ``motifs off'' on average. This is
+the measurement that forced the verification of the next subsection; without it the right decision would have been to ship no
+library at all.}
+\end{table}
+
+\subsection{Verification on the job score}\label{sec:motifscore}
+The motif check of section~\ref{sec:motifs} compared the two \emph{raw} solves on IoU alone, with a margin of .01. Two things are
+wrong with that. A library can win .003 of IoU for 4\,\% more pieces, which the job score --- and the user --- count as a loss. And
+the comparison is made at the wrong moment: the raw solve \emph{with} assemblies has \emph{more} pieces than the one without
+(rigid assemblies of small parts), while the finished one has fewer, because the merges can work on what the assemblies left. Ice
+cream at 16 studs: 1,751 against 1,742 pieces raw, .5992 against .5965 IoU --- dropped --- but 1,131 against 1,157 pieces and .543
+against .534 IoU once finished, which is a clear win.
+
+So the check now wraps the whole finish, exactly like the sideways skin's: the model is finished with and without the assemblies
+and the one that wins on $\mathrm{IoU} - 0.002\,\lvert\text{pieces}\rvert$ is returned (\code{motifScore}, on by default;
+\code{motifGain} is the margin on that score, 0). \code{post.motifCheck} reports both IoUs and both piece counts.
+
+\begin{table}[H]
+\centering\small
+\begin{tabular}{lrrrl}
+\toprule
+8 models, 16 studs, defaults & pieces & mean IoU & mean job score & kept on \\
+\midrule
+motifs off & 10,988 & .7330 & $-2.014$ & --- \\
+merged library, verified & \textbf{10,877} & \textbf{.7358} & \textbf{$-1.984$} & delfin, felix, ice cream, table \\
+\bottomrule
+\end{tabular}
+\caption{Never worse by construction, better on half the models. At 24 studs: 29,593 pieces / IoU .7999 without motifs against
+29,445 / .8030 with the verified library --- fewer pieces \emph{and} more fidelity.}
+\end{table}
+
+\section{Making it run in a browser}\label{sec:fast}
+The merged library doubled the data the engine carries, and the engine runs in a Web Worker pool inside a browser tab, eight
+copies of it, next to a three.js viewport holding the model. This section is the round that made that affordable. It is
+engineering rather than method, but two of the five changes are exact statements about the solver and belong in the record.
+
+\subsection{Data that no run reads}
+\code{motifs.js} was 8.09\,MB of object literals that \emph{every worker} parsed on import, whether or not motifs were switched on.
+The observation that fixes it is that the mined \textbf{key already encodes every part}: \code{w,d,h|id:rot:i,j,b \ldots}, with
+offsets in tenths of a stud and half plates. The \code{parts} array of the JSON was pure duplication. The library now ships as one
+line per motif, \code{<key>\textbackslash t<n>\textbackslash t<models>}, with everything no setting can reach left out (fewer than 3
+occurrences, fewer than 2 models, more than 16 parts, a part the catalogue does not have): \textbf{10,669 of the 20,313 motifs,
+0.83\,MB instead of 8.09}. \code{parseLibrary} rebuilds the records on first use in 44\,ms, so a run with motifs off never touches
+them. Round-tripped against the JSON: the same parts for all 10,669 motifs, the same 1,942 motifs kept, the same 8,724 variants in
+the same order, the same finished models piece for piece.
+
+The measured part catalogues went the same way the next morning. They are geometry, not a key, so the trick is different: the
+height fields are nearly constant (a plain brick is 24\ldu{} everywhere and 0 underneath), so each part is one line --- the small
+fields as JSON, the \code{top} / \code{bot} / \code{cover} maps run-length encoded at 0.01\ldu{} --- decoded on demand into flat
+\code{Float32Array}s. Together: \textbf{3.94\,MB $\to$ 0.18\,MB}. The drawing geometry (2.2\,MB of triangles) moved into a module of
+its own that only the exporter imports, so a solver worker never loads it at all and a part's triangles are decoded the first time
+it is drawn. The quantisation step is not free to choose: at 0.1\ldu{} two of the five benchmark models shifted by four or five
+pieces, a tie in the scoring flipping, so it is 0.01.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{moc_library}
+\caption{Left: the shipped library and what the default settings do with it. Four fifths of the file --- the mosaic tilings above
+all --- is rejected at run time by \code{motifShapedOnly} and the part-count cap, which raises the obvious question of cutting them
+at pack time. Measured: it would save 0.57\,MB and \emph{nothing} in time (the rejection happens before any volume is built: 1,811
+against 1,798\,ms to build the library), while removing a knob the user can turn. Not done. Right: the library as mined, merged,
+and as it ships.}
+\label{fig:moclibrary}
+\end{figure}
+
+\subsection{The candidate scan}
+Where the motif phase's time actually went, counted on the hen at 16 studs: 0.77\,M positions survive the box-sum gate, 4.1\,M
+(position, variant) pairs pass the cheap volume tests, 0.83\,M reach the exact per-cell test --- and \textbf{628\,M cells}, because
+that test summed every cell of the variant before deciding, while 92\,\% of those tests fail. Two exact changes in
+\code{Solver.candidates}, neither of which changes a single placement:
+
+\textbf{An admissible window.} Inside a box group both cheap tests are monotone in the variant's own volume ($s_w \ge
+\texttt{min\_cov}\cdot v_{\text{tot}}$ and $\lvert s_w - v_{\text{tot}}\rvert \le \texttt{maxErr}$), so for a given position the
+variants that can pass are a \emph{contiguous run} of the group once it is sorted by volume. A binary search for the two ends
+replaces the walk over all of them --- a motif group holds up to 362.
+
+\textbf{An early exit.} The accumulated error \code{over} only grows, and a candidate is accepted only if it finishes below the
+acceptance cap (and below what a flat stack of plates would cost, where \code{beatFlat} applies). So the cell loop stops the moment
+it has already failed: \textbf{628\,M cells $\to$ 124\,M}.
+
+Both help every phase, not only the motifs, and the models are identical piece for piece (hen, dolphin, table, teapot, pony:
+identical piece multisets, identical IoU). A third change in the same spirit: \code{assemblyVariants} deduplicated rotations by
+building \code{V.map(x => x.toFixed(4)).join(',')}, a $\sim$16\,KB string per variant for 8,724 variants; two 32-bit FNV walks over
+the cells quantised to $1/4096$ take the library build from 2,328 to 672\,ms.
+
+\subsection{Finishing a model three times instead of four}
+With both verifications on --- the sideways skin's and the assemblies' --- the two checks nested: every combination of
+\{skin\}~$\times$~\{assemblies\} was finished, and the expensive corner, the skin \emph{and} the motif phase, ran twice. The
+assemblies are now decided on the branch \emph{without} the skin, which is the cheap one and is also the skin check's own
+``without'', and the skin is then finished once with that decision. Three finishes. Dolphin at 16 studs with both: 19.8\,s $\to$
+11.9\,s; pony 27.7 $\to$ 18.6; identical models and identical decisions on both. The colour reference is memoised per mesh at the
+same time (the 26-direction visibility buffer and the point grid depend on the mesh, not on the pieces): 345\,ms $\to$ 74 on the
+hen's second finish, and the saving grows with the mesh.
+
+\subsection{The worker pool}
+The last one is a plain bug with a large effect, and the symptom was the one users report as ``the app gets slower the longer I
+use it''. \code{runMethod} began by cancelling: it terminated the whole pool and spawned eight \emph{new} workers for every run,
+each re-importing the engine from scratch, while the old copies waited for the garbage collector. The pool is kept now --- workers
+are terminated only when a run is cancelled, when the pool shrinks, or when one is stale --- and the correctness that buys it is
+cheap: every worker answer carries the run's key and a mismatched answer is dropped, so a late reply from the previous run cannot
+land in the new one. After a run the idle workers are told to release the prepared field (megabytes) while keeping the modules.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{round13_fast}
+\caption{What the three rounds moved. The engine import is what every one of the eight workers paid on every run before the pool
+was kept; the heap is per worker. The last panel is the whole benchmark: eight models at 16 studs with motifs on and verified, at
+identical output (10,877 pieces, mean IoU .7358).}
+\label{fig:fast}
+\end{figure}
+
+\section{Buildability, and the booklet}\label{sec:booklet}
+\subsection{Overlaps as a hard test}
+``Pieces that intersect in space'' is the one failure a LEGO model cannot argue with, and until this round nothing checked for it.
+\code{post.audit} rasterises every piece afresh at the engine's 4\ldu{} resolution --- a sideways piece by the whole cells its
+fractional box touches --- and counts samples claimed twice; it runs at the end of every solve and is reported with the result. It
+found two real bugs within a day of being written.
+
+The first was the flatten fallback of the bridge pass. It replaced a smooth piece by a brick of ``the same footprint'' through
+\code{mk(brick, brick.w === p.w ? p.w : p.d, \ldots)}, which \emph{transposes} the footprint whenever the brick's canonical $w$ and
+$d$ are the other way round --- a 3$\times$1 curved slope became a 1$\times$3 brick lying across its neighbours --- and it never
+looked above the first level. Ice cream at 16 studs: 175 overlapping samples $\to$ 85 after the footprint fix $\to$ 0 once the
+flatten also checks the three levels of a brick.
+
+The second is the more interesting one, because it is the kind of bug a fractional lattice invites. \code{post.bridge} built its
+occupancy grid with \code{for (let l = p.b; l < p.b + p.h; l++)}, which silently does \emph{nothing} for a sideways piece sitting at
+$b = 52.5$. The chain search therefore saw the entire sideways skin as empty air and routed plates straight through it: 790
+overlapping samples in 47 cells on the pony, 50 on the dolphin. Both that pass and the exterior-air mask now go through one
+function, \code{post.cellBox(p)} --- every whole cell a fractional box touches --- which \code{occupancy} and \code{bracing} already
+used. Zero overlapping samples everywhere again, and it is a small \emph{gain} rather than a cost: dolphin 729 $\to$ 726 pieces at
+$+.0013$ IoU, pony 2,437 $\to$ 2,419 at $+.001$. The rule for the rest of the codebase is worth stating once: \emph{a piece list is
+not a grid of integers}, and any loop of that shape is a bug.
+
+\subsection{Instructions}
+A piece list is not a buildable model until somebody can build it, so the Studio exports a booklet shaped like a real set's.
+
+\textbf{Steps} are the build order, not the layers. Pieces are grouped into levels and the levels into steps of at most a few
+pieces, but a sideways piece is placed at the level of the highest \emph{upright} piece of its assembly, and within a step the host
+comes before whatever hangs on it. Before that rule, 47 of the pony's 192 sideways pieces were drawn before anything held them
+(the dolphin: 58); now none are.
+
+\textbf{Each step is an isometric orthographic capture} of the model as built so far, framed on the step's own pieces with a
+margin and never below about half the model, so the eye has somewhere to stand. The new pieces are in their own colours with black
+outlines, everything already built is grey with grey outlines --- the one convention that makes an instruction page readable --- and
+the call-out above the picture aggregates by part (``2$\times$4 plate $\times$4'') with a swatch per colour.
+
+\textbf{The cover} is one path-traced view at the resolution the user chose in the app, the camera pulled in to the bounding sphere
+with a 1\,\% margin and the image laid out \code{contain} over the whole page, with the logo, the title, a stable five-digit set
+number, the warning box and the model's numbers above it. The page is \textbf{portrait when the render is taller than wide} and
+landscape otherwise, decided from the PNG header, while the inside of the booklet is always landscape --- which is visible in the
+printed PDF: page 1 is 210$\times$297\,mm and the rest 297$\times$210. A \emph{finished} page closes the build with two quick
+viewport renders (no path tracer) framed on the model's real world box, and a parts list ends it.
+
+Shooting a booklet is sixty-odd captures and a path-traced cover, so the export is cached: a signature over the piece list and the
+settings that shape the pages returns the previous file untouched when nothing has changed.
+
+\begin{figure}[p]
+\centering
+\begin{subfigure}{0.33\textwidth}\centering\includegraphics[width=\textwidth]{bk_cover}\end{subfigure}
+\begin{subfigure}{0.64\textwidth}\centering\includegraphics[width=\textwidth]{bk_steps}\end{subfigure}\\[6pt]
+\begin{subfigure}{0.49\textwidth}\centering\includegraphics[width=\textwidth]{bk_final}\end{subfigure}
+\begin{subfigure}{0.49\textwidth}\centering\includegraphics[width=\textwidth]{bk_parts}\end{subfigure}
+\caption{The booklet of the hen at 16 studs: 782 pieces, 31 different parts, 63 steps over 19 pages. The cover (portrait, because
+this render is taller than it is wide), a step page, the finished-model page and the parts list. Everything here is produced from
+the piece list alone, headlessly, by the same code the Studio button runs.}
+\label{fig:booklet}
+\end{figure}

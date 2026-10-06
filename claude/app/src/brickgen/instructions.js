@@ -44,23 +44,357 @@ export function buildOrder(pieces, levels = buildLevels(pieces)) {
 }
 
 /**
- * Steps: runs of the build order that stay inside `maxLevels` levels and hold at most `perStep` pieces, where `perStep` comes
- * from the target step count. Returns [{ from, to, idx, levels: [lo, hi] }].
+ * Partition a model into meaningful structural islands (subassemblies) such as ground stems/legs,
+ * lower body / pelvis, appendages / wings, tail / rear, mid/upper torso, and crown / head.
+ * Guarantees that foundation/support islands precede dependent islands so no pieces float during assembly.
+ */
+export function sliceIslands(pieces) {
+  if (!pieces || pieces.length === 0) return { islands: [], pieceToIsland: [] };
+
+  let minX = Infinity, maxX = -Infinity;
+  let minY = Infinity, maxY = -Infinity;
+  let minZ = Infinity, maxZ = -Infinity;
+
+  for (const p of pieces) {
+    minX = Math.min(minX, p.i);
+    maxX = Math.max(maxX, p.i + (p.w ?? 1) - 1);
+    minY = Math.min(minY, p.b);
+    maxY = Math.max(maxY, p.b + (p.h ?? 1) - 1);
+    minZ = Math.min(minZ, p.j);
+    maxZ = Math.max(maxZ, p.j + (p.d ?? 1) - 1);
+  }
+
+  const spanX = maxX - minX + 1;
+  const spanY = maxY - minY + 1;
+  const spanZ = maxZ - minZ + 1;
+  const cenX = (minX + maxX) / 2;
+  const cenZ = (minZ + maxZ) / 2;
+
+  // Single island fallback for small or flat builds
+  if (pieces.length < 30 || spanY < 6) {
+    return {
+      islands: [{ id: 0, name: 'Main Assembly', rank: 0, pieces: pieces.map((_, i) => i) }],
+      pieceToIsland: new Array(pieces.length).fill(0)
+    };
+  }
+
+  const getIsland = (p) => {
+    const pw = p.w ?? 1, pd = p.d ?? 1;
+    const px = p.i + pw / 2;
+    const py = p.b;
+
+    // Ground stems (legs / base)
+    if (py <= minY + spanY * 0.18) {
+      if (px < cenX - 1.2) return { id: 0, name: 'Left Foot & Leg', rank: 0 };
+      if (px > cenX + 1.2) return { id: 1, name: 'Right Foot & Leg', rank: 1 };
+      return { id: 0, name: 'Left Foot & Leg', rank: 0 };
+    }
+
+    // Appendages / Wings / Lateral arms
+    if (spanX >= 10 && py <= minY + spanY * 0.68 && py >= minY + spanY * 0.20) {
+      if (p.i + pw <= minX + spanX * 0.26) return { id: 3, name: 'Left Wing', rank: 5 };
+      if (p.i >= maxX - spanX * 0.26) return { id: 4, name: 'Right Wing', rank: 6 };
+    }
+
+    // Tail / Rear protrusion
+    if (spanZ >= 8 && py <= minY + spanY * 0.45 && p.j + pd <= minZ + spanZ * 0.26) {
+      return { id: 2, name: 'Tail', rank: 3 };
+    }
+
+    // Head & Beak / Crown
+    if (py >= minY + spanY * 0.68) {
+      return { id: 7, name: 'Head & Beak', rank: 7 };
+    }
+
+    // Body: Lower vs Mid/Upper
+    if (py <= minY + spanY * 0.42) {
+      return { id: 5, name: 'Pelvis & Lower Torso', rank: 2 };
+    }
+    return { id: 6, name: 'Mid & Upper Torso', rank: 4 };
+  };
+
+  const islandMap = new Map();
+  const pieceToIsland = new Array(pieces.length);
+
+  for (let i = 0; i < pieces.length; i++) {
+    const info = getIsland(pieces[i]);
+    if (!islandMap.has(info.id)) {
+      islandMap.set(info.id, { id: info.id, name: info.name, rank: info.rank, pieces: [] });
+    }
+    islandMap.get(info.id).pieces.push(i);
+    pieceToIsland[i] = info.id;
+  }
+
+  const islands = [...islandMap.values()].sort((a, b) => a.rank - b.rank);
+  return { islands, pieceToIsland };
+}
+
+function overlap2D(p, q) {
+  const pw = p.w ?? 1, pd = p.d ?? 1;
+  const qw = q.w ?? 1, qd = q.d ?? 1;
+  return Math.max(p.i, q.i) < Math.min(p.i + pw, q.i + qw) &&
+         Math.max(p.j, q.j) < Math.min(p.j + pd, q.j + qd);
+}
+
+function sharesVerticalFace(p, q) {
+  const ph = p.h ?? 1, qh = q.h ?? 1;
+  const yOver = Math.max(p.b, q.b) < Math.min(p.b + ph, q.b + qh);
+  if (!yOver) return false;
+  const pw = p.w ?? 1, pd = p.d ?? 1;
+  const qw = q.w ?? 1, qd = q.d ?? 1;
+  const xTouch = (p.i + pw === q.i || q.i + qw === p.i) && Math.max(p.j, q.j) < Math.min(p.j + pd, q.j + qd);
+  const zTouch = (p.j + pd === q.j || q.j + qd === p.j) && Math.max(p.i, q.i) < Math.min(p.i + pw, q.i + qw);
+  return xTouch || zTouch;
+}
+
+/**
+ * Builds the physical support directed acyclic graph (DAG) rooted at the ground pieces.
+ * Guarantees zero floating pieces by ensuring every piece's prerequisite support is built first.
+ */
+export function buildSupportDAG(pieces) {
+  const N = pieces.length;
+  if (N <= 1) return { parent: new Int32Array(N).fill(-1), dag: Array.from({ length: N }, () => []), inDegree: new Int32Array(N), minB: pieces[0]?.b ?? 0 };
+
+  const adj = Array.from({ length: N }, () => []);
+  for (let i = 0; i < N; i++) {
+    const pi = pieces[i], pih = pi.h ?? 1;
+    for (let j = i + 1; j < N; j++) {
+      const pj = pieces[j], pjh = pj.h ?? 1;
+      const iOnJ = (pi.b === pj.b + pjh && overlap2D(pi, pj));
+      const jOnI = (pj.b === pi.b + pih && overlap2D(pi, pj));
+      const lateral = sharesVerticalFace(pi, pj);
+      const snot = (pi.mi != null && pi.mi === pj.mi);
+
+      if (iOnJ) {
+        adj[j].push({ to: i, weight: 1.0 });
+        adj[i].push({ to: j, weight: 4.0 });
+      } else if (jOnI) {
+        adj[i].push({ to: j, weight: 1.0 });
+        adj[j].push({ to: i, weight: 4.0 });
+      } else if (lateral || snot) {
+        adj[i].push({ to: j, weight: 2.0 });
+        adj[j].push({ to: i, weight: 2.0 });
+      }
+    }
+  }
+
+  const minB = Math.min(...pieces.map((p) => p.b));
+  const dist = new Float64Array(N).fill(Infinity);
+  const parent = new Int32Array(N).fill(-1);
+
+  for (let i = 0; i < N; i++) {
+    if (pieces[i].b === minB) dist[i] = 0;
+  }
+
+  const visited = new Set();
+  while (visited.size < N) {
+    let u = -1, minDist = Infinity;
+    for (let i = 0; i < N; i++) {
+      if (!visited.has(i) && dist[i] < minDist) {
+        minDist = dist[i]; u = i;
+      }
+    }
+    if (u === -1) break;
+    visited.add(u);
+
+    for (const edge of adj[u]) {
+      const v = edge.to;
+      if (visited.has(v)) continue;
+      const hCost = Math.max(0, pieces[v].b - pieces[u].b) * 1.5;
+      const d = dist[u] + edge.weight + hCost;
+      if (d < dist[v]) {
+        dist[v] = d; parent[v] = u;
+      }
+    }
+  }
+
+  // Fallback for any unreachable components
+  for (let i = 0; i < N; i++) {
+    if (dist[i] === Infinity) dist[i] = (pieces[i].b - minB) * 10;
+  }
+
+  const inDegree = new Int32Array(N);
+  const dag = Array.from({ length: N }, () => []);
+  for (let i = 0; i < N; i++) {
+    if (pieces[i].b === minB) continue;
+    const p = parent[i];
+    if (p !== -1) {
+      dag[p].push(i);
+      inDegree[i]++;
+    }
+  }
+
+  return { parent, dag, inDegree, minB };
+}
+
+/**
+ * Steps: runs of the build order planned using a physical support DAG and sticky step clustering.
+ * Guarantees:
+ *  1. Zero floating pieces: every piece's physical support is placed in prior steps or earlier in the same step.
+ *  2. Cohesion ("always stick together"): pieces within a step physically touch each other and the existing build.
+ *  3. Structural island grouping: steps stay within cohesive subassemblies (legs, pelvis, torso, wings, tail, head).
+ * Returns [{ idx, levels: [lo, hi], island, islandName }].
  */
 export function planSteps(pieces, o = {}) {
-  const levels = buildLevels(pieces), order = buildOrder(pieces, levels);
+  const N = pieces.length;
+  if (N === 0) return { steps: [], perStep: 1, order: [], islands: [] };
+  if (N === 1) return { steps: [{ idx: [0], levels: [pieces[0].b, pieces[0].b + (pieces[0].h ?? 1)], island: 0, islandName: 'Main Model' }], perStep: 1, order: [0], islands: [] };
+
   const target = o.stepTarget ?? 60, maxLevels = o.stepLevels ?? 2;
-  const perStep = Math.max(o.stepMin ?? 3, Math.min(o.stepMax ?? 40, Math.ceil(pieces.length / Math.max(1, target))));
-  const steps = []; let cur = [], lo = null, hi = null;
-  const flush = () => { if (cur.length) steps.push({ idx: cur, levels: [lo, hi] }); cur = []; lo = hi = null; };
-  for (const n of order) {
-    const b = levels[n];
-    if (cur.length && (cur.length >= perStep || b - lo >= maxLevels)) flush();
-    if (!cur.length) lo = b;
-    hi = Math.max(hi ?? b, b); cur.push(n);
+  const perStep = Math.max(o.stepMin ?? 3, Math.min(o.stepMax ?? 40, Math.ceil(N / Math.max(1, target))));
+  const useIslands = o.useIslands ?? true;
+
+  const { islands, pieceToIsland } = sliceIslands(pieces);
+  const { dag, inDegree } = buildSupportDAG(pieces);
+
+  const readySet = new Set();
+  for (let i = 0; i < N; i++) {
+    if (inDegree[i] === 0) readySet.add(i);
   }
-  flush();
-  return { steps, perStep, order };
+
+  const steps = [];
+  const fullOrder = [];
+
+  while (readySet.size > 0) {
+    const readyArr = [...readySet];
+    readyArr.sort((a, b) => {
+      if (useIslands) {
+        const islA = islands.findIndex((x) => x.id === pieceToIsland[a]);
+        const islB = islands.findIndex((x) => x.id === pieceToIsland[b]);
+        if (islA !== islB) return islA - islB;
+      }
+      if (pieces[a].b !== pieces[b].b) return pieces[a].b - pieces[b].b;
+      if (pieces[a].j !== pieces[b].j) return pieces[a].j - pieces[b].j;
+      return (pieces[a].j % 2 ? -1 : 1) * (pieces[a].i - pieces[b].i);
+    });
+
+    const seed = readyArr[0];
+    const seedIsl = pieceToIsland[seed];
+    const step = [seed];
+    readySet.delete(seed);
+
+    for (const child of dag[seed]) {
+      inDegree[child]--;
+      if (inDegree[child] === 0) readySet.add(child);
+    }
+
+    while (step.length < perStep && readySet.size > 0) {
+      let best = -1, bestScore = Infinity;
+      for (const cand of readySet) {
+        const pc = pieces[cand];
+        if (Math.abs(pc.b - pieces[seed].b) > maxLevels) continue;
+
+        const sameIsl = !useIslands || (pieceToIsland[cand] === seedIsl);
+        let touchesStep = false, minDist = Infinity;
+        for (const s of step) {
+          const ps = pieces[s];
+          const touch = (pc.b === ps.b + (ps.h ?? 1) || ps.b === pc.b + (pc.h ?? 1)) && overlap2D(pc, ps) ||
+                        sharesVerticalFace(pc, ps) || (pc.mi != null && pc.mi === ps.mi);
+          if (touch) { touchesStep = true; minDist = 0; break; }
+          const d = Math.hypot(pc.i - ps.i, pc.j - ps.j);
+          if (d < minDist) minDist = d;
+        }
+
+        const levelDiff = Math.abs(pc.b - pieces[seed].b);
+        const islPenalty = sameIsl ? 0 : 250;
+        const score = islPenalty + (touchesStep ? 0 : 40) + levelDiff * 10 + minDist;
+        if (score < bestScore) {
+          bestScore = score; best = cand;
+        }
+      }
+
+      if (best === -1 || bestScore > 90) break;
+
+      step.push(best);
+      readySet.delete(best);
+      for (const child of dag[best]) {
+        inDegree[child]--;
+        if (inDegree[child] === 0) readySet.add(child);
+      }
+    }
+
+    const islObj = islands.find((x) => x.id === seedIsl);
+    const lo = Math.min(...step.map((idx) => pieces[idx].b));
+    const hi = Math.max(...step.map((idx) => pieces[idx].b + (pieces[idx].h ?? 1)));
+    steps.push({ idx: step, levels: [lo, hi], island: seedIsl, islandName: islObj ? islObj.name : 'Module' });
+    for (const idx of step) fullOrder.push(idx);
+  }
+
+  // Camera view optimization: ensure newly added pieces face the camera with minimal occlusion
+  const CANDIDATES = [
+    { name: 'Front-Right', dir: [1, 1, 1], angle: 0 },
+    { name: 'Front-Left', dir: [-1, 1, 1], angle: 90 },
+    { name: 'Back-Left', dir: [-1, 1, -1], angle: 180 },
+    { name: 'Back-Right', dir: [1, 1, -1], angle: 270 }
+  ];
+
+  function projectPiece(p, dir) {
+    const dLen = Math.hypot(dir[0], dir[1], dir[2]);
+    const dx = dir[0] / dLen, dy = dir[1] / dLen, dz = dir[2] / dLen;
+    const cxLen = Math.hypot(dz, -dx);
+    const cx = dz / cxLen, cy = 0, cz = -dx / cxLen;
+    const cyX = dy * cz - dz * cy;
+    const cyY = dz * cx - dx * cz;
+    const cyZ = dx * cy - dy * cx;
+    const pw = p.w ?? 1, ph = p.h ?? 1, pd = p.d ?? 1;
+    let u0 = Infinity, u1 = -Infinity, v0 = Infinity, v1 = -Infinity, depth0 = Infinity, depth1 = -Infinity;
+    for (const x of [p.i, p.i + pw]) {
+      for (const y of [p.b, p.b + ph]) {
+        for (const z of [p.j, p.j + pd]) {
+          const u = x * cx + y * cy + z * cz;
+          const v = x * cyX + y * cyY + z * cyZ;
+          const depth = x * dx + y * dy + z * dz;
+          if (u < u0) u0 = u; if (u > u1) u1 = u;
+          if (v < v0) v0 = v; if (v > v1) v1 = v;
+          if (depth < depth0) depth0 = depth; if (depth > depth1) depth1 = depth;
+        }
+      }
+    }
+    return { u0, u1, v0, v1, depth0, depth1 };
+  }
+
+  function occlusionScore(newIdxs, builtIdxs, dir) {
+    let occ = 0;
+    for (const n of newIdxs) {
+      const pn = projectPiece(pieces[n], dir);
+      for (const b of builtIdxs) {
+        const pb = projectPiece(pieces[b], dir);
+        if (pb.depth0 > pn.depth1) {
+          const ovU = Math.max(0, Math.min(pn.u1, pb.u1) - Math.max(pn.u0, pb.u0));
+          const ovV = Math.max(0, Math.min(pn.v1, pb.v1) - Math.max(pn.v0, pb.v0));
+          occ += ovU * ovV;
+        }
+      }
+    }
+    return occ;
+  }
+
+  const builtIdxs = [];
+  let curCand = CANDIDATES[0];
+
+  for (let k = 0; k < steps.length; k++) {
+    const curOcc = occlusionScore(steps[k].idx, builtIdxs, curCand.dir);
+    let best = curCand;
+    let bestOcc = curOcc;
+
+    if (curOcc > 0.05) {
+      for (const cand of CANDIDATES) {
+        if (cand === curCand) continue;
+        const occ = occlusionScore(steps[k].idx, builtIdxs, cand.dir);
+        if (occ < bestOcc * 0.5) {
+          bestOcc = occ;
+          best = cand;
+        }
+      }
+    }
+
+    const rotated = (best !== curCand && k > 0);
+    steps[k].view = { dir: best.dir, name: best.name, angle: best.angle, rotated };
+    curCand = best;
+    for (const idx of steps[k].idx) builtIdxs.push(idx);
+  }
+
+  return { steps, perStep, order: fullOrder, islands };
 }
 
 /**
@@ -138,8 +472,11 @@ export function bookletHTML({ title = 'model', cover = null, covers = null, cove
   const esc = (s) => String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
   const pages = []; for (let k = 0; k < steps.length; k += perPage) pages.push(steps.slice(k, k + perPage).map((s, q) => ({ s, n: k + q })));
   const swatches = (p) => p.colours && p.colours.length > 1 ? `<span class="sw">${p.colours.slice(0, 8).map(([c]) => `<em style="background:${c}"></em>`).join('')}</span>` : '';
+  const rotBadge = (v) => (v && v.rotated ? `<span class="rot-badge" title="Model rotated to view new parts"><svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-1px;margin-right:2px"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>${esc(v.name)}</span>` : '');
   const stepCard = ({ s, n }) => `<figure class="step">
       <div class="head"><span class="num">${n + 1}</span>
+        ${s.islandName ? `<span class="isl-badge">${esc(s.islandName)}</span>` : ''}
+        ${rotBadge(s.view)}
         <div class="inv">${s.parts.map((p) => `<span class="pi" title="${esc(p.name)}">${partIcon(p, 30)}<b>${p.n}&times;</b>${swatches(p)}</span>`).join('')}</div></div>
       <div class="shot">${images[n] ? `<img src="${images[n]}" alt="step ${n + 1}">` : '<div class="miss">no image</div>'}</div>
     </figure>`;
@@ -180,8 +517,10 @@ export function bookletHTML({ title = 'model', cover = null, covers = null, cove
   /* ---- steps */
   .grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 4mm 8mm; height: 100%; }
   .step { margin: 0; display: flex; flex-direction: column; min-height: 0; break-inside: avoid; }
-  .head { display: flex; align-items: flex-start; gap: 3mm; min-height: 15mm; }
+  .head { display: flex; align-items: flex-start; gap: 3mm; min-height: 15mm; flex-wrap: wrap; }
   .num { font: 900 9mm/1 "Arial Black", "Helvetica Neue", Arial, sans-serif; color: #111; padding-top: 1mm; min-width: 12mm; }
+  .isl-badge { font-size: 8px; font-weight: 700; color: #2563eb; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 3px; padding: 1.5px 5px; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; margin-top: 2mm; }
+  .rot-badge { font-size: 8px; font-weight: 700; color: #2563eb; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 3px; padding: 1.5px 5px; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; margin-top: 2mm; display: inline-flex; align-items: center; }
   .inv { display: flex; flex-wrap: wrap; gap: 2px 9px; align-items: center; padding: 1.5mm 2.5mm; border: .4mm solid #111; border-radius: 1.5mm; background: #fff; max-width: 100%; }
   .pi { display: inline-flex; align-items: center; gap: 3px; }
   .pi b { font-size: 13px; }

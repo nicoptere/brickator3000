@@ -1,0 +1,1990 @@
+[
+  {
+    "idx": [
+      286,
+      408,
+      507,
+      415,
+      301,
+      416,
+      504,
+      375,
+      414
+    ],
+    "levels": [
+      0,
+      2
+    ],
+    "island": 0,
+    "islandName": "Left Foot & Leg",
+    "view": {
+      "dir": [
+        1,
+        1,
+        1
+      ],
+      "name": "Front-Right",
+      "angle": 0,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      330,
+      456,
+      488,
+      423,
+      476,
+      496
+    ],
+    "levels": [
+      2,
+      5
+    ],
+    "island": 0,
+    "islandName": "Left Foot & Leg",
+    "view": {
+      "dir": [
+        1,
+        1,
+        1
+      ],
+      "name": "Front-Right",
+      "angle": 0,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      495,
+      494,
+      493
+    ],
+    "levels": [
+      5,
+      8
+    ],
+    "island": 0,
+    "islandName": "Left Foot & Leg",
+    "view": {
+      "dir": [
+        1,
+        1,
+        1
+      ],
+      "name": "Front-Right",
+      "angle": 0,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      492,
+      13,
+      0,
+      117,
+      206,
+      305
+    ],
+    "levels": [
+      8,
+      11
+    ],
+    "island": 0,
+    "islandName": "Left Foot & Leg",
+    "view": {
+      "dir": [
+        1,
+        1,
+        1
+      ],
+      "name": "Front-Right",
+      "angle": 0,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      287,
+      288,
+      431,
+      499,
+      424,
+      448,
+      329,
+      425,
+      447
+    ],
+    "levels": [
+      0,
+      3
+    ],
+    "island": 1,
+    "islandName": "Right Foot & Leg",
+    "view": {
+      "dir": [
+        1,
+        1,
+        1
+      ],
+      "name": "Front-Right",
+      "angle": 0,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      472,
+      380,
+      331,
+      379
+    ],
+    "levels": [
+      3,
+      6
+    ],
+    "island": 1,
+    "islandName": "Right Foot & Leg",
+    "view": {
+      "dir": [
+        1,
+        1,
+        1
+      ],
+      "name": "Front-Right",
+      "angle": 0,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      187,
+      332,
+      11,
+      1
+    ],
+    "levels": [
+      6,
+      11
+    ],
+    "island": 1,
+    "islandName": "Right Foot & Leg",
+    "view": {
+      "dir": [
+        1,
+        1,
+        1
+      ],
+      "name": "Front-Right",
+      "angle": 0,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      2,
+      3,
+      171,
+      9,
+      8,
+      98,
+      105,
+      214,
+      181
+    ],
+    "levels": [
+      9,
+      14
+    ],
+    "island": 5,
+    "islandName": "Pelvis & Lower Torso",
+    "view": {
+      "dir": [
+        1,
+        1,
+        1
+      ],
+      "name": "Front-Right",
+      "angle": 0,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      182,
+      192,
+      298,
+      4,
+      147,
+      149,
+      215,
+      152,
+      205
+    ],
+    "levels": [
+      9,
+      14
+    ],
+    "island": 5,
+    "islandName": "Pelvis & Lower Torso",
+    "view": {
+      "dir": [
+        1,
+        1,
+        1
+      ],
+      "name": "Front-Right",
+      "angle": 0,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      297,
+      5,
+      148,
+      17,
+      212,
+      153,
+      20,
+      120,
+      23
+    ],
+    "levels": [
+      10,
+      15
+    ],
+    "island": 5,
+    "islandName": "Pelvis & Lower Torso",
+    "view": {
+      "dir": [
+        -1,
+        1,
+        1
+      ],
+      "name": "Front-Left",
+      "angle": 90,
+      "rotated": true
+    }
+  },
+  {
+    "idx": [
+      24,
+      253,
+      32,
+      22,
+      255,
+      97,
+      100,
+      124,
+      38
+    ],
+    "levels": [
+      12,
+      17
+    ],
+    "island": 5,
+    "islandName": "Pelvis & Lower Torso",
+    "view": {
+      "dir": [
+        1,
+        1,
+        1
+      ],
+      "name": "Front-Right",
+      "angle": 0,
+      "rotated": true
+    }
+  },
+  {
+    "idx": [
+      29,
+      139,
+      33,
+      176,
+      252,
+      40,
+      177,
+      209,
+      251
+    ],
+    "levels": [
+      13,
+      17
+    ],
+    "island": 5,
+    "islandName": "Pelvis & Lower Torso",
+    "view": {
+      "dir": [
+        -1,
+        1,
+        -1
+      ],
+      "name": "Back-Left",
+      "angle": 180,
+      "rotated": true
+    }
+  },
+  {
+    "idx": [
+      250,
+      265,
+      93,
+      267,
+      268,
+      254,
+      57,
+      121,
+      99
+    ],
+    "levels": [
+      14,
+      18
+    ],
+    "island": 5,
+    "islandName": "Pelvis & Lower Torso",
+    "view": {
+      "dir": [
+        -1,
+        1,
+        -1
+      ],
+      "name": "Back-Left",
+      "angle": 180,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      256,
+      49,
+      122,
+      272,
+      208,
+      271,
+      218,
+      276,
+      275
+    ],
+    "levels": [
+      14,
+      18
+    ],
+    "island": 5,
+    "islandName": "Pelvis & Lower Torso",
+    "view": {
+      "dir": [
+        1,
+        1,
+        1
+      ],
+      "name": "Front-Right",
+      "angle": 0,
+      "rotated": true
+    }
+  },
+  {
+    "idx": [
+      266,
+      60,
+      274,
+      269,
+      131,
+      273,
+      95,
+      106,
+      69
+    ],
+    "levels": [
+      15,
+      20
+    ],
+    "island": 5,
+    "islandName": "Pelvis & Lower Torso",
+    "view": {
+      "dir": [
+        1,
+        1,
+        1
+      ],
+      "name": "Front-Right",
+      "angle": 0,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      277,
+      46,
+      161,
+      104,
+      62,
+      130,
+      164,
+      222,
+      64
+    ],
+    "levels": [
+      16,
+      20
+    ],
+    "island": 5,
+    "islandName": "Pelvis & Lower Torso",
+    "view": {
+      "dir": [
+        1,
+        1,
+        1
+      ],
+      "name": "Front-Right",
+      "angle": 0,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      70,
+      133,
+      302,
+      183
+    ],
+    "levels": [
+      17,
+      20
+    ],
+    "island": 5,
+    "islandName": "Pelvis & Lower Torso",
+    "view": {
+      "dir": [
+        1,
+        1,
+        1
+      ],
+      "name": "Front-Right",
+      "angle": 0,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      190,
+      191,
+      188,
+      189,
+      333,
+      412,
+      30,
+      296,
+      295
+    ],
+    "levels": [
+      9,
+      13
+    ],
+    "island": 2,
+    "islandName": "Tail",
+    "view": {
+      "dir": [
+        -1,
+        1,
+        -1
+      ],
+      "name": "Back-Left",
+      "angle": 180,
+      "rotated": true
+    }
+  },
+  {
+    "idx": [
+      381,
+      411
+    ],
+    "levels": [
+      8,
+      9
+    ],
+    "island": 0,
+    "islandName": "Left Foot & Leg",
+    "view": {
+      "dir": [
+        -1,
+        1,
+        -1
+      ],
+      "name": "Back-Left",
+      "angle": 180,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      374,
+      16,
+      179,
+      174,
+      180,
+      175
+    ],
+    "levels": [
+      10,
+      14
+    ],
+    "island": 2,
+    "islandName": "Tail",
+    "view": {
+      "dir": [
+        -1,
+        1,
+        -1
+      ],
+      "name": "Back-Left",
+      "angle": 180,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      146
+    ],
+    "levels": [
+      13,
+      14
+    ],
+    "island": 2,
+    "islandName": "Tail",
+    "view": {
+      "dir": [
+        -1,
+        1,
+        -1
+      ],
+      "name": "Back-Left",
+      "angle": 180,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      403,
+      439,
+      438,
+      445,
+      446,
+      419
+    ],
+    "levels": [
+      16,
+      19
+    ],
+    "island": 2,
+    "islandName": "Tail",
+    "view": {
+      "dir": [
+        -1,
+        1,
+        -1
+      ],
+      "name": "Back-Left",
+      "angle": 180,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      444
+    ],
+    "levels": [
+      19,
+      20
+    ],
+    "island": 2,
+    "islandName": "Tail",
+    "view": {
+      "dir": [
+        -1,
+        1,
+        -1
+      ],
+      "name": "Back-Left",
+      "angle": 180,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      437,
+      87,
+      112,
+      68,
+      186,
+      151,
+      127,
+      193,
+      86
+    ],
+    "levels": [
+      19,
+      22
+    ],
+    "island": 6,
+    "islandName": "Mid & Upper Torso",
+    "view": {
+      "dir": [
+        -1,
+        1,
+        -1
+      ],
+      "name": "Back-Left",
+      "angle": 180,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      103,
+      126,
+      155,
+      486,
+      74,
+      75,
+      390,
+      82,
+      83
+    ],
+    "levels": [
+      19,
+      22
+    ],
+    "island": 6,
+    "islandName": "Mid & Upper Torso",
+    "view": {
+      "dir": [
+        1,
+        1,
+        1
+      ],
+      "name": "Front-Right",
+      "angle": 0,
+      "rotated": true
+    }
+  },
+  {
+    "idx": [
+      194,
+      129,
+      113,
+      79,
+      78,
+      84,
+      85,
+      73,
+      51
+    ],
+    "levels": [
+      21,
+      26
+    ],
+    "island": 6,
+    "islandName": "Mid & Upper Torso",
+    "view": {
+      "dir": [
+        1,
+        1,
+        1
+      ],
+      "name": "Front-Right",
+      "angle": 0,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      123,
+      115,
+      134,
+      395,
+      80,
+      81,
+      102,
+      50,
+      141
+    ],
+    "levels": [
+      23,
+      27
+    ],
+    "island": 6,
+    "islandName": "Mid & Upper Torso",
+    "view": {
+      "dir": [
+        1,
+        1,
+        1
+      ],
+      "name": "Front-Right",
+      "angle": 0,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      433,
+      76,
+      77,
+      94,
+      289,
+      48,
+      47,
+      219,
+      55
+    ],
+    "levels": [
+      24,
+      28
+    ],
+    "island": 6,
+    "islandName": "Mid & Upper Torso",
+    "view": {
+      "dir": [
+        1,
+        1,
+        1
+      ],
+      "name": "Front-Right",
+      "angle": 0,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      109,
+      290,
+      157,
+      135,
+      54,
+      110,
+      165,
+      63,
+      211
+    ],
+    "levels": [
+      25,
+      29
+    ],
+    "island": 6,
+    "islandName": "Mid & Upper Torso",
+    "view": {
+      "dir": [
+        1,
+        1,
+        1
+      ],
+      "name": "Front-Right",
+      "angle": 0,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      197,
+      65,
+      89,
+      107,
+      114,
+      59,
+      140,
+      132,
+      67
+    ],
+    "levels": [
+      27,
+      31
+    ],
+    "island": 6,
+    "islandName": "Mid & Upper Torso",
+    "view": {
+      "dir": [
+        1,
+        1,
+        1
+      ],
+      "name": "Front-Right",
+      "angle": 0,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      172,
+      484,
+      452,
+      199,
+      88,
+      505,
+      246,
+      249,
+      248
+    ],
+    "levels": [
+      27,
+      30
+    ],
+    "island": 6,
+    "islandName": "Mid & Upper Torso",
+    "view": {
+      "dir": [
+        -1,
+        1,
+        1
+      ],
+      "name": "Front-Left",
+      "angle": 90,
+      "rotated": true
+    }
+  },
+  {
+    "idx": [
+      417,
+      451,
+      244,
+      116,
+      245,
+      243,
+      92,
+      66,
+      160
+    ],
+    "levels": [
+      28,
+      32
+    ],
+    "island": 6,
+    "islandName": "Mid & Upper Torso",
+    "view": {
+      "dir": [
+        1,
+        1,
+        1
+      ],
+      "name": "Front-Right",
+      "angle": 0,
+      "rotated": true
+    }
+  },
+  {
+    "idx": [
+      450,
+      53,
+      258,
+      420,
+      90,
+      91,
+      259,
+      261,
+      453
+    ],
+    "levels": [
+      30,
+      33
+    ],
+    "island": 6,
+    "islandName": "Mid & Upper Torso",
+    "view": {
+      "dir": [
+        1,
+        1,
+        1
+      ],
+      "name": "Front-Right",
+      "angle": 0,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      257
+    ],
+    "levels": [
+      30,
+      31
+    ],
+    "island": 6,
+    "islandName": "Mid & Upper Torso",
+    "view": {
+      "dir": [
+        1,
+        1,
+        1
+      ],
+      "name": "Front-Right",
+      "angle": 0,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      473,
+      393,
+      308,
+      474,
+      319,
+      377,
+      309,
+      327,
+      464
+    ],
+    "levels": [
+      17,
+      24
+    ],
+    "island": 3,
+    "islandName": "Left Wing",
+    "view": {
+      "dir": [
+        -1,
+        1,
+        1
+      ],
+      "name": "Front-Left",
+      "angle": 90,
+      "rotated": true
+    }
+  },
+  {
+    "idx": [
+      394,
+      342,
+      462
+    ],
+    "levels": [
+      21,
+      24
+    ],
+    "island": 6,
+    "islandName": "Mid & Upper Torso",
+    "view": {
+      "dir": [
+        -1,
+        1,
+        1
+      ],
+      "name": "Front-Left",
+      "angle": 90,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      461,
+      463
+    ],
+    "levels": [
+      24,
+      25
+    ],
+    "island": 6,
+    "islandName": "Mid & Upper Torso",
+    "view": {
+      "dir": [
+        -1,
+        1,
+        1
+      ],
+      "name": "Front-Left",
+      "angle": 90,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      367,
+      378,
+      270,
+      399,
+      363
+    ],
+    "levels": [
+      14,
+      17
+    ],
+    "island": 3,
+    "islandName": "Left Wing",
+    "view": {
+      "dir": [
+        -1,
+        1,
+        1
+      ],
+      "name": "Front-Left",
+      "angle": 90,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      400,
+      334,
+      470,
+      383,
+      471
+    ],
+    "levels": [
+      11,
+      14
+    ],
+    "island": 3,
+    "islandName": "Left Wing",
+    "view": {
+      "dir": [
+        -1,
+        1,
+        1
+      ],
+      "name": "Front-Left",
+      "angle": 90,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      429,
+      430,
+      428,
+      316,
+      465
+    ],
+    "levels": [
+      18,
+      25
+    ],
+    "island": 3,
+    "islandName": "Left Wing",
+    "view": {
+      "dir": [
+        -1,
+        1,
+        1
+      ],
+      "name": "Front-Left",
+      "angle": 90,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      324,
+      304
+    ],
+    "levels": [
+      17,
+      20
+    ],
+    "island": 3,
+    "islandName": "Left Wing",
+    "view": {
+      "dir": [
+        -1,
+        1,
+        1
+      ],
+      "name": "Front-Left",
+      "angle": 90,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      323,
+      362,
+      481,
+      382,
+      482
+    ],
+    "levels": [
+      12,
+      17
+    ],
+    "island": 3,
+    "islandName": "Left Wing",
+    "view": {
+      "dir": [
+        -1,
+        1,
+        1
+      ],
+      "name": "Front-Left",
+      "angle": 90,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      483
+    ],
+    "levels": [
+      11,
+      12
+    ],
+    "island": 3,
+    "islandName": "Left Wing",
+    "view": {
+      "dir": [
+        -1,
+        1,
+        1
+      ],
+      "name": "Front-Left",
+      "angle": 90,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      312,
+      490,
+      432,
+      224,
+      317,
+      491
+    ],
+    "levels": [
+      23,
+      27
+    ],
+    "island": 3,
+    "islandName": "Left Wing",
+    "view": {
+      "dir": [
+        -1,
+        1,
+        1
+      ],
+      "name": "Front-Left",
+      "angle": 90,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      225
+    ],
+    "levels": [
+      25,
+      28
+    ],
+    "island": 6,
+    "islandName": "Mid & Upper Torso",
+    "view": {
+      "dir": [
+        -1,
+        1,
+        1
+      ],
+      "name": "Front-Left",
+      "angle": 90,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      226,
+      409,
+      502
+    ],
+    "levels": [
+      28,
+      31
+    ],
+    "island": 6,
+    "islandName": "Mid & Upper Torso",
+    "view": {
+      "dir": [
+        -1,
+        1,
+        1
+      ],
+      "name": "Front-Left",
+      "angle": 90,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      485,
+      227,
+      318,
+      376,
+      360,
+      198,
+      348
+    ],
+    "levels": [
+      26,
+      29
+    ],
+    "island": 3,
+    "islandName": "Left Wing",
+    "view": {
+      "dir": [
+        -1,
+        1,
+        1
+      ],
+      "name": "Front-Left",
+      "angle": 90,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      247,
+      364
+    ],
+    "levels": [
+      29,
+      31
+    ],
+    "island": 3,
+    "islandName": "Left Wing",
+    "view": {
+      "dir": [
+        -1,
+        1,
+        1
+      ],
+      "name": "Front-Left",
+      "angle": 90,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      303,
+      426,
+      427,
+      454,
+      477,
+      336,
+      386,
+      388,
+      487
+    ],
+    "levels": [
+      16,
+      20
+    ],
+    "island": 4,
+    "islandName": "Right Wing",
+    "view": {
+      "dir": [
+        1,
+        1,
+        1
+      ],
+      "name": "Front-Right",
+      "angle": 0,
+      "rotated": true
+    }
+  },
+  {
+    "idx": [
+      366,
+      503,
+      422,
+      387,
+      421
+    ],
+    "levels": [
+      13,
+      17
+    ],
+    "island": 4,
+    "islandName": "Right Wing",
+    "view": {
+      "dir": [
+        1,
+        1,
+        1
+      ],
+      "name": "Front-Right",
+      "angle": 0,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      385,
+      337,
+      455,
+      338,
+      389,
+      322,
+      391,
+      321,
+      339
+    ],
+    "levels": [
+      16,
+      21
+    ],
+    "island": 4,
+    "islandName": "Right Wing",
+    "view": {
+      "dir": [
+        1,
+        1,
+        1
+      ],
+      "name": "Front-Right",
+      "angle": 0,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      320,
+      335,
+      384
+    ],
+    "levels": [
+      12,
+      16
+    ],
+    "island": 4,
+    "islandName": "Right Wing",
+    "view": {
+      "dir": [
+        1,
+        1,
+        1
+      ],
+      "name": "Front-Right",
+      "angle": 0,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      489,
+      459,
+      315,
+      310,
+      458,
+      460,
+      311,
+      392,
+      195
+    ],
+    "levels": [
+      19,
+      23
+    ],
+    "island": 4,
+    "islandName": "Right Wing",
+    "view": {
+      "dir": [
+        1,
+        1,
+        1
+      ],
+      "name": "Front-Right",
+      "angle": 0,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      340,
+      341,
+      506,
+      344,
+      228,
+      313,
+      343,
+      314,
+      457
+    ],
+    "levels": [
+      22,
+      27
+    ],
+    "island": 4,
+    "islandName": "Right Wing",
+    "view": {
+      "dir": [
+        1,
+        1,
+        1
+      ],
+      "name": "Front-Right",
+      "angle": 0,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      396,
+      500,
+      229,
+      346,
+      223,
+      345,
+      498,
+      196,
+      347
+    ],
+    "levels": [
+      25,
+      30
+    ],
+    "island": 4,
+    "islandName": "Right Wing",
+    "view": {
+      "dir": [
+        1,
+        1,
+        1
+      ],
+      "name": "Front-Right",
+      "angle": 0,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      497,
+      404,
+      260,
+      361,
+      405
+    ],
+    "levels": [
+      28,
+      31
+    ],
+    "island": 4,
+    "islandName": "Right Wing",
+    "view": {
+      "dir": [
+        1,
+        1,
+        1
+      ],
+      "name": "Front-Right",
+      "angle": 0,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      449,
+      475,
+      14,
+      101,
+      137,
+      96,
+      21,
+      279,
+      282
+    ],
+    "levels": [
+      31,
+      34
+    ],
+    "island": 7,
+    "islandName": "Head & Beak",
+    "view": {
+      "dir": [
+        1,
+        1,
+        1
+      ],
+      "name": "Front-Right",
+      "angle": 0,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      501,
+      31,
+      221,
+      278,
+      370,
+      410,
+      292,
+      291,
+      373
+    ],
+    "levels": [
+      31,
+      34
+    ],
+    "island": 7,
+    "islandName": "Head & Beak",
+    "view": {
+      "dir": [
+        -1,
+        1,
+        1
+      ],
+      "name": "Front-Left",
+      "angle": 90,
+      "rotated": true
+    }
+  },
+  {
+    "idx": [
+      15,
+      368,
+      136,
+      6,
+      12,
+      56,
+      369,
+      293,
+      166
+    ],
+    "levels": [
+      31,
+      36
+    ],
+    "island": 7,
+    "islandName": "Head & Beak",
+    "view": {
+      "dir": [
+        1,
+        1,
+        1
+      ],
+      "name": "Front-Right",
+      "angle": 0,
+      "rotated": true
+    }
+  },
+  {
+    "idx": [
+      45,
+      281,
+      207,
+      294,
+      158,
+      466,
+      468,
+      280,
+      220
+    ],
+    "levels": [
+      31,
+      36
+    ],
+    "island": 7,
+    "islandName": "Head & Beak",
+    "view": {
+      "dir": [
+        1,
+        1,
+        1
+      ],
+      "name": "Front-Right",
+      "angle": 0,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      34,
+      213,
+      235,
+      27,
+      61,
+      238,
+      240,
+      236,
+      35
+    ],
+    "levels": [
+      33,
+      37
+    ],
+    "island": 7,
+    "islandName": "Head & Beak",
+    "view": {
+      "dir": [
+        1,
+        1,
+        1
+      ],
+      "name": "Front-Right",
+      "angle": 0,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      237,
+      231,
+      232,
+      44,
+      239,
+      241,
+      467,
+      242,
+      469
+    ],
+    "levels": [
+      34,
+      37
+    ],
+    "island": 7,
+    "islandName": "Head & Beak",
+    "view": {
+      "dir": [
+        1,
+        1,
+        1
+      ],
+      "name": "Front-Right",
+      "angle": 0,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      230,
+      125,
+      28,
+      349,
+      118,
+      143,
+      111,
+      159,
+      233
+    ],
+    "levels": [
+      35,
+      39
+    ],
+    "island": 7,
+    "islandName": "Head & Beak",
+    "view": {
+      "dir": [
+        1,
+        1,
+        1
+      ],
+      "name": "Front-Right",
+      "angle": 0,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      26,
+      108,
+      156,
+      41,
+      42,
+      173,
+      325,
+      217,
+      142
+    ],
+    "levels": [
+      35,
+      40
+    ],
+    "island": 7,
+    "islandName": "Head & Beak",
+    "view": {
+      "dir": [
+        1,
+        1,
+        1
+      ],
+      "name": "Front-Right",
+      "angle": 0,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      234,
+      201,
+      203,
+      478,
+      479,
+      200,
+      202,
+      480,
+      185
+    ],
+    "levels": [
+      35,
+      38
+    ],
+    "island": 7,
+    "islandName": "Head & Beak",
+    "view": {
+      "dir": [
+        1,
+        1,
+        1
+      ],
+      "name": "Front-Right",
+      "angle": 0,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      37,
+      150,
+      357,
+      52,
+      144,
+      397,
+      128,
+      167,
+      178
+    ],
+    "levels": [
+      36,
+      40
+    ],
+    "island": 7,
+    "islandName": "Head & Beak",
+    "view": {
+      "dir": [
+        -1,
+        1,
+        1
+      ],
+      "name": "Front-Left",
+      "angle": 90,
+      "rotated": true
+    }
+  },
+  {
+    "idx": [
+      418,
+      443,
+      138,
+      351,
+      19,
+      43,
+      163,
+      210,
+      169
+    ],
+    "levels": [
+      37,
+      42
+    ],
+    "island": 7,
+    "islandName": "Head & Beak",
+    "view": {
+      "dir": [
+        1,
+        1,
+        1
+      ],
+      "name": "Front-Right",
+      "angle": 0,
+      "rotated": true
+    }
+  },
+  {
+    "idx": [
+      184,
+      353,
+      352,
+      434,
+      350,
+      170,
+      145,
+      436,
+      18
+    ],
+    "levels": [
+      37,
+      42
+    ],
+    "island": 7,
+    "islandName": "Head & Beak",
+    "view": {
+      "dir": [
+        -1,
+        1,
+        1
+      ],
+      "name": "Front-Left",
+      "angle": 90,
+      "rotated": true
+    }
+  },
+  {
+    "idx": [
+      204,
+      307,
+      306,
+      119,
+      25,
+      162,
+      168,
+      154,
+      354
+    ],
+    "levels": [
+      38,
+      42
+    ],
+    "island": 7,
+    "islandName": "Head & Beak",
+    "view": {
+      "dir": [
+        -1,
+        1,
+        -1
+      ],
+      "name": "Back-Left",
+      "angle": 180,
+      "rotated": true
+    }
+  },
+  {
+    "idx": [
+      435,
+      402,
+      401,
+      365,
+      216,
+      371,
+      442,
+      264,
+      407
+    ],
+    "levels": [
+      39,
+      43
+    ],
+    "island": 7,
+    "islandName": "Head & Beak",
+    "view": {
+      "dir": [
+        1,
+        1,
+        1
+      ],
+      "name": "Front-Right",
+      "angle": 0,
+      "rotated": true
+    }
+  },
+  {
+    "idx": [
+      262,
+      7,
+      10,
+      359,
+      263,
+      284,
+      36,
+      285,
+      406
+    ],
+    "levels": [
+      40,
+      44
+    ],
+    "island": 7,
+    "islandName": "Head & Beak",
+    "view": {
+      "dir": [
+        -1,
+        1,
+        -1
+      ],
+      "name": "Back-Left",
+      "angle": 180,
+      "rotated": true
+    }
+  },
+  {
+    "idx": [
+      283,
+      328,
+      413,
+      441,
+      58,
+      39,
+      440,
+      300,
+      71
+    ],
+    "levels": [
+      41,
+      44
+    ],
+    "island": 7,
+    "islandName": "Head & Beak",
+    "view": {
+      "dir": [
+        -1,
+        1,
+        -1
+      ],
+      "name": "Back-Left",
+      "angle": 180,
+      "rotated": false
+    }
+  },
+  {
+    "idx": [
+      372,
+      299,
+      326,
+      358,
+      398,
+      355,
+      72
+    ],
+    "levels": [
+      41,
+      44
+    ],
+    "island": 7,
+    "islandName": "Head & Beak",
+    "view": {
+      "dir": [
+        1,
+        1,
+        1
+      ],
+      "name": "Front-Right",
+      "angle": 0,
+      "rotated": true
+    }
+  },
+  {
+    "idx": [
+      356
+    ],
+    "levels": [
+      44,
+      45
+    ],
+    "island": 7,
+    "islandName": "Head & Beak",
+    "view": {
+      "dir": [
+        1,
+        1,
+        1
+      ],
+      "name": "Front-Right",
+      "angle": 0,
+      "rotated": false
+    }
+  }
+]

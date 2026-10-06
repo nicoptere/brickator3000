@@ -32,8 +32,9 @@
 
 \title{\vspace{-1.2cm}\textbf{BRICKAGEN 3000: from a triangle mesh to a buildable LEGO model}\\[0.3em]
 \large The volume field, the placement kernel, motifs learned from official sets, sideways building, where the ``mechanical'' look
-comes from, how curved surfaces are skinned, and which resolution to build at}
-\author{\small brickator3000 --- branches \code{next} and \code{siren} --- state of the method as of 5 October 2026}
+comes from, how curved surfaces are skinned, which resolution to build at, what people build when nobody designs for them, and how
+the model gets out of the browser and onto a table}
+\author{\small brickator3000 --- branches \code{next} and \code{siren} --- state of the method as of 6 October 2026}
 \date{}
 
 \begin{document}
@@ -62,6 +63,19 @@ motifs. Finally the question ``which resolution?'' is answered by measurement: f
 knee in $\log(\text{pieces})$, round shapes have a curvature ceiling past which they fall apart, and the stud counts a user sees as
 ``better'' are the ones where the model's plate-thick and stud-wide features land on the lattice --- which the field alone
 reveals in a third of a second per count, before anything is solved. An automatic stud count is built from these three facts.
+The last part is about building sideways for real, about a second dataset, and about the model leaving the engine. ``A wall is a
+floor turned on its side'' was the leading item of the previous version's leverage list; built, it resamples the field per facing
+so that every phase written for a floor runs on a wall unchanged, commits the pieces bottom-up onto side-stud host bricks, and is
+kept or thrown away by finishing the model both ways --- the teapot loses 37 pieces \emph{and} gains fidelity, the egg and the hen
+keep their upright skin. A corpus of 1,069 user-built models (MOCs) is then mined beside the official sets, and it says two things:
+people build three times as much sideways as the sets do, and a tenth of everything they place sits at an angle no stud grid can
+hold --- an honest ceiling on the whole method. Their motifs, merged with the official ones, only pay once the verification is moved
+onto the job score of the \emph{finished} model, after which the eight benchmark models come out with fewer pieces and more
+fidelity at once. Carrying twice the data in eight browser workers then had to be paid for: the library and the measured catalogues
+ship as text that nothing parses until a run asks for it (12.0\,MB of modules $\to$ 1.0), the candidate scan gets an admissible
+window and an early exit (628\,M cells $\to$ 124\,M at identical output), and the pool stops being rebuilt on every run. Finally,
+overlapping pieces become a test rather than an impression --- two real bugs, one of them a loop over integer levels in a lattice
+that is no longer integral --- and the result is printed as a booklet a person can build from.
 \end{abstract}
 
 \tableofcontents
@@ -582,7 +596,13 @@ runs but is undertrained --- the real runs are the 4090's, with $\omega_0$ as th
 
 \input{rounds}
 
+\input{rounds2}
+
 \section{Results}
+The table below is the state at the end of section~\ref{sec:resolution}, on the six models that have followed the whole document;
+it predates sections~\ref{sec:wall}--\ref{sec:booklet} and their own measured tables, which were made on the eight models the
+engine is benchmarked on today. Read it as the baseline the later sections moved: the sideways skin is off here, the motif check is
+the raw-IoU one, and the components are what they were before the weld ladder and the overlap audit.
 \begin{table}[H]
 \centering\small
 \begin{tabular}{lrrrrrrrr}
@@ -636,11 +656,16 @@ export with real LDraw part geometry.}
 
 \section{What next, by leverage}
 \begin{enumerate}
-\item \textbf{A wall is a floor turned on its side.} The sideways synthesis of section~\ref{sec:round7} has every piece but the
-frame rotation: resample the field per facing, run the narrow aligned skin there, turn the pieces back over side-stud hosts. That
-is how a real SNOT hull is built, and it is what would make ``anything on walls'' a feature rather than a candidate set.
-\item \textbf{Side-stud contact in the connectivity model.} Today an assembly id is what holds a sideways piece; measuring the
-connectors' side studs would let bracing repair those assemblies and let the solver place a sideways part against \emph{any} host.
+\item \textbf{A piece whose body is not on its own level.} The brackets (44728, 99780, 36840) are the side-stud hosts the MOC
+corpus uses most after the headlight brick, and the engine cannot express them: an ``up'' bracket's body rises 12\ldu{} above its
+plate. A piece record that can say so unlocks that whole family --- and with it the recessed headlight 4070, 1,492 uses in the
+corpus.
+\item \textbf{Side-stud contact in the connectivity model.} An assembly id is what holds a sideways piece today, which is why the
+sideways skin has to place its own hosts and commit bottom-up. Measuring the connectors' side studs would let bracing repair those
+assemblies and let the solver place a sideways part against \emph{any} host already in the model.
+\item \textbf{The other half of the corpus} (the 1,000+ MOCs between 1 and 10\,MB: the loader handles them and the miner is linear),
+and \textbf{windows as volume} --- a frame plus its glass as one solid 1$\times$2$\times$2 or 1$\times$2$\times$3 part, 2,900 uses,
+the one uncovered family that matters for buildings.
 \item \textbf{Connectivity through the solid.} The strut models (be2, rafs5) lose components wherever the narrow skin leaves a
 loose run of parts; the bridge phase now refuses the air, so the chains have to be found inside thin struts --- a search that should
 prefer the stud-aligned route over the shortest one.
@@ -662,14 +687,15 @@ number for it so far.
 \section*{Code map}
 \small
 \begin{tabular}{p{3.6cm}p{13.2cm}}
-\code{claude/app/src/brickgen/} & \code{grid.js} (cast, lattice fit, crust), \code{sdf.js}, \code{smooth.js}, \code{solver.js} (kernel, alignment term), \code{run.js} (phases, surface attribution), \code{discs.js} (disc layers), \code{skin.js} (profile chains), \code{post.js} (merges, widen, bridge, corners), \code{resolution.js} (feature sizes, cross-resolution fidelity), \code{pipeline.js} (\code{autoStuds}, motif verification), \code{export.js}, \code{variants.js} \\
-\code{claude/app/src/motifs/} & \code{ldraw.js}, \code{placements.js}, \code{mine.js}, \code{library.js}, \code{orient.js}, \code{snot.js} (sideways synthesis), \code{periodic.js}, \code{motifs.js} (the library) \\
-\code{claude/app/test/} & \code{noise\_bench.mjs}, \code{field\_bench.mjs}, \code{motifs\_bench.mjs}, \code{curves\_bench.mjs}, \code{resolution\_bench.mjs}, \code{roundtrip.mjs}, \code{roundtrip\_snot.mjs}, \code{synthetic.mjs} (dome, sphere, cylinder, rounded boxes, boss box) \\
-\code{claude/app/tools/} & \code{mine\_motifs.mjs}, \code{omr\_stats.mjs}, \code{omr\_fetch.mjs}, \code{sdf\_grid.mjs} \\
+\code{claude/app/src/brickgen/} & \code{grid.js} (cast, lattice fit, crust), \code{sdf.js}, \code{smooth.js}, \code{solver.js} (kernel, alignment term, the candidate window), \code{run.js} (phases, surface attribution), \code{discs.js} (disc layers), \code{skin.js} (profile chains), \code{post.js} (merges, widen, bridge, weld, corners, \code{cellBox}, \code{audit}), \code{resolution.js} (feature sizes, cross-resolution fidelity), \code{pipeline.js} (\code{autoStuds}, the two verifications), \code{export.js}, \code{variants.js}, \code{instructions.js} (steps, build order, the booklet HTML), \code{catalog\_pack.js} (the packed catalogues), \code{catalog*.js} \\
+\code{claude/app/src/motifs/} & \code{ldraw.js}, \code{placements.js} (the Studio-export fixes), \code{mine.js}, \code{library.js}, \code{orient.js}, \code{snot.js} (sideways synthesis), \code{wall.js} (the sideways skin, \code{HOSTS}), \code{periodic.js}, \code{motifs.js} (the packed library) \\
+\code{claude/app/src/} & \code{engine.js} (the worker pool), \code{worker.js}, \code{studio/booklet.js} (the captures, the path-traced cover, the export cache) \\
+\code{claude/app/test/} & \code{noise\_bench.mjs}, \code{field\_bench.mjs}, \code{motifs\_bench.mjs}, \code{curves\_bench.mjs}, \code{resolution\_bench.mjs}, \code{wall\_bench.mjs}, \code{library\_bench.mjs}, \code{roundtrip.mjs}, \code{roundtrip\_snot.mjs}, \code{shot.mjs}, \code{booklet\_shoot.mjs}, \code{studio\_booklet.mjs}, \code{synthetic.mjs} (dome, sphere, cylinder, rounded boxes, boss box) \\
+\code{claude/app/tools/} & \code{mine\_motifs.mjs}, \code{merge\_motifs.mjs}, \code{pack\_motifs.mjs}, \code{pack\_catalog.mjs}, \code{omr\_stats.mjs}, \code{omr\_fetch.mjs}, \code{sdf\_grid.mjs} \\
 \code{claude/siren/} & \code{fit\_siren.py} (GPU fitter), \code{README.md} \\
-\code{claude/paper/} & this document: \code{paper.tex}, \code{rounds.tex}, \code{export\_scenes.mjs}, \code{export\_rounds.mjs}, \code{auto\_candidates.mjs}, \code{figures.py}, \code{figures\_rounds.py}, \code{ldraw\_mesh.py}, \code{render.html}, \code{shoot.py} \\
+\code{claude/paper/} & this document: \code{paper.tex}, \code{rounds.tex}, \code{rounds2.tex}, \code{export\_scenes.mjs}, \code{export\_rounds.mjs}, \code{export\_mocs.mjs}, \code{auto\_candidates.mjs}, \code{figures.py}, \code{figures\_rounds.py}, \code{figures\_mocs.py}, \code{ldraw\_mesh.py}, \code{render.html}, \code{shoot.py} \\
 \code{claude/generator/} & \code{lego\_catalog.py}, \code{lego\_catalog\_shapes.py} (the measured part templates), \code{omr\_rank.py} (the part census) \\
-\code{docs/} & \code{MOTIFS.md}, \code{IMPLICIT.md}, \code{CURVES.md} (rounds 4--8, every table of the second half), \code{papers/}, \code{omr/} (the index), \code{omr\_gallery/} (the models) \\
+\code{docs/} & \code{MOTIFS.md}, \code{IMPLICIT.md}, \code{CURVES.md} (rounds 4--10, every table of the second half), \code{MOCS.md} (the corpus, the census, and the speed work of section~\ref{sec:fast}), \code{papers/}, \code{omr/} (the index), \code{omr\_gallery/} (the models), \code{mocs/} (the MOC corpus) \\
 \end{tabular}
 
 \section*{References}

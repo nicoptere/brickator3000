@@ -1,14 +1,14 @@
 {
-  "generatedAt": "2026-10-05T05:27:28.079Z",
-  "totalModels": 147,
-  "totalBytes": 322938920,
-  "totalBytesFormatted": "308 MB",
+  "generatedAt": "2026-10-06T08:48:21.990Z",
+  "totalModels": 144,
+  "totalBytes": 304823432,
+  "totalBytesFormatted": "290.7 MB",
   "groups": [
     {
       "name": "objaverse",
       "title": "Objaverse",
       "type": "flat",
-      "count": 10,
+      "count": 7,
       "models": [
         {
           "id": "objaverse/creature.glb",
@@ -21,16 +21,6 @@
           "sizeFormatted": "1.7 MB"
         },
         {
-          "id": "objaverse/felix.glb",
-          "name": "Felix",
-          "filename": "felix.glb",
-          "category": "objaverse",
-          "group": "objaverse",
-          "path": "models/clean/objaverse/felix.glb",
-          "sizeBytes": 530040,
-          "sizeFormatted": "517.6 KB"
-        },
-        {
           "id": "objaverse/fnaf.glb",
           "name": "FNAF",
           "filename": "fnaf.glb",
@@ -39,16 +29,6 @@
           "path": "models/clean/objaverse/fnaf.glb",
           "sizeBytes": 2265128,
           "sizeFormatted": "2.2 MB"
-        },
-        {
-          "id": "objaverse/harley.glb",
-          "name": "Harley",
-          "filename": "harley.glb",
-          "category": "objaverse",
-          "group": "objaverse",
-          "path": "models/clean/objaverse/harley.glb",
-          "sizeBytes": 17256816,
-          "sizeFormatted": "16.5 MB"
         },
         {
           "id": "objaverse/hen.glb",
@@ -69,16 +49,6 @@
           "path": "models/clean/objaverse/ice-cream.glb",
           "sizeBytes": 905540,
           "sizeFormatted": "884.3 KB"
-        },
-        {
-          "id": "objaverse/joypad.glb",
-          "name": "Joypad",
-          "filename": "joypad.glb",
-          "category": "objaverse",
-          "group": "objaverse",
-          "path": "models/clean/objaverse/joypad.glb",
-          "sizeBytes": 328632,
-          "sizeFormatted": "320.9 KB"
         },
         {
           "id": "objaverse/mouse.glb",
@@ -1667,7 +1637,7 @@
       "title": "Objaverse",
       "icon": "",
       "group": "objaverse",
-      "count": 10,
+      "count": 7,
       "models": [
         {
           "id": "objaverse/creature.glb",
@@ -1680,16 +1650,6 @@
           "sizeFormatted": "1.7 MB"
         },
         {
-          "id": "objaverse/felix.glb",
-          "name": "Felix",
-          "filename": "felix.glb",
-          "category": "objaverse",
-          "group": "objaverse",
-          "path": "models/clean/objaverse/felix.glb",
-          "sizeBytes": 530040,
-          "sizeFormatted": "517.6 KB"
-        },
-        {
           "id": "objaverse/fnaf.glb",
           "name": "FNAF",
           "filename": "fnaf.glb",
@@ -1698,16 +1658,6 @@
           "path": "models/clean/objaverse/fnaf.glb",
           "sizeBytes": 2265128,
           "sizeFormatted": "2.2 MB"
-        },
-        {
-          "id": "objaverse/harley.glb",
-          "name": "Harley",
-          "filename": "harley.glb",
-          "category": "objaverse",
-          "group": "objaverse",
-          "path": "models/clean/objaverse/harley.glb",
-          "sizeBytes": 17256816,
-          "sizeFormatted": "16.5 MB"
         },
         {
           "id": "objaverse/hen.glb",
@@ -1728,16 +1678,6 @@
           "path": "models/clean/objaverse/ice-cream.glb",
           "sizeBytes": 905540,
           "sizeFormatted": "884.3 KB"
-        },
-        {
-          "id": "objaverse/joypad.glb",
-          "name": "Joypad",
-          "filename": "joypad.glb",
-          "category": "objaverse",
-          "group": "objaverse",
-          "path": "models/clean/objaverse/joypad.glb",
-          "sizeBytes": 328632,
-          "sizeFormatted": "320.9 KB"
         },
         {
           "id": "objaverse/mouse.glb",

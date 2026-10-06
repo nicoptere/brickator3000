@@ -1,0 +1,584 @@
+{
+  "models": [
+    {
+      "path": "clean/objaverse/creature.glb",
+      "size": 1789100
+    },
+    {
+      "path": "clean/objaverse/fnaf.glb",
+      "size": 2265128
+    },
+    {
+      "path": "clean/objaverse/hen.glb",
+      "size": 38968
+    },
+    {
+      "path": "clean/objaverse/ice-cream.glb",
+      "size": 905540
+    },
+    {
+      "path": "clean/objaverse/mouse.glb",
+      "size": 1434952
+    },
+    {
+      "path": "clean/objaverse/pony.glb",
+      "size": 1064036
+    },
+    {
+      "path": "clean/objaverse/soldier.glb",
+      "size": 4225084
+    },
+    {
+      "path": "clean/stanford/armadillo.glb",
+      "size": 9687852
+    },
+    {
+      "path": "clean/stanford/bunny.glb",
+      "size": 1949448
+    },
+    {
+      "path": "clean/stanford/dragon.glb",
+      "size": 1310304
+    },
+    {
+      "path": "clean/stanford/drill.glb",
+      "size": 110320
+    },
+    {
+      "path": "clean/stanford/happy_buddha.glb",
+      "size": 1842360
+    },
+    {
+      "path": "clean/stanford/lucy.glb",
+      "size": 2800552
+    },
+    {
+      "path": "clean/stanford/teapot.glb",
+      "size": 193712
+    },
+    {
+      "path": "clean/taschen/airplanes/be2.glb",
+      "size": 327848
+    },
+    {
+      "path": "clean/taschen/airplanes/f117.glb",
+      "size": 8039684
+    },
+    {
+      "path": "clean/taschen/airplanes/fw189.glb",
+      "size": 12600964
+    },
+    {
+      "path": "clean/taschen/airplanes/g4m11.glb",
+      "size": 1906604
+    },
+    {
+      "path": "clean/taschen/airplanes/kitty.glb",
+      "size": 671748
+    },
+    {
+      "path": "clean/taschen/airplanes/osprey.glb",
+      "size": 1145900
+    },
+    {
+      "path": "clean/taschen/airplanes/p_38_lig.glb",
+      "size": 986472
+    },
+    {
+      "path": "clean/taschen/airplanes/rafs5.glb",
+      "size": 688344
+    },
+    {
+      "path": "clean/taschen/airports/airsg1.glb",
+      "size": 470572
+    },
+    {
+      "path": "clean/taschen/airports/eagle.glb",
+      "size": 863664
+    },
+    {
+      "path": "clean/taschen/airports/f15s.glb",
+      "size": 234652
+    },
+    {
+      "path": "clean/taschen/animals/delfin.glb",
+      "size": 510580
+    },
+    {
+      "path": "clean/taschen/animals/devilfis.glb",
+      "size": 856460
+    },
+    {
+      "path": "clean/taschen/animals/dromedar.glb",
+      "size": 829744
+    },
+    {
+      "path": "clean/taschen/animals/ghop.glb",
+      "size": 1262612
+    },
+    {
+      "path": "clean/taschen/animals/kangaro.glb",
+      "size": 2683136
+    },
+    {
+      "path": "clean/taschen/animals/kwha.glb",
+      "size": 652668
+    },
+    {
+      "path": "clean/taschen/animals/lebis.glb",
+      "size": 724972
+    },
+    {
+      "path": "clean/taschen/animals/lion.glb",
+      "size": 3262792
+    },
+    {
+      "path": "clean/taschen/animals/lobster1.glb",
+      "size": 565756
+    },
+    {
+      "path": "clean/taschen/animals/lobster2.glb",
+      "size": 468732
+    },
+    {
+      "path": "clean/taschen/animals/mantis.glb",
+      "size": 647940
+    },
+    {
+      "path": "clean/taschen/animals/mosquito.glb",
+      "size": 469764
+    },
+    {
+      "path": "clean/taschen/animals/ootter.glb",
+      "size": 452804
+    },
+    {
+      "path": "clean/taschen/animals/parasau.glb",
+      "size": 430948
+    },
+    {
+      "path": "clean/taschen/animals/pig.glb",
+      "size": 894060
+    },
+    {
+      "path": "clean/taschen/animals/poecil.glb",
+      "size": 575384
+    },
+    {
+      "path": "clean/taschen/animals/reindeer.glb",
+      "size": 579112
+    },
+    {
+      "path": "clean/taschen/animals/rhino.glb",
+      "size": 728436
+    },
+    {
+      "path": "clean/taschen/animals/seahorse.glb",
+      "size": 3778344
+    },
+    {
+      "path": "clean/taschen/animals/snail.glb",
+      "size": 1322316
+    },
+    {
+      "path": "clean/taschen/animals/stagbee.glb",
+      "size": 2142240
+    },
+    {
+      "path": "clean/taschen/animals/wasp.glb",
+      "size": 782804
+    },
+    {
+      "path": "clean/taschen/architecture/firest.glb",
+      "size": 2060700
+    },
+    {
+      "path": "clean/taschen/architecture/grand.glb",
+      "size": 375892
+    },
+    {
+      "path": "clean/taschen/architecture/nordstad.glb",
+      "size": 356976
+    },
+    {
+      "path": "clean/taschen/architecture/observ.glb",
+      "size": 274716
+    },
+    {
+      "path": "clean/taschen/architecture/sjeronim.glb",
+      "size": 42575728
+    },
+    {
+      "path": "clean/taschen/architecture/store.glb",
+      "size": 315212
+    },
+    {
+      "path": "clean/taschen/architecture/t_lich.glb",
+      "size": 3596920
+    },
+    {
+      "path": "clean/taschen/architecture/townhou1.glb",
+      "size": 679088
+    },
+    {
+      "path": "clean/taschen/cars/diablo.glb",
+      "size": 582004
+    },
+    {
+      "path": "clean/taschen/cars/drag.glb",
+      "size": 854356
+    },
+    {
+      "path": "clean/taschen/cars/fordv8.glb",
+      "size": 334552
+    },
+    {
+      "path": "clean/taschen/cars/gto.glb",
+      "size": 2333000
+    },
+    {
+      "path": "clean/taschen/cars/isetta.glb",
+      "size": 302472
+    },
+    {
+      "path": "clean/taschen/cars/jaguar.glb",
+      "size": 3269788
+    },
+    {
+      "path": "clean/taschen/cars/lambcoun.glb",
+      "size": 505256
+    },
+    {
+      "path": "clean/taschen/cars/lanc_b24.glb",
+      "size": 466208
+    },
+    {
+      "path": "clean/taschen/cars/lincoln.glb",
+      "size": 825672
+    },
+    {
+      "path": "clean/taschen/cars/lotus107.glb",
+      "size": 1811648
+    },
+    {
+      "path": "clean/taschen/cars/mer300sl.glb",
+      "size": 230428
+    },
+    {
+      "path": "clean/taschen/cars/mercedes.glb",
+      "size": 554044
+    },
+    {
+      "path": "clean/taschen/cars/mes.glb",
+      "size": 222384
+    },
+    {
+      "path": "clean/taschen/cars/mgtc.glb",
+      "size": 403620
+    },
+    {
+      "path": "clean/taschen/cars/olds_c.glb",
+      "size": 6030340
+    },
+    {
+      "path": "clean/taschen/cars/op1909.glb",
+      "size": 1093744
+    },
+    {
+      "path": "clean/taschen/cars/renault.glb",
+      "size": 432056
+    },
+    {
+      "path": "clean/taschen/cars/rolls.glb",
+      "size": 311488
+    },
+    {
+      "path": "clean/taschen/cars/t_chevy.glb",
+      "size": 343204
+    },
+    {
+      "path": "clean/taschen/cars/tyrrel.glb",
+      "size": 1199908
+    },
+    {
+      "path": "clean/taschen/contemporary_furniture/officec2.glb",
+      "size": 1604288
+    },
+    {
+      "path": "clean/taschen/contemporary_furniture/officech.glb",
+      "size": 156348
+    },
+    {
+      "path": "clean/taschen/electronics/aiwa2.glb",
+      "size": 1047992
+    },
+    {
+      "path": "clean/taschen/electronics/camara.glb",
+      "size": 4453156
+    },
+    {
+      "path": "clean/taschen/electronics/flexo.glb",
+      "size": 402280
+    },
+    {
+      "path": "clean/taschen/electronics/sanyo.glb",
+      "size": 415632
+    },
+    {
+      "path": "clean/taschen/electronics/telefon2.glb",
+      "size": 722500
+    },
+    {
+      "path": "clean/taschen/furniture/bi8ed4.glb",
+      "size": 9898876
+    },
+    {
+      "path": "clean/taschen/furniture/ca5fec2.glb",
+      "size": 824448
+    },
+    {
+      "path": "clean/taschen/furniture/english2.glb",
+      "size": 3343536
+    },
+    {
+      "path": "clean/taschen/furniture/garden.glb",
+      "size": 735148
+    },
+    {
+      "path": "clean/taschen/furniture/roundta.glb",
+      "size": 555064
+    },
+    {
+      "path": "clean/taschen/furniture/sheraton.glb",
+      "size": 1943976
+    },
+    {
+      "path": "clean/taschen/furniture/table.glb",
+      "size": 813460
+    },
+    {
+      "path": "clean/taschen/helicopters/aloue2.glb",
+      "size": 1299984
+    },
+    {
+      "path": "clean/taschen/helicopters/ka27.glb",
+      "size": 1518052
+    },
+    {
+      "path": "clean/taschen/helicopters/mi_8.glb",
+      "size": 726304
+    },
+    {
+      "path": "clean/taschen/helicopters/sh3hnavy.glb",
+      "size": 1198740
+    },
+    {
+      "path": "clean/taschen/military/amx13.glb",
+      "size": 729644
+    },
+    {
+      "path": "clean/taschen/military/elefant.glb",
+      "size": 5563376
+    },
+    {
+      "path": "clean/taschen/military/gaskin.glb",
+      "size": 4620452
+    },
+    {
+      "path": "clean/taschen/military/pmissile.glb",
+      "size": 4833364
+    },
+    {
+      "path": "clean/taschen/military/rf8.glb",
+      "size": 1863568
+    },
+    {
+      "path": "clean/taschen/military/t62a.glb",
+      "size": 3911196
+    },
+    {
+      "path": "clean/taschen/miscellaneous/cofcup.glb",
+      "size": 121624
+    },
+    {
+      "path": "clean/taschen/miscellaneous/extiisle.glb",
+      "size": 156164
+    },
+    {
+      "path": "clean/taschen/miscellaneous/extinto2.glb",
+      "size": 532372
+    },
+    {
+      "path": "clean/taschen/miscellaneous/fender.glb",
+      "size": 5354164
+    },
+    {
+      "path": "clean/taschen/miscellaneous/lamp5.glb",
+      "size": 617928
+    },
+    {
+      "path": "clean/taschen/miscellaneous/packard.glb",
+      "size": 7052432
+    },
+    {
+      "path": "clean/taschen/miscellaneous/racer.glb",
+      "size": 5218892
+    },
+    {
+      "path": "clean/taschen/miscellaneous/racer3.glb",
+      "size": 5436500
+    },
+    {
+      "path": "clean/taschen/miscellaneous/stshoe.glb",
+      "size": 529532
+    },
+    {
+      "path": "clean/taschen/miscellaneous/torb.glb",
+      "size": 525132
+    },
+    {
+      "path": "clean/taschen/motorcycles/guzzi_1.glb",
+      "size": 1195904
+    },
+    {
+      "path": "clean/taschen/motorcycles/katana.glb",
+      "size": 614284
+    },
+    {
+      "path": "clean/taschen/motorcycles/mguzzica.glb",
+      "size": 1827292
+    },
+    {
+      "path": "clean/taschen/motorcycles/mjeln.glb",
+      "size": 779564
+    },
+    {
+      "path": "clean/taschen/motorcycles/shadow.glb",
+      "size": 3569388
+    },
+    {
+      "path": "clean/taschen/motorcycles/vintage.glb",
+      "size": 494528
+    },
+    {
+      "path": "clean/taschen/old_army/buccan.glb",
+      "size": 5457768
+    },
+    {
+      "path": "clean/taschen/old_army/cannon2.glb",
+      "size": 1660872
+    },
+    {
+      "path": "clean/taschen/old_army/doglh.glb",
+      "size": 1031912
+    },
+    {
+      "path": "clean/taschen/old_army/grenade2.glb",
+      "size": 3275380
+    },
+    {
+      "path": "clean/taschen/plants/drosera.glb",
+      "size": 802088
+    },
+    {
+      "path": "clean/taschen/plants/rose1.glb",
+      "size": 149692
+    },
+    {
+      "path": "clean/taschen/plants/rose2.glb",
+      "size": 145464
+    },
+    {
+      "path": "clean/taschen/plants/saguaro.glb",
+      "size": 811176
+    },
+    {
+      "path": "clean/taschen/plants/salixa.glb",
+      "size": 670980
+    },
+    {
+      "path": "clean/taschen/plants/styrax.glb",
+      "size": 616028
+    },
+    {
+      "path": "clean/taschen/public_works/dumper.glb",
+      "size": 11961612
+    },
+    {
+      "path": "clean/taschen/public_works/excava.glb",
+      "size": 9619352
+    },
+    {
+      "path": "clean/taschen/public_works/fall.glb",
+      "size": 478172
+    },
+    {
+      "path": "clean/taschen/public_works/fd14e.glb",
+      "size": 305292
+    },
+    {
+      "path": "clean/taschen/public_works/fh2000.glb",
+      "size": 1321204
+    },
+    {
+      "path": "clean/taschen/public_works/torocat.glb",
+      "size": 260376
+    },
+    {
+      "path": "clean/taschen/sculptures/angel2.glb",
+      "size": 704508
+    },
+    {
+      "path": "clean/taschen/sculptures/athene.glb",
+      "size": 6343136
+    },
+    {
+      "path": "clean/taschen/sculptures/dama.glb",
+      "size": 476164
+    },
+    {
+      "path": "clean/taschen/sculptures/mercury.glb",
+      "size": 1344900
+    },
+    {
+      "path": "clean/taschen/ships/ix_b.glb",
+      "size": 498860
+    },
+    {
+      "path": "clean/taschen/ships/offshore.glb",
+      "size": 335144
+    },
+    {
+      "path": "clean/taschen/ships/pinta.glb",
+      "size": 3591564
+    },
+    {
+      "path": "clean/taschen/ships/sanjuan.glb",
+      "size": 7384396
+    },
+    {
+      "path": "clean/taschen/ships/shrimp.glb",
+      "size": 1869260
+    },
+    {
+      "path": "clean/taschen/ships/smit.glb",
+      "size": 454016
+    },
+    {
+      "path": "clean/taschen/ships/thonie1.glb",
+      "size": 625288
+    },
+    {
+      "path": "clean/taschen/sports/basketac.glb",
+      "size": 356764
+    },
+    {
+      "path": "clean/taschen/sports/ecycle.glb",
+      "size": 548164
+    },
+    {
+      "path": "spearman.glb",
+      "size": 5204296
+    }
+  ]
+}

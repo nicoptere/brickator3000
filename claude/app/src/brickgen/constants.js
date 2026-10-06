@@ -8,7 +8,7 @@ export const PAD = 16.0;            // grid phases (offsets) are multiples of SA
 /** every tunable of the method, with the values used by the Python reference */
 export const DEFAULTS = {
   // scale
-  studs: 16,                 // stud count of the reference side; 'auto' (or studsAuto) = chosen per model by pipeline.autoStuds (round 8)
+  studs: 15,                 // stud count of the reference side; 'auto' (or studsAuto) = chosen per model by pipeline.autoStuds (round 8)
   studsAuto: false,          // UI affordance for studs: 'auto': the stud count is chosen from the mesh (piece budget, feature sizes, lattice)
   ref: 'min3',               // 'min3' = smallest side of the bounding box, 'maxh' = longest horizontal side
   // volume
@@ -38,9 +38,9 @@ export const DEFAULTS = {
   // grid phase search
   offsets: [0, 4],           // LDU, tried on both axes (multiples of 4); the Precision slider (0/4/8/12) sets it to every multiple of 4 up to its value
   precision: 4,
-  partSet: 'limited',   // 'limited' (core catalogue) | 'extended' (+ extra LDraw shapes)
+  partSet: 'extended',   // 'limited' (core catalogue) | 'extended' (+ extra LDraw shapes)
   shapeSolo: ['round'],      // kinds of the measured shape parts (catalog_shapes.js) allowed as solo candidates: discs / quarter discs / cones
-  shapeParts: false,    // let the frequent shapes compete as single parts too (they are always available to motifs): arches, panels, dishes, corner tiles, curved-top bricks (catalog_shapes.js)
+  shapeParts: true,    // let the frequent shapes compete as single parts too (they are always available to motifs): arches, panels, dishes, corner tiles, curved-top bricks (catalog_shapes.js)
   // symmetry
   symmetry: 'off',           // 'auto' | 'off'
   symThreshold: 0.006,       // mean mirror distance / bbox diagonal
@@ -68,7 +68,7 @@ export const DEFAULTS = {
   autoPieces: 1200, autoPilot: [12, 20], autoExp: 2.25, autoExpRange: [1.5, 3.5], autoCurv: 8, autoCurvPct: 0.5, autoCurvShare: 0.1, autoThick: 1, autoThickPct: 0.1, autoCrease: 35, autoMin: 8, autoMax: 64,
   autoSpan: 0.15, autoSteps: 3, autoTrend: 0.02, autoRef: 80, autoRefMax: 112,   // the tie-break: 7 candidates within +-15 %, each field measured (IoU) against a reference of >= 2x the finest (80..112 studs), detrended by .02 per doubling of the pieces (above the ~.005 a smooth shape gains: fewer pieces win ties)
   // phases
-  dropLoose: 1,              // post: components of at most this many pieces that touch nothing are removed (a cheese on a wing tip); 0 = keep
+  dropLoose: 0,              // post: components of at most this many pieces that touch nothing are removed (a cheese on a wing tip); 0 = keep
   roundCorners: true,        // after finish: exposed 1x1 tiles on convex corners become quarter-round tiles (post.roundCorners); IoU unchanged, table 12 / duck 56 corners
   discs: true, discMinR: 2, discRms: 0.45, discIoU: 0.85, discsExposed: true, discRing: 1.5,   // disc layers (discs.js, phase A1 before the motifs): a level whose solid component is a circle of radius >= discMinR studs is laid as rows of plates, direction alternating per level. Measured: table 660 -> 609 pieces, IoU .789 -> .799; duck -19 pieces; the others untouched (no round layer). discsExposed limits it to layers whose top shows (table tops, rims); laying every layer of a sphere overfills (table rim: IoU .727)
   roundsAfterSkin: 'auto', roundsSlopedShare: 0.3,   // 'auto': the round family runs after the sloped skin when at least this share of the top surface is sloped (an animal, a dome); before it otherwise (a table, a rounded box). true / false force the order
@@ -92,10 +92,10 @@ export const DEFAULTS = {
   beatFlat: 0.9,             // a shaped part (slope, curve, round, wedge) is only a candidate where its error is below this fraction of the best flat plate / brick stack in the same box (1 = off)
   tileExposure: 0.35,        // a tile is refused if the level above is fuller than this
   // crust: erase the hollow core (voxels deeper than crustDepth LDU below the surface) so only the shell is solved
-  crust: true, crustDepth: 40,     // 40 = two studs of wall; 60 only hollows chunky ones
+  crust: false, crustDepth: 40,     // 40 = two studs of wall; 60 only hollows chunky ones
   // islands: MST of thin tubes between the 3D components of the source volume (before solving)
   decimate: true,            // erase tiny floating components (debris) even when islands are not tube-joined
-  islands: true, tubeWidth: 4, islandDrop: 0.002, islandDropMax: 40, islandOcc: 0.25, islandThinPoints: 2,
+  islands: false, tubeWidth: 4, islandDrop: 0.002, islandDropMax: 40, islandOcc: 0.25, islandThinPoints: 2,
   // post-process
   retile: true,              // three levels of plates -> bricks, committed per level only if connectivity holds
   tallBricks: false,         // after retile: stacked plain bricks of one footprint -> the tall part (1x1x3, 1x1x5, 2x2x3 ...). Measured: 0.5-1.3 % fewer pieces, IoU unchanged except the teapot (-.003: two more welds); off until that is understood
@@ -103,19 +103,19 @@ export const DEFAULTS = {
   pillars: true, pillarMinLevels: 3,
   pillarCluster: 2,          // thin (1x1) neighbours a pole may touch per level: 0 = only a fully isolated column (old
                              // behaviour), 2 = strut pairs and rows of railings convert too. Wider neighbours always veto.
-  bracing: true, braceMaxGap: 3, braceMaxSpan: 4, braceRounds: 40,
-  splice: true, spliceRounds: 60, spliceTries: 80, spliceTime: 6000,   // re-cut side-by-side pieces of different components so a 1x2 plate spans the seam
-  bridge: true, bridgeMax: 10, bridgeRounds: 120,    // shortest plate chain (zig-zag) through free cells between two components
+  bracing: false, braceMaxGap: 3, braceMaxSpan: 4, braceRounds: 40,
+  splice: false, spliceRounds: 60, spliceTries: 80, spliceTime: 6000,   // re-cut side-by-side pieces of different components so a 1x2 plate spans the seam
+  bridge: false, bridgeMax: 10, bridgeRounds: 120,    // shortest plate chain (zig-zag) through free cells between two components
   bridgeOutside: false, bridgeFill: 0.3,             // chains stay inside the source volume (a cell with mean fill < bridgeFill is blocked); true = the old search through any empty cell
   // the final weld (post.weld): what is still in several pieces after everything else is joined by the same chain search with a
   // long budget and air priced at `weldAir` hops per cell instead of forbidden, so a route inside the solid always wins
   weld: true, weldAir: 8, weldMax: 40, weldPasses: 3, weldRounds: 80, weldReverse: true,   // pass k prices an air cell at weldAir / 2^k hops with a budget of weldMax * 2^k: cheap hidden chains first, long ones only if something is still loose
   bridgeFlatten: true, bridgeFlattenMax: 6,          // a component with no stud to build on (a lone slope, an inverted-plus-slope lens) is rebuilt as boxes of the same footprint so a chain can reach it; only up to this many pieces, the shaped skin is not worth losing
-  vertexNormals: false,      // main-thread pre-step (three.js welded vertex normals): flips reversed triangles before the ray cast
+  vertexNormals: true,       // main-thread pre-step (three.js welded vertex normals): flips reversed triangles before the ray cast
   supports: false, groundSupports: false, supportMinFrac: 0.01, supportSpacing: 24,
   finish: false, finishBricks: 'add', // 'add' (tile on top of exposed bricks) | 'none'
   // colour
   colorK: 10,
   colorVisible: true,        // colour from surfaces visible from outside only (hidden interior geometry cannot bleed through a shell)
-  palette: 'cheat',          // 'cheat' (mean of nearest samples) | 'lego' (snap to the LEGO solid palette)
+  palette: 'lego',           // 'cheat' (mean of nearest samples) | 'lego' (snap to the LEGO solid palette)
 };

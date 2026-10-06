@@ -10,6 +10,7 @@ import { StudioViewport } from './studio/viewport3d.js';
 import { sfx } from './studio/sfx.js';
 import { fixWinding, meshIslands, islandColors, islandPalette } from './studio/meshtools.js';
 import { loadModel, reorient } from './loaders.js';
+import { fetchModelList, fetchModelBuffer } from './modelSource.js';
 import { runMethod, cancel, chooseStuds, rebuildRegion, poolSize } from './engine.js';
 import { DEFAULTS, CATALOG, FULL_CATALOG, catalogFor } from './brickgen/pipeline.js';
 import { buildMesh, toGLB, toLDR, KIND_COL } from './brickgen/export.js';
@@ -21,7 +22,7 @@ import { FEATURES, FEATURE_GROUPS, featureState, featurePatch } from './presets.
 import { Field } from './fields.jsx';
 
 const { Text, Title } = Typography;
-const STORE = 'brickgen.studio.v4';
+const STORE = 'brickgen.studio.v6';
 const loadOpts = () => { try { return { ...DEFAULTS, ...JSON.parse(localStorage.getItem(STORE) || '{}') }; } catch { return { ...DEFAULTS }; } };
 const download = (data, name, type) => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([data], { type })); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 5000); };
 const fmt = (v, d = 3) => (typeof v === 'number' ? +v.toFixed(d) : v);
@@ -55,7 +56,7 @@ function Section({ title, open, setOpen, color = 'var(--tx)', children }) {
 // the panel-2 switches: the high-level feature groups (presets.js) a model's look actually depends on. Everything else -
 // every individual option behind them - is in the "All parameters" drawer, which shows the same groups at the top.
 const SOURCE_FEATURES = ['symmetry'].map((k) => FEATURES.find((f) => f.key === k));   // a property of the mesh, so it sits with the model
-const PANEL_FEATURES = ['discs', 'curves', 'motifs', 'snot', 'crust', 'connect', 'weld', 'supports', 'finish'];
+const PANEL_FEATURES = ['discs', 'curves', 'weld', 'motifs', 'snot', 'crust', 'connect', 'supports', 'finish'];
 const STUDIO_FEATURES = PANEL_FEATURES.map((k) => FEATURES.find((f) => f.key === k)).filter(Boolean);
 // the kinds of the measured LDraw shapes (catalog_shapes.js) that `shapeSolo` can let compete as single parts
 const SHAPE_KINDS = [['round', 'round plates, discs, cones'], ['curved', 'curved tops'], ['shaped', 'arches, panels, wedges'],
@@ -87,7 +88,7 @@ function StudioInner() {
   const [model, setModel] = useState(null), [up, setUp] = useState('y');
   const [isl, setIsl] = useState(null), [smooth, setSmooth] = useState(true), [busy, setBusy] = useState(false), [stage, setStage] = useState(['', 0]);
   const [res, setRes] = useState(null);
-  const [officialColors, setOfficialColors] = useState(false);
+  const [officialColors, setOfficialColors] = useState(true);
   const [viewMode, setViewMode] = useState('mesh'), [colorMode, setColorMode] = useState('piece'), [outline, setOutline] = useState(true);
   const [selectedIsland, setSelectedIsland] = useState(null);
   const [history, setHistory] = useState([]);
@@ -200,7 +201,7 @@ function StudioInner() {
     vp.current.onSelectIsland = (id, faceIdx) => onSelectIslandRef.current && onSelectIslandRef.current(id, faceIdx);
     vp.current.onModelRotated = (has) => setHasRot(has);
     vp.current.onDeletePiece = (idx, p) => onDeletePieceRef.current && onDeletePieceRef.current(idx, p);
-    fetch('/api/models').then((r) => r.json()).then((d) => setModels((d.models || []).sort((a, b) => a.path.localeCompare(b.path)))).catch(() => setModels([]));
+    fetchModelList().then((list) => setModels(list.sort((a, b) => a.path.localeCompare(b.path)))).catch(() => setModels([]));
     return () => vp.current && vp.current.dispose();
   }, []);
 
@@ -399,7 +400,7 @@ function StudioInner() {
     setModelPath(p);
     { const d = p.replace(/^clean\//, '').split('/').slice(0, -1); setExpanded((e) => [...new Set([...e, ...d.map((_, i) => d.slice(0, i + 1).join('/'))])]); }
     try {
-      const buf = await (await fetch('/models/' + p)).arrayBuffer();
+      const buf = await fetchModelBuffer(p);
       const m = await loadModel(p, buf), mm = { name: p.split('/').pop(), ...reorient(m, upAxis) };
       mm.origTris = mm.tris; mm.origVcols = mm.vcols; mm.deletedIslands = 0;
       setModel(mm); showModel(mm);
@@ -1062,16 +1063,26 @@ function StudioInner() {
           <Section title="Export" open={openExport} setOpen={setOpenExport}>
             {!res && <Text type="secondary" style={{ fontSize: 12 }}>Compute a model to export it.</Text>}
             <div className="exports">
-              <Button size="small" type="primary" icon={<DownloadOutlined />} disabled={!res} onClick={exportLDR}>.ldr (LDraw)</Button>
+              <Tooltip title="A printable building booklet: a perspective cover, then one picture per step with the pieces it adds drawn in red and listed under it, and the full parts list at the end. Opens as an HTML file; print it to PDF from the browser.">
+                <Button
+                  size="small"
+                  type="primary"
+                  icon={<ReadOutlined />}
+                  disabled={!res}
+                  loading={bookBusy}
+                  onClick={exportBooklet}
+                  style={{ gridColumn: '1 / -1', background: '#2563eb', borderColor: '#2563eb', color: '#fff', fontWeight: 600, justifyContent: 'center' }}
+                >
+                  Instructions
+                </Button>
+              </Tooltip>
+              <Button size="small" icon={<DownloadOutlined />} disabled={!res} onClick={exportLDR}>.ldr (LDraw)</Button>
               <Button size="small" icon={<DownloadOutlined />} disabled={!res} onClick={() => exportGLB('piece')}>.glb</Button>
               <Button size="small" icon={<DownloadOutlined />} disabled={!res} onClick={() => exportGLB('kind')}>.glb by kind</Button>
               <Button size="small" icon={<DownloadOutlined />} disabled={!res} onClick={exportJSON}>report .json</Button>
               <Button size="small" icon={<CameraOutlined />} disabled={!model} onClick={png}>snapshot .png</Button>
               <Select size="small" value={snapSpp} onChange={setSnapSpp} options={[64, 128, 256, 512, 1024].map((v) => ({ value: v, label: `${v} spp` }))} />
               <Button size="small" icon={<AppstoreOutlined />} onClick={() => { sfx.click(); setPartsOpen(true); }}>Parts list</Button>
-              <Tooltip title="A printable building booklet: a perspective cover, then one picture per step with the pieces it adds drawn in red and listed under it, and the full parts list at the end. Opens as an HTML file; print it to PDF from the browser.">
-                <Button size="small" icon={<ReadOutlined />} disabled={!res} loading={bookBusy} onClick={exportBooklet}>instructions</Button>
-              </Tooltip>
             </div>
           </Section>
         </div>

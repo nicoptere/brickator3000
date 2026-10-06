@@ -145,11 +145,17 @@ export async function shootBooklet(vpc, cat, { title = 'model', opts = {}, meta 
   const finals = shootQuickViews(vpc);
   onStage && onStage('Drawing the steps');
   const shown = new Uint8Array(P.length), hot = new Uint8Array(P.length), images = [];
-  const minSpan = Math.max(8, 0.55 * Math.max(vpc.W, vpc.D) / 20);             // W / D are LDU, 20 per stud: a 3-piece step keeps half the model in frame
+  const minSpan = 10;                                                          // studs: focus closely on the new parts rather than zoomed-out whole model overview
   for (let k = 0; k < steps.length; k++) {
     hot.fill(0); for (const n of steps[k].idx) { shown[n] = 1; hot[n] = 1; }
-    vpc.showStep(shown, hot, { dimRGB, dimInkRGB, inkRGB });                 // new pieces: own colour, black line; built: grey, grey line
-    images.push(vpc.captureIso(vpc.piecesBox(steps[k].idx), { ar, maxW, margin: 0.75, pad: 0.04, minSpan }));
+    vpc.showStep(shown, hot, { dimRGB, dimInkRGB, inkRGB });
+    const dir = steps[k].view ? steps[k].view.dir : [1, 1, 1];
+    const box = vpc.piecesBox(steps[k].idx);
+    const focusedBox = {
+      min: [box.min[0], Math.max(0, box.min[1] - 24), box.min[2]],
+      max: [box.max[0], box.max[1], box.max[2]]
+    };
+    images.push(vpc.captureIso(focusedBox, { ar, maxW, margin: 2.0, pad: 0.05, minSpan, dir }));
     if (onProgress && k % 4 === 0) { onProgress(k / steps.length); await new Promise((r) => setTimeout(r)); }
   }
   const withParts = steps.map((s) => ({ ...s, parts: stepParts(P, s.idx, by) }));

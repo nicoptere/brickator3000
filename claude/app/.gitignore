@@ -1,3 +1,13 @@
 node_modules
 dist
 out
+
+step_images
+
+public/models/creature_13_booklet.html 
+public/models/creature_13_cover.png 
+public/models/creature_13_debug_steps.html 
+public/models/creature_13_pieces.json 
+public/models/creature_13_report.json 
+public/models/creature_13_views.png 
+public/models/creature_13.ldr

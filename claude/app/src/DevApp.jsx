@@ -3,6 +3,7 @@ import { ConfigProvider, theme, Layout, Button, Select, Upload, InputNumber, Swi
 import { UploadOutlined, ThunderboltOutlined, StopOutlined, DownloadOutlined, ReloadOutlined, AimOutlined } from '@ant-design/icons';
 import { Viewer } from './viewer.js';
 import { loadModel, reorient } from './loaders.js';
+import { fetchModelList, fetchModelBuffer } from './modelSource.js';
 import { runMethod, cancel, poolSize } from './engine.js';
 import { DEFAULTS, CATALOG } from './brickgen/pipeline.js';
 import { buildMesh, toGLB, toLDR, KIND_COL } from './brickgen/export.js';
@@ -38,7 +39,7 @@ export default function DevApp() {
 
   useEffect(() => {
     viewer.current = new Viewer(vEl.current, { onHover: (p, e) => setHover(p ? { p, x: e.clientX, y: e.clientY } : null) });
-    fetch('/api/models').then((r) => r.json()).then((d) => setModels(d.models || [])).catch(() => setModels([]));
+    fetchModelList().then((list) => setModels(list)).catch(() => setModels([]));
     return () => viewer.current && viewer.current.dispose();
   }, []);
 
@@ -57,7 +58,7 @@ export default function DevApp() {
   async function openPath(p) {
     setModelPath(p);
     try {
-      const buf = await (await fetch('/models/' + p)).arrayBuffer();
+      const buf = await fetchModelBuffer(p);
       const m = await loadModel(p, buf); const mm = { name: p.split('/').pop(), ...reorient(m, up) };
       setModel(mm); showSource(mm); message.success(`${mm.name}: ${(mm.tris.length / 9).toLocaleString()} triangles`);
     } catch (e) { message.error(String(e.message || e)); }

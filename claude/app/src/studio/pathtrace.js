@@ -11,7 +11,7 @@ const s2l = (c) => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4
 
 /** builds the offscreen scene and returns { el (the canvas, show it while it converges), run(onProgress) , url(), dispose() }. `vp` = the StudioViewport (camera, lego group transform) */
 let envPromise = null;
-const loadEnv = () => envPromise || (envPromise = new EXRLoader().loadAsync(new URL('/env/studio.exr', location.href).href).then((t) => { t.mapping = THREE.EquirectangularReflectionMapping; t.minFilter = t.magFilter = THREE.LinearFilter; return t; }));
+const loadEnv = () => envPromise || (envPromise = new EXRLoader().loadAsync(new URL('./env/studio.exr', location.href).href).then((t) => { t.mapping = THREE.EquirectangularReflectionMapping; t.minFilter = t.magFilter = THREE.LinearFilter; return t; }));
 
 /**
  * Extra options for pictures that are not the viewport's own: `camera` (a THREE camera to shoot from instead of the viewport's),
