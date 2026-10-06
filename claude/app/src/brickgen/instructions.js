@@ -131,11 +131,10 @@ const setNumber = (title, n) => { let h = 7; for (const ch of `${title}:${n}`) h
  * "Save as PDF" produces the leaflet directly. The cover is laid out like a real set's: logo tile, the model's name as the
  * theme, the set number, the finished model on a pale band, the booklet number, the warning box.
  */
-export function bookletHTML({ title = 'model', cover = null, covers = null, final = null, steps = [], images = [], bom = [], meta = {}, perPage = 4, brand = 'LOGO' }) {
-  covers = covers || (cover ? [cover] : []);
-  // the last page of the build is the finished model: its own picture when one was shot, else the last cover view (so the
-  // page is not the same image as the one next to it on the cover)
-  const done = final || covers[covers.length - 1] || null;
+export function bookletHTML({ title = 'model', cover = null, covers = null, coverPortrait = false, final = null, finals = null, steps = [], images = [], bom = [], meta = {}, perPage = 4, brand = 'LOGO' }) {
+  const hero = cover || (covers && covers[0]) || null;                 // the cover is ONE picture, as large as the page allows
+  // the last page of the build is the finished model, from a couple of angles (quick renders, not the cover's long one)
+  const done = (finals && finals.length ? finals : [final || (covers && covers[covers.length - 1])]).filter(Boolean);
   const esc = (s) => String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
   const pages = []; for (let k = 0; k < steps.length; k += perPage) pages.push(steps.slice(k, k + perPage).map((s, q) => ({ s, n: k + q })));
   const swatches = (p) => p.colours && p.colours.length > 1 ? `<span class="sw">${p.colours.slice(0, 8).map(([c]) => `<em style="background:${c}"></em>`).join('')}</span>` : '';
@@ -157,20 +156,20 @@ export function bookletHTML({ title = 'model', cover = null, covers = null, fina
   .sheet { width: 297mm; height: 210mm; margin: 8mm auto; padding: 10mm; background: #fff; box-shadow: 0 1px 6px rgba(0,0,0,.18); position: relative; overflow: hidden; }
   .bar { position: sticky; top: 0; z-index: 9; background: #16181d; color: #fff; padding: 8px 14px; display: flex; gap: 14px; align-items: center; font-size: 12px; }
   .bar button { font: inherit; padding: 4px 12px; border: 0; border-radius: 4px; background: #fff; color: #16181d; cursor: pointer; font-weight: 600; }
-  /* ---- cover */
-  .cover { padding: 0; background: var(--band) url("${brickPattern()}") repeat; display: flex; flex-direction: column; }
-  .cover .top { position: absolute; left: 0; right: 0; top: 0; z-index: 2; display: flex; align-items: center; gap: 8mm; padding: 6mm 12mm 0; height: 34mm; }
+  /* ---- cover: the title block and the facts above, then one picture filling everything that is left */
+  .cover { padding: 8mm 10mm 7mm; background: var(--band) url("${brickPattern()}") repeat; display: flex; flex-direction: column; gap: 3mm; }
+  .cover.portrait { width: 210mm; height: 297mm; }
+  .cover .top { display: flex; align-items: center; gap: 7mm; height: 26mm; flex: none; }
   .logo { width: 24mm; height: 24mm; background: var(--red); border-radius: 2.5mm; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 0 1.4mm #fff, inset 0 0 0 2.2mm var(--red); flex: none; }
   .logo span { font: 900 7.8mm/1 "Arial Black", "Helvetica Neue", Arial, sans-serif; letter-spacing: -.02em; color: #fff; -webkit-text-stroke: .55mm #000; paint-order: stroke fill; text-shadow: 0 0 0 var(--yellow), 0 0 1.2mm var(--yellow); }
-  .theme { font: 900 17mm/1 "Arial Black", "Helvetica Neue", Arial, sans-serif; letter-spacing: -.03em; text-transform: uppercase; color: #111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .theme { font: 900 15mm/1 "Arial Black", "Helvetica Neue", Arial, sans-serif; letter-spacing: -.03em; text-transform: uppercase; color: #111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cover.portrait .theme { font-size: 11mm; }
   .theme i { font-style: normal; color: var(--red); }
   .setno { font: 700 6.5mm/1 "Helvetica Neue", Arial, sans-serif; margin-left: auto; align-self: flex-end; padding-bottom: 1mm; }
-  /* the models take 95 % of the page height: two perspective views side by side on the pale band, which is the whole page;
-     the logo row and the bottom row sit over it */
-  .hero { position: absolute; left: 0; right: 0; top: 0; bottom: 0; display: flex; align-items: center; justify-content: center; gap: 4mm; padding: 0 10mm; }
-  .hero img { height: 199.5mm; max-width: 48%; object-fit: contain; }
-  .hero img:only-child { max-width: 80%; }
-  .cover .bottom { position: absolute; left: 12mm; right: 12mm; bottom: 7mm; z-index: 2; display: flex; align-items: flex-end; gap: 6mm; }
+  /* one picture, centred, as large as the space under the title block allows (it is transparent: the band shows through) */
+  .hero { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; }
+  .hero img { width: 100%; height: 100%; object-fit: contain; }
+  .cover .cbar { display: flex; align-items: center; gap: 5mm; flex: none; }
   .book { width: 13mm; height: 13mm; background: #fff; border: .5mm solid #888; display: flex; align-items: center; justify-content: center; font: 900 8mm/1 Arial, sans-serif; flex: none; }
   .warn { border: .5mm solid #111; background: #fff; padding: 1.6mm 3mm; font-size: 11px; line-height: 1.25; }
   .warn b { font-weight: 800; }
@@ -195,8 +194,8 @@ export function bookletHTML({ title = 'model', cover = null, covers = null, fina
   .legend em { display: inline-block; width: 9px; height: 9px; border-radius: 2px; vertical-align: -1px; margin: 0 2px 0 6px; }
   /* ---- the finished model (last page of the build) */
   .done { display: flex; flex-direction: column; align-items: center; }
-  .done .big { flex: 1; min-height: 0; width: 100%; display: flex; align-items: center; justify-content: center; }
-  .done .big img { max-height: 100%; max-width: 100%; object-fit: contain; }
+  .done .big { flex: 1; min-height: 0; width: 100%; display: flex; align-items: center; justify-content: center; gap: 6mm; }
+  .done .big img { max-height: 100%; max-width: ${(100 / Math.max(1, done.length) - 2).toFixed(0)}%; object-fit: contain; }
   .done .cap { display: flex; align-items: flex-end; gap: 6mm; width: 100%; padding-top: 3mm; }
   .done h1 { font: 900 11mm/1 "Arial Black", "Helvetica Neue", Arial, sans-serif; letter-spacing: -.03em; text-transform: uppercase; margin: 0; }
   .done h1 i { font-style: normal; color: var(--red); }
@@ -213,19 +212,20 @@ export function bookletHTML({ title = 'model', cover = null, covers = null, fina
     body { background: #fff; }
     .bar { display: none; }
     .sheet { width: 277mm; height: 190mm; margin: 0; padding: 0; box-shadow: none; break-after: page; overflow: visible; }
-    .cover { width: 297mm; height: 210mm; margin: -10mm; }
+    .cover { width: 297mm; height: 210mm; margin: -10mm; padding: 14mm 18mm 13mm; }
+    .cover.portrait { width: 210mm; height: 297mm; page: coverpage; }
+    @page coverpage { size: A4 portrait; margin: 10mm; }
     .foot { bottom: -6mm; left: 0; right: 0; }
     .sheet:last-child { break-after: auto; }
     @page { size: A4 landscape; margin: 10mm; }
   }
 </style></head><body>
-<div class="bar"><b>${esc(name)}</b> building instructions &mdash; ${steps.length} steps, ${pages.length + (done ? 3 : 2)} pages
+<div class="bar"><b>${esc(name)}</b> building instructions &mdash; ${steps.length} steps, ${pages.length + (done.length ? 3 : 2)} pages
   <button onclick="window.print()">Print / Save as PDF</button></div>
 
-<section class="sheet cover">
+<section class="sheet cover${coverPortrait ? ' portrait' : ''}">
   <div class="top"><div class="logo"><span>${esc(brand)}</span></div><div class="theme">${esc(name)}</div><div class="setno">${setNo}</div></div>
-  <div class="hero">${covers.map((c, k) => `<img src="${c}" alt="the finished model${covers.length > 1 ? (k ? ', from the right' : ', from the left') : ''}">`).join('')}</div>
-  <div class="bottom">
+  <div class="cbar">
     <div class="book">1</div>
     <div class="warn">&#9888; <b>WARNING: CHOKING HAZARD.</b> Toy contains small parts.<br>Not for children under 3 years.</div>
     <div class="facts">
@@ -236,13 +236,14 @@ export function bookletHTML({ title = 'model', cover = null, covers = null, fina
       ${meta.studs ? `<div><b>${meta.studs}</b><span>studs</span></div>` : ''}
     </div>
   </div>
+  ${hero ? `<div class="hero"><img src="${hero}" alt="the finished model"></div>` : ''}
 </section>
 
 ${pages.map((pg, k) => `<section class="sheet"><div class="grid">${pg.map(stepCard).join('')}</div>
   <div class="foot"><span>${esc(name)} &middot; ${setNo}</span><span class="legend">new pieces in colour<em style="background:#acacac"></em>already built${meta.weld ? ' &middot; weld plates hold separate parts together and may not follow the surface' : ''}</span><span>${k + 1} / ${pages.length}</span></div></section>`).join('\n')}
 
-${done ? `<section class="sheet done">
-  <div class="big"><img src="${done}" alt="the finished model"></div>
+${done.length ? `<section class="sheet done">
+  <div class="big">${done.map((u) => `<img src="${u}" alt="the finished model">`).join('')}</div>
   <div class="cap">
     <div><h1>Finished<i>.</i></h1><p>${esc(name)} &middot; ${meta.pieces || 0} pieces in ${steps.length} steps</p></div>
     <div class="facts">

@@ -5,29 +5,89 @@ import { planSteps, stepParts, billOfMaterials, bookletHTML } from '../brickgen/
 import { createPathTrace } from './pathtrace.js';
 
 /**
- * The cover pictures: the finished model path-traced in perspective from two three-quarter views - turned to its left and to
- * its right - on a transparent background (no floor, no backdrop: the PNG keeps its alpha, the page supplies the colour).
- * `azimuth` degrees off the front, `elevation` degrees above the ground, `fov` the lens. Returns [leftPNG, rightPNG], or one
- * PNG per entry of `views` ([{ az, el }], used for the extra hero shot of the finished-model page).
+ * The cover picture: the finished model path-traced in perspective on a transparent background (no floor, no backdrop - the
+ * PNG keeps its alpha and the page supplies the colour), framed as tightly as the projection allows. `azimuth` degrees off the
+ * front, `elevation` degrees above the ground, `fov` the lens, `margin` how much air is left around the model. Returns one PNG
+ * per entry of `views` ([{ az, el }]), which defaults to a single three-quarter view.
  */
-export async function shootCover(vpc, cat, { spp = 256, azimuth = 38, elevation = 24, fov = 32, outHeight = 1400, onProgress = null, views = null } = {}) {
+export async function shootCover(vpc, cat, { spp = 256, azimuth = 30, elevation = 22, fov = 32, outHeight = 1600, margin = 1.01, onProgress = null, views = null } = {}) {
   vpc.lego.updateMatrixWorld(true);
   const box = new THREE.Box3(vpc.lego.localToWorld(new THREE.Vector3(0, 0, 0)), vpc.lego.localToWorld(new THREE.Vector3(vpc.W, vpc.H, vpc.D)));
   const c = box.getCenter(new THREE.Vector3()), r = box.getSize(new THREE.Vector3()).length() / 2;
-  const dist = r / Math.sin(fov * Math.PI / 360) * 1.05;
-  const out = [], list = views || [{ az: -azimuth }, { az: azimuth }];
+  const dist = r / Math.sin(fov * Math.PI / 360) * 1.0;                     // as close as the bounding sphere allows: little air around the model
+  const out = [], list = views || [{ az: azimuth }];
   for (const v of list) {
     const a = v.az * Math.PI / 180, e = (v.el ?? elevation) * Math.PI / 180;
     const cam = new THREE.PerspectiveCamera(fov, 1, dist / 100, dist * 10);
     cam.position.set(c.x + Math.sin(a) * Math.cos(e) * dist, c.y + Math.sin(e) * dist, c.z + Math.cos(a) * Math.cos(e) * dist);
     cam.lookAt(c); cam.updateMatrixWorld(true);
-    const job = await createPathTrace(vpc, { pieces: vpc.pieces, cat, colorMode: 'piece', dark: false, spp, camera: cam, transparent: true, floor: false, outHeight, margin: 1.08 });
+    const job = await createPathTrace(vpc, { pieces: vpc.pieces, cat, colorMode: 'piece', dark: false, spp, camera: cam, transparent: true, floor: false, outHeight, margin });
     try {
       await job.run((n, total) => onProgress && onProgress((out.length + n / total) / list.length));
       out.push(job.url());
     } finally { job.dispose(); }
   }
   return out;
+}
+
+/**
+ * The finished-model page's pictures: the viewport's own toon render from a couple of three-quarter angles, framed on the
+ * model. No path tracer - this page is a reminder of what was built, not the cover, and a render takes milliseconds.
+ */
+export function shootQuickViews(vpc, { azimuths = [-32, 32], elevation = 20, maxW = 1300, pad = 0.015, bg = '#ffffff', fov = 32 } = {}) {
+  vpc.lego.updateMatrixWorld(true);
+  // the real world box of what is drawn (the group may be turned or offset), so nothing is cropped
+  const box = new THREE.Box3().setFromObject(vpc.lego);
+  const c = box.getCenter(new THREE.Vector3()), r = box.getSize(new THREE.Vector3()).length() / 2;
+  const cam = vpc.camera, pos0 = cam.position.clone(), tgt0 = vpc.controls.target.clone(), fov0 = cam.fov;
+  const dist = r / Math.sin(fov * Math.PI / 360) * 1.02;
+  const out = [];
+  try {
+    cam.fov = fov;
+    for (const az of azimuths) {
+      const a = az * Math.PI / 180, e = elevation * Math.PI / 180;
+      cam.position.set(c.x + Math.sin(a) * Math.cos(e) * dist, c.y + Math.sin(e) * dist, c.z + Math.cos(a) * Math.cos(e) * dist);
+      vpc.controls.target.copy(c); cam.lookAt(c); cam.updateProjectionMatrix(); cam.updateMatrixWorld(true);
+      out.push(vpc.capture(maxW, { quality: 0.92, rect: tightRect(vpc, box, pad), bg, floor: false }));
+    }
+  } finally {
+    cam.fov = fov0; cam.position.copy(pos0); vpc.controls.target.copy(tgt0); cam.updateProjectionMatrix(); vpc.controls.update();
+  }
+  return out;
+}
+
+/**
+ * the canvas rectangle the model's box projects into, plus a hair of padding - `viewport.modelRect` grows it to a given aspect
+ * ratio, which leaves a tall model swimming in white. Keeping the model's own aspect is what "as few margins as possible" means.
+ */
+function tightRect(vpc, box, pad = 0.015) {
+  const dom = vpc.renderer.domElement, W = dom.width, H = dom.height, v = new THREE.Vector3();
+  let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+  for (const X of [box.min.x, box.max.x]) for (const Y of [box.min.y, box.max.y]) for (const Z of [box.min.z, box.max.z]) {
+    v.set(X, Y, Z).project(vpc.camera);
+    const px = (v.x * 0.5 + 0.5) * W, py = (-v.y * 0.5 + 0.5) * H;
+    if (px < x0) x0 = px; if (px > x1) x1 = px; if (py < y0) y0 = py; if (py > y1) y1 = py;
+  }
+  const w = (x1 - x0) * (1 + 2 * pad), h = (y1 - y0) * (1 + 2 * pad);
+  return { x: (x0 + x1) / 2 - w / 2, y: (y0 + y1) / 2 - h / 2, w, h };
+}
+
+/** width / height of a PNG or JPEG data URI, read from its header - the cover page is portrait when its picture is */
+export function imageSize(dataUrl) {
+  try {
+    const b64 = dataUrl.slice(dataUrl.indexOf(',') + 1), bin = atob(b64.slice(0, 2048));
+    if (bin.charCodeAt(0) === 0x89) {                                        // PNG: IHDR width / height at bytes 16..24
+      const u = (o) => (bin.charCodeAt(o) << 24 | bin.charCodeAt(o + 1) << 16 | bin.charCodeAt(o + 2) << 8 | bin.charCodeAt(o + 3)) >>> 0;
+      return { w: u(16), h: u(20) };
+    }
+    for (let i = 2; i + 9 < bin.length;) {                                   // JPEG: the first SOFn segment
+      if (bin.charCodeAt(i) !== 0xff) { i++; continue; }
+      const m = bin.charCodeAt(i + 1), len = (bin.charCodeAt(i + 2) << 8) | bin.charCodeAt(i + 3);
+      if (m >= 0xc0 && m <= 0xcf && m !== 0xc4 && m !== 0xc8 && m !== 0xcc) return { h: (bin.charCodeAt(i + 5) << 8) | bin.charCodeAt(i + 6), w: (bin.charCodeAt(i + 7) << 8) | bin.charCodeAt(i + 8) };
+      i += 2 + len;
+    }
+  } catch { /* a data URI we cannot read: the page stays landscape */ }
+  return null;
 }
 
 /**
@@ -73,21 +133,16 @@ export async function shootBooklet(vpc, cat, { title = 'model', opts = {}, meta 
   vpc.setAllStuds(true);                                                       // a plate must show its studs even in the steps before something covers them
   const all = new Uint8Array(P.length).fill(1);
   vpc.showStep(all, null);
-  // the cover: the finished model in its own colours, in perspective; plus the hero shot of the last page
-  let covers = null, final = null;
+  // the cover: ONE path-traced view of the finished model, framed as tightly as the lens allows; the last page gets two quick
+  // toon views instead (a reminder of what was built - it does not need a second long render)
+  let cover = null;
   if (coverOpt !== false) {
-    const { hero = true, azimuth = 38, elevation = 24, ...co } = coverOpt;
-    const views = [{ az: -azimuth }, { az: azimuth }, ...(hero ? [{ az: 14, el: elevation - 5 }] : [])];
-    try {
-      onStage && onStage(hero ? 'Rendering the cover and the finished model' : 'Rendering the cover');
-      const shots = await shootCover(vpc, cat, { ...co, azimuth, elevation, views, onProgress });
-      covers = shots.slice(0, 2); final = shots[2] || null;
-    } catch (e) { console.warn('path-traced cover failed, using the viewport:', e); }
+    try { onStage && onStage('Rendering the cover'); cover = (await shootCover(vpc, cat, { ...coverOpt, onProgress }))[0]; }
+    catch (e) { console.warn('path-traced cover failed, using the viewport:', e); }
   }
-  if (!covers) {
-    covers = [vpc.capture(1100, { quality: 0.9, rect: vpc.modelRect(4 / 3, 0.1), bg: '#f3f0d6', floor: false })];
-    final = vpc.capture(1400, { quality: 0.92, rect: vpc.modelRect(1.5, 0.06), bg: '#ffffff', floor: false });
-  }
+  if (!cover) cover = shootQuickViews(vpc, { azimuths: [26], maxW: 1500, bg: '#f3f0d6' })[0];      // no path tracer: the viewport's own render
+  const size = imageSize(cover), coverPortrait = !!(size && size.h > size.w * 1.02);
+  const finals = shootQuickViews(vpc);
   onStage && onStage('Drawing the steps');
   const shown = new Uint8Array(P.length), hot = new Uint8Array(P.length), images = [];
   const minSpan = Math.max(8, 0.55 * Math.max(vpc.W, vpc.D) / 20);             // W / D are LDU, 20 per stud: a 3-piece step keeps half the model in frame
@@ -98,7 +153,7 @@ export async function shootBooklet(vpc, cat, { title = 'model', opts = {}, meta 
     if (onProgress && k % 4 === 0) { onProgress(k / steps.length); await new Promise((r) => setTimeout(r)); }
   }
   const withParts = steps.map((s) => ({ ...s, parts: stepParts(P, s.idx, by) }));
-  const html = bookletHTML({ title, covers, final, steps: withParts, images, bom: billOfMaterials(P, by),
+  const html = bookletHTML({ title, cover, coverPortrait, finals, steps: withParts, images, bom: billOfMaterials(P, by),
     meta: { pieces: P.length, levels: Math.max(...P.map((p) => p.b + p.h)), ...meta } });
   vpc.setAllStuds(false); vpc.setInkPerPiece(false);
   const out = { html, steps: steps.length, pages: Math.ceil(steps.length / 4) + 3 };

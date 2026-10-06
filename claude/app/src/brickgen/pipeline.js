@@ -221,9 +221,17 @@ export function finishJob(ctx, job, cat = catalogFor(ctx.o), log = () => {}, pro
   // sideways assemblies (rounded box: 1392 vs 1425 pieces raw, 1184 vs 890 finished). So with `wallVerify` the whole finish
   // runs twice, with and without, and the one that wins on the job score (IoU - 0.002 x pieces) is returned.
   if (ctx.o.wall && (ctx.o.wallVerify ?? true) && !adopt && !ctx.o._wallInner) {
-    const a = finishJob({ ...ctx, o: { ...ctx.o, _wallInner: true } }, job, cat, log, (l, f) => progress(l, f * 0.5), adopt);
+    // With the assemblies on as well, the two checks would nest into four finishes (every combination of skin x assemblies),
+    // and the expensive corner - the skin AND the motif phase - would run twice. The assemblies are decided WITHOUT the skin
+    // instead, on the cheap branch, which is also the comparison's "without the skin": three finishes, and the skin is then
+    // compared against the same assembly decision rather than against a different method. `wallMotifFull` restores the four.
+    const inner = ctx.o.motifs && (ctx.o.motifVerify ?? true) && (ctx.o.motifScore ?? true) && !(ctx.o.wallMotifFull ?? false);
+    const b = finishJob({ ...ctx, o: { ...ctx.o, wall: false, _wallInner: true } }, job, cat, log, (l, f) => progress(inner ? 'without the sideways skin: ' + l : l, inner ? f * 0.6 : 0.5 + f * 0.5), adopt);
+    const keptMotifs = b.post.motifCheck ? b.post.motifCheck.kept : null;
+    const ao = { ...ctx.o, _wallInner: true, ...(inner && keptMotifs !== null ? { _motifInner: true, motifs: ctx.o.motifs && keptMotifs } : {}) };
+    const a = finishJob({ ...ctx, o: ao }, job, cat, log, (l, f) => progress(l, inner ? 0.6 + f * 0.4 : f * 0.5), adopt);
+    if (keptMotifs !== null && a.post && !a.post.motifCheck && b.post.motifCheck) a.post.motifCheck = { ...b.post.motifCheck, fromNoWall: true };
     if (!a.post.wall || !a.post.wall.pieces) return a;
-    const b = finishJob({ ...ctx, o: { ...ctx.o, wall: false, _wallInner: true } }, job, cat, log, (l, f) => progress('without the sideways skin: ' + l, 0.5 + f * 0.5), adopt);
     const sa = a.metrics.iou - 0.002 * a.metrics.pieces, sb = b.metrics.iou - 0.002 * b.metrics.pieces, kept = sa >= sb + (ctx.o.wallGain ?? 0);
     const r = kept ? a : b;
     r.post.wallCheck = { with: +a.metrics.iou.toFixed(4), without: +b.metrics.iou.toFixed(4), pieces: [a.metrics.pieces, b.metrics.pieces], kept };

@@ -1047,7 +1047,8 @@ export function audit(S, cat, variants) {
  */
 export function tallBricks(S, cat, tol) {
   // a tall solid: a height profile that is flat at the full height everywhere (the EXT catalogue's measured boxes), studs on every cell, no cutouts
-  const solid = (c) => c.kind !== 'inverted' && (c.cover ? c.cover.every((lv) => lv.every((row) => row.every((v) => v >= 0.999))) : c.top && c.top.every((row) => row.every((t) => Math.abs(t - c.h * 8) < 0.5)));   // (bot is the cavity ceiling of a measured brick; the engine fills it, variants.baseVolume)
+  const all = (a, f) => { if (!a) return false; for (let q = 0; q < a.length; q++) if (!f(a[q])) return false; return true; };   // top / bot / cover are flat Float32Arrays (catalog_pack.js)
+  const solid = (c) => c.kind !== 'inverted' && (c.cover ? all(c.cover, (v) => v >= 0.999) : all(c.top, (t) => Math.abs(t - c.h * 8) < 0.5));   // (bot is the cavity ceiling of a measured brick; the engine fills it, variants.baseVolume)
   const talls = cat.filter((c) => !c.noSolo && c.h > 3 && c.h % 3 === 0 && c.w * c.d <= 12 && solid(c) && (c.stud_cells || []).length === c.w * c.d);
   if (!talls.length) return 0;
   const byFoot = new Map(); for (const c of talls) { for (const k of [`${c.w},${c.d}`, `${c.d},${c.w}`]) (byFoot.get(k) || byFoot.set(k, []).get(k)).push(c); }

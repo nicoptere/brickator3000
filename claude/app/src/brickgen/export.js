@@ -1,6 +1,20 @@
 // Piece geometry (internal Y-up frame, LDU), feature edges, LDraw text.
 import { STUD, PLATE } from './constants.js';
 import { ORIENTATIONS, orientPart, ldrMatrix } from '../motifs/orient.js';
+import TRIS_TEXT from './catalog_tris.js';
+
+// The drawing geometry of the measured parts (catalog_pack.js): one line per part, flat triangle coordinates in tenths of an
+// LDU. Only this module imports it - a solver worker never parses 2 MB of triangles - and a part is decoded the first time it
+// is actually drawn.
+const trisCache = new Map(); let trisIndex = null;
+export function trisOf(id) {
+  if (trisCache.has(id)) return trisCache.get(id);
+  if (!trisIndex) { trisIndex = new Map(); for (const line of TRIS_TEXT.split('\n')) { const t = line.indexOf('\t'); if (t > 0) trisIndex.set(line.slice(0, t), line.slice(t + 1)); } }
+  const s = trisIndex.get(id);
+  let out = new Float32Array(0);
+  if (s) { const parts = s.split(','); out = new Float32Array(parts.length); for (let k = 0; k < parts.length; k++) out[k] = +parts[k] / 10; }
+  trisCache.set(id, out); return out;
+}
 
 const rotY = (deg) => { const t = deg * Math.PI / 180, c = Math.round(Math.cos(t)), s = Math.round(Math.sin(t)); return [c, 0, s, 0, 1, 0, -s, 0, c]; };
 
@@ -29,15 +43,15 @@ export function partLocal(c) {
     } else box(-w * 10, w * 10, 0, H, -d * 10, d * 10, out);
     return new Float32Array(out);
   }
-  const cx = c.minx + w * 10, cz = c.minz + d * 10;
-  for (const t of c.tris) for (const p of t) out.push(p[0] - cx, p[1], p[2] - cz);
+  const cx = c.minx + w * 10, cz = c.minz + d * 10, T = trisOf(c.id);
+  for (let k = 0; k + 2 < T.length; k += 3) out.push(T[k] - cx, T[k + 1], T[k + 2] - cz);
   return new Float32Array(out);
 }
 /** stud base centres in the part frame */
 export function studLocal(c) {
   if (c.kind === 'tile') return [];
   if (c.source === 'analytic') return c.stud_cells.map(([i, j]) => [-c.w * 10 + (i + 0.5) * STUD, c.h * PLATE, -c.d * 10 + (j + 0.5) * STUD]);
-  let H = 0; for (const row of c.top) for (const t of row) H = Math.max(H, t);
+  let H = 0; for (let q = 0; q < c.top.length; q++) if (c.top[q] > H) H = c.top[q];
   const cx = c.minx + c.w * 10, cz = c.minz + c.d * 10;
   return c.stud_cells.map(([i, j]) => [c.minx + (i + 0.5) * STUD - cx, H, c.minz + (j + 0.5) * STUD - cz]);
 }

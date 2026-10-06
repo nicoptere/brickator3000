@@ -25,14 +25,14 @@ export function rotate(vol, h, c, rot) {
 export function baseVolume(c) {
   const nz = c.d * G, nx = c.w * G;
   let h, vol;
+  // `cover` / `top` / `bot` are flat Float32Arrays in this very layout (catalog_pack.js)
   if (c.cover) {
-    h = c.cover.length; vol = new Float32Array(h * nz * nx);
-    for (let l = 0; l < h; l++) for (let z = 0; z < nz; z++) for (let x = 0; x < nx; x++) vol[(l * nz + z) * nx + x] = c.cover[l][z][x];
+    h = c.coverH; vol = Float32Array.from(c.cover);
   } else {
-    let tmax = 1e-3; for (const row of c.top) for (const t of row) tmax = Math.max(tmax, t);
+    let tmax = 1e-3; for (let q = 0; q < c.top.length; q++) if (c.top[q] > tmax) tmax = c.top[q];
     h = Math.ceil(tmax / PLATE - 1e-6); vol = new Float32Array(h * nz * nx);
     for (let l = 0; l < h; l++) for (let z = 0; z < nz; z++) for (let x = 0; x < nx; x++) {
-      const top = c.top[z][x], bot = c.kind === 'inverted' ? c.bot[z][x] : 0;
+      const q = z * nx + x, top = c.top[q], bot = c.kind === 'inverted' ? c.bot[q] : 0;
       vol[(l * nz + z) * nx + x] = Math.min(1, Math.max(0, (Math.min(top, (l + 1) * PLATE) - Math.max(bot, l * PLATE)) / PLATE));
     }
   }

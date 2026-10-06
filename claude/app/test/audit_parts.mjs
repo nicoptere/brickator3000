@@ -11,11 +11,11 @@ for (const c of [...CAT.map(c=>({c,set:'core'})), ...EXT.map(c=>({c,set:'ext'}))
   // declared
   const dw=p.w*STUD, dd=p.d*STUD, dh=p.h*PLATE;
   // top profile max
-  let tmax=0; for(const r of p.top) for(const v of r) tmax=Math.max(tmax,v);
+  let tmax=0; for(let q=0;q<p.top.length;q++) tmax=Math.max(tmax,p.top[q]);        // flat Float32Array (catalog_pack.js)
   // flat full-height cells (cells where the whole 5x5 block is at full height)
   let flat=0;
   for(let j=0;j<p.d;j++) for(let i=0;i<p.w;i++){ let ok=true;
-    for(let b=0;b<G;b++) for(let a=0;a<G;a++) if(p.top[j*G+b][i*G+a] < tmax-0.6) ok=false;
+    for(let b=0;b<G;b++) for(let a=0;a<G;a++) if(p.top[(j*G+b)*p.w*G + i*G+a] < tmax-0.6) ok=false;
     if(ok) flat++; }
   rows.push({ id:p.id, set:c.set, kind:p.kind, name:p.name, w:p.w, d:p.d, h:p.h,
     dxerr:+(bw-dw).toFixed(1), dzerr:+(bd-dd).toFixed(1), dyerr:+(bh-dh).toFixed(1),

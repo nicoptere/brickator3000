@@ -9,6 +9,7 @@ function call(w, msg, onProgress) {
     w.onmessage = (e) => {
       const d = e.data;
       if (d.type === 'progress') { onProgress && onProgress(d); return; }
+      if (d.key && msg.key && d.key !== msg.key) return;        // a leftover answer from a previous run on a reused worker
       if (d.type === 'error') { reject(new Error(d.error)); return; }
       resolve(d);
     };
@@ -17,7 +18,21 @@ function call(w, msg, onProgress) {
   });
 }
 
-export function cancel() { workers.forEach((w) => w.terminate()); workers = []; }
+export function cancel() { workers.forEach((w) => w.terminate()); workers = []; running = false; }
+let running = false;
+
+/**
+ * The pool is kept between runs. A worker is not cheap to create: it imports the whole engine - the catalogues and the motif
+ * library - and that memory is per worker, so spawning a fresh pool for every run was loading all of it again and leaving the
+ * old copies to the garbage collector (the app grew with every compute). Workers are only terminated when a run is cancelled,
+ * when the pool has to shrink, or when one is left holding a run's context.
+ */
+function pool(n) {
+  if (running) cancel();                                   // a run still in flight: its answers would land in the new one
+  while (workers.length > n) workers.pop().terminate();
+  while (workers.length < n) workers.push(spawn());
+  return workers;
+}
 
 /**
  * The resolution alone (pipeline.autoStuds, docs/CURVES.md round 8): a piece budget from two pilot solves, the curvature
@@ -25,15 +40,15 @@ export function cancel() { workers.forEach((w) => w.terminate()); workers = []; 
  * worker so the pool and any running job are untouched. Returns the whole choice ({ studs, chosen, budget, feature, candidates }).
  */
 export async function chooseStuds(model, opts) {
-  const w = spawn();
-  try { return (await call(w, { type: 'auto', key: 'auto', model, opts })).choice; } finally { w.terminate(); }
+  if (running) { const w = spawn(); try { return (await call(w, { type: 'auto', key: 'auto', model, opts })).choice; } finally { w.terminate(); } }
+  const w = pool(Math.max(1, workers.length))[0];       // idle: use a worker that already has the engine loaded
+  return (await call(w, { type: 'auto', key: 'auto' + Math.random(), model, opts })).choice;
 }
 
 /** model = { tris: Float32Array, vcols: Float32Array (linear) } */
 export async function runMethod(model, opts, { workersWanted = POOL, onStage = () => {} } = {}) {
-  cancel();
   const n = Math.max(1, workersWanted);
-  workers = Array.from({ length: n }, spawn);
+  pool(n); running = true;
   const key = Math.random().toString(36).slice(2); ctxKey = key; ctxJob = null;
   const t0 = performance.now();
   let autoChoice = null;
@@ -57,7 +72,9 @@ export async function runMethod(model, opts, { workersWanted = POOL, onStage = (
   const r = res.result;
   r.timing.total = performance.now() - t0; r.timing.setup = setups[0].ms; r.scores = scored; r.workers = usable.length;
   if (autoChoice) { r.autoChoice = autoChoice; r.options.autoChoice = autoChoice; r.timing.auto = autoChoice.ms; }
-  workers.slice(1).forEach((w) => w.terminate()); workers = workers.slice(0, 1);
+  // the pool stays; only the prepared fields go. Worker 0 keeps its context for a region rebuild.
+  running = false;
+  workers.slice(1).forEach((w) => { try { w.postMessage({ type: 'release', key }); } catch { /* already gone */ } });
   return r;
 }
 /**

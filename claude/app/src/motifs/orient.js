@@ -36,15 +36,15 @@ export function fineVolume(c) {
   const nx = c.w * G, nz = c.d * G;
   let ny, F;
   if (c.cover) {                                                  // authoritative per-level occupancy (round parts, catalog_shapes)
-    ny = c.cover.length * 2; F = new Float32Array(ny * nz * nx);
-    for (let l = 0; l < c.cover.length; l++) for (let z = 0; z < nz; z++) for (let x = 0; x < nx; x++) {
-      const v = c.cover[l][z][x]; F[((2 * l) * nz + z) * nx + x] = v; F[((2 * l + 1) * nz + z) * nx + x] = v;
+    ny = c.coverH * 2; F = new Float32Array(ny * nz * nx);
+    for (let l = 0; l < c.coverH; l++) for (let z = 0; z < nz; z++) for (let x = 0; x < nx; x++) {
+      const v = c.cover[(l * nz + z) * nx + x]; F[((2 * l) * nz + z) * nx + x] = v; F[((2 * l + 1) * nz + z) * nx + x] = v;
     }
-  } else {                                                        // height field: exact at 4 LDU
-    let tmax = 1e-3; for (const row of c.top) for (const t of row) if (t > tmax) tmax = t;
+  } else {                                                        // height field: exact at 4 LDU (flat, catalog_pack.js)
+    let tmax = 1e-3; for (let q = 0; q < c.top.length; q++) if (c.top[q] > tmax) tmax = c.top[q];
     ny = Math.ceil(tmax / SAMP - 1e-6); F = new Float32Array(ny * nz * nx);
     for (let l = 0; l < ny; l++) for (let z = 0; z < nz; z++) for (let x = 0; x < nx; x++) {
-      const top = c.top[z][x], bot = c.kind === 'inverted' ? c.bot[z][x] : 0;
+      const q = z * nx + x, top = c.top[q], bot = c.kind === 'inverted' ? c.bot[q] : 0;
       F[(l * nz + z) * nx + x] = Math.min(1, Math.max(0, (Math.min(top, (l + 1) * SAMP) - Math.max(bot, l * SAMP)) / SAMP));
     }
   }

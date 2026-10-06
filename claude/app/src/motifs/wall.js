@@ -49,6 +49,14 @@ export const HOSTS = {
   '67329': { levelMod: 5, studs: [{ p: [-10, 10, 10], dir: [0, 0, 1] }, { p: [10, 10, 10], dir: [0, 0, 1] }, { p: [-10, 30, 10], dir: [0, 0, 1] }, { p: [10, 30, 10], dir: [0, 0, 1] },
     { p: [20, 10, 0], dir: [1, 0, 0] }, { p: [20, 30, 0], dir: [1, 0, 0] }, { p: [-20, 10, 0], dir: [-1, 0, 0] }, { p: [-20, 30, 0], dir: [-1, 0, 0] }] },
   '87087': { levelMod: 3, studs: [{ p: [0, 14, 10], dir: [0, 0, 1] }] },
+  // round 14: the brick-height rows, available through `wallHosts` but NOT in the default list. 11211 / 30414 are plain
+  // 24-LDU bricks with 2 / 4 side studs in one row on a long side (LDraw stud2a at y = 10 from the top, so 14 from the
+  // bottom in the engine's frame, x = +-10 and +-10 / +-30), so one host could carry a run of sideways pieces instead of
+  // one each. test/wall_bench.mjs (VARIANTS=narrow,wide,wide2) says it does not pay: behind 22885 they never fire at all
+  // (22885 fails laterally, where a wider host fails too, and 32952 / 87087 already cover the 1-stud cases), and ahead of
+  // it the eight models trade off against each other inside +-0.01 of job score. Kept for experiments.
+  '11211': { levelMod: 3, studs: [{ p: [-10, 14, 10], dir: [0, 0, 1] }, { p: [10, 14, 10], dir: [0, 0, 1] }] },
+  '30414': { levelMod: 3, studs: [{ p: [-30, 14, 10], dir: [0, 0, 1] }, { p: [-10, 14, 10], dir: [0, 0, 1] }, { p: [10, 14, 10], dir: [0, 0, 1] }, { p: [30, 14, 10], dir: [0, 0, 1] }] },
   '47905': { levelMod: 3, studs: [{ p: [0, 14, 10], dir: [0, 0, 1] }, { p: [0, 14, -10], dir: [0, 0, -1] }] },
   '4733': { levelMod: 3, studs: [{ p: [0, 14, 10], dir: [0, 0, 1] }, { p: [0, 14, -10], dir: [0, 0, -1] }, { p: [10, 14, 0], dir: [1, 0, 0] }, { p: [-10, 14, 0], dir: [-1, 0, 0] }] },
 };

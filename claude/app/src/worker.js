@@ -14,6 +14,9 @@ self.onmessage = (e) => {
   try {
     if (msg.type === 'auto') {                      // studs: 'auto' - the resolution choice (pipeline.autoStuds), once, before the setups
       self.postMessage({ type: 'auto', key: msg.key, choice: autoStuds(msg.model, msg.opts) });
+    } else if (msg.type === 'release') {             // drop the run's context (the prepared fields are megabytes) but keep the
+      ctx = null; ctxKey = null;                     // worker alive: a fresh one would re-import the whole engine (engine.js)
+      self.postMessage({ type: 'released', key: msg.key });
     } else if (msg.type === 'setup') {
       const t = performance.now();
       ctx = setup(msg.model, msg.opts); ctxKey = msg.key;
@@ -22,7 +25,7 @@ self.onmessage = (e) => {
       if (ctxKey !== msg.key) throw new Error('worker context is stale');
       const scores = [];
       for (const job of msg.jobs) { scores.push({ job, score: scoreJob(ctx, job) }); self.postMessage({ type: 'progress', done: 1 }); }
-      self.postMessage({ type: 'scores', scores });
+      self.postMessage({ type: 'scores', key: msg.key, scores });
     } else if (msg.type === 'region') {
       // rebuild one box of the finished model several ways (pipeline.regionAttempts). The context of the original run is still
       // here, so the field, the grid phase and the catalogue are the same ones the model was built with.
@@ -30,16 +33,16 @@ self.onmessage = (e) => {
       const a = regionAttempts(ctx, msg.job, msg.box, msg.prev, undefined,
         { progress: throttled() });
       for (const x of a.attempts) if (x.result) { delete x.result.srcTris; delete x.result.srcCols; }   // the caller already has the source mesh
-      self.postMessage({ type: 'region', ...a });
+      self.postMessage({ type: 'region', key: msg.key, ...a });
     } else if (msg.type === 'finish') {
       if (ctxKey !== msg.key) throw new Error('worker context is stale');
       const logs = [];
       // the finish is the long stage: report what it is doing (pipeline.finishJob -> solver phases, then the post passes)
       const r = finishJob(ctx, msg.job, undefined, (s) => logs.push(s), throttled());
       r.logs = logs; r.job = msg.job; r.options = ctx.o;
-      self.postMessage({ type: 'result', result: r }, [r.srcTris.buffer]);
+      self.postMessage({ type: 'result', key: msg.key, result: r }, [r.srcTris.buffer]);
     }
   } catch (err) {
-    self.postMessage({ type: 'error', error: String(err && err.stack || err) });
+    self.postMessage({ type: 'error', key: msg.key, error: String(err && err.stack || err) });
   }
 };

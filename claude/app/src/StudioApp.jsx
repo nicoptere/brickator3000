@@ -696,7 +696,7 @@ function StudioInner() {
     try {
       const { html, steps, pages } = await shootBooklet(vpc, FULL_CATALOG, { title: base, opts,
         meta: { studs: res.options.studs, weld: !!(res.post && res.post.weld && res.post.weld.added) },
-        cover: { spp: window.__spp || 256, ...(window.__coverH ? { outHeight: window.__coverH } : {}) },
+        cover: { spp: window.__spp || snapSpp, ...(window.__coverH ? { outHeight: window.__coverH } : {}) },   // the snapshot's spp: one path-traced cover view
         onStage: (name) => { bookStageRef.current = name; pushStage(name, 0); }, onProgress: (f) => pushStage(bookStageRef.current, f) });
       download(html, base + '_instructions.html', 'text/html');
       message.success(`${steps} steps on ${pages} pages - open it and print to PDF`);
