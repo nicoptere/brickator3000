@@ -37,8 +37,10 @@ elif [ "${MODE}" == "models" ]; then
     gcloud storage rsync -r "../../discretizer/public/models/clean" "${BUCKET}/models/clean"
   fi
 else
-  echo "[2/4] Selective upload: syncing HTML, assets, environment, sounds, and models..."
   gcloud storage cp dist/index.html "${BUCKET}/index.html"
+  if [ -f "dist/brickagen3000.jpeg" ]; then
+    gcloud storage cp dist/brickagen3000.jpeg "${BUCKET}/brickagen3000.jpeg"
+  fi
   gcloud storage rsync -r dist/assets "${BUCKET}/assets"
   gcloud storage rsync -r dist/env "${BUCKET}/env"
   gcloud storage rsync -r dist/sounds "${BUCKET}/sounds"
@@ -51,6 +53,7 @@ gsutil setmeta -h "Cache-Control:no-cache, no-store, must-revalidate" "${BUCKET}
 gsutil -m setmeta -h "Cache-Control:public, max-age=31536000, immutable" "${BUCKET}/assets/*" >/dev/null 2>&1 || true
 gsutil -m setmeta -h "Cache-Control:public, max-age=31536000, immutable" "${BUCKET}/sounds/*" >/dev/null 2>&1 || true
 gsutil -m setmeta -h "Cache-Control:public, max-age=31536000, immutable" "${BUCKET}/env/*" >/dev/null 2>&1 || true
+gsutil setmeta -h "Cache-Control:public, max-age=86400" "${BUCKET}/brickagen3000.jpeg" >/dev/null 2>&1 || true
 
 # 4. Verify deployment
 echo "[4/4] Verifying public endpoint..."

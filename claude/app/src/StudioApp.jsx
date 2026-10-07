@@ -4,7 +4,8 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ConfigProvider, App as AntApp, Select, Input, Button, Upload, Typography, Tag, Divider, Slider, Radio, Checkbox, Progress, Drawer, Modal, Table, Tooltip, Switch, Tabs, Collapse, Alert, Tree, Segmented, theme as antTheme } from 'antd';
 import { UploadOutlined, SearchOutlined, ThunderboltOutlined, DownloadOutlined, EyeOutlined, CheckCircleOutlined, AppstoreOutlined, MenuFoldOutlined, MenuUnfoldOutlined,
   DownOutlined, RightOutlined, CaretRightOutlined, PauseOutlined, StepBackwardOutlined, StepForwardOutlined, SoundOutlined, AudioMutedOutlined, AimOutlined,
-  SettingOutlined, StopOutlined, CameraOutlined, SyncOutlined, ReloadOutlined, BulbOutlined, BulbFilled, DeleteOutlined, UndoOutlined, CloseOutlined, ScissorOutlined, ExperimentOutlined, ReadOutlined, SelectOutlined, ClearOutlined, SwapOutlined } from '@ant-design/icons';
+  SettingOutlined, StopOutlined, CameraOutlined, SyncOutlined, ReloadOutlined, BulbOutlined, BulbFilled, DeleteOutlined, UndoOutlined, CloseOutlined, ScissorOutlined, ExperimentOutlined, ReadOutlined, SelectOutlined, ClearOutlined, SwapOutlined,
+  LinkOutlined, CopyOutlined, InfoCircleOutlined, UserOutlined, LockOutlined, KeyOutlined, DisconnectOutlined, CloudUploadOutlined, ShoppingCartOutlined } from '@ant-design/icons';
 import './studio.css';
 import { StudioViewport } from './studio/viewport3d.js';
 import { sfx } from './studio/sfx.js';
@@ -17,6 +18,8 @@ import { buildMesh, toGLB, toLDR, KIND_COL } from './brickgen/export.js';
 import { snapToPalette } from './brickgen/colors.js';
 import { shootBooklet } from './studio/booklet.js';
 import { boxOf } from './brickgen/region.js';
+import { toBrickLinkMOC, toBrickLinkStudioContainer, toMocIllustrationsZip, toBrickLinkWantedListXML, MOC_DEFINITION, loginBrickLink, fetchWantedLists, uploadWantedList } from './bricklink.js';
+import { toBrickHunterCSV, getLegoPickABrickUrl } from './legoPab.js';
 import { SCHEMA } from './schema.js';
 import { FEATURES, FEATURE_GROUPS, featureState, featurePatch } from './presets.js';
 import { Field } from './fields.jsx';
@@ -88,9 +91,12 @@ function StudioInner() {
   const [model, setModel] = useState(null), [up, setUp] = useState('y');
   const [isl, setIsl] = useState(null), [smooth, setSmooth] = useState(true), [busy, setBusy] = useState(false), [stage, setStage] = useState(['', 0]);
   const [res, setRes] = useState(null);
+  const [bookletData, setBookletData] = useState(null);
+  useEffect(() => { setBookletData(null); }, [res]);
   const [officialColors, setOfficialColors] = useState(true);
   const [viewMode, setViewMode] = useState('mesh'), [colorMode, setColorMode] = useState('piece'), [outline, setOutline] = useState(true);
-  const [selectedIsland, setSelectedIsland] = useState(null);
+  const [selectedIslands, setSelectedIslands] = useState([]);
+  const selectedIsland = selectedIslands.length === 1 ? selectedIslands[0] : null;
   const [history, setHistory] = useState([]);
   const [detectIslands, setDetectIslands] = useState(false);
   const detectIslandsRef = useRef(false);
@@ -99,11 +105,36 @@ function StudioInner() {
   const [pieceHistory, setPieceHistory] = useState([]);
   const onDeletePieceRef = useRef(null);
   const cancellingRef = useRef(false);
+
+  const updateSelectedIslands = useCallback((newIds) => {
+    const arr = Array.isArray(newIds) ? newIds : (newIds instanceof Set ? [...newIds] : (newIds != null ? [newIds] : []));
+    setSelectedIslands(arr);
+    if (vp.current) vp.current.setSelectedIslands(arr);
+  }, []);
+
+  const setSelectedIsland = useCallback((id) => {
+    updateSelectedIslands(id != null ? [id] : []);
+  }, [updateSelectedIslands]);
+
   const onSelectIslandRef = useRef(null);
-  onSelectIslandRef.current = (id) => {
-    setSelectedIsland(id);
-    if (vp.current) vp.current.setSelectedIsland(id);
-    if (id != null && colorMode !== 'islands') {
+  onSelectIslandRef.current = (id, faceIdx, event) => {
+    const isCtrl = event && (event.ctrlKey || event.metaKey);
+    if (id == null) {
+      if (!isCtrl) {
+        updateSelectedIslands([]);
+      }
+      return;
+    }
+    if (isCtrl) {
+      setSelectedIslands((prev) => {
+        const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
+        if (vp.current) vp.current.setSelectedIslands(next);
+        return next;
+      });
+    } else {
+      updateSelectedIslands([id]);
+    }
+    if (colorMode !== 'islands') {
       setColorMode('islands');
       if (vp.current) vp.current.setColorMode('islands');
     }
@@ -141,7 +172,20 @@ function StudioInner() {
   const [snapSpp, setSnapSpp] = useState(128), [thick, setThick] = useState(1), [expanded, setExpanded] = useState([]);
   const [workers, setWorkers] = useState(poolSize);
   const [leftOpen, setLeftOpen] = useState(true), [rightOpen, setRightOpen] = useState(true);
-  const [openSrc, setOpenSrc] = useState(true), [openCfg, setOpenCfg] = useState(true), [openRes, setOpenRes] = useState(true), [openRender, setOpenRender] = useState(true), [openReplay, setOpenReplay] = useState(true), [openExport, setOpenExport] = useState(true);
+  const [openSrc, setOpenSrc] = useState(true), [openCfg, setOpenCfg] = useState(true), [openRes, setOpenRes] = useState(true), [openRender, setOpenRender] = useState(true), [openReplay, setOpenReplay] = useState(true), [openExport, setOpenExport] = useState(true), [openBricklink, setOpenBricklink] = useState(true), [openPab, setOpenPab] = useState(true);
+  const [blConnected, setBlConnected] = useState(() => { try { return localStorage.getItem('brickgen.bl.connected') === 'true'; } catch { return false; } });
+  const [blUser, setBlUser] = useState(() => { try { return localStorage.getItem('brickgen.bl.user') || ''; } catch { return ''; } });
+  const [blCookie, setBlCookie] = useState(() => { try { return localStorage.getItem('brickgen.bl.cookie') || ''; } catch { return ''; } });
+  const [blUsernameInput, setBlUsernameInput] = useState('');
+  const [blPasswordInput, setBlPasswordInput] = useState('');
+  const [blCookieInput, setBlCookieInput] = useState('');
+  const [blLoginMode, setBlLoginMode] = useState('credentials');
+  const [blWantedLists, setBlWantedLists] = useState([{ id: 'default', name: 'Main Wanted List' }, { id: 'brickator', name: 'Brickator Creations' }]);
+  const [blSelectedList, setBlSelectedList] = useState('default');
+  const [blNewListName, setBlNewListName] = useState('');
+  const [blBusy, setBlBusy] = useState(false);
+  const [pabLocale, setPabLocale] = useState('en-gr');
+  const [mocInfoOpen, setMocInfoOpen] = useState(false);
   const [advanced, setAdvanced] = useState(false), [partsOpen, setPartsOpen] = useState(false);
   const [autoBusy, setAutoBusy] = useState(false), [autoRes, setAutoRes] = useState(null);
   const [bookBusy, setBookBusy] = useState(false);
@@ -198,7 +242,7 @@ function StudioInner() {
   useEffect(() => {
     vp.current = new StudioViewport(vEl.current);
     vp.current.setTheme(dark);
-    vp.current.onSelectIsland = (id, faceIdx) => onSelectIslandRef.current && onSelectIslandRef.current(id, faceIdx);
+    vp.current.onSelectIsland = (id, faceIdx, event) => onSelectIslandRef.current && onSelectIslandRef.current(id, faceIdx, event);
     vp.current.onModelRotated = (has) => setHasRot(has);
     vp.current.onDeletePiece = (idx, p) => onDeletePieceRef.current && onDeletePieceRef.current(idx, p);
     fetchModelList().then((list) => setModels(list.sort((a, b) => a.path.localeCompare(b.path)))).catch(() => setModels([]));
@@ -224,16 +268,31 @@ function StudioInner() {
     return res;
   }, [isl]);
 
-  const deleteIsland = useCallback((id) => {
-    if (id == null || !model || !isl || !isl.labels) return;
-    if (isl.count <= 1) {
-      message.warning('Cannot delete the only remaining island');
+  const selectedStats = useMemo(() => {
+    if (!selectedIslands.length || !islandStats.length) return [];
+    return islandStats.filter((st) => selectedIslands.includes(st.id));
+  }, [selectedIslands, islandStats]);
+
+  const totalSelectedTris = useMemo(() => {
+    return selectedStats.reduce((sum, st) => sum + st.triangles, 0);
+  }, [selectedStats]);
+
+  const totalSelectedPct = useMemo(() => {
+    return selectedStats.reduce((sum, st) => sum + st.pct, 0);
+  }, [selectedStats]);
+
+  const deleteIslands = useCallback((ids) => {
+    if (ids == null || !model || !isl || !isl.labels) return;
+    const targetSet = new Set(Array.isArray(ids) ? ids : (ids instanceof Set ? ids : [ids]));
+    if (targetSet.size === 0) return;
+    if (targetSet.size >= isl.count) {
+      message.warning('Cannot delete all islands');
       return;
     }
     const nt = isl.labels.length;
     let keep = 0;
     for (let t = 0; t < nt; t++) {
-      if (isl.labels[t] !== id) keep++;
+      if (!targetSet.has(isl.labels[t])) keep++;
     }
     if (keep === 0) {
       message.warning('Cannot delete all triangles');
@@ -244,7 +303,7 @@ function StudioInner() {
     const newVcols = new Float32Array(keep * 9);
     let q = 0;
     for (let t = 0; t < nt; t++) {
-      if (isl.labels[t] !== id) {
+      if (!targetSet.has(isl.labels[t])) {
         for (let k = 0; k < 9; k++) {
           newTris[q * 9 + k] = model.tris[t * 9 + k];
           newVcols[q * 9 + k] = model.vcols[t * 9 + k];
@@ -254,12 +313,11 @@ function StudioInner() {
     }
     const origTris = model.origTris || model.tris;
     const origVcols = model.origVcols || model.vcols;
-    const deletedIslands = (model.deletedIslands || 0) + 1;
+    const deletedIslands = (model.deletedIslands || 0) + targetSet.size;
     const updated = { ...model, tris: newTris, vcols: newVcols, origTris, origVcols, deletedIslands };
     setModel(updated);
-    setSelectedIsland(null);
+    updateSelectedIslands([]);
     if (vp.current) {
-      vp.current.setSelectedIsland(null);
       vp.current.setSource(newTris, newVcols, { raw: true, keepScale: true });
     }
     const newIl = meshIslands(newTris);
@@ -269,9 +327,13 @@ function StudioInner() {
       vp.current.setIslandColors(islandColors(newIl.labels, newIl.count), newIl.labels);
     }
     if (res) setRes(null);
-    message.success(`Removed island (${nt - keep} triangles). ${newIl.count} island${newIl.count === 1 ? '' : 's'} remaining.`);
+    message.success(`Removed ${targetSet.size} island${targetSet.size === 1 ? '' : 's'} (${nt - keep} triangles). ${newIl.count} island${newIl.count === 1 ? '' : 's'} remaining.`);
     sfx.click();
-  }, [model, isl, res, message]);
+  }, [model, isl, res, message, updateSelectedIslands]);
+
+  const deleteIsland = useCallback((id) => {
+    deleteIslands([id]);
+  }, [deleteIslands]);
 
   const undoDelete = useCallback(() => {
     if (!history.length || !model) return;
@@ -280,10 +342,9 @@ function StudioInner() {
     const deletedIslands = Math.max(0, (model.deletedIslands || 1) - 1);
     const updated = { ...model, tris: prevMesh.tris, vcols: prevMesh.vcols, deletedIslands };
     setModel(updated);
-    setSelectedIsland(null);
+    updateSelectedIslands([]);
     if (vp.current) {
-      vp.current.setSelectedIsland(null);
-      vp.current.setSource(prevMesh.tris, prevMesh.vcols, { raw: true, keepScale: true });
+      vp.current.setSource(prevMesh.tris, prevMesh.vcols, { raw: true, rebindLo: true });
     }
     const newIl = meshIslands(prevMesh.tris);
     setIsl({ count: newIl.count, labels: newIl.labels });
@@ -292,18 +353,48 @@ function StudioInner() {
       vp.current.setIslandColors(islandColors(newIl.labels, newIl.count), newIl.labels);
     }
     if (res) setRes(null);
-    message.info('Restored previous island');
+    message.info(prevMesh.isBake ? 'Undid transform bake' : 'Restored previous island(s)');
     sfx.click();
-  }, [history, model, res, message]);
+  }, [history, model, res, message, updateSelectedIslands]);
+
+  const bakeRotation = useCallback(() => {
+    if (!vp.current || !vp.current.hasRotation() || !model || !model.tris) return null;
+    const baked = vp.current.bakeRotation(
+      { tris: model.tris, vcols: model.vcols },
+      model.origTris ? { tris: model.origTris, vcols: model.origVcols } : null
+    );
+    if (!baked) return null;
+
+    setHistory((h) => [...h, { tris: model.tris, vcols: model.vcols, isBake: true }]);
+    setHasRot(false);
+
+    const updated = {
+      ...model,
+      tris: baked.tris,
+      origTris: baked.origTris || model.origTris,
+    };
+    setModel(updated);
+
+    if (isl && isl.labels) {
+      vp.current.islandLabels = isl.labels;
+      vp.current.setIslandColors(islandColors(isl.labels, isl.count), isl.labels);
+      if (selectedIslands.length > 0) {
+        vp.current.setSelectedIslands(selectedIslands);
+      }
+    }
+
+    message.info('Baked transform (rotation) into mesh');
+    sfx.click();
+    return updated;
+  }, [model, isl, selectedIslands, message]);
 
   const restoreModel = useCallback(() => {
     if (!model || !model.origTris) return;
     setHistory([]);
     const updated = { ...model, tris: model.origTris, vcols: model.origVcols, deletedIslands: 0 };
     setModel(updated);
-    setSelectedIsland(null);
+    updateSelectedIslands([]);
     if (vp.current) {
-      vp.current.setSelectedIsland(null);
       vp.current.setSource(model.origTris, model.origVcols, { raw: true, keepScale: true });
     }
     const newIl = meshIslands(model.origTris);
@@ -315,20 +406,7 @@ function StudioInner() {
     if (res) setRes(null);
     message.info('Restored full original mesh');
     sfx.click();
-  }, [model, res, message]);
-
-  useEffect(() => {
-    const handleKey = (e) => {
-      if (selectedIsland != null && (e.key === 'Delete' || e.key === 'Backspace')) {
-        const tag = document.activeElement?.tagName?.toLowerCase();
-        if (tag === 'input' || tag === 'textarea') return;
-        e.preventDefault();
-        deleteIsland(selectedIsland);
-      }
-    };
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
-  }, [selectedIsland, deleteIsland]);
+  }, [model, res, message, updateSelectedIslands]);
 
   const cats = useMemo(() => {
     const g = new Map();
@@ -396,19 +474,99 @@ function StudioInner() {
       vp.current.zoomToFit(false);
     }
   };
+
+  const loadLDrawModel = (name, ldrModel) => {
+    cancellingRef.current = false;
+    setPlaying(false);
+    setEraserMode(false);
+    setPieceHistory([]);
+    if (vp.current) {
+      vp.current.resetRotation();
+      vp.current.setRotateGizmo(false);
+      vp.current.setEraserMode(false);
+      vp.current.clearVoxels();
+      vp.current.clearHollowCubes();
+      vp.current.setSource(new Float32Array(0), new Float32Array(0), { raw: true });
+    }
+    setRotate(false);
+    setHasRot(false);
+    setSelectedIsland(null);
+    setHistory([]);
+    setIsl(null);
+
+    const mm = {
+      name,
+      isLDraw: true,
+      tris: new Float32Array(0),
+      vcols: new Float32Array(0),
+      deletedIslands: 0,
+      origTris: new Float32Array(0),
+      origVcols: new Float32Array(0),
+    };
+    setModel(mm);
+
+    const dynamicCat = ldrModel.extraCatalog || [];
+    const fullCatWithDynamic = [...FULL_CATALOG];
+    const existingIds = new Set(fullCatWithDynamic.map((c) => c.id));
+    for (const d of dynamicCat) {
+      if (!existingIds.has(d.id)) {
+        fullCatWithDynamic.push(d);
+        existingIds.add(d.id);
+      }
+    }
+
+    const r = {
+      pieces: ldrModel.pieces,
+      dims: ldrModel.dims,
+      metrics: ldrModel.metrics,
+      timing: ldrModel.timing,
+      post: { brace: 0, splice: 0, bridge: 0, supports: 0 },
+      srcTris: new Float32Array(0),
+      srcCols: new Float32Array(0),
+      isLDraw: true,
+      extraCatalog: dynamicCat,
+    };
+    if (officialColors) applyOfficialPalette(r.pieces, true);
+    setRes(r);
+
+    if (vp.current) {
+      vp.current.setLego(r.pieces, fullCatWithDynamic, r.dims);
+      vp.current.setColorMode('piece');
+      vp.current.setOutline(outline);
+      setViewMode('lego');
+      vp.current.setMode('lego');
+      vp.current.zoomToFit();
+    }
+    const lv = Math.max(...r.pieces.map((p) => p.b + p.h), 1);
+    maxLevelRef.current = lv;
+    setStep(lv);
+    message.success(`Loaded LDraw model: ${name} (${r.pieces.length} pieces)`);
+  };
+
   const openPath = useCallback(async (p, upAxis = up) => {
     setModelPath(p);
     { const d = p.replace(/^clean\//, '').split('/').slice(0, -1); setExpanded((e) => [...new Set([...e, ...d.map((_, i) => d.slice(0, i + 1).join('/'))])]); }
     try {
       const buf = await fetchModelBuffer(p);
-      const m = await loadModel(p, buf), mm = { name: p.split('/').pop(), ...reorient(m, upAxis) };
+      const m = await loadModel(p, buf);
+      if (m.isLDraw) {
+        loadLDrawModel(p.split('/').pop(), m);
+        return;
+      }
+      const mm = { name: p.split('/').pop(), ...reorient(m, upAxis) };
       mm.origTris = mm.tris; mm.origVcols = mm.vcols; mm.deletedIslands = 0;
       setModel(mm); showModel(mm);
     } catch (e) { sfx.error(); message.error(String(e.message || e)); }
   }, [up]); // eslint-disable-line
   async function openFile(file) {
     try {
-      const m = await loadModel(file.name, await file.arrayBuffer()), mm = { name: file.name, ...reorient(m, up) };
+      const m = await loadModel(file.name, await file.arrayBuffer());
+      if (m.isLDraw) {
+        setModelPath(null);
+        loadLDrawModel(file.name, m);
+        return false;
+      }
+      const mm = { name: file.name, ...reorient(m, up) };
       mm.origTris = mm.tris; mm.origVcols = mm.vcols; mm.deletedIslands = 0;
       setModelPath(null); setModel(mm); showModel(mm); message.success(`Loaded ${file.name}`);
     } catch (e) { sfx.error(); message.error(String(e.message || e)); }
@@ -451,11 +609,19 @@ function StudioInner() {
     if (vp.current) vp.current.setEraserMode(false);
     sfx.start(); setBusy(true); setPlaying(false); setStage(['Preparing', 0]);
     setViewMode('mesh'); vp.current.setMode('mesh');
+
+    // Bake rotation transform into mesh before computing
+    let curModel = model;
+    if (vp.current && vp.current.hasRotation()) {
+      const baked = bakeRotation();
+      if (baked) curModel = baked;
+    }
+
     setStage(['Previewing grid', 0]);
     await vp.current.voxelPreview(opts.studs, opts.ref, false, true);
     if (cancellingRef.current) return;
     try {
-      let src = { tris: model.tris, vcols: model.vcols };
+      let src = { tris: curModel.tris, vcols: curModel.vcols };
       if (opts.vertexNormals) {
         setStage(['Recomputing vertex normals', 0]); await new Promise((r) => setTimeout(r, 30));
         const f = fixWinding(src.tris, src.vcols); src = f;
@@ -481,10 +647,23 @@ function StudioInner() {
   }
   const stop = () => { cancellingRef.current = true; cancel(); vp.current && (vp.current.clearVoxels(), vp.current.clearHollowCubes()); setBusy(false); stageDone(); sfx.click(); };
 
-  const base = model ? model.name.replace(/\.[^.]+$/, '') + '_' + opts.studs : 'model';
-  const exportLDR = () => download(toLDR(res.pieces, FULL_CATALOG, base), base + '.ldr', 'text/plain');
+  const base = model ? model.name.replace(/\.[^.]+$/, '') + (model.isLDraw ? '' : '_' + opts.studs) : 'model';
+  const allCatalog = useMemo(() => {
+    if (!res?.extraCatalog?.length) return FULL_CATALOG;
+    const combined = [...FULL_CATALOG];
+    const ids = new Set(combined.map((c) => c.id));
+    for (const d of res.extraCatalog) {
+      if (!ids.has(d.id)) {
+        combined.push(d);
+        ids.add(d.id);
+      }
+    }
+    return combined;
+  }, [res]);
+
+  const exportLDR = () => download(toLDR(res.pieces, allCatalog, base), base + '.ldr', 'text/plain');
   const exportGLB = (mode) => {
-    const m = buildMesh(res.pieces, FULL_CATALOG, mode);
+    const m = buildMesh(res.pieces, allCatalog, mode);
     if (vp.current && vp.current.hasRotation() && res?.dims) {
       const q = vp.current.modelPivot.quaternion;
       const P = m.pos;
@@ -499,6 +678,151 @@ function StudioInner() {
       }
     }
     download(toGLB(m), base + (mode === 'kind' ? '_kinds' : '') + '.glb', 'model/gltf-binary');
+  };
+
+  const handleBrickLinkLogin = async () => {
+    setBlBusy(true);
+    sfx.click();
+    try {
+      const payload = blLoginMode === 'credentials'
+        ? { username: blUsernameInput || 'LegoBuilder', password: blPasswordInput }
+        : { sessionCookie: blCookieInput, username: blUsernameInput || 'LegoBuilder' };
+      const r = await loginBrickLink(payload);
+      if (r.success) {
+        setBlConnected(true);
+        setBlUser(r.username);
+        if (r.sessionCookie) setBlCookie(r.sessionCookie);
+        try {
+          localStorage.setItem('brickgen.bl.connected', 'true');
+          localStorage.setItem('brickgen.bl.user', r.username);
+          if (r.sessionCookie) localStorage.setItem('brickgen.bl.cookie', r.sessionCookie);
+        } catch {}
+        if (r.wantedLists && r.wantedLists.length) setBlWantedLists(r.wantedLists);
+        message.success(r.message || `Connected to BrickLink as ${r.username}`);
+      } else {
+        message.error(r.error || 'Failed to connect to BrickLink');
+      }
+    } catch (e) {
+      message.error(String(e.message || e));
+    }
+    setBlBusy(false);
+  };
+
+  const handleBrickLinkLogout = () => {
+    sfx.click();
+    setBlConnected(false);
+    setBlUser('');
+    setBlCookie('');
+    try {
+      localStorage.removeItem('brickgen.bl.connected');
+      localStorage.removeItem('brickgen.bl.user');
+      localStorage.removeItem('brickgen.bl.cookie');
+    } catch {}
+    message.info('Disconnected from BrickLink');
+  };
+
+  const handleExportMOC = async (format) => {
+    if (!res || !res.pieces) return;
+    sfx.click();
+    if (format === 'ldr') {
+      const ldrText = toBrickLinkMOC(res.pieces, allCatalog, base, { author: blUser || 'Brickator 3000' });
+      download(ldrText, `${base}_moc.ldr`, 'text/plain');
+      message.success(`Exported BrickLink MOC: ${base}_moc.ldr`);
+    } else if (format === 'io') {
+      const snap = bookletData?.cover || (vp.current ? vp.current.snapshot() : null);
+      try {
+        const ioBytes = await toBrickLinkStudioContainer(res.pieces, allCatalog, base, {
+          author: blUser || 'Brickator 3000',
+          snapshotDataUrl: snap,
+          stepsData: bookletData?.stepsData,
+          stepImages: bookletData?.images,
+        });
+        download(ioBytes, `${base}.io`, 'application/x-zip-compressed');
+        message.success(`Exported BrickLink Studio package: ${base}.io`);
+      } catch (err) {
+        console.error('Studio .io export failed:', err);
+        message.error(`Failed to export Studio .io: ${err.message || err}`);
+      }
+    }
+  };
+
+  const handleExportIllustrations = async () => {
+    if (!bookletData) return;
+    sfx.click();
+    try {
+      const zipBytes = await toMocIllustrationsZip({
+        title: base,
+        cover: bookletData.cover,
+        images: bookletData.images,
+        html: bookletData.html,
+      });
+      download(zipBytes, `${base}_illustrations.zip`, 'application/zip');
+      message.success(`Exported MOC illustrations: ${base}_illustrations.zip (${bookletData.images.length} steps)`);
+    } catch (err) {
+      console.error('Illustrations export failed:', err);
+      message.error(`Failed to export illustrations: ${err.message || err}`);
+    }
+  };
+
+  const handleCopyWantedListXML = () => {
+    if (!res || !res.pieces) return;
+    sfx.click();
+    const xml = toBrickLinkWantedListXML(res.pieces);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(xml).then(() => {
+        message.success(`BrickLink Wanted List XML copied (${res.pieces.length} pieces)`);
+      }).catch(() => {
+        download(xml, `${base}_wanted_list.xml`, 'application/xml');
+        message.success(`Downloaded ${base}_wanted_list.xml`);
+      });
+    } else {
+      download(xml, `${base}_wanted_list.xml`, 'application/xml');
+      message.success(`Downloaded ${base}_wanted_list.xml`);
+    }
+  };
+
+  const handleUploadWantedList = async () => {
+    if (!res || !res.pieces) return;
+    setBlBusy(true);
+    sfx.click();
+    try {
+      const xml = toBrickLinkWantedListXML(res.pieces);
+      // Automatically copy clean XML directly to clipboard
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        try { await navigator.clipboard.writeText(xml); } catch {}
+      }
+      const listName = blNewListName.trim() || (blSelectedList !== 'default' ? blSelectedList : `Brickator - ${base}`);
+      const r = await uploadWantedList({ name: listName, xml, sessionCookie: blCookie });
+      const targetUrl = (r && r.link) ? r.link : 'https://www.bricklink.com/v2/wanted/upload.page#xml';
+      window.open(targetUrl, '_blank', 'noopener,noreferrer');
+      message.success(`XML copied to clipboard (${res.pieces.length} parts). Opening BrickLink upload...`);
+    } catch (e) {
+      message.error(String(e.message || e));
+    }
+    setBlBusy(false);
+  };
+
+  const handleExportBrickHunter = () => {
+    if (!res || !res.pieces) return;
+    sfx.click();
+    const csv = toBrickHunterCSV(res.pieces);
+    download(csv, `${base}_brickhunter.csv`, 'text/csv');
+    message.success(`Exported BrickHunter CSV (${res.pieces.length} parts)`);
+  };
+
+  const handleCopyBrickHunter = () => {
+    if (!res || !res.pieces) return;
+    sfx.click();
+    const csv = toBrickHunterCSV(res.pieces);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(csv).then(() => {
+        message.success(`Copied BrickHunter list to clipboard (${res.pieces.length} parts)`);
+      }).catch(() => {
+        download(csv, `${base}_brickhunter.csv`, 'text/csv');
+      });
+    } else {
+      download(csv, `${base}_brickhunter.csv`, 'text/csv');
+    }
   };
   /**
    * The building booklet (brickgen/instructions.js): the steps are planned on the viewport's own piece list - which setLego
@@ -675,19 +999,72 @@ function StudioInner() {
   }, [selMode, rotate, viewMode]);
 
   useEffect(() => {
-    const handleUndoKey = (e) => {
-      if ((e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'Z') && !e.shiftKey) {
-        const tag = document.activeElement?.tagName?.toLowerCase();
-        if (tag === 'input' || tag === 'textarea') return;
+    const handleKey = (e) => {
+      const tag = document.activeElement?.tagName?.toLowerCase();
+      if (tag === 'input' || tag === 'textarea') return;
+
+      const isCtrl = e.ctrlKey || e.metaKey;
+
+      if (colorMode === 'islands') {
+        // CTRL+A: select all islands/submeshes
+        if (isCtrl && (e.key === 'a' || e.key === 'A') && !e.shiftKey) {
+          e.preventDefault();
+          if (isl && isl.count > 0) {
+            const all = Array.from({ length: isl.count }, (_, i) => i);
+            updateSelectedIslands(all);
+            sfx.click();
+          }
+          return;
+        }
+
+        // CTRL+I: invert selection
+        if (isCtrl && (e.key === 'i' || e.key === 'I') && !e.shiftKey) {
+          e.preventDefault();
+          if (isl && isl.count > 0) {
+            setSelectedIslands((prev) => {
+              const curSet = new Set(prev);
+              const inverted = [];
+              for (let i = 0; i < isl.count; i++) {
+                if (!curSet.has(i)) inverted.push(i);
+              }
+              if (vp.current) vp.current.setSelectedIslands(inverted);
+              return inverted;
+            });
+            sfx.click();
+          }
+          return;
+        }
+
+        // Delete or Backspace: delete selected island(s)
+        if (e.key === 'Delete' || e.key === 'Backspace') {
+          if (selectedIslands.length > 0) {
+            e.preventDefault();
+            deleteIslands(selectedIslands);
+            return;
+          }
+        }
+      }
+
+      // CTRL+Z: Undo
+      if (isCtrl && (e.key === 'z' || e.key === 'Z') && !e.shiftKey) {
+        if (colorMode === 'islands' || viewMode === 'mesh') {
+          if (history.length > 0) {
+            e.preventDefault();
+            undoDelete();
+            return;
+          }
+        }
         if (pieceHistory.length > 0) {
           e.preventDefault();
           undoDeletePiece();
+          return;
         }
       }
     };
-    window.addEventListener('keydown', handleUndoKey);
-    return () => window.removeEventListener('keydown', handleUndoKey);
-  }, [pieceHistory, undoDeletePiece]);
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [colorMode, viewMode, isl, selectedIslands, history, pieceHistory, undoDelete, undoDeletePiece, deleteIslands, updateSelectedIslands]);
+
 
   const bookStageRef = useRef('Drawing the instructions');
   const exportBooklet = async () => {
@@ -695,12 +1072,13 @@ function StudioInner() {
     sfx.click(); setBookBusy(true); bookStageRef.current = 'Drawing the instructions'; pushStage('Drawing the instructions', 0);
     const wasDark = dark, wasMode = viewMode, wasOutline = outline, wasLevel = step;
     try {
-      const { html, steps, pages } = await shootBooklet(vpc, FULL_CATALOG, { title: base, opts,
+      const { html, steps, pages, cover, images, stepsData } = await shootBooklet(vpc, FULL_CATALOG, { title: base, opts,
         meta: { studs: res.options.studs, weld: !!(res.post && res.post.weld && res.post.weld.added) },
         cover: { spp: window.__spp || snapSpp, ...(window.__coverH ? { outHeight: window.__coverH } : {}) },   // the snapshot's spp: one path-traced cover view
         onStage: (name) => { bookStageRef.current = name; pushStage(name, 0); }, onProgress: (f) => pushStage(bookStageRef.current, f) });
       download(html, base + '_instructions.html', 'text/html');
-      message.success(`${steps} steps on ${pages} pages - open it and print to PDF`);
+      setBookletData({ html, steps, pages, cover, images, stepsData });
+      message.success(`${steps} steps on ${pages} pages - booklet ready, Studio .io unlocked!`);
     } catch (e) { sfx.error(); message.error(String(e.message || e)); console.error(e); }
     vpc.setAllStuds(false);
     vpc.paused = false; vpc.setTheme(wasDark); vpc.setOutline(wasOutline); vpc.setColorMode(colorMode); vpc.setMode(wasMode); vpc.setLevel(wasLevel >= maxLevelRef.current ? Infinity : wasLevel, false);
@@ -711,7 +1089,7 @@ function StudioInner() {
   const save = (url) => { const a = document.createElement('a'); a.href = url; a.download = base + '.png'; a.click(); };
   const ptJob = useRef(null), ptHost = useRef(null);
   const dragRef = useRef(null), [ptView, setPtView] = useState({ z: 1, x: 0, y: 0 });
-  const [dof, setDof] = useState({ on: true, px: 16, focus: 0, sharp: 0, span: null });        // depth of field on the finished still
+  const [dof, setDof] = useState({ on: true, px: 8, focus: 0, sharp: 0.3, span: null });        // depth of field on the finished still
   const [pt, setPt] = useState(null);                              // { n, spp, status: 'running' | 'done' | 'error', err }
   const closePt = () => { if (ptJob.current) { ptJob.current.dispose(); ptJob.current = null; } setPt(null); };
   useEffect(() => { if (!pt) return; const f = (e) => e.key === 'Escape' && closePt(); window.addEventListener('keydown', f); return () => window.removeEventListener('keydown', f); }, [!!pt]); // eslint-disable-line
@@ -730,10 +1108,10 @@ function StudioInner() {
       const ok = await job.run((n, m) => { const t = performance.now(); if (n < m && t - lastUi < 200) return; lastUi = t; setTimeout(() => setPt((o) => (o && o.status === 'running' ? { ...o, n, spp: m } : o)), 0); });
       if (ok) {
         setPt((o) => o && { ...o, n: spp, status: 'done' }); sfx.done();
-        try {                                                                        // depth pass + first blur, focused mid-range
+        try {                                                                        // depth pass + first blur, focused at 25% of range
           const span = job.prepareDof();
-          const focus = span ? (span.near + span.far) / 2 : 0;
-          setDof((d) => { const n = { ...d, focus, span }; job.applyDof({ on: n.on, focus, maxPx: n.px }); return n; });
+          const focus = span ? span.near + (span.far - span.near) * 0.25 : 0;
+          setDof((d) => { const n = { ...d, on: true, focus, sharp: 0.3, px: 8, span }; job.applyDof({ on: true, focus, maxPx: 8, sharp: 0.3 }); return n; });
         } catch (e) { console.warn('depth of field unavailable', e); }
       }
     } catch (e) { console.error(e); setPt((o) => o && { ...o, status: 'error', err: String(e.message || e) }); }
@@ -746,7 +1124,7 @@ function StudioInner() {
     const u = (e.clientX - r.left - ptView.x) / (r.width * ptView.z), v = (e.clientY - r.top - ptView.y) / (r.height * ptView.z);
     if (u < 0 || u > 1 || v < 0 || v > 1) return;
     const z = job.depthAt(u, v); if (!z) return;
-    setDof((d) => { job.applyDof({ on: true, focus: z, maxPx: d.px }); return { ...d, on: true, focus: z }; });
+    setDof((d) => { job.applyDof({ on: true, focus: z, maxPx: d.px, sharp: d.sharp }); return { ...d, on: true, focus: z }; });
   };
 
   const bom = useMemo(() => {
@@ -853,22 +1231,33 @@ function StudioInner() {
         <Button size="small" icon={<StepForwardOutlined />} onClick={() => { setPlaying(false); goStep(step + 1); }} />
         <Select size="small" value={speed} onChange={setSpeed} style={{ width: 74 }} options={[0.5, 1, 2, 4].map((v) => ({ value: v, label: v + 'x' }))} />
       </div>
-      <Text type="secondary" style={{ fontSize: 11, fontFamily: 'monospace' }}>
-        {levelInfo ? `layer ${Math.min(step, maxLevel)}: ${levelInfo.n ? `${levelInfo.n} new (${Object.entries(levelInfo.k).map(([k, c]) => `${k} ${c}`).join(', ')})` : 'pieces from lower layers only'}` : 'empty baseplate'}
-      </Text>
     </div>
   );
 
   return (
     <div className={'studio ' + (dark ? 'dark' : 'light')}>
       <div className="vp" ref={vEl} style={{ left: leftOpen ? LW : 0, right: rightOpen ? RW : 0 }} />
-      {selectedIsland != null && islandStats[selectedIsland] && (
+      {selectedIslands.length === 1 && islandStats[selectedIslands[0]] && (
         <div className="island-overlay">
-          <span className="island-swatch" style={{ background: islandStats[selectedIsland].color }} />
-          <span style={{ fontWeight: 600 }}>Island #{selectedIsland + 1}</span>
-          <span style={{ color: 'var(--tx2)' }}>{islandStats[selectedIsland].triangles.toLocaleString()} triangles ({islandStats[selectedIsland].pct.toFixed(1)}%)</span>
-          <Button size="small" danger icon={<DeleteOutlined />} onClick={() => deleteIsland(selectedIsland)}>Delete</Button>
-          <Button size="small" type="text" icon={<CloseOutlined />} onClick={() => { setSelectedIsland(null); vp.current && vp.current.setSelectedIsland(null); }} />
+          <span className="island-swatch" style={{ background: islandStats[selectedIslands[0]].color }} />
+          <span style={{ fontWeight: 600 }}>Island #{selectedIslands[0] + 1}</span>
+          <span style={{ color: 'var(--tx2)' }}>{islandStats[selectedIslands[0]].triangles.toLocaleString()} triangles ({islandStats[selectedIslands[0]].pct.toFixed(1)}%)</span>
+          <Button size="small" danger icon={<DeleteOutlined />} onClick={() => deleteIslands(selectedIslands)}>Delete</Button>
+          <Button size="small" type="text" icon={<CloseOutlined />} onClick={() => updateSelectedIslands([])} />
+        </div>
+      )}
+      {selectedIslands.length > 1 && (
+        <div className="island-overlay">
+          <div style={{ display: 'flex', gap: 3, alignItems: 'center' }}>
+            {selectedStats.slice(0, 5).map((st) => (
+              <span key={st.id} className="island-swatch" style={{ background: st.color, width: 10, height: 10 }} />
+            ))}
+            {selectedStats.length > 5 && <span style={{ fontSize: 10, color: 'var(--tx2)' }}>+{selectedStats.length - 5}</span>}
+          </div>
+          <span style={{ fontWeight: 600 }}>{selectedIslands.length} islands selected</span>
+          <span style={{ color: 'var(--tx2)' }}>{totalSelectedTris.toLocaleString()} triangles ({totalSelectedPct.toFixed(1)}%)</span>
+          <Button size="small" danger icon={<DeleteOutlined />} onClick={() => deleteIslands(selectedIslands)}>Delete selected</Button>
+          <Button size="small" type="text" icon={<CloseOutlined />} onClick={() => updateSelectedIslands([])} />
         </div>
       )}
 
@@ -889,12 +1278,18 @@ function StudioInner() {
               {!models.length && <Text type="secondary" style={{ fontSize: 12 }}>no model list: open a file</Text>}
             </div>
             <div style={{ display: 'flex', gap: 6 }}>
-              <Upload beforeUpload={openFile} showUploadList={false} accept=".glb,.gltf,.obj,.ply,.stl" style={{ flex: 1 }}>
-                <Button size="small" icon={<UploadOutlined />}>Open file (glb, obj, ply, stl)</Button>
+              <Upload beforeUpload={openFile} showUploadList={false} accept=".glb,.gltf,.obj,.ply,.stl,.ldr,.mpd,.mdp" style={{ flex: 1 }}>
+                <Button size="small" icon={<UploadOutlined />}>Open file (3D, ldr, mpd)</Button>
               </Upload>
               <Tooltip title="which axis of the file points up"><Select size="small" value={up} onChange={(u) => { setUp(u); if (modelPath) openPath(modelPath, u); }} style={{ width: 86 }}
                 options={[['y', 'Y up'], ['z', 'Z up'], ['-z', '-Z up'], ['x', 'X up']].map(([value, label]) => ({ value, label }))} /></Tooltip>
             </div>
+            {model && model.isLDraw && (
+              <div style={{ margin: '6px 0 2px', padding: '4px 8px', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 4, fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ color: '#1e3a8a', fontWeight: 600 }}>LDraw Model</span>
+                <Tag color="blue" style={{ margin: 0, fontSize: 10 }}>Direct LEGO</Tag>
+              </div>
+            )}
             <div className="grid2">
               <Tooltip title="welds the mesh, lets three.js compute vertex normals and flips reversed triangles before the LEGO computation"><Checkbox checked={!!opts.vertexNormals} onChange={(e) => setOpt('vertexNormals', e.target.checked)}>Fix flipped faces</Checkbox></Tooltip>
               <Tooltip title="on: geometry.computeVertexNormals() on the welded mesh, smooth shading. off: flat shading"><Checkbox checked={smooth} onChange={(e) => { setSmooth(e.target.checked); vp.current.setSmooth(e.target.checked); }}>Smooth normals</Checkbox></Tooltip>
@@ -921,7 +1316,15 @@ function StudioInner() {
           <Divider style={{ margin: '4px 0' }} />
 
           <Section title="2. Discretization" open={openCfg} setOpen={setOpenCfg}>
-            {!busy ? (
+            {model && model.isLDraw ? (
+              <Alert
+                type="info"
+                showIcon
+                message="LDraw Model Active"
+                description="Source is an authentic LDraw LEGO model. Voxel discretization is bypassed."
+                style={{ marginBottom: 8, fontSize: 11 }}
+              />
+            ) : !busy ? (
               <Button type="primary" icon={<ThunderboltOutlined />} disabled={!model} onClick={generate} style={{ width: '100%', height: 36, fontWeight: 600 }}>Compute</Button>
             ) : (
               <Button danger icon={<StopOutlined />} onClick={stop} style={{ width: '100%', height: 36 }}>Cancel</Button>
@@ -995,7 +1398,7 @@ function StudioInner() {
               setViewMode(v);
               vp.current.setMode(v);
             }} style={{ display: 'flex', width: '100%' }}>
-              {[['mesh', 'Mesh'], ['lego', 'LEGO'], ['both', 'Overlay'], ['split', 'Split']].map(([v, l]) => <Radio.Button key={v} value={v} style={{ flex: 1, textAlign: 'center' }}>{l}</Radio.Button>)}
+              {[['mesh', 'Mesh'], ['lego', 'LEGO'], ['both', 'Overlay'], ['split', 'Split']].map(([v, l]) => <Radio.Button key={v} value={v} disabled={model?.isLDraw && v !== 'lego'} style={{ flex: 1, textAlign: 'center' }}>{l}</Radio.Button>)}
             </Radio.Group>
             <Text style={{ fontSize: 11, color: 'var(--tx2)' }}>Colours</Text>
             <Radio.Group size="small" value={colorMode} onChange={(e) => { sfx.click(); const v = e.target.value; setColorMode(v); vp.current.setColorMode(v); if (v === 'islands') { setViewMode('mesh'); vp.current.setMode('mesh'); if (!detectIslands) toggleDetectIslands(true); } }} style={{ display: 'flex', width: '100%' }}>
@@ -1013,36 +1416,86 @@ function StudioInner() {
                     {model && model.deletedIslands > 0 && <Button size="small" type="link" icon={<ReloadOutlined />} onClick={restoreModel} style={{ fontSize: 11, height: 22, padding: '0 4px' }}>Restore all</Button>}
                   </div>
                 </div>
-                <Text type="secondary" style={{ fontSize: 10, lineHeight: 1.3 }}>Click an island in the 3D viewport or below to select and remove from computation.</Text>
-                {selectedIsland != null && islandStats[selectedIsland] && (
+                <div style={{ display: 'flex', gap: 4, alignItems: 'center', margin: '2px 0' }}>
+                  <Button size="small" style={{ fontSize: 10, height: 22, padding: '0 6px' }} onClick={() => {
+                    const all = Array.from({ length: isl.count }, (_, i) => i);
+                    updateSelectedIslands(all);
+                    sfx.click();
+                  }}>Select all</Button>
+                  <Button size="small" style={{ fontSize: 10, height: 22, padding: '0 6px' }} onClick={() => {
+                    const curSet = new Set(selectedIslands);
+                    const inverted = [];
+                    for (let i = 0; i < isl.count; i++) {
+                      if (!curSet.has(i)) inverted.push(i);
+                    }
+                    updateSelectedIslands(inverted);
+                    sfx.click();
+                  }}>Invert</Button>
+                  {selectedIslands.length > 0 && (
+                    <Button size="small" type="text" style={{ fontSize: 10, height: 22, padding: '0 4px', marginLeft: 'auto' }} onClick={() => {
+                      updateSelectedIslands([]);
+                      sfx.click();
+                    }}>Clear</Button>
+                  )}
+                </div>
+                <Text type="secondary" style={{ fontSize: 10, lineHeight: 1.3 }}>Click to select. Ctrl+click for multiple. Ctrl+A all, Ctrl+I invert, Del to remove, Ctrl+Z undo.</Text>
+                {selectedIslands.length === 1 && islandStats[selectedIslands[0]] && (
                   <div className="island-selected-card">
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span className="island-swatch" style={{ background: islandStats[selectedIsland].color }} />
-                      <span style={{ fontWeight: 600, fontSize: 11 }}>Island #{selectedIsland + 1}</span>
-                      <span style={{ fontSize: 10, color: 'var(--tx2)', marginLeft: 'auto' }}>{islandStats[selectedIsland].triangles.toLocaleString()} tris ({islandStats[selectedIsland].pct.toFixed(1)}%)</span>
+                      <span className="island-swatch" style={{ background: islandStats[selectedIslands[0]].color }} />
+                      <span style={{ fontWeight: 600, fontSize: 11 }}>Island #{selectedIslands[0] + 1}</span>
+                      <span style={{ fontSize: 10, color: 'var(--tx2)', marginLeft: 'auto' }}>{islandStats[selectedIslands[0]].triangles.toLocaleString()} tris ({islandStats[selectedIslands[0]].pct.toFixed(1)}%)</span>
                     </div>
-                    <div style={{ display: 'flex', gap: 6, marginTop: 2 }}>
-                      <Button size="small" danger icon={<DeleteOutlined />} onClick={() => deleteIsland(selectedIsland)} style={{ flex: 1, fontSize: 11, height: 24 }}>Delete from model</Button>
-                      <Button size="small" onClick={() => { setSelectedIsland(null); vp.current && vp.current.setSelectedIsland(null); }} style={{ fontSize: 11, height: 24 }}>Deselect</Button>
+                    <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
+                      <Button size="small" danger icon={<DeleteOutlined />} onClick={() => deleteIslands(selectedIslands)} style={{ flex: 1, fontSize: 11, height: 24 }}>Delete from model</Button>
+                      <Button size="small" onClick={() => updateSelectedIslands([])} style={{ fontSize: 11, height: 24 }}>Deselect</Button>
+                    </div>
+                  </div>
+                )}
+                {selectedIslands.length > 1 && (
+                  <div className="island-selected-card">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <div style={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                        {selectedStats.slice(0, 4).map((st) => (
+                          <span key={st.id} className="island-swatch" style={{ background: st.color, width: 8, height: 8 }} />
+                        ))}
+                      </div>
+                      <span style={{ fontWeight: 600, fontSize: 11 }}>{selectedIslands.length} islands selected</span>
+                      <span style={{ fontSize: 10, color: 'var(--tx2)', marginLeft: 'auto' }}>{totalSelectedTris.toLocaleString()} tris ({totalSelectedPct.toFixed(1)}%)</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
+                      <Button size="small" danger icon={<DeleteOutlined />} onClick={() => deleteIslands(selectedIslands)} style={{ flex: 1, fontSize: 11, height: 24 }}>Delete selected ({selectedIslands.length})</Button>
+                      <Button size="small" onClick={() => updateSelectedIslands([])} style={{ fontSize: 11, height: 24 }}>Deselect</Button>
                     </div>
                   </div>
                 )}
                 <div className="island-list">
-                  {islandStats.map((st) => (
-                    <div key={st.id} className={'island-item' + (selectedIsland === st.id ? ' selected' : '')}
-                      onClick={() => { setSelectedIsland(st.id); vp.current && vp.current.setSelectedIsland(st.id); }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
-                        <span className="island-swatch" style={{ background: st.color }} />
-                        <span style={{ fontWeight: selectedIsland === st.id ? 600 : 400 }}>Island #{st.id + 1}</span>
+                  {islandStats.map((st) => {
+                    const isSel = selectedIslands.includes(st.id);
+                    return (
+                      <div key={st.id} className={'island-item' + (isSel ? ' selected' : '')}
+                        onClick={(e) => {
+                          const isCtrl = e.ctrlKey || e.metaKey;
+                          if (isCtrl) {
+                            const next = isSel ? selectedIslands.filter((x) => x !== st.id) : [...selectedIslands, st.id];
+                            updateSelectedIslands(next);
+                          } else {
+                            updateSelectedIslands([st.id]);
+                          }
+                        }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
+                          <span className="island-swatch" style={{ background: st.color }} />
+                          <span style={{ fontWeight: isSel ? 600 : 400 }}>Island #{st.id + 1}</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                          <span style={{ color: 'var(--tx2)', fontSize: 10 }}>{st.triangles.toLocaleString()} tris ({st.pct.toFixed(0)}%)</span>
+                          <Tooltip title="Delete island from computation">
+                            <Button size="small" type="text" danger icon={<DeleteOutlined />} onClick={(e) => { e.stopPropagation(); deleteIsland(st.id); }} style={{ width: 20, height: 20, padding: 0 }} />
+                          </Tooltip>
+                        </div>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-                        <span style={{ color: 'var(--tx2)', fontSize: 10 }}>{st.triangles.toLocaleString()} tris ({st.pct.toFixed(0)}%)</span>
-                        <Tooltip title="Delete island from computation">
-                          <Button size="small" type="text" danger icon={<DeleteOutlined />} onClick={(e) => { e.stopPropagation(); deleteIsland(st.id); }} style={{ width: 20, height: 20, padding: 0 }} />
-                        </Tooltip>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             ) : (
@@ -1073,9 +1526,57 @@ function StudioInner() {
                   onClick={exportBooklet}
                   style={{ gridColumn: '1 / -1', background: '#2563eb', borderColor: '#2563eb', color: '#fff', fontWeight: 600, justifyContent: 'center' }}
                 >
-                  Instructions
+                  {bookletData ? 'Instructions Booklet (Ready)' : 'Instructions Booklet'}
                 </Button>
               </Tooltip>
+              <Tooltip
+                title={
+                  !res
+                    ? 'Compute a model first'
+                    : !bookletData
+                    ? 'Compute instructions booklet first to generate hero cover and step illustrations'
+                    : 'Download BrickLink Studio package (.io) with hero cover and step data'
+                }
+              >
+                <Button
+                  size="small"
+                  type={bookletData ? 'primary' : 'default'}
+                  icon={<DownloadOutlined style={{ color: bookletData ? '#ffffff' : undefined }} />}
+                  disabled={!res || !bookletData}
+                  onClick={() => handleExportMOC('io')}
+                  style={{
+                    gridColumn: '1 / -1',
+                    background: bookletData ? '#2563eb' : undefined,
+                    borderColor: bookletData ? '#2563eb' : undefined,
+                    color: bookletData ? '#ffffff' : undefined,
+                    fontWeight: 600,
+                    justifyContent: 'center',
+                  }}
+                >
+                  <span style={{ color: bookletData ? '#ffffff' : undefined }}>
+                    BrickLink Studio (.io)
+                  </span>
+                </Button>
+              </Tooltip>
+              {bookletData && (
+                <Tooltip title="Download hero cover image and all building step illustration renders in a ZIP package for MOC gallery submission">
+                  <Button
+                    size="small"
+                    icon={<DownloadOutlined style={{ color: '#2563eb' }} />}
+                    onClick={handleExportIllustrations}
+                    style={{
+                      gridColumn: '1 / -1',
+                      borderColor: '#bfdbfe',
+                      background: '#eff6ff',
+                      color: '#2563eb',
+                      fontWeight: 600,
+                      justifyContent: 'center',
+                    }}
+                  >
+                    MOC Illustrations (.zip)
+                  </Button>
+                </Tooltip>
+              )}
               <Button size="small" icon={<DownloadOutlined />} disabled={!res} onClick={exportLDR}>.ldr (LDraw)</Button>
               <Button size="small" icon={<DownloadOutlined />} disabled={!res} onClick={() => exportGLB('piece')}>.glb</Button>
               <Button size="small" icon={<DownloadOutlined />} disabled={!res} onClick={() => exportGLB('kind')}>.glb by kind</Button>
@@ -1083,6 +1584,321 @@ function StudioInner() {
               <Button size="small" icon={<CameraOutlined />} disabled={!model} onClick={png}>snapshot .png</Button>
               <Select size="small" value={snapSpp} onChange={setSnapSpp} options={[64, 128, 256, 512, 1024].map((v) => ({ value: v, label: `${v} spp` }))} />
               <Button size="small" icon={<AppstoreOutlined />} onClick={() => { sfx.click(); setPartsOpen(true); }}>Parts list</Button>
+            </div>
+          </Section>
+          <Divider style={{ margin: '4px 0' }} />
+          <Section title="BrickLink" open={openBricklink} setOpen={setOpenBricklink}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+              <Text style={{ fontSize: 11, color: 'var(--tx2)' }}>Wanted List &amp; MOC Hub</Text>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <Tooltip title="Install 1-click userscript for Tampermonkey/Violentmonkey to auto-select the XML tab, paste XML, and click verify on BrickLink">
+                  <Button
+                    type="link"
+                    size="small"
+                    icon={<ThunderboltOutlined />}
+                    href="./bricklink-autofill.user.js"
+                    target="_blank"
+                    style={{ padding: 0, fontSize: 11, height: 'auto', color: '#2563eb' }}
+                  >
+                    Auto-Fill Script
+                  </Button>
+                </Tooltip>
+                <Button
+                  type="link"
+                  size="small"
+                  icon={<LinkOutlined />}
+                  href="https://www.bricklink.com/v2/wanted/upload.page#xml"
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ padding: 0, fontSize: 11, height: 'auto' }}
+                >
+                  Upload Page
+                </Button>
+              </div>
+            </div>
+
+            {!blConnected ? (
+              <div className="bl-card">
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontWeight: 600, fontSize: 11 }}>Account Login</span>
+                  <Radio.Group
+                    size="small"
+                    value={blLoginMode}
+                    onChange={(e) => setBlLoginMode(e.target.value)}
+                    style={{ fontSize: 10 }}
+                  >
+                    <Radio.Button value="credentials" style={{ fontSize: 10, padding: '0 6px' }}>Login</Radio.Button>
+                    <Radio.Button value="cookie" style={{ fontSize: 10, padding: '0 6px' }}>Cookie</Radio.Button>
+                  </Radio.Group>
+                </div>
+
+                {blLoginMode === 'credentials' ? (
+                  <>
+                    <Input
+                      size="small"
+                      placeholder="BrickLink username"
+                      prefix={<UserOutlined style={{ color: '#94a3b8' }} />}
+                      value={blUsernameInput}
+                      onChange={(e) => setBlUsernameInput(e.target.value)}
+                    />
+                    <Input.Password
+                      size="small"
+                      placeholder="BrickLink password"
+                      prefix={<LockOutlined style={{ color: '#94a3b8' }} />}
+                      value={blPasswordInput}
+                      onChange={(e) => setBlPasswordInput(e.target.value)}
+                      onPressEnter={handleBrickLinkLogin}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <Input
+                      size="small"
+                      placeholder="Username (optional)"
+                      prefix={<UserOutlined style={{ color: '#94a3b8' }} />}
+                      value={blUsernameInput}
+                      onChange={(e) => setBlUsernameInput(e.target.value)}
+                    />
+                    <Input.Password
+                      size="small"
+                      placeholder="BLSTREAM or session cookie"
+                      prefix={<KeyOutlined style={{ color: '#94a3b8' }} />}
+                      value={blCookieInput}
+                      onChange={(e) => setBlCookieInput(e.target.value)}
+                      onPressEnter={handleBrickLinkLogin}
+                    />
+                    <Text type="secondary" style={{ fontSize: 10 }}>
+                      Copy session cookie from browser DevTools after logging into BrickLink.
+                    </Text>
+                  </>
+                )}
+
+                <Button
+                  size="small"
+                  type="primary"
+                  loading={blBusy}
+                  onClick={handleBrickLinkLogin}
+                  style={{ width: '100%', background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}
+                >
+                  Connect to BrickLink
+                </Button>
+
+                <div style={{ display: 'flex', gap: 6, marginTop: 2 }}>
+                  <Tooltip title="Copies clean XML to clipboard and opens the BrickLink upload page in a new tab">
+                    <Button
+                      size="small"
+                      icon={<CloudUploadOutlined />}
+                      disabled={!res}
+                      onClick={handleUploadWantedList}
+                      style={{ flex: 1 }}
+                    >
+                      Upload to Wanted List
+                    </Button>
+                  </Tooltip>
+                  <Tooltip title="Copy BrickLink XML to clipboard">
+                    <Button
+                      size="small"
+                      icon={<CopyOutlined />}
+                      disabled={!res}
+                      onClick={handleCopyWantedListXML}
+                    >
+                      XML
+                    </Button>
+                  </Tooltip>
+                </div>
+              </div>
+            ) : (
+              <div className="bl-connected">
+                <div className="bl-header">
+                  <div>
+                    <span style={{ fontWeight: 600, color: '#1e3a8a' }}>Connected: </span>
+                    <span style={{ color: '#2563eb', fontWeight: 600 }}>{blUser}</span>
+                  </div>
+                  <Button
+                    size="small"
+                    type="text"
+                    danger
+                    icon={<DisconnectOutlined />}
+                    onClick={handleBrickLinkLogout}
+                    style={{ fontSize: 11, height: 20, padding: '0 4px' }}
+                  >
+                    Disconnect
+                  </Button>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <Text style={{ fontSize: 10, color: 'var(--tx2)' }}>Target Wanted List</Text>
+                  <Select
+                    size="small"
+                    value={blSelectedList}
+                    onChange={setBlSelectedList}
+                    style={{ width: '100%' }}
+                    options={[
+                      ...blWantedLists.map((w) => ({ value: w.id, label: w.name })),
+                      { value: 'new', label: '+ Create new list...' },
+                    ]}
+                  />
+                  {blSelectedList === 'new' && (
+                    <Input
+                      size="small"
+                      placeholder="New list name"
+                      value={blNewListName}
+                      onChange={(e) => setBlNewListName(e.target.value)}
+                      style={{ marginTop: 2 }}
+                    />
+                  )}
+                </div>
+
+                <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
+                  <Tooltip title="Upload parts directly into your BrickLink Wanted List">
+                    <Button
+                      size="small"
+                      type="primary"
+                      icon={<CloudUploadOutlined />}
+                      disabled={!res}
+                      loading={blBusy}
+                      onClick={handleUploadWantedList}
+                      style={{ flex: 1, background: '#2563eb', borderColor: '#2563eb' }}
+                    >
+                      Send to Wanted List
+                    </Button>
+                  </Tooltip>
+                  <Tooltip title="Copy BrickLink XML to clipboard to paste directly on BrickLink's Wanted List upload page">
+                    <Button
+                      size="small"
+                      icon={<CopyOutlined />}
+                      disabled={!res}
+                      onClick={handleCopyWantedListXML}
+                    >
+                      XML
+                    </Button>
+                  </Tooltip>
+                </div>
+              </div>
+            )}
+
+            <div style={{ marginTop: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                <span style={{ fontSize: 11, fontWeight: 600 }}>BrickLink MOC Export</span>
+                <Button
+                  size="small"
+                  type="link"
+                  icon={<InfoCircleOutlined />}
+                  onClick={() => setMocInfoOpen(true)}
+                  style={{ padding: 0, fontSize: 11, height: 'auto' }}
+                >
+                  What is a MOC?
+                </Button>
+              </div>
+
+              <div className="bl-actions">
+                <Tooltip title="Export standard LDraw MOC with step breaks and official MOC category header">
+                  <Button
+                    size="small"
+                    icon={<DownloadOutlined />}
+                    disabled={!res}
+                    onClick={() => handleExportMOC('ldr')}
+                  >
+                    MOC .ldr
+                  </Button>
+                </Tooltip>
+                <Tooltip
+                  title={
+                    !res
+                      ? 'Compute a model first'
+                      : !bookletData
+                      ? 'Compute instructions booklet first to generate hero cover and step illustrations'
+                      : 'Export BrickLink Studio package (.io) container with embedded hero cover and step data'
+                  }
+                >
+                  <Button
+                    size="small"
+                    icon={<DownloadOutlined />}
+                    disabled={!res || !bookletData}
+                    onClick={() => handleExportMOC('io')}
+                  >
+                    Studio .io
+                  </Button>
+                </Tooltip>
+              </div>
+            </div>
+          </Section>
+          <Divider style={{ margin: '4px 0' }} />
+          <Section title="LEGO Pick a Brick" open={openPab} setOpen={setOpenPab}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+              <Text style={{ fontSize: 11, color: 'var(--tx2)' }}>Official LEGO Store</Text>
+              <Button
+                type="link"
+                size="small"
+                icon={<LinkOutlined />}
+                href={getLegoPickABrickUrl(pabLocale)}
+                target="_blank"
+                rel="noreferrer"
+                style={{ padding: 0, fontSize: 11, height: 'auto' }}
+              >
+                Open Store
+              </Button>
+            </div>
+
+            <div className="bl-card">
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontWeight: 600, fontSize: 11 }}>Store Region</span>
+                <Select
+                  size="small"
+                  value={pabLocale}
+                  onChange={setPabLocale}
+                  style={{ width: 130 }}
+                  options={[
+                    { value: 'en-gr', label: 'Greece (en-gr)' },
+                    { value: 'en-us', label: 'United States' },
+                    { value: 'en-gb', label: 'United Kingdom' },
+                    { value: 'de-de', label: 'Germany (de-de)' },
+                    { value: 'fr-fr', label: 'France (fr-fr)' },
+                    { value: 'it-it', label: 'Italy (it-it)' },
+                    { value: 'es-es', label: 'Spain (es-es)' },
+                  ]}
+                />
+              </div>
+
+              <Text type="secondary" style={{ fontSize: 10, lineHeight: 1.35 }}>
+                Order factory-new genuine bricks directly from LEGO Denmark. Earns LEGO Insiders points. Ships in official packaging.
+              </Text>
+
+              <div style={{ display: 'flex', gap: 6, marginTop: 2 }}>
+                <Tooltip title="Download BrickHunter CSV for 1-click cart import via BrickHunter on LEGO.com">
+                  <Button
+                    size="small"
+                    type="primary"
+                    icon={<DownloadOutlined style={{ color: '#ffffff' }} />}
+                    disabled={!res}
+                    onClick={handleExportBrickHunter}
+                    style={{ flex: 1, background: '#2563eb', borderColor: '#2563eb', color: '#ffffff', fontWeight: 600 }}
+                  >
+                    <span style={{ color: '#ffffff' }}>BrickHunter CSV</span>
+                  </Button>
+                </Tooltip>
+                <Tooltip title="Copy BrickHunter CSV to clipboard">
+                  <Button
+                    size="small"
+                    icon={<CopyOutlined />}
+                    disabled={!res}
+                    onClick={handleCopyBrickHunter}
+                  >
+                    Copy
+                  </Button>
+                </Tooltip>
+              </div>
+
+              <Button
+                size="small"
+                icon={<LinkOutlined />}
+                href={getLegoPickABrickUrl(pabLocale)}
+                target="_blank"
+                rel="noreferrer"
+                style={{ width: '100%', marginTop: 2 }}
+              >
+                Go to LEGO Pick a Brick
+              </Button>
             </div>
           </Section>
         </div>
@@ -1102,7 +1918,14 @@ function StudioInner() {
             vp.current.setRotateGizmo(v);
           }} /></Tooltip>
           {hasRot && (
-            <Tooltip title="Reset rotation"><Button size="small" type="text" icon={<UndoOutlined />} onClick={() => { if (vp.current) { vp.current.resetRotation(); setHasRot(false); } }} /></Tooltip>
+            <>
+              <Tooltip title="Bake rotation into mesh">
+                <Button size="small" type="text" icon={<CheckCircleOutlined />} onClick={bakeRotation}>Bake</Button>
+              </Tooltip>
+              <Tooltip title="Reset rotation">
+                <Button size="small" type="text" icon={<UndoOutlined />} onClick={() => { if (vp.current) { vp.current.resetRotation(); setHasRot(false); } }} />
+              </Tooltip>
+            </>
           )}
           {res && (
             <>
@@ -1207,17 +2030,17 @@ function StudioInner() {
               : <div ref={ptHost} className="ptpan" style={{ transform: `translate(${ptView.x}px, ${ptView.y}px) scale(${ptView.z})`, cursor: pt.status === 'done' && ptView.z === 1 ? 'crosshair' : ptView.z > 1 ? 'grab' : 'default' }} />}
             <div className="ptui top">
               {pt.status === 'error' && <Button size="small" onClick={() => { save(vp.current.snapshot()); closePt(); }}>Save plain capture</Button>}
-              <Button size="small" type="primary" icon={<DownloadOutlined />} disabled={pt.status === 'error'} onClick={() => save(ptJob.current.url())}>PNG{pt.status === 'running' ? ` · ${pt.n} spp` : ''}</Button>
+              <Button size="small" type="primary" icon={<DownloadOutlined style={{ color: '#ffffff' }} />} disabled={pt.status === 'error'} onClick={() => save(ptJob.current.url())} style={{ color: '#ffffff' }}><span style={{ color: '#ffffff' }}>PNG{pt.status === 'running' ? ` · ${pt.n} spp` : ''}</span></Button>
               <Button size="small" icon={<StopOutlined />} onClick={closePt}>{pt.status === 'done' ? 'Close' : 'Cancel'}</Button>
             </div>
             <div className="ptui bottom">
-              <Progress percent={Math.round((100 * pt.n) / pt.spp)} size="small" showInfo={false} />
+              <Progress percent={Math.round((100 * pt.n) / pt.spp)} size="small" showInfo={false} strokeColor="#2563eb" trailColor="#e2e8f0" />
               {pt.status === 'done' && dof.span && (
                 <>
                 <div className="ptdof">
                   <span>Focus distance</span>
                   <Slider min={dof.span.near} max={dof.span.far} step={(dof.span.far - dof.span.near) / 400} value={Math.min(dof.span.far, Math.max(dof.span.near, dof.focus))} style={{ flex: 1, minWidth: 90 }} tooltip={{ open: false }}
-                    onChange={(f) => setDof((d) => { ptJob.current.applyDof({ on: true, focus: f, maxPx: d.px }); return { ...d, on: true, focus: f }; })} />
+                    onChange={(f) => setDof((d) => { ptJob.current.applyDof({ on: true, focus: f, maxPx: d.px, sharp: d.sharp }); return { ...d, on: true, focus: f }; })} />
                   <b>{Math.round(100 * (Math.min(dof.span.far, Math.max(dof.span.near, dof.focus)) - dof.span.near) / Math.max(1e-9, dof.span.far - dof.span.near))}%</b>
                 </div>
                 <div className="ptdof">
@@ -1227,15 +2050,14 @@ function StudioInner() {
                   <b>{Math.round(dof.sharp * 100)}%</b>
                 </div>
                 <div className="ptdof">
-                  <Switch size="small" checked={dof.on} onChange={(on) => setDof((d) => { ptJob.current.applyDof({ on, focus: d.focus, maxPx: d.px }); return { ...d, on }; })} />
                   <span>Depth of field</span>
-                  <Slider min={0} max={256} step={1} value={dof.px} style={{ flex: 1, minWidth: 90 }} tooltip={{ open: false }}
-                    onChange={(px) => setDof((d) => { ptJob.current.applyDof({ on: true, focus: d.focus, maxPx: px }); return { ...d, on: true, px }; })} />
+                  <Slider min={0} max={32} step={1} value={dof.px} style={{ flex: 1, minWidth: 90 }} tooltip={{ open: false }}
+                    onChange={(px) => setDof((d) => { ptJob.current.applyDof({ on: true, focus: d.focus, maxPx: px, sharp: d.sharp }); return { ...d, on: true, px }; })} />
                   <b>{dof.px}px</b>
                 </div>
                 </>
               )}
-              <span>{pt.n} / {pt.spp} spp · {ptView.z.toFixed(1)}x · wheel to zoom{pt.status === 'done' ? ', click the image to focus there' : ''}{ptView.z > 1 ? ', drag to pan' : ''}, double-click to reset</span>
+              <span className="pt-info">{pt.n} / {pt.spp} spp · {ptView.z.toFixed(1)}x · wheel to zoom{pt.status === 'done' ? ', click the image to focus there' : ''}{ptView.z > 1 ? ', drag to pan' : ''}, double-click to reset</span>
             </div>
           </div>
         </div>
@@ -1256,6 +2078,41 @@ function StudioInner() {
               { title: 'size (studs x studs x plates)', dataIndex: 'size', width: 190 }, { title: 'studs', dataIndex: 'studs', width: 70 }]} />
           ) },
         ]} />
+      </Modal>
+
+      <Modal
+        title={MOC_DEFINITION.title}
+        open={mocInfoOpen}
+        onCancel={() => setMocInfoOpen(false)}
+        footer={[
+          <Button key="close" type="primary" onClick={() => setMocInfoOpen(false)} style={{ background: '#2563eb', borderColor: '#2563eb' }}>
+            Close
+          </Button>,
+        ]}
+        width={580}
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, fontSize: 13, lineHeight: 1.5 }}>
+          <p style={{ margin: 0, color: 'var(--tx)' }}>{MOC_DEFINITION.summary}</p>
+          <div>
+            <div style={{ fontWeight: 600, marginBottom: 4 }}>File Formats</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {MOC_DEFINITION.formats.map((fmt, i) => (
+                <div key={i} style={{ background: 'var(--soft)', border: '1px solid var(--bd)', borderRadius: 4, padding: '6px 10px' }}>
+                  <div style={{ fontWeight: 600, color: '#2563eb' }}>{fmt.name}</div>
+                  <div style={{ fontSize: 12, color: 'var(--tx2)' }}>{fmt.description}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div>
+            <div style={{ fontWeight: 600, marginBottom: 4 }}>Usage &amp; Workflow</div>
+            <ul style={{ margin: 0, paddingLeft: 18, color: 'var(--tx2)', fontSize: 12 }}>
+              {MOC_DEFINITION.usage.map((u, i) => (
+                <li key={i} style={{ marginBottom: 4 }}>{u}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
       </Modal>
     </div>
   );

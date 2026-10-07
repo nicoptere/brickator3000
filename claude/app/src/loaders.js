@@ -56,9 +56,15 @@ function geometryToModel(geo) {
   return fromObject3D(mesh);
 }
 
+import { parseLDrawToModel } from './ldrawLoader.js';
+
 export async function loadModel(name, buffer) {
   const ext = name.split('.').pop().toLowerCase();
   let m;
+  if (ext === 'ldr' || ext === 'mpd' || ext === 'mdp') {
+    const text = new TextDecoder('utf-8').decode(buffer);
+    return parseLDrawToModel(text, name);
+  }
   if (ext === 'glb') {
     m = parseGLB(buffer);                                   // keeps COLOR_0 exactly as stored
     if (!m.hasColor) {                                      // no vertex colours: let three resolve materials / textures-free colours
@@ -78,7 +84,7 @@ export async function loadModel(name, buffer) {
 
 /** rotate so that `up` becomes +Y ('y' | 'z' | '-z' | 'x') */
 export function reorient(m, up) {
-  if (up === 'y') return m;
+  if (!m || m.isLDraw || up === 'y') return m;
   const t = m.tris.slice();
   for (let k = 0; k < t.length; k += 3) {
     const x = t[k], y = t[k + 1], z = t[k + 2];
@@ -88,3 +94,4 @@ export function reorient(m, up) {
   }
   return { ...m, tris: t };
 }
+

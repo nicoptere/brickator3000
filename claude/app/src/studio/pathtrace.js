@@ -332,7 +332,7 @@ export async function createPathTrace(vp, { pieces, cat, colorMode = 'piece', da
       host = document.createElement('div'); host.style.cssText = `position:absolute;inset:0;z-index:2;pointer-events:none;display:flex;align-items:center;justify-content:center;background:${dark ? '#1e222b' : '#e9edf3'}`;
       cv.style.cssText = 'max-width:100%;max-height:100%;object-fit:contain'; host.appendChild(cv);
     } else cv.style.cssText = 'max-width:100%;max-height:72vh;display:block;margin:0 auto;border-radius:6px';
-    let dof = null, dofState = { on: false, focus: 0, maxPx: 16, sharp: 0, span: null };
+    let dof = null, dofState = { on: true, focus: 0, maxPx: 8, sharp: 0.3, span: null };
     const job = {
       el: host, canvas: cv, pt,
       /** after the samples are in: keep the image, render the depth pass, and report what depths are in frame */
@@ -344,7 +344,7 @@ export async function createPathTrace(vp, { pieces, cat, colorMode = 'piece', da
         const r = dof.capture(scene, cam);
         if (cy) cy.visible = cyVis;
         dofState.span = r;
-        if (r && !dofState.focus) dofState.focus = (r.near + r.far) / 2;
+        if (r && !dofState.focus) dofState.focus = r.near + (r.far - r.near) * 0.25;
         return r;
       },
       /** view-space depth under a normalised image point (0,0 = top left) */

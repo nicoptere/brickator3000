@@ -162,7 +162,14 @@ export async function shootBooklet(vpc, cat, { title = 'model', opts = {}, meta 
   const html = bookletHTML({ title, cover, coverPortrait, finals, steps: withParts, images, bom: billOfMaterials(P, by),
     meta: { pieces: P.length, levels: Math.max(...P.map((p) => p.b + p.h)), ...meta } });
   vpc.setAllStuds(false); vpc.setInkPerPiece(false);
-  const out = { html, steps: steps.length, pages: Math.ceil(steps.length / 4) + 3 };
+  const out = {
+    html,
+    steps: steps.length,
+    pages: Math.ceil(steps.length / 4) + 3,
+    cover,
+    images,
+    stepsData: withParts,
+  };
   lastBooklet = { sig, out };
   return { ...out, cached: false };
 }

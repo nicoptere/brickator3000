@@ -82,7 +82,7 @@ export class StudioViewport {
     this.smooth = true;
     this.mode = 'lego'; this.outline = true; this.colorMode = 'piece'; this.active = new Map(); this.pieces = null; this.revealed = 0; this.W = 20 * 16; this.D = 20 * 16; this.H = 0;
     this.ray = new THREE.Raycaster(); this.mouse = new THREE.Vector2();
-    this.islandLabels = null; this.selectedIsland = null; this.onSelectIsland = null;
+    this.islandLabels = null; this.selectedIsland = null; this.selectedIslands = new Set(); this.onSelectIsland = null;
     this.hollow = null; this.hollowTimer = null;
     this.selectMode = false; this.sel = null; this.onSelectionChange = null;
     this.eraserMode = false; this.onDeletePiece = null; this._hoveredPiece = null;
@@ -173,9 +173,9 @@ export class StudioViewport {
     if (hits.length > 0 && typeof hits[0].faceIndex === 'number') {
       const faceIndex = hits[0].faceIndex;
       const islandId = this.islandLabels ? this.islandLabels[faceIndex] : null;
-      this.onSelectIsland && this.onSelectIsland(islandId, faceIndex);
+      this.onSelectIsland && this.onSelectIsland(islandId, faceIndex, e);
     } else {
-      this.onSelectIsland && this.onSelectIsland(null);
+      this.onSelectIsland && this.onSelectIsland(null, null, e);
     }
   }
   setEraserMode(on) {
@@ -265,14 +265,18 @@ export class StudioViewport {
 
   // ------------------------------------------------------------- source mesh
   /** tris in LDU of the result frame (aligned with the LEGO model) or raw tris of a freshly opened file (fitted to ~24 studs) */
-  setSource(tris, cols, { raw = false, keepScale = false } = {}) {
+  setSource(tris, cols, { raw = false, keepScale = false, rebindLo = false } = {}) {
     this.clearGroup(this.src);
     let t = tris;
     if (raw) {
       const lo = [Infinity, Infinity, Infinity], hi = [-Infinity, -Infinity, -Infinity];
       for (let k = 0; k < tris.length; k += 3) for (let a = 0; a < 3; a++) { const v = tris[k + a]; if (v < lo[a]) lo[a] = v; if (v > hi[a]) hi[a] = v; }
       let k, baseLo;
-      if (keepScale && this.rawScale) {
+      if (rebindLo) {
+        baseLo = lo;
+        k = this.rawScale ? this.rawScale.k : 24 * STUD / Math.max(hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2], 1e-9);
+        this.rawScale = { lo: [...lo], k };
+      } else if (keepScale && this.rawScale) {
         baseLo = this.rawScale.lo;
         k = this.rawScale.k;
       } else {
@@ -288,7 +292,7 @@ export class StudioViewport {
       }
       this.W = (hi[0] - lo[0]) * k; this.D = (hi[2] - lo[2]) * k; this.H = (hi[1] - lo[1]) * k;
       this.clearLego(); this.lego.position.set(0, 0, 0);
-      if (!keepScale) this.resetRotation();
+      if (!keepScale && !rebindLo) this.resetRotation();
     }
     this.srcPos = t; this.clearVoxels(); this.clearHollowCubes();
     const g = new THREE.BufferGeometry();
@@ -305,7 +309,7 @@ export class StudioViewport {
       this.transformControls.enabled = true;
       this.transformControls.getHelper().visible = true;
     }
-    if (raw && !keepScale) this.zoomToFit(false);
+    if (raw && !keepScale && !rebindLo) this.zoomToFit(false);
   }
 
 
@@ -582,9 +586,23 @@ export class StudioViewport {
     if (labels) this.islandLabels = labels;
     this.paintSource();
   }
-  setSelectedIsland(id) {
-    this.selectedIsland = id;
+  setSelectedIslands(ids) {
+    if (ids == null) {
+      this.selectedIslands = new Set();
+    } else if (ids instanceof Set) {
+      this.selectedIslands = new Set(ids);
+    } else if (Array.isArray(ids)) {
+      this.selectedIslands = new Set(ids);
+    } else if (typeof ids === 'number') {
+      this.selectedIslands = new Set([ids]);
+    } else {
+      this.selectedIslands = new Set();
+    }
+    this.selectedIsland = this.selectedIslands.size === 1 ? [...this.selectedIslands][0] : null;
     this.paintSource();
+  }
+  setSelectedIsland(id) {
+    this.setSelectedIslands(id != null ? [id] : []);
   }
   paintSource() {
     if (!this.srcGeo) return;
@@ -592,10 +610,12 @@ export class StudioViewport {
     const a = this.srcGeo.getAttribute('color');
     if (!a) return;
     if (isl) {
-      if (this.selectedIsland != null && this.islandLabels && this.islandLabels.length * 9 === this.islandCols.length) {
-        const sel = this.selectedIsland, labels = this.islandLabels, base = this.islandCols, arr = a.array;
+      const selSet = this.selectedIslands;
+      const hasSelection = selSet && selSet.size > 0;
+      if (hasSelection && this.islandLabels && this.islandLabels.length * 9 === this.islandCols.length) {
+        const labels = this.islandLabels, base = this.islandCols, arr = a.array;
         for (let t = 0; t < labels.length; t++) {
-          const isSel = labels[t] === sel, o = t * 9;
+          const isSel = selSet.has(labels[t]), o = t * 9;
           for (let k = 0; k < 9; k += 3) {
             if (isSel) {
               arr[o + k] = Math.min(1, base[o + k] * 1.35 + 0.05);
@@ -753,19 +773,24 @@ export class StudioViewport {
     const q = this.modelPivot.quaternion;
     return Math.abs(q.x) > 1e-4 || Math.abs(q.y) > 1e-4 || Math.abs(q.z) > 1e-4 || Math.abs(q.w - 1) > 1e-4;
   }
-  getRotatedSource(src) {
+  getRotatedSource(src, center = null) {
     if (!this.hasRotation() || !src || !src.tris) return src;
     const q = this.modelPivot.quaternion;
     const tris = src.tris;
     const out = new Float32Array(tris.length);
-    const lo = [Infinity, Infinity, Infinity], hi = [-Infinity, -Infinity, -Infinity];
-    for (let k = 0; k < tris.length; k += 3) {
-      for (let a = 0; a < 3; a++) {
-        if (tris[k + a] < lo[a]) lo[a] = tris[k + a];
-        if (tris[k + a] > hi[a]) hi[a] = tris[k + a];
+    let cx, cy, cz;
+    if (center && Array.isArray(center) && center.length === 3) {
+      [cx, cy, cz] = center;
+    } else {
+      const lo = [Infinity, Infinity, Infinity], hi = [-Infinity, -Infinity, -Infinity];
+      for (let k = 0; k < tris.length; k += 3) {
+        for (let a = 0; a < 3; a++) {
+          if (tris[k + a] < lo[a]) lo[a] = tris[k + a];
+          if (tris[k + a] > hi[a]) hi[a] = tris[k + a];
+        }
       }
+      cx = (lo[0] + hi[0]) / 2; cy = (lo[1] + hi[1]) / 2; cz = (lo[2] + hi[2]) / 2;
     }
-    const cx = (lo[0] + hi[0]) / 2, cy = (lo[1] + hi[1]) / 2, cz = (lo[2] + hi[2]) / 2;
     const v = new THREE.Vector3();
     for (let k = 0; k < tris.length; k += 3) {
       v.set(tris[k] - cx, tris[k + 1] - cy, tris[k + 2] - cz);
@@ -774,7 +799,24 @@ export class StudioViewport {
       out[k + 1] = v.y + cy;
       out[k + 2] = v.z + cz;
     }
-    return { tris: out, vcols: src.vcols };
+    return { tris: out, vcols: src.vcols, center: [cx, cy, cz] };
+  }
+  bakeRotation(src, origSrc = null) {
+    if (!this.hasRotation() || !src || !src.tris) return null;
+    const q = this.modelPivot.quaternion.clone();
+    const rotated = this.getRotatedSource(src);
+    let rotatedOrig = null;
+    if (origSrc && origSrc.tris) {
+      rotatedOrig = this.getRotatedSource(origSrc, rotated.center);
+    }
+    this.resetRotation();
+    this.setSource(rotated.tris, rotated.vcols, { raw: true, rebindLo: true });
+    return {
+      tris: rotated.tris,
+      vcols: rotated.vcols,
+      origTris: rotatedOrig ? rotatedOrig.tris : null,
+      quaternion: q
+    };
   }
 
   visiblePieces() { return this.pieces ? this.pieces.filter((_, n) => this.vis[n]) : []; }
