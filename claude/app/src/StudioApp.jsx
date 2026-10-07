@@ -1150,6 +1150,7 @@ function StudioInner() {
     for (const m of models) {
       if (q && !m.path.toLowerCase().includes(q)) continue;
       if (/^spearman\./i.test(m.path)) continue;                      // retired root-level model
+      if (/^(clean\/)?mocs(\/|$)/i.test(m.path) || m.path.toLowerCase().includes('/mocs/') || m.path.toLowerCase().startsWith('mocs/')) continue;
       const parts = m.path.split('/'); if (parts.length > 1 && parts[0] === 'clean') parts.shift();     // categories are the top level
       let n = root;
       parts.forEach((part, i) => {
@@ -1162,7 +1163,16 @@ function StudioInner() {
       : { key: c.key, title: <span className="tl cat-label"><span>{c.part}</span><i>{countLeafs(c)}</i></span>, children: conv(c) }));
     return conv(root);
   }, [models, query]);
-  const allDirs = useMemo(() => { const s = new Set(); for (const m of models) { const p = m.path.split('/'); if (p[0] === 'clean' && p.length > 1) p.shift(); for (let i = 1; i < p.length; i++) s.add(p.slice(0, i).join('/')); } return [...s]; }, [models]);
+  const allDirs = useMemo(() => {
+    const s = new Set();
+    for (const m of models) {
+      if (/^(clean\/)?mocs(\/|$)/i.test(m.path) || m.path.toLowerCase().includes('/mocs/') || m.path.toLowerCase().startsWith('mocs/')) continue;
+      const p = m.path.split('/');
+      if (p[0] === 'clean' && p.length > 1) p.shift();
+      for (let i = 1; i < p.length; i++) s.add(p.slice(0, i).join('/'));
+    }
+    return [...s];
+  }, [models]);
 
   const toggleExpandNode = (key) => {
     sfx.click();

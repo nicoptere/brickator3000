@@ -11,6 +11,7 @@ function listModels(dir, base = '') {
   let ents = [];
   try { ents = fs.readdirSync(dir, { withFileTypes: true }); } catch { return out; }
   for (const e of ents) {
+    if (e.name === 'mocs' || e.name === '.git') continue;
     const rel = base ? `${base}/${e.name}` : e.name;
     if (e.isDirectory()) out.push(...listModels(path.join(dir, e.name), rel));
     else if (EXT.test(e.name)) {

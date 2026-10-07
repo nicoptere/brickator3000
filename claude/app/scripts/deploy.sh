@@ -50,6 +50,8 @@ fi
 # 3. Cache headers
 echo "[3/4] Setting optimal Cache-Control headers..."
 gsutil setmeta -h "Cache-Control:no-cache, no-store, must-revalidate" "${BUCKET}/index.html" >/dev/null 2>&1 || true
+gsutil setmeta -h "Cache-Control:no-cache, no-store, must-revalidate" "${BUCKET}/models/models.json" >/dev/null 2>&1 || true
+gsutil setmeta -h "Cache-Control:no-cache, no-store, must-revalidate" "${BUCKET}/models/clean_manifest.json" >/dev/null 2>&1 || true
 gsutil -m setmeta -h "Cache-Control:public, max-age=31536000, immutable" "${BUCKET}/assets/*" >/dev/null 2>&1 || true
 gsutil -m setmeta -h "Cache-Control:public, max-age=31536000, immutable" "${BUCKET}/sounds/*" >/dev/null 2>&1 || true
 gsutil -m setmeta -h "Cache-Control:public, max-age=31536000, immutable" "${BUCKET}/env/*" >/dev/null 2>&1 || true
