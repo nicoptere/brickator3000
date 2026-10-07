@@ -18,7 +18,7 @@ import { buildMesh, toGLB, toLDR, KIND_COL } from './brickgen/export.js';
 import { snapToPalette } from './brickgen/colors.js';
 import { shootBooklet } from './studio/booklet.js';
 import { boxOf } from './brickgen/region.js';
-import { toBrickLinkMOC, toBrickLinkStudioContainer, toMocIllustrationsZip, toBrickLinkWantedListXML, MOC_DEFINITION, loginBrickLink, fetchWantedLists, uploadWantedList } from './bricklink.js';
+import { toBrickLinkMOC, toBrickLinkStudioContainer, toBrickLinkWantedListXML, MOC_DEFINITION, loginBrickLink, fetchWantedLists, uploadWantedList } from './bricklink.js';
 import { toBrickHunterCSV, getLegoPickABrickUrl } from './legoPab.js';
 import { SCHEMA } from './schema.js';
 import { FEATURES, FEATURE_GROUPS, featureState, featurePatch } from './presets.js';
@@ -736,9 +736,10 @@ function StudioInner() {
           snapshotDataUrl: snap,
           stepsData: bookletData?.stepsData,
           stepImages: bookletData?.images,
+          stepMode: 'layered',
         });
         download(ioBytes, `${base}.io`, 'application/x-zip-compressed');
-        message.success(`Exported BrickLink Studio package: ${base}.io`);
+        message.success(`Exported Layered BrickLink Studio package: ${base}.io`);
       } catch (err) {
         console.error('Studio .io export failed:', err);
         message.error(`Failed to export Studio .io: ${err.message || err}`);
@@ -746,23 +747,6 @@ function StudioInner() {
     }
   };
 
-  const handleExportIllustrations = async () => {
-    if (!bookletData) return;
-    sfx.click();
-    try {
-      const zipBytes = await toMocIllustrationsZip({
-        title: base,
-        cover: bookletData.cover,
-        images: bookletData.images,
-        html: bookletData.html,
-      });
-      download(zipBytes, `${base}_illustrations.zip`, 'application/zip');
-      message.success(`Exported MOC illustrations: ${base}_illustrations.zip (${bookletData.images.length} steps)`);
-    } catch (err) {
-      console.error('Illustrations export failed:', err);
-      message.error(`Failed to export illustrations: ${err.message || err}`);
-    }
-  };
 
   const handleCopyWantedListXML = () => {
     if (!res || !res.pieces) return;
@@ -1558,25 +1542,6 @@ function StudioInner() {
                   </span>
                 </Button>
               </Tooltip>
-              {bookletData && (
-                <Tooltip title="Download hero cover image and all building step illustration renders in a ZIP package for MOC gallery submission">
-                  <Button
-                    size="small"
-                    icon={<DownloadOutlined style={{ color: '#2563eb' }} />}
-                    onClick={handleExportIllustrations}
-                    style={{
-                      gridColumn: '1 / -1',
-                      borderColor: '#bfdbfe',
-                      background: '#eff6ff',
-                      color: '#2563eb',
-                      fontWeight: 600,
-                      justifyContent: 'center',
-                    }}
-                  >
-                    MOC Illustrations (.zip)
-                  </Button>
-                </Tooltip>
-              )}
               <Button size="small" icon={<DownloadOutlined />} disabled={!res} onClick={exportLDR}>.ldr (LDraw)</Button>
               <Button size="small" icon={<DownloadOutlined />} disabled={!res} onClick={() => exportGLB('piece')}>.glb</Button>
               <Button size="small" icon={<DownloadOutlined />} disabled={!res} onClick={() => exportGLB('kind')}>.glb by kind</Button>

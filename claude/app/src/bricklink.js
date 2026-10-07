@@ -9,6 +9,22 @@ import { snapToPalette } from './brickgen/colors.js';
 import { orientPart, ldrMatrix } from './motifs/orient.js';
 
 /**
+ * Converts LDraw line colors in subparts to Studio conventions:
+ * 16 (inherited main color) -> -1 (SB_BRIGL.MAIN_COLOR)
+ * 24 (inherited edge color) -> -2 (SB_BRIGL.EDGE_COLOR)
+ * BrickLink's WebGL material parser maps color 16 to material 45 (Trans-Neon Green)
+ * unless converted to -1, which allows faces to inherit the authentic brick color.
+ */
+export function convertLDrawToStudioGeometry(ldrawContent) {
+  if (!ldrawContent) return '';
+  return ldrawContent.replace(/^(\s*[1-5])\s+(\S+)/gm, (match, prefix, color) => {
+    if (color === '16') return `${prefix} -1`;
+    if (color === '24') return `${prefix} -2`;
+    return match;
+  });
+}
+
+/**
  * Authentic mapping from LDraw Color Code -> Official BrickLink Color ID.
  * Based on official LEGO/LDraw/BrickLink color charts.
  */
@@ -286,21 +302,21 @@ function generateFallbackPartGeometry(blItemId, catEntry) {
     `0 Name: ${blItemId}.dat`,
     '0 Author: Brickator',
     '0 IsSubModel False',
-    // 6 quads forming the rectangular brick body
-    `4 16 ${x0} ${yTop} ${z0} ${x0} ${yTop} ${z1} ${x1} ${yTop} ${z1} ${x1} ${yTop} ${z0}`,
-    `4 16 ${x0} ${yBot} ${z0} ${x1} ${yBot} ${z0} ${x1} ${yBot} ${z1} ${x0} ${yBot} ${z1}`,
-    `4 16 ${x0} ${yTop} ${z1} ${x1} ${yTop} ${z1} ${x1} ${yBot} ${z1} ${x0} ${yBot} ${z1}`,
-    `4 16 ${x1} ${yTop} ${z0} ${x0} ${yTop} ${z0} ${x0} ${yBot} ${z0} ${x1} ${yBot} ${z0}`,
-    `4 16 ${x0} ${yTop} ${z0} ${x0} ${yTop} ${z1} ${x0} ${yBot} ${z1} ${x0} ${yBot} ${z0}`,
-    `4 16 ${x1} ${yTop} ${z1} ${x1} ${yTop} ${z0} ${x1} ${yBot} ${z0} ${x1} ${yBot} ${z1}`,
+    // 6 quads forming the rectangular brick body with inherited color -1
+    `4 -1 ${x0} ${yTop} ${z0} ${x0} ${yTop} ${z1} ${x1} ${yTop} ${z1} ${x1} ${yTop} ${z0}`,
+    `4 -1 ${x0} ${yBot} ${z0} ${x1} ${yBot} ${z0} ${x1} ${yBot} ${z1} ${x0} ${yBot} ${z1}`,
+    `4 -1 ${x0} ${yTop} ${z1} ${x1} ${yTop} ${z1} ${x1} ${yBot} ${z1} ${x0} ${yBot} ${z1}`,
+    `4 -1 ${x1} ${yTop} ${z0} ${x0} ${yTop} ${z0} ${x0} ${yBot} ${z0} ${x1} ${yBot} ${z0}`,
+    `4 -1 ${x0} ${yTop} ${z0} ${x0} ${yTop} ${z1} ${x0} ${yBot} ${z1} ${x0} ${yBot} ${z0}`,
+    `4 -1 ${x1} ${yTop} ${z1} ${x1} ${yTop} ${z0} ${x1} ${yBot} ${z0} ${x1} ${yBot} ${z1}`,
   ];
 
-  // Add top studs
+  // Add top studs with inherited color -1
   for (let ix = 0; ix < w; ix++) {
     for (let iz = 0; iz < d; iz++) {
       const sx = x0 + 10 + ix * 20;
       const sz = z0 + 10 + iz * 20;
-      lines.push(`1 16 ${sx} 0 ${sz} 1 0 0 0 1 0 0 0 1 stud.dat`);
+      lines.push(`1 -1 ${sx} 0 ${sz} 1 0 0 0 1 0 0 0 1 stud.dat`);
     }
   }
 
@@ -372,17 +388,81 @@ export function getLegoColorId(piece) {
 }
 
 /**
+ * Computes strictly layered building steps for BrickLink MOC and Studio export.
+ * Guarantees:
+ * 1. Monotonic height progression: pieces are placed strictly from bottom foundation to top apex.
+ *    No piece at level B2 is ever placed before all pieces at level B1 < B2 have been placed.
+ * 2. Zero floating pieces: every piece rests on previously placed layers or earlier pieces in the same step.
+ * 3. Spatial cohesion: within each layer, pieces are placed in continuous serpentine order across (j, i).
+ * 4. Balanced step sizes: groups pieces into clean steps (typically 4-12 pieces per step).
+ */
+export function planLayeredMOCSteps(pieces, { targetSteps = 60, minPerStep = 3, maxPerStep = 14 } = {}) {
+  const N = pieces ? pieces.length : 0;
+  if (!pieces || N === 0) return [];
+  if (N <= 1) return [{ idx: [0], minB: pieces[0]?.b ?? 0, maxB: (pieces[0]?.b ?? 0) + (pieces[0]?.h ?? 1) }];
+
+  // 1. Sort pieces strictly by height b (ascending),
+  // host before hanging sideways piece, then serpentine across rows (j, i)
+  const sortedIndices = pieces.map((_, i) => i).sort((a, b) => {
+    const pa = pieces[a], pb = pieces[b];
+    if (pa.b !== pb.b) return pa.b - pb.b;
+    if (!!pa.snot !== !!pb.snot) return pa.snot ? 1 : -1;
+    if (pa.j !== pb.j) return pa.j - pb.j;
+    return (pa.j % 2 ? -1 : 1) * (pa.i - pb.i);
+  });
+
+  const idealPerStep = Math.max(minPerStep, Math.min(maxPerStep, Math.ceil(N / Math.max(1, targetSteps))));
+  const steps = [];
+  let currentStep = [];
+  let currentLevel = -1;
+
+  for (const idx of sortedIndices) {
+    const p = pieces[idx];
+    const level = p.b;
+
+    if (level !== currentLevel && currentStep.length >= idealPerStep) {
+      steps.push({
+        idx: currentStep,
+        minB: Math.min(...currentStep.map((k) => pieces[k].b)),
+        maxB: Math.max(...currentStep.map((k) => pieces[k].b + (pieces[k].h || 1))),
+      });
+      currentStep = [];
+    } else if (currentStep.length >= maxPerStep) {
+      steps.push({
+        idx: currentStep,
+        minB: Math.min(...currentStep.map((k) => pieces[k].b)),
+        maxB: Math.max(...currentStep.map((k) => pieces[k].b + (pieces[k].h || 1))),
+      });
+      currentStep = [];
+    }
+
+    currentStep.push(idx);
+    currentLevel = level;
+  }
+
+  if (currentStep.length > 0) {
+    steps.push({
+      idx: currentStep,
+      minB: Math.min(...currentStep.map((k) => pieces[k].b)),
+      maxB: Math.max(...currentStep.map((k) => pieces[k].b + (pieces[k].h || 1))),
+    });
+  }
+
+  return steps;
+}
+
+/**
  * Formats a discretized LEGO model into an official BrickLink MOC (.ldr) file.
- * Includes official BrickLink headers, category declarations, layer step breaks,
+ * Includes official BrickLink headers, category declarations, layered step breaks,
  * and canonical BrickLink Catalog Item numbers.
  */
 export function toBrickLinkMOC(pieces, cat = [], name = 'Brickator_MOC', { author = 'Brickator 3000' } = {}) {
   const safeName = (name || 'Brickator_MOC').replace(/\.[^.]+$/, '');
-  const sorted = [...pieces].sort((a, b) => a.b - b.b || a.i - b.i || a.j - b.j);
   const by = {};
   for (const c of cat) by[c.id] = c;
 
-  // Group by level (plate height) to create step-by-step building instructions
+  const steps = planLayeredMOCSteps(pieces);
+
   const headerLines = [
     `0 ${safeName}`,
     `0 Name: ${safeName}.ldr`,
@@ -393,21 +473,18 @@ export function toBrickLinkMOC(pieces, cat = [], name = 'Brickator_MOC', { autho
   ];
 
   const bodyLines = [];
-  let currentLevel = -1;
-
-  for (const p of sorted) {
-    if (p.b !== currentLevel) {
-      if (currentLevel !== -1) bodyLines.push('0 STEP');
-      currentLevel = p.b;
+  for (const step of steps) {
+    for (const idx of step.idx) {
+      const p = pieces[idx];
+      const c = by[p.id] || { id: p.id, w: p.w || 1, d: p.d || 1, h: p.h || 1, origin: [0, 0, 0], source: 'analytic' };
+      const { t, M } = getPiecePlacement(p, c);
+      const colorCode = getValidLDrawColor(p);
+      const blItemId = getBrickLinkId(p.id);
+      bodyLines.push(`1 ${colorCode} ${t[0].toFixed(1)} ${t[1].toFixed(1)} ${t[2].toFixed(1)} ${M.map((x) => +x.toFixed(4)).join(' ')} ${blItemId}.dat`);
     }
-    const c = by[p.id] || { id: p.id, w: p.w || 1, d: p.d || 1, h: p.h || 1, origin: [0, 0, 0], source: 'analytic' };
-    const { t, M } = getPiecePlacement(p, c);
-    const colorCode = getValidLDrawColor(p);
-    const blItemId = getBrickLinkId(p.id);
-    bodyLines.push(`1 ${colorCode} ${t[0].toFixed(1)} ${t[1].toFixed(1)} ${t[2].toFixed(1)} ${M.map((x) => +x.toFixed(4)).join(' ')} ${blItemId}.dat`);
+    bodyLines.push('0 STEP');
   }
 
-  bodyLines.push('0 STEP');
   return [...headerLines, ...bodyLines].join('\n') + '\n';
 }
 
@@ -633,6 +710,7 @@ export async function toBrickLinkStudioContainer(pieces, cat = [], name = 'Brick
   snapshotDataUrl = null,
   stepsData = null,
   stepImages = null,
+  stepMode = 'layered', // 'layered' strictly layers bottom-up for MOC export; 'booklet' uses booklet steps
 } = {}) {
   const safeName = (name || 'Brickator_MOC').replace(/\.[^.]+$/, '');
   const cleanAuthor = author || 'Brickator 3000';
@@ -650,12 +728,21 @@ export async function toBrickLinkStudioContainer(pieces, cat = [], name = 'Brick
     `0 NumOfBricks ${numOfBricks}`,
   ];
 
+  const v1Header = [
+    `0 FILE ${safeName}`,
+    '0 Untitled Model',
+    `0 Name: ${safeName}`,
+    `0 Author: ${cleanAuthor}`,
+    '0 CustomBrick',
+    `0 NumOfBricks ${numOfBricks}`,
+  ];
+
   const m2Header = [
     `0 FILE ${safeName}`,
     '0 Untitled Model',
     `0 Name: ${safeName}`,
     `0 Author: ${cleanAuthor}`,
-    '0 IsSubModel True',
+    '0 IsSubModel False',
     '0 CustomBrick',
     `0 NumOfBricks ${numOfBricks}`,
   ];
@@ -670,18 +757,27 @@ export async function toBrickLinkStudioContainer(pieces, cat = [], name = 'Brick
   ];
 
   const ldrBody = [];
+  const v1Body = [];
   const m2Body = [];
   const v2Body = [];
-  const lxfmlBricks = [];
+  const lxfmlBricks = new Array(numOfBricks);
   let uid = 1;
 
   // Pre-generate piece UUIDs so LXFML Bricks and BuildingInstructions share matching references
   const pieceUuids = pieces.map(() => generateUuid());
-  const hasSteps = stepsData && Array.isArray(stepsData) && stepsData.length > 0;
+
+  // For MOC export, prioritize strictly layered bottom-up steps
+  let effectiveSteps = null;
+  if (stepMode === 'booklet' && stepsData && Array.isArray(stepsData) && stepsData.length > 0) {
+    effectiveSteps = stepsData;
+  } else {
+    effectiveSteps = planLayeredMOCSteps(pieces);
+  }
+  const hasSteps = effectiveSteps && Array.isArray(effectiveSteps) && effectiveSteps.length > 0;
 
   if (hasSteps) {
-    for (let sIdx = 0; sIdx < stepsData.length; sIdx++) {
-      const stepObj = stepsData[sIdx];
+    for (let sIdx = 0; sIdx < effectiveSteps.length; sIdx++) {
+      const stepObj = effectiveSteps[sIdx];
       const indices = stepObj.idx || [];
       for (const n of indices) {
         const p = pieces[n];
@@ -700,13 +796,16 @@ export async function toBrickLinkStudioContainer(pieces, cat = [], name = 'Brick
         // 1. model.ldr (Standard LDraw Type-1 line)
         ldrBody.push(`1 ${ldrColor} ${x6} ${y6} ${z6} ${m6Str} ${blItemId}.dat`);
 
-        // 2. model2.ldr (BrickLink Studio Type-1 line using BrickLink Color IDs)
+        // 2. modelv1.ldr (Studio v1 Type-10 line with False flag for step grouping)
+        v1Body.push(`10 ${ldrColor} False ${x6} ${y6} ${z6} ${m6Str} ${blItemId}.dat`);
+
+        // 3. model2.ldr (BrickLink Studio Type-1 line using BrickLink Color IDs)
         m2Body.push(`1 ${blColor} ${x6} ${y6} ${z6} ${m6Str} ${blItemId}.dat`);
 
-        // 3. modelv2.ldr (Studio v2 Type-11 line with sequential UID)
+        // 4. modelv2.ldr (Studio v2 Type-11 line with sequential UID)
         v2Body.push(`11 ${ldrColor} ${uid++} False 0 ${x6} ${y6} ${z6} ${m6Str} ${blItemId}.dat`);
 
-        // 4. model.lxfml (LEGO Digital Designer / Studio XML Brick definition)
+        // 5. model.lxfml (LEGO Digital Designer / Studio XML Brick definition with refID)
         const brickUuid = pieceUuids[n];
         const partUuid = generateUuid();
         const boneUuid = generateUuid();
@@ -714,15 +813,15 @@ export async function toBrickLinkStudioContainer(pieces, cat = [], name = 'Brick
         const ly = (-t[1] * 0.04).toFixed(6);
         const lz = (-t[2] * 0.04).toFixed(6);
         const tf = `${m6Arr.map((v) => v.toFixed(6)).join(',')},${lx},${ly},${lz}`;
-        lxfmlBricks.push(
-          `    <Brick designID="${blItemId}" uuid="${brickUuid}">\n` +
-          `      <Part uuid="${partUuid}" designID="${blItemId}" partType="rigid" materials="${legoColor}:0">\n` +
-          `        <Bone uuid="${boneUuid}" transformation="${tf}" />\n` +
+        lxfmlBricks[n] =
+          `    <Brick refID="${n}" designID="${blItemId}" uuid="${brickUuid}">\n` +
+          `      <Part refID="${n}" designID="${blItemId}" uuid="${partUuid}" partType="rigid" materials="${legoColor}:0">\n` +
+          `        <Bone refID="${n}" uuid="${boneUuid}" transformation="${tf}" />\n` +
           `      </Part>\n` +
-          `    </Brick>`
-        );
+          `    </Brick>`;
       }
       ldrBody.push('0 STEP');
+      v1Body.push('0 STEP');
       m2Body.push('0 STEP');
       v2Body.push('0 STEP');
     }
@@ -734,6 +833,7 @@ export async function toBrickLinkStudioContainer(pieces, cat = [], name = 'Brick
       if (p.b !== currentLevel) {
         if (currentLevel !== -1) {
           ldrBody.push('0 STEP');
+          v1Body.push('0 STEP');
           m2Body.push('0 STEP');
           v2Body.push('0 STEP');
         }
@@ -754,13 +854,16 @@ export async function toBrickLinkStudioContainer(pieces, cat = [], name = 'Brick
       // 1. model.ldr (Standard LDraw Type-1 line)
       ldrBody.push(`1 ${ldrColor} ${x6} ${y6} ${z6} ${m6Str} ${blItemId}.dat`);
 
-      // 2. model2.ldr (BrickLink Studio Type-1 line using BrickLink Color IDs)
+      // 2. modelv1.ldr (Studio v1 Type-10 line with False flag for step grouping)
+      v1Body.push(`10 ${ldrColor} False ${x6} ${y6} ${z6} ${m6Str} ${blItemId}.dat`);
+
+      // 3. model2.ldr (BrickLink Studio Type-1 line using BrickLink Color IDs)
       m2Body.push(`1 ${blColor} ${x6} ${y6} ${z6} ${m6Str} ${blItemId}.dat`);
 
-      // 3. modelv2.ldr (Studio v2 Type-11 line with sequential UID)
+      // 4. modelv2.ldr (Studio v2 Type-11 line with sequential UID)
       v2Body.push(`11 ${ldrColor} ${uid++} False 0 ${x6} ${y6} ${z6} ${m6Str} ${blItemId}.dat`);
 
-      // 4. model.lxfml (LEGO Digital Designer / Studio XML Brick definition)
+      // 5. model.lxfml (LEGO Digital Designer / Studio XML Brick definition with refID)
       const brickUuid = pieceUuids[k] || generateUuid();
       const partUuid = generateUuid();
       const boneUuid = generateUuid();
@@ -768,17 +871,17 @@ export async function toBrickLinkStudioContainer(pieces, cat = [], name = 'Brick
       const ly = (-t[1] * 0.04).toFixed(6);
       const lz = (-t[2] * 0.04).toFixed(6);
       const tf = `${m6Arr.map((v) => v.toFixed(6)).join(',')},${lx},${ly},${lz}`;
-      lxfmlBricks.push(
-        `    <Brick designID="${blItemId}" uuid="${brickUuid}">\n` +
-        `      <Part uuid="${partUuid}" designID="${blItemId}" partType="rigid" materials="${legoColor}:0">\n` +
-        `        <Bone uuid="${boneUuid}" transformation="${tf}" />\n` +
+      lxfmlBricks[k] =
+        `    <Brick refID="${k}" designID="${blItemId}" uuid="${brickUuid}">\n` +
+        `      <Part refID="${k}" designID="${blItemId}" uuid="${partUuid}" partType="rigid" materials="${legoColor}:0">\n` +
+        `        <Bone refID="${k}" uuid="${boneUuid}" transformation="${tf}" />\n` +
         `      </Part>\n` +
-        `    </Brick>`
-      );
+        `    </Brick>`;
     }
   }
 
   ldrBody.push('0 NOFILE');
+  v1Body.push('0 NOFILE');
   m2Body.push('0 NOFILE');
   v2Body.push('0 NOFILE');
 
@@ -817,15 +920,16 @@ export async function toBrickLinkStudioContainer(pieces, cat = [], name = 'Brick
       '0 Name: stud.dat',
       '0 Author: Brickator',
       '0 IsSubModel False',
-      '4 16 -6 -4 -6 6 -4 -6 6 -4 6 -6 -4 6',
-      '4 16 -6 0 6 6 0 6 6 -4 6 -6 -4 6',
-      '4 16 6 0 -6 -6 0 -6 -6 -4 -6 6 -4 -6',
-      '4 16 -6 0 -6 -6 0 6 -6 -4 6 -6 -4 -6',
-      '4 16 6 0 6 6 0 -6 6 -4 -6 6 -4 6',
+      '4 -1 -6 -4 -6 6 -4 -6 6 -4 6 -6 -4 6',
+      '4 -1 -6 0 6 6 0 6 6 -4 6 -6 -4 6',
+      '4 -1 6 0 -6 -6 0 -6 -6 -4 -6 6 -4 -6',
+      '4 -1 -6 0 -6 -6 0 6 -6 -4 6 -6 -4 -6',
+      '4 -1 6 0 6 6 0 -6 6 -4 -6 6 -4 6',
     ].join('\n');
   }
 
-  // Append inlined part definitions to model2.ldr
+  // Append inlined part definitions to model2.ldr with Studio color translation
+  // (LDraw 16 -> -1 SB_BRIGL.MAIN_COLOR, 24 -> -2 SB_BRIGL.EDGE_COLOR)
   const m2InlinedParts = [];
   const seenPartNames = new Set();
   for (const [fn, rawContent] of Object.entries(inlinedPartsMap)) {
@@ -833,7 +937,7 @@ export async function toBrickLinkStudioContainer(pieces, cat = [], name = 'Brick
     if (seenPartNames.has(cleanFn)) continue;
     seenPartNames.add(cleanFn);
 
-    let content = (rawContent || '').trim();
+    let content = convertLDrawToStudioGeometry((rawContent || '').trim());
     if (!content.startsWith('0 FILE')) {
       content = `0 FILE ${cleanFn}\n${content}`;
     }
@@ -842,19 +946,22 @@ export async function toBrickLinkStudioContainer(pieces, cat = [], name = 'Brick
     }
     m2InlinedParts.push(content);
 
-    // Also register base filename alias if fn contained subdirectories (e.g. s/3024s01.dat -> 3024s01.dat)
+    // Also register base filename and backslash aliases if fn contained subdirectories (e.g. s/3024s01.dat -> 3024s01.dat and s\3024s01.dat)
     if (cleanFn.includes('/')) {
       const bn = cleanFn.split('/').pop();
-      if (!seenPartNames.has(bn)) {
-        seenPartNames.add(bn);
-        let bnContent = (rawContent || '').trim();
-        if (!bnContent.startsWith('0 FILE')) {
-          bnContent = `0 FILE ${bn}\n${bnContent}`;
+      const backslashFn = cleanFn.replace(/\//g, '\\');
+      for (const alias of [bn, backslashFn]) {
+        if (!seenPartNames.has(alias)) {
+          seenPartNames.add(alias);
+          let aliasContent = convertLDrawToStudioGeometry((rawContent || '').trim());
+          if (!aliasContent.startsWith('0 FILE')) {
+            aliasContent = `0 FILE ${alias}\n${aliasContent}`;
+          }
+          if (!aliasContent.endsWith('0 NOFILE')) {
+            aliasContent = `${aliasContent}\n0 NOFILE`;
+          }
+          m2InlinedParts.push(aliasContent);
         }
-        if (!bnContent.endsWith('0 NOFILE')) {
-          bnContent = `${bnContent}\n0 NOFILE`;
-        }
-        m2InlinedParts.push(bnContent);
       }
     }
   }
@@ -862,23 +969,23 @@ export async function toBrickLinkStudioContainer(pieces, cat = [], name = 'Brick
   // Text files in BrickLink Studio .io containers start with UTF-8 BOM (\ufeff)
   const BOM = '\ufeff';
   const modelLdrContent = BOM + [...ldrHeader, ...ldrBody].join('\n') + '\n';
+  const modelv1LdrContent = BOM + [...v1Header, ...v1Body].join('\n') + '\n';
   const model2LdrContent = BOM + [...m2Header, ...m2Body, ...m2InlinedParts].join('\n') + '\n';
   const modelv2LdrContent = BOM + [...v2Header, ...v2Body].join('\n') + '\n';
 
   let buildingInstructionsXml = '';
   if (hasSteps) {
-    const instructionUuid = generateUuid();
-    const stepXml = stepsData
-      .map((s) => {
+    const stepXml = effectiveSteps
+      .map((s, stepIdx) => {
         const stepUuid = generateUuid();
-        const ins = (s.idx || []).map((n) => `        <In brickRef="${pieceUuids[n]}" />`).join('\n');
-        return `      <Step uuid="${stepUuid}">\n${ins}\n      </Step>`;
+        const partRefs = (s.idx || []).map((n) => `        <PartRef partRefID="${n}" />`).join('\n');
+        return `      <Step name="Step_${stepIdx + 1}" uuid="${stepUuid}">\n${partRefs}\n      </Step>`;
       })
       .join('\n');
     buildingInstructionsXml =
       `  <BuildingInstructions>\n` +
-      `    <BuildingInstruction uuid="${instructionUuid}">\n` +
-      `      <Steps>\n${stepXml}\n      </Steps>\n` +
+      `    <BuildingInstruction name="${safeName}">\n` +
+      `${stepXml}\n` +
       `    </BuildingInstruction>\n` +
       `  </BuildingInstructions>\n`;
   }
@@ -888,7 +995,7 @@ export async function toBrickLinkStudioContainer(pieces, cat = [], name = 'Brick
     '<?xml version="1.0" encoding="utf-8"?>\n' +
     '<LXFML versionMajor="9" versionMinor="0" versionPatch="0">\n' +
     '  <Bricks>\n' +
-    lxfmlBricks.join('\n') + '\n' +
+    lxfmlBricks.filter(Boolean).join('\n') + '\n' +
     '  </Bricks>\n' +
     buildingInstructionsXml +
     '</LXFML>\n';
@@ -916,9 +1023,10 @@ export async function toBrickLinkStudioContainer(pieces, cat = [], name = 'Brick
     thumbnailBytes = getFallbackThumbnailBytes();
   }
 
-  // Official BrickLink Studio .io package layout (all 7 required files)
+  // Official BrickLink Studio .io package layout (all 8 required files)
   const files = [
     { name: 'model.ldr', data: modelLdrContent },
+    { name: 'modelv1.ldr', data: modelv1LdrContent },
     { name: 'model.lxfml', data: modelLxfmlContent },
     { name: 'modelv2.ldr', data: modelv2LdrContent },
     { name: 'model2.ldr', data: model2LdrContent },

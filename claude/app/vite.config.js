@@ -30,6 +30,15 @@ function findLDrawFile(relPath) {
   return null;
 }
 
+function convertLDrawToStudioGeometry(ldrawContent) {
+  if (!ldrawContent) return '';
+  return ldrawContent.replace(/^(\s*[1-5])\s+(\S+)/gm, (match, prefix, color) => {
+    if (color === '16') return `${prefix} -1`;
+    if (color === '24') return `${prefix} -2`;
+    return match;
+  });
+}
+
 function resolveLDrawBundle(partIds) {
   const visited = {};
   const queue = [...partIds].map((id) => {
@@ -48,7 +57,7 @@ function resolveLDrawBundle(partIds) {
 
     try {
       const content = fs.readFileSync(fp, 'latin1');
-      visited[norm] = content;
+      visited[norm] = convertLDrawToStudioGeometry(content);
 
       const lines = content.split(/\r?\n/);
       for (const line of lines) {
