@@ -1492,9 +1492,17 @@ function StudioInner() {
             <div className="row"><span>Official LEGO colors</span><Switch size="small" checked={officialColors} disabled={!res} onChange={toggleOfficialColors} /></div>
             <div className="row"><span>Ink outline</span><Switch size="small" checked={outline} onChange={(v) => { setOutline(v); vp.current.setOutline(v); }} /></div>
             <div className="row"><span>Outline thickness</span><Slider min={0.5} max={4} step={0.25} value={thick} onChange={(v) => { setThick(v); vp.current.setHullThickness(v); }} style={{ width: 120, margin: 0 }} /></div>
-            <div className="row"><span>Animate the build</span><Switch size="small" checked={autoBuild} onChange={setAutoBuild} /></div>
+            <div className="row"><span>Animate the build</span><Switch size="small" checked={autoBuild} onChange={(v) => {
+              setAutoBuild(v);
+              if (v) {
+                setOpenReplay(true);
+              } else {
+                setPlaying(false);
+                if (res) goStep(maxLevelRef.current, false);
+              }
+            }} /></div>
           </Section>
-          {res && (<><Divider style={{ margin: '4px 0' }} />
+          {res && autoBuild && (<><Divider style={{ margin: '4px 0' }} />
             <Section title="Replay" open={openReplay} setOpen={setOpenReplay}>{replay}</Section></>)}
           <Divider style={{ margin: '4px 0' }} />
           <Section title="Export" open={openExport} setOpen={setOpenExport}>
@@ -1513,35 +1521,6 @@ function StudioInner() {
                   {bookletData ? 'Instructions Booklet (Ready)' : 'Instructions Booklet'}
                 </Button>
               </Tooltip>
-              <Tooltip
-                title={
-                  !res
-                    ? 'Compute a model first'
-                    : !bookletData
-                    ? 'Compute instructions booklet first to generate hero cover and step illustrations'
-                    : 'Download BrickLink Studio package (.io) with hero cover and step data'
-                }
-              >
-                <Button
-                  size="small"
-                  type={bookletData ? 'primary' : 'default'}
-                  icon={<DownloadOutlined style={{ color: bookletData ? '#ffffff' : undefined }} />}
-                  disabled={!res || !bookletData}
-                  onClick={() => handleExportMOC('io')}
-                  style={{
-                    gridColumn: '1 / -1',
-                    background: bookletData ? '#2563eb' : undefined,
-                    borderColor: bookletData ? '#2563eb' : undefined,
-                    color: bookletData ? '#ffffff' : undefined,
-                    fontWeight: 600,
-                    justifyContent: 'center',
-                  }}
-                >
-                  <span style={{ color: bookletData ? '#ffffff' : undefined }}>
-                    BrickLink Studio (.io)
-                  </span>
-                </Button>
-              </Tooltip>
               <Button size="small" icon={<DownloadOutlined />} disabled={!res} onClick={exportLDR}>.ldr (LDraw)</Button>
               <Button size="small" icon={<DownloadOutlined />} disabled={!res} onClick={() => exportGLB('piece')}>.glb</Button>
               <Button size="small" icon={<DownloadOutlined />} disabled={!res} onClick={() => exportGLB('kind')}>.glb by kind</Button>
@@ -1553,35 +1532,6 @@ function StudioInner() {
           </Section>
           <Divider style={{ margin: '4px 0' }} />
           <Section title="BrickLink" open={openBricklink} setOpen={setOpenBricklink}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-              <Text style={{ fontSize: 11, color: 'var(--tx2)' }}>Wanted List &amp; MOC Hub</Text>
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                <Tooltip title="Install 1-click userscript for Tampermonkey/Violentmonkey to auto-select the XML tab, paste XML, and click verify on BrickLink">
-                  <Button
-                    type="link"
-                    size="small"
-                    icon={<ThunderboltOutlined />}
-                    href="./bricklink-autofill.user.js"
-                    target="_blank"
-                    style={{ padding: 0, fontSize: 11, height: 'auto', color: '#2563eb' }}
-                  >
-                    Auto-Fill Script
-                  </Button>
-                </Tooltip>
-                <Button
-                  type="link"
-                  size="small"
-                  icon={<LinkOutlined />}
-                  href="https://www.bricklink.com/v2/wanted/upload.page#xml"
-                  target="_blank"
-                  rel="noreferrer"
-                  style={{ padding: 0, fontSize: 11, height: 'auto' }}
-                >
-                  Upload Page
-                </Button>
-              </div>
-            </div>
-
             {!blConnected ? (
               <div className="bl-card">
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -1643,33 +1593,70 @@ function StudioInner() {
                   type="primary"
                   loading={blBusy}
                   onClick={handleBrickLinkLogin}
-                  style={{ width: '100%', background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}
+                  style={{ width: '100%', background: '#2563eb', borderColor: '#2563eb', fontWeight: 600, marginBottom: 6 }}
                 >
                   Connect to BrickLink
                 </Button>
 
-                <div style={{ display: 'flex', gap: 6, marginTop: 2 }}>
-                  <Tooltip title="Copies clean XML to clipboard and opens the BrickLink upload page in a new tab">
-                    <Button
-                      size="small"
-                      icon={<CloudUploadOutlined />}
-                      disabled={!res}
-                      onClick={handleUploadWantedList}
-                      style={{ flex: 1 }}
-                    >
-                      Upload to Wanted List
-                    </Button>
-                  </Tooltip>
-                  <Tooltip title="Copy BrickLink XML to clipboard">
-                    <Button
-                      size="small"
-                      icon={<CopyOutlined />}
-                      disabled={!res}
-                      onClick={handleCopyWantedListXML}
-                    >
-                      XML
-                    </Button>
-                  </Tooltip>
+                <Tooltip
+                  title={
+                    !res
+                      ? 'Compute a model first'
+                      : !bookletData
+                      ? 'Compute instructions booklet first to generate hero cover and step illustrations'
+                      : 'Download BrickLink Studio package (.io) with hero cover and step data'
+                  }
+                >
+                  <Button
+                    size="small"
+                    type={bookletData ? 'primary' : 'default'}
+                    icon={<DownloadOutlined style={{ color: bookletData ? '#ffffff' : undefined }} />}
+                    disabled={!res || !bookletData}
+                    onClick={() => handleExportMOC('io')}
+                    style={{
+                      width: '100%',
+                      background: bookletData ? '#2563eb' : undefined,
+                      borderColor: bookletData ? '#2563eb' : undefined,
+                      color: bookletData ? '#ffffff' : undefined,
+                      fontWeight: 600,
+                      justifyContent: 'center',
+                      marginBottom: 6,
+                    }}
+                  >
+                    <span style={{ color: bookletData ? '#ffffff' : undefined }}>
+                      My Own Creation (MOC.io)
+                    </span>
+                  </Button>
+                </Tooltip>
+
+                <Tooltip title="Upload your MOC.io model to add the parts to your BrickLink wanted list (first download your MOC.io file locally)">
+                  <Button
+                    size="small"
+                    icon={<CloudUploadOutlined />}
+                    disabled={!res}
+                    onClick={handleUploadWantedList}
+                    style={{ width: '100%' }}
+                  >
+                    Upload to Wanted List
+                  </Button>
+                </Tooltip>
+
+                <div
+                  onClick={() => setMocInfoOpen(true)}
+                  style={{
+                    marginTop: 6,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 6,
+                    cursor: 'pointer',
+                    color: '#2563eb',
+                    fontSize: 11,
+                    fontWeight: 500,
+                  }}
+                >
+                  <InfoCircleOutlined style={{ color: '#2563eb' }} />
+                  <span>What is a MOC?</span>
                 </div>
               </div>
             ) : (
@@ -1691,7 +1678,7 @@ function StudioInner() {
                   </Button>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 8 }}>
                   <Text style={{ fontSize: 10, color: 'var(--tx2)' }}>Target Wanted List</Text>
                   <Select
                     size="small"
@@ -1714,97 +1701,73 @@ function StudioInner() {
                   )}
                 </div>
 
-                <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
-                  <Tooltip title="Upload parts directly into your BrickLink Wanted List">
-                    <Button
-                      size="small"
-                      type="primary"
-                      icon={<CloudUploadOutlined />}
-                      disabled={!res}
-                      loading={blBusy}
-                      onClick={handleUploadWantedList}
-                      style={{ flex: 1, background: '#2563eb', borderColor: '#2563eb' }}
-                    >
-                      Send to Wanted List
-                    </Button>
-                  </Tooltip>
-                  <Tooltip title="Copy BrickLink XML to clipboard to paste directly on BrickLink's Wanted List upload page">
-                    <Button
-                      size="small"
-                      icon={<CopyOutlined />}
-                      disabled={!res}
-                      onClick={handleCopyWantedListXML}
-                    >
-                      XML
-                    </Button>
-                  </Tooltip>
-                </div>
-              </div>
-            )}
-
-            <div style={{ marginTop: 8 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-                <span style={{ fontSize: 11, fontWeight: 600 }}>BrickLink MOC Export</span>
-                <Button
-                  size="small"
-                  type="link"
-                  icon={<InfoCircleOutlined />}
-                  onClick={() => setMocInfoOpen(true)}
-                  style={{ padding: 0, fontSize: 11, height: 'auto' }}
-                >
-                  What is a MOC?
-                </Button>
-              </div>
-
-              <div className="bl-actions">
-                <Tooltip title="Export standard LDraw MOC with step breaks and official MOC category header">
-                  <Button
-                    size="small"
-                    icon={<DownloadOutlined />}
-                    disabled={!res}
-                    onClick={() => handleExportMOC('ldr')}
-                  >
-                    MOC .ldr
-                  </Button>
-                </Tooltip>
                 <Tooltip
                   title={
                     !res
                       ? 'Compute a model first'
                       : !bookletData
                       ? 'Compute instructions booklet first to generate hero cover and step illustrations'
-                      : 'Export BrickLink Studio package (.io) container with embedded hero cover and step data'
+                      : 'Download BrickLink Studio package (.io) with hero cover and step data'
                   }
                 >
                   <Button
                     size="small"
-                    icon={<DownloadOutlined />}
+                    type={bookletData ? 'primary' : 'default'}
+                    icon={<DownloadOutlined style={{ color: bookletData ? '#ffffff' : undefined }} />}
                     disabled={!res || !bookletData}
                     onClick={() => handleExportMOC('io')}
+                    style={{
+                      width: '100%',
+                      background: bookletData ? '#2563eb' : undefined,
+                      borderColor: bookletData ? '#2563eb' : undefined,
+                      color: bookletData ? '#ffffff' : undefined,
+                      fontWeight: 600,
+                      justifyContent: 'center',
+                      marginBottom: 6,
+                    }}
                   >
-                    Studio .io
+                    <span style={{ color: bookletData ? '#ffffff' : undefined }}>
+                      My Own Creation (MOC.io)
+                    </span>
                   </Button>
                 </Tooltip>
+
+                <Tooltip title="Upload your MOC.io model to add the parts to your BrickLink wanted list (first download your MOC.io file locally)">
+                  <Button
+                    size="small"
+                    type="primary"
+                    icon={<CloudUploadOutlined />}
+                    disabled={!res}
+                    loading={blBusy}
+                    onClick={handleUploadWantedList}
+                    style={{ width: '100%', background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}
+                  >
+                    Send to Wanted List
+                  </Button>
+                </Tooltip>
+
+                <div
+                  onClick={() => setMocInfoOpen(true)}
+                  style={{
+                    marginTop: 6,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 6,
+                    cursor: 'pointer',
+                    color: '#2563eb',
+                    fontSize: 11,
+                    fontWeight: 500,
+                  }}
+                >
+                  <InfoCircleOutlined style={{ color: '#2563eb' }} />
+                  <span>What is a MOC?</span>
+                </div>
               </div>
-            </div>
+            )}
           </Section>
           <Divider style={{ margin: '4px 0' }} />
-          <Section title="LEGO Pick a Brick" open={openPab} setOpen={setOpenPab}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-              <Text style={{ fontSize: 11, color: 'var(--tx2)' }}>Official LEGO Store</Text>
-              <Button
-                type="link"
-                size="small"
-                icon={<LinkOutlined />}
-                href={getLegoPickABrickUrl(pabLocale)}
-                target="_blank"
-                rel="noreferrer"
-                style={{ padding: 0, fontSize: 11, height: 'auto' }}
-              >
-                Open Store
-              </Button>
-            </div>
-
+          <Section title="Official LEGO store" open={openPab} setOpen={setOpenPab}>
             <div className="bl-card">
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <span style={{ fontWeight: 600, fontSize: 11 }}>Store Region</span>
@@ -1830,7 +1793,7 @@ function StudioInner() {
               </Text>
 
               <div style={{ display: 'flex', gap: 6, marginTop: 2 }}>
-                <Tooltip title="Download BrickHunter CSV for 1-click cart import via BrickHunter on LEGO.com">
+                <Tooltip title="Download parts list CSV for 1-click cart import via BrickHunter on LEGO.com">
                   <Button
                     size="small"
                     type="primary"
@@ -1839,10 +1802,10 @@ function StudioInner() {
                     onClick={handleExportBrickHunter}
                     style={{ flex: 1, background: '#2563eb', borderColor: '#2563eb', color: '#ffffff', fontWeight: 600 }}
                   >
-                    <span style={{ color: '#ffffff' }}>BrickHunter CSV</span>
+                    <span style={{ color: '#ffffff' }}>Parts list CSV</span>
                   </Button>
                 </Tooltip>
-                <Tooltip title="Copy BrickHunter CSV to clipboard">
+                <Tooltip title="Copy parts list CSV to clipboard">
                   <Button
                     size="small"
                     icon={<CopyOutlined />}

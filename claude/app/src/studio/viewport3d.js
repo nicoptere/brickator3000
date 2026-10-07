@@ -679,10 +679,15 @@ export class StudioViewport {
   }
   stepAnimations(now) {
     if (!this.active.size) return;
+    const bboxHeight = Math.max(this.H || 0, (this.levels || 1) * PLATE, 80);
+    const maxLift = bboxHeight * 2;
     for (const [n, t0] of this.active) {
-      const t = (now - t0) / 260; if (t < 0) { this.place(n, 0, 0); continue; }
+      const t = (now - t0) / 320; if (t < 0) { this.place(n, 0, 0); continue; }
       if (t >= 1) { this.active.delete(n); this.place(n, 1, 0); continue; }
-      const e = easeOutBack(t); this.place(n, Math.min(1.08, e), (1 - Math.min(1, t)) * 40);
+      const fall = 1 - t;
+      const lift = Math.pow(fall, 2) * maxLift;
+      const e = easeOutBack(t);
+      this.place(n, Math.min(1.04, Math.max(t * 4, e)), lift);
     }
   }
 
