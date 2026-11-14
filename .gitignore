@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+
+# Node
+node_modules/
+dist/
+.vite/
+npm-debug.log*
+
+# Outputs / OS
+out/
+runs/
+.DS_Store
+Thumbs.db
+
+# Downloaded LDraw library (fetched on demand via dataset/download_ldraw.py)
+dataset/ldraw/
+dataset/.ldraw_complete.zip
+dataset/catalog_99_py.json

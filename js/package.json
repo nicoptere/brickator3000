@@ -1,0 +1,24 @@
+{
+  "name": "brickpack-sdf",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Minimal SDF BrickPack library & CLIs (Node.js + Browser WebGPU / WebGL) for mesh-to-LEGO discretization",
+  "license": "MIT",
+  "exports": {
+    ".": "./src/engine.js",
+    "./mesh-io": "./src/mesh_io.js",
+    "./dictionary": "./src/dictionary.js",
+    "./colors": "./src/colors.js",
+    "./target": "./src/target.js",
+    "./pack": "./src/pack.js"
+  },
+  "scripts": {
+    "test": "node --test test/test_brickpack.mjs",
+    "download:ldraw": "python3 ../dataset/download_ldraw.py",
+    "train:catalog": "node cli/train_catalog.mjs",
+    "encode": "node cli/encode_sdf.mjs",
+    "pack": "node cli/pack_bricks.mjs",
+    "train:policy": "node cli/train_policy.mjs",
+    "serve": "node web/serve.mjs"
+  }
+}

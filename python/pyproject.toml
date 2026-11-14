@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "brickpack-sdf"
+version = "0.1.0"
+description = "Implicit SDF & Dinkelbach Soft-IoU optimizer for LEGO build synthesis"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = [
+  "numpy>=1.24",
+  "scipy>=1.10",
+  "pillow>=9.5",
+]
+
+[project.optional-dependencies]
+siren = ["torch>=2.1"]
+dev = ["pytest>=7.4"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["brickpack_sdf*"]

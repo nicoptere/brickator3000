@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BrickPack SDF — Interactive WebGPU + WebGL2 Studio</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #f8fafc;
+      --surface-2: #f1f5f9;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --muted: #64748b;
+      --accent: #2563eb;
+      --accent-tint: #eff6ff;
+      --accent-border: #bfdbfe;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      height: 100vh;
+      display: grid;
+      grid-template-rows: 52px 1fr;
+      overflow: hidden;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
+      font-size: 15px;
+      letter-spacing: -0.01em;
+    }
+    .brand svg { color: var(--accent); }
+    .badges {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .badge {
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      font-weight: 500;
+    }
+    .badge.active {
+      background: var(--accent-tint);
+      border-color: var(--accent-border);
+      color: var(--accent);
+    }
+    main {
+      display: grid;
+      grid-template-columns: 330px 1fr;
+      min-height: 0;
+    }
+    aside {
+      border-right: 1px solid var(--border);
+      background: var(--surface);
+      overflow-y: auto;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    details.panel {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      flex-shrink: 0;
+    }
+    details.panel summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 11px 13px;
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      user-select: none;
+    }
+    details.panel summary::-webkit-details-marker { display: none; }
+    .panel-body {
+      padding: 12px 13px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .btn-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+    .btn-grid.three {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    button {
+      font: inherit;
+      font-size: 12.5px;
+      font-weight: 500;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      padding: 7px 10px;
+      border-radius: 7px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: background 120ms, border-color 120ms, color 120ms;
+    }
+    button:hover { background: var(--surface-2); }
+    button.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #ffffff;
+    }
+    button.primary:hover { filter: brightness(0.95); }
+    button.selected {
+      background: var(--accent-tint);
+      border-color: var(--accent-border);
+      color: var(--accent);
+    }
+    button:disabled { opacity: 0.55; cursor: not-allowed; }
+    label.field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+    label.field .row {
+      display: flex;
+      justify-content: space-between;
+      color: var(--text);
+    }
+    input[type="range"] { width: 100%; accent-color: var(--accent); }
+    select, input[type="file"] {
+      font: inherit;
+      font-size: 12px;
+      padding: 6px 8px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .drop-zone {
+      border: 1.5px dashed var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      background: var(--surface);
+      cursor: pointer;
+    }
+    .drop-zone.drag {
+      border-color: var(--accent);
+      background: var(--accent-tint);
+      color: var(--accent);
+    }
+    .metrics {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .stat {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 8px 10px;
+    }
+    .stat-label { font-size: 11px; color: var(--muted); }
+    .stat-val { font-size: 15px; font-weight: 600; margin-top: 2px; }
+    .log {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 11px;
+      line-height: 1.45;
+      color: var(--muted);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 8px;
+      max-height: 130px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+    .viewport-wrap {
+      position: relative;
+      background: #1e222b;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      min-height: 0;
+    }
+    canvas#glCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: grab;
+    }
+    canvas#glCanvas:active { cursor: grabbing; }
+    .overlay-top {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      right: 12px;
+      display: flex;
+      justify-content: space-between;
+      pointer-events: none;
+    }
+    .pill {
+      pointer-events: auto;
+      background: rgba(255, 255, 255, 0.94);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 12px;
+      color: var(--text);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
+    }
+    .progress-bar {
+      height: 5px;
+      width: 100%;
+      background: var(--surface-2);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .progress-bar > div {
+      height: 100%;
+      width: 0%;
+      background: var(--accent);
+      transition: width 100ms ease;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 2L2 7l10 5 10-5-10-5z" />
+        <path d="M2 17l10 5 10-5" />
+        <path d="M2 12l10 5 10-5" />
+      </svg>
+      <span>BrickPack SDF Studio</span>
+    </div>
+    <div class="badges">
+      <span id="badgeCatalog" class="badge">Catalog: loading...</span>
+      <span id="badgeBackend" class="badge">Compute: checking...</span>
+      <span class="badge active">Render: WebGL2</span>
+    </div>
+  </header>
+
+  <main>
+    <aside>
+      <details class="panel" open>
+        <summary>
+          <span>1. Input Mesh or SDF</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </summary>
+        <div class="panel-body">
+          <div class="btn-grid three">
+            <button data-sample="/dataset/models/stanford_bunny.glb">Bunny (GLB)</button>
+            <button data-sample="/dataset/models/stanford_bunny.ply">Bunny (PLY)</button>
+            <button data-sample="/dataset/models/stanford_bunny.obj">Bunny (OBJ)</button>
+          </div>
+          <div id="dropZone" class="drop-zone">
+            Drop .obj, .glb, .ply, or .sdf.json + .sdf.bin
+            <input id="fileInput" type="file" accept=".obj,.glb,.ply,.json,.bin" multiple style="display:none" />
+          </div>
+          <div id="modelInfo" class="stat">
+            <div class="stat-label">Active Input</div>
+            <div class="stat-val" id="modelName">None</div>
+          </div>
+        </div>
+      </details>
+
+      <details class="panel" open>
+        <summary>
+          <span>2. SDF &amp; BrickPack Solver</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </summary>
+        <div class="panel-body">
+          <label class="field">
+            <div class="row"><span>Scale (min studs)</span><strong id="studsVal">14</strong></div>
+            <input id="studsRange" type="range" min="6" max="32" value="14" />
+          </label>
+          <label class="field">
+            <span>Search Effort</span>
+            <select id="effortSelect">
+              <option value="quick">Quick (2 passes)</option>
+              <option value="normal" selected>Normal (6 passes)</option>
+              <option value="thorough">Thorough (16 passes)</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Color Palette</span>
+            <select id="colorSelect">
+              <option value="piece" selected>Official LDraw (CIEDE2000)</option>
+              <option value="kind">Part Kind Diagnostic</option>
+            </select>
+          </label>
+          <div class="btn-grid">
+            <button id="btnEncodeSdf">Encode SDF</button>
+            <button id="btnPack" class="primary">Pack Bricks</button>
+          </div>
+          <div class="progress-bar"><div id="progressFill"></div></div>
+        </div>
+      </details>
+
+      <details class="panel" open>
+        <summary>
+          <span>3. Metrics &amp; Export</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </summary>
+        <div class="panel-body">
+          <div class="metrics">
+            <div class="stat"><div class="stat-label">Bricks</div><div class="stat-val" id="statPieces">-</div></div>
+            <div class="stat"><div class="stat-label">Soft IoU</div><div class="stat-val" id="statIoU">-</div></div>
+            <div class="stat"><div class="stat-label">Components</div><div class="stat-val" id="statComp">-</div></div>
+            <div class="stat"><div class="stat-label">Runtime</div><div class="stat-val" id="statTime">-</div></div>
+          </div>
+          <div class="btn-grid">
+            <button id="btnDownloadSdf" disabled>Download SDF</button>
+            <button id="btnDownloadGlb" disabled>Export GLB</button>
+            <button id="btnDownloadLdr" disabled>Export LDraw</button>
+            <button id="btnTuneGa">Tune Policy (GA)</button>
+          </div>
+          <div class="log" id="logBox">Ready.</div>
+        </div>
+      </details>
+    </aside>
+
+    <section class="viewport-wrap">
+      <canvas id="glCanvas"></canvas>
+      <div class="overlay-top">
+        <div class="pill" id="viewportStatus">Drag to orbit, scroll to zoom, right-drag to pan</div>
+        <div class="pill">
+          <label style="display:inline-flex;align-items:center;gap:5px;cursor:pointer;">
+            <input id="toggleEdges" type="checkbox" checked /> Brick Edges
+          </label>
+          <label style="display:inline-flex;align-items:center;gap:5px;cursor:pointer;">
+            <input id="toggleGrid" type="checkbox" checked /> Ground Grid
+          </label>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

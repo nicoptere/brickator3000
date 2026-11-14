@@ -1,0 +1,899 @@
+{
+  "source": "LDraw Official Model Repository (OMR) usage ranking",
+  "total_omr_models": 1150,
+  "total_omr_placements": 401012,
+  "count": 99,
+  "parts": [
+    {
+      "omr_rank": 1,
+      "rank_99": 1,
+      "id": "3023b",
+      "family": "solid",
+      "desc": "Plate  1 x  2",
+      "placements": 19350,
+      "models": 906
+    },
+    {
+      "omr_rank": 2,
+      "rank_99": 2,
+      "id": "6141",
+      "family": "shape",
+      "desc": "Plate  1 x  1 Round",
+      "placements": 12928,
+      "models": 710
+    },
+    {
+      "omr_rank": 3,
+      "rank_99": 3,
+      "id": "3024",
+      "family": "solid",
+      "desc": "Plate  1 x  1",
+      "placements": 12672,
+      "models": 681
+    },
+    {
+      "omr_rank": 4,
+      "rank_99": 4,
+      "id": "3004",
+      "family": "solid",
+      "desc": "Brick  1 x  2",
+      "placements": 10489,
+      "models": 704
+    },
+    {
+      "omr_rank": 5,
+      "rank_99": 5,
+      "id": "3005",
+      "family": "solid",
+      "desc": "Brick  1 x  1",
+      "placements": 8985,
+      "models": 525
+    },
+    {
+      "omr_rank": 6,
+      "rank_99": 6,
+      "id": "98138",
+      "family": "shape",
+      "desc": "Tile  1 x  1 Round with Groove",
+      "placements": 8362,
+      "models": 134
+    },
+    {
+      "omr_rank": 7,
+      "rank_99": 7,
+      "id": "3710",
+      "family": "solid",
+      "desc": "Plate  1 x  4",
+      "placements": 8254,
+      "models": 771
+    },
+    {
+      "omr_rank": 8,
+      "rank_99": 8,
+      "id": "3069b",
+      "family": "solid",
+      "desc": "Tile  1 x  2 with Groove",
+      "placements": 7893,
+      "models": 572
+    },
+    {
+      "omr_rank": 9,
+      "rank_99": 9,
+      "id": "3020",
+      "family": "solid",
+      "desc": "Plate  2 x  4",
+      "placements": 5587,
+      "models": 813
+    },
+    {
+      "omr_rank": 10,
+      "rank_99": 10,
+      "id": "3623",
+      "family": "solid",
+      "desc": "Plate  1 x  3",
+      "placements": 5089,
+      "models": 510
+    },
+    {
+      "omr_rank": 11,
+      "rank_99": 11,
+      "id": "3070b",
+      "family": "solid",
+      "desc": "Tile  1 x  1 with Groove",
+      "placements": 5069,
+      "models": 354
+    },
+    {
+      "omr_rank": 12,
+      "rank_99": 12,
+      "id": "3010",
+      "family": "solid",
+      "desc": "Brick  1 x  4",
+      "placements": 4899,
+      "models": 571
+    },
+    {
+      "omr_rank": 13,
+      "rank_99": 13,
+      "id": "3666",
+      "family": "solid",
+      "desc": "Plate  1 x  6",
+      "placements": 4805,
+      "models": 516
+    },
+    {
+      "omr_rank": 14,
+      "rank_99": 14,
+      "id": "3021",
+      "family": "solid",
+      "desc": "Plate  2 x  3",
+      "placements": 4766,
+      "models": 636
+    },
+    {
+      "omr_rank": 15,
+      "rank_99": 15,
+      "id": "3022",
+      "family": "solid",
+      "desc": "Plate  2 x  2",
+      "placements": 4603,
+      "models": 766
+    },
+    {
+      "omr_rank": 16,
+      "rank_99": 16,
+      "id": "2412b",
+      "family": "solid",
+      "desc": "Tile  1 x  2 Grille with Groove",
+      "placements": 4262,
+      "models": 430
+    },
+    {
+      "omr_rank": 18,
+      "rank_99": 17,
+      "id": "54200",
+      "family": "shape",
+      "desc": "Slope Brick 31  1 x  1 x  0.667",
+      "placements": 4124,
+      "models": 320
+    },
+    {
+      "omr_rank": 19,
+      "rank_99": 18,
+      "id": "2431",
+      "family": "solid",
+      "desc": "Tile  1 x  4 with Groove",
+      "placements": 3758,
+      "models": 467
+    },
+    {
+      "omr_rank": 20,
+      "rank_99": 19,
+      "id": "3062b",
+      "family": "shape",
+      "desc": "Brick  1 x  1 Round with Hollow Stud",
+      "placements": 3479,
+      "models": 396
+    },
+    {
+      "omr_rank": 21,
+      "rank_99": 20,
+      "id": "3068b",
+      "family": "solid",
+      "desc": "Tile  2 x  2 with Groove",
+      "placements": 3436,
+      "models": 408
+    },
+    {
+      "omr_rank": 22,
+      "rank_99": 21,
+      "id": "4070",
+      "family": "snot",
+      "desc": "Brick  1 x  1 with Headlight",
+      "placements": 3417,
+      "models": 420
+    },
+    {
+      "omr_rank": 23,
+      "rank_99": 22,
+      "id": "3622",
+      "family": "solid",
+      "desc": "Brick  1 x  3",
+      "placements": 3270,
+      "models": 353
+    },
+    {
+      "omr_rank": 24,
+      "rank_99": 23,
+      "id": "2420",
+      "family": "shape",
+      "desc": "Plate  2 x  2 Corner",
+      "placements": 3268,
+      "models": 389
+    },
+    {
+      "omr_rank": 25,
+      "rank_99": 24,
+      "id": "3009",
+      "family": "solid",
+      "desc": "Brick  1 x  6",
+      "placements": 3219,
+      "models": 360
+    },
+    {
+      "omr_rank": 26,
+      "rank_99": 25,
+      "id": "3460",
+      "family": "solid",
+      "desc": "Plate  1 x  8",
+      "placements": 2805,
+      "models": 392
+    },
+    {
+      "omr_rank": 27,
+      "rank_99": 26,
+      "id": "3795",
+      "family": "solid",
+      "desc": "Plate  2 x  6",
+      "placements": 2764,
+      "models": 570
+    },
+    {
+      "omr_rank": 30,
+      "rank_99": 27,
+      "id": "6636",
+      "family": "solid",
+      "desc": "Tile  1 x  6",
+      "placements": 2418,
+      "models": 207
+    },
+    {
+      "omr_rank": 31,
+      "rank_99": 28,
+      "id": "3003",
+      "family": "solid",
+      "desc": "Brick  2 x  2",
+      "placements": 2376,
+      "models": 474
+    },
+    {
+      "omr_rank": 33,
+      "rank_99": 29,
+      "id": "3040b",
+      "family": "shape",
+      "desc": "Slope Brick 45  2 x  1",
+      "placements": 2359,
+      "models": 350
+    },
+    {
+      "omr_rank": 34,
+      "rank_99": 30,
+      "id": "15573",
+      "family": "solid",
+      "desc": "Plate  1 x  2 with Groove with 1 Centre Stud, without Understud",
+      "placements": 2262,
+      "models": 159
+    },
+    {
+      "omr_rank": 35,
+      "rank_99": 31,
+      "id": "4162",
+      "family": "solid",
+      "desc": "Tile  1 x  8",
+      "placements": 2157,
+      "models": 263
+    },
+    {
+      "omr_rank": 37,
+      "rank_99": 32,
+      "id": "3034",
+      "family": "solid",
+      "desc": "Plate  2 x  8",
+      "placements": 2017,
+      "models": 424
+    },
+    {
+      "omr_rank": 39,
+      "rank_99": 33,
+      "id": "3001",
+      "family": "solid",
+      "desc": "Brick  2 x  4",
+      "placements": 1948,
+      "models": 377
+    },
+    {
+      "omr_rank": 41,
+      "rank_99": 34,
+      "id": "3008",
+      "family": "solid",
+      "desc": "Brick  1 x  8",
+      "placements": 1859,
+      "models": 249
+    },
+    {
+      "omr_rank": 42,
+      "rank_99": 35,
+      "id": "87079",
+      "family": "solid",
+      "desc": "Tile  2 x  4",
+      "placements": 1823,
+      "models": 214
+    },
+    {
+      "omr_rank": 43,
+      "rank_99": 36,
+      "id": "3794a",
+      "family": "solid",
+      "desc": "Plate  1 x  2 without Groove with 1 Centre Stud",
+      "placements": 1798,
+      "models": 264
+    },
+    {
+      "omr_rank": 44,
+      "rank_99": 37,
+      "id": "85984",
+      "family": "shape",
+      "desc": "Slope Brick 31  1 x  2 x  0.667",
+      "placements": 1741,
+      "models": 195
+    },
+    {
+      "omr_rank": 45,
+      "rank_99": 38,
+      "id": "4477",
+      "family": "solid",
+      "desc": "Plate  1 x 10",
+      "placements": 1726,
+      "models": 273
+    },
+    {
+      "omr_rank": 46,
+      "rank_99": 39,
+      "id": "2877",
+      "family": "solid",
+      "desc": "Brick  1 x  2 with Grille",
+      "placements": 1721,
+      "models": 142
+    },
+    {
+      "omr_rank": 49,
+      "rank_99": 40,
+      "id": "3665a",
+      "family": "shape",
+      "desc": "Slope Brick 45  2 x  1 Inverted without Inner Stopper Ring",
+      "placements": 1570,
+      "models": 282
+    },
+    {
+      "omr_rank": 50,
+      "rank_99": 41,
+      "id": "2357",
+      "family": "shape",
+      "desc": "Brick  2 x  2 Corner",
+      "placements": 1563,
+      "models": 219
+    },
+    {
+      "omr_rank": 53,
+      "rank_99": 42,
+      "id": "22885",
+      "family": "snot",
+      "desc": "Brick  1 x  2 x  1.667 with Studs on 1 Side",
+      "placements": 1460,
+      "models": 107
+    },
+    {
+      "omr_rank": 54,
+      "rank_99": 43,
+      "id": "3039",
+      "family": "shape",
+      "desc": "Slope Brick 45  2 x  2",
+      "placements": 1452,
+      "models": 325
+    },
+    {
+      "omr_rank": 55,
+      "rank_99": 44,
+      "id": "87087",
+      "family": "snot",
+      "desc": "Brick  1 x  1 with Stud on 1 Side",
+      "placements": 1434,
+      "models": 162
+    },
+    {
+      "omr_rank": 57,
+      "rank_99": 45,
+      "id": "15068",
+      "family": "shape",
+      "desc": "Slope Brick Curved  2 x  2 x  0.667",
+      "placements": 1342,
+      "models": 139
+    },
+    {
+      "omr_rank": 60,
+      "rank_99": 46,
+      "id": "3794b",
+      "family": "solid",
+      "desc": "Plate  1 x  2 with Groove with 1 Centre Stud",
+      "placements": 1313,
+      "models": 136
+    },
+    {
+      "omr_rank": 61,
+      "rank_99": 47,
+      "id": "11477",
+      "family": "shape",
+      "desc": "Slope Brick Curved  2 x  1",
+      "placements": 1288,
+      "models": 159
+    },
+    {
+      "omr_rank": 62,
+      "rank_99": 48,
+      "id": "6091",
+      "family": "shape",
+      "desc": "Brick  2 x  1 x  1.333 with Curved Top",
+      "placements": 1176,
+      "models": 165
+    },
+    {
+      "omr_rank": 63,
+      "rank_99": 49,
+      "id": "3002",
+      "family": "solid",
+      "desc": "Brick  2 x  3",
+      "placements": 1084,
+      "models": 259
+    },
+    {
+      "omr_rank": 64,
+      "rank_99": 50,
+      "id": "4286",
+      "family": "shape",
+      "desc": "Slope Brick 33  3 x  1",
+      "placements": 1084,
+      "models": 220
+    },
+    {
+      "omr_rank": 65,
+      "rank_99": 51,
+      "id": "4589",
+      "family": "shape",
+      "desc": "Cone  1 x  1",
+      "placements": 1075,
+      "models": 198
+    },
+    {
+      "omr_rank": 66,
+      "rank_99": 52,
+      "id": "30136",
+      "family": "solid",
+      "desc": "Brick  1 x  2 Log",
+      "placements": 1054,
+      "models": 71
+    },
+    {
+      "omr_rank": 67,
+      "rank_99": 53,
+      "id": "3832",
+      "family": "solid",
+      "desc": "Plate  2 x 10",
+      "placements": 1048,
+      "models": 288
+    },
+    {
+      "omr_rank": 68,
+      "rank_99": 54,
+      "id": "85861",
+      "family": "shape",
+      "desc": "Plate  1 x  1 Round with Open Stud",
+      "placements": 1023,
+      "models": 79
+    },
+    {
+      "omr_rank": 74,
+      "rank_99": 55,
+      "id": "3031",
+      "family": "solid",
+      "desc": "Plate  4 x  4",
+      "placements": 957,
+      "models": 380
+    },
+    {
+      "omr_rank": 75,
+      "rank_99": 56,
+      "id": "3941",
+      "family": "shape",
+      "desc": "Brick  2 x  2 Round without Reinforcement",
+      "placements": 945,
+      "models": 216
+    },
+    {
+      "omr_rank": 76,
+      "rank_99": 57,
+      "id": "3032",
+      "family": "solid",
+      "desc": "Plate  4 x  6",
+      "placements": 940,
+      "models": 312
+    },
+    {
+      "omr_rank": 78,
+      "rank_99": 58,
+      "id": "35480",
+      "family": "shape",
+      "desc": "Plate  1 x  2 with Round Ends and 2 Open Studs",
+      "placements": 920,
+      "models": 45
+    },
+    {
+      "omr_rank": 79,
+      "rank_99": 59,
+      "id": "99206",
+      "family": "snot",
+      "desc": "Plate  2 x  2 x  0.667 with Two Studs On Side and Two Raised with Closed Understud",
+      "placements": 873,
+      "models": 115
+    },
+    {
+      "omr_rank": 81,
+      "rank_99": 60,
+      "id": "98283",
+      "family": "solid",
+      "desc": "Brick  1 x  2 with Embossed Bricks",
+      "placements": 862,
+      "models": 37
+    },
+    {
+      "omr_rank": 84,
+      "rank_99": 61,
+      "id": "44728",
+      "family": "snot",
+      "desc": "Bracket  1 x  2 -  2 x  2 Down",
+      "placements": 844,
+      "models": 165
+    },
+    {
+      "omr_rank": 86,
+      "rank_99": 62,
+      "id": "99207",
+      "family": "snot",
+      "desc": "Bracket  1 x  2 -  2 x  2 Up",
+      "placements": 817,
+      "models": 87
+    },
+    {
+      "omr_rank": 88,
+      "rank_99": 63,
+      "id": "3037",
+      "family": "shape",
+      "desc": "Slope Brick 45  2 x  4",
+      "placements": 802,
+      "models": 155
+    },
+    {
+      "omr_rank": 91,
+      "rank_99": 64,
+      "id": "87580",
+      "family": "solid",
+      "desc": "Plate  2 x  2 with Groove with 1 Centre Stud",
+      "placements": 776,
+      "models": 121
+    },
+    {
+      "omr_rank": 92,
+      "rank_99": 65,
+      "id": "4740",
+      "family": "shape",
+      "desc": "Dish  2 x  2 Inverted",
+      "placements": 750,
+      "models": 234
+    },
+    {
+      "omr_rank": 93,
+      "rank_99": 66,
+      "id": "59900",
+      "family": "shape",
+      "desc": "Cone  1 x  1 with Stop",
+      "placements": 736,
+      "models": 129
+    },
+    {
+      "omr_rank": 95,
+      "rank_99": 67,
+      "id": "30414",
+      "family": "snot",
+      "desc": "Brick  1 x  4 with Studs on Side",
+      "placements": 721,
+      "models": 155
+    },
+    {
+      "omr_rank": 98,
+      "rank_99": 68,
+      "id": "50950",
+      "family": "shape",
+      "desc": "Slope Brick Curved  3 x  1",
+      "placements": 706,
+      "models": 129
+    },
+    {
+      "omr_rank": 100,
+      "rank_99": 69,
+      "id": "25269",
+      "family": "shape",
+      "desc": "Tile  1 x  1 Corner Round",
+      "placements": 704,
+      "models": 73
+    },
+    {
+      "omr_rank": 101,
+      "rank_99": 70,
+      "id": "3298",
+      "family": "shape",
+      "desc": "Slope Brick 33  3 x  2",
+      "placements": 698,
+      "models": 178
+    },
+    {
+      "omr_rank": 105,
+      "rank_99": 71,
+      "id": "11211",
+      "family": "snot",
+      "desc": "Brick  1 x  2 with Two Studs on One Side",
+      "placements": 686,
+      "models": 123
+    },
+    {
+      "omr_rank": 107,
+      "rank_99": 72,
+      "id": "2445",
+      "family": "solid",
+      "desc": "Plate  2 x 12",
+      "placements": 669,
+      "models": 173
+    },
+    {
+      "omr_rank": 109,
+      "rank_99": 73,
+      "id": "6231",
+      "family": "shape",
+      "desc": "Panel  1 x  1 x  1 Corner with Rounded Corners",
+      "placements": 647,
+      "models": 116
+    },
+    {
+      "omr_rank": 110,
+      "rank_99": 74,
+      "id": "99780",
+      "family": "snot",
+      "desc": "Bracket  1 x  2 -  1 x  2 Up",
+      "placements": 627,
+      "models": 117
+    },
+    {
+      "omr_rank": 112,
+      "rank_99": 75,
+      "id": "3035",
+      "family": "solid",
+      "desc": "Plate  4 x  8",
+      "placements": 622,
+      "models": 228
+    },
+    {
+      "omr_rank": 113,
+      "rank_99": 76,
+      "id": "33909",
+      "family": "solid",
+      "desc": "Plate  2 x  2 with 2 Studs on One Edge",
+      "placements": 621,
+      "models": 50
+    },
+    {
+      "omr_rank": 118,
+      "rank_99": 77,
+      "id": "4282",
+      "family": "solid",
+      "desc": "Plate  2 x 16",
+      "placements": 568,
+      "models": 136
+    },
+    {
+      "omr_rank": 120,
+      "rank_99": 78,
+      "id": "4490",
+      "family": "shape",
+      "desc": "Arch  1 x  3",
+      "placements": 557,
+      "models": 39
+    },
+    {
+      "omr_rank": 128,
+      "rank_99": 79,
+      "id": "60479",
+      "family": "solid",
+      "desc": "Plate  1 x 12",
+      "placements": 530,
+      "models": 82
+    },
+    {
+      "omr_rank": 129,
+      "rank_99": 80,
+      "id": "2456",
+      "family": "solid",
+      "desc": "Brick  2 x  6",
+      "placements": 509,
+      "models": 116
+    },
+    {
+      "omr_rank": 131,
+      "rank_99": 81,
+      "id": "3659",
+      "family": "shape",
+      "desc": "Arch  1 x  4",
+      "placements": 484,
+      "models": 78
+    },
+    {
+      "omr_rank": 135,
+      "rank_99": 82,
+      "id": "14719",
+      "family": "shape",
+      "desc": "Tile  2 x  2 Corner",
+      "placements": 475,
+      "models": 70
+    },
+    {
+      "omr_rank": 137,
+      "rank_99": 83,
+      "id": "4216",
+      "family": "solid",
+      "desc": "Brick  1 x  2 with Groove",
+      "placements": 468,
+      "models": 27
+    },
+    {
+      "omr_rank": 139,
+      "rank_99": 84,
+      "id": "33291",
+      "family": "shape",
+      "desc": "Plate  1 x  1 Round with Tabs",
+      "placements": 466,
+      "models": 46
+    },
+    {
+      "omr_rank": 143,
+      "rank_99": 85,
+      "id": "92593",
+      "family": "solid",
+      "desc": "Plate  1 x  4 with Two Studs",
+      "placements": 450,
+      "models": 123
+    },
+    {
+      "omr_rank": 144,
+      "rank_99": 86,
+      "id": "32952",
+      "family": "snot",
+      "desc": "Brick  1 x  1 x  1.667 with Studs on 1 Side",
+      "placements": 450,
+      "models": 54
+    },
+    {
+      "omr_rank": 147,
+      "rank_99": 87,
+      "id": "3297",
+      "family": "shape",
+      "desc": "Slope Brick 33  3 x  4",
+      "placements": 442,
+      "models": 85
+    },
+    {
+      "omr_rank": 149,
+      "rank_99": 88,
+      "id": "61678",
+      "family": "shape",
+      "desc": "Slope Brick Curved  4 x  1",
+      "placements": 433,
+      "models": 76
+    },
+    {
+      "omr_rank": 151,
+      "rank_99": 89,
+      "id": "32607",
+      "family": "shape",
+      "desc": "Plate  1 x  1 Round with  3 Leaves",
+      "placements": 426,
+      "models": 25
+    },
+    {
+      "omr_rank": 152,
+      "rank_99": 90,
+      "id": "15672",
+      "family": "shape",
+      "desc": "Slope Plate 45  2 x  1",
+      "placements": 424,
+      "models": 29
+    },
+    {
+      "omr_rank": 155,
+      "rank_99": 91,
+      "id": "3063b",
+      "family": "shape",
+      "desc": "Brick  2 x  2 Corner Round with Stud Notch",
+      "placements": 418,
+      "models": 38
+    },
+    {
+      "omr_rank": 156,
+      "rank_99": 92,
+      "id": "2450",
+      "family": "shape",
+      "desc": "Plate  3 x  3 without Corner",
+      "placements": 416,
+      "models": 92
+    },
+    {
+      "omr_rank": 159,
+      "rank_99": 93,
+      "id": "11212",
+      "family": "solid",
+      "desc": "Plate  3 x  3",
+      "placements": 402,
+      "models": 63
+    },
+    {
+      "omr_rank": 160,
+      "rank_99": 94,
+      "id": "47905",
+      "family": "snot",
+      "desc": "Brick  1 x  1 with Studs on Two Opposite Sides",
+      "placements": 401,
+      "models": 55
+    },
+    {
+      "omr_rank": 163,
+      "rank_99": 95,
+      "id": "26603",
+      "family": "solid",
+      "desc": "Tile  2 x  3",
+      "placements": 396,
+      "models": 64
+    },
+    {
+      "omr_rank": 165,
+      "rank_99": 96,
+      "id": "99781",
+      "family": "snot",
+      "desc": "Bracket  1 x  2 -  1 x  2 Down",
+      "placements": 390,
+      "models": 82
+    },
+    {
+      "omr_rank": 172,
+      "rank_99": 97,
+      "id": "3958",
+      "family": "solid",
+      "desc": "Plate  6 x  6",
+      "placements": 376,
+      "models": 188
+    },
+    {
+      "omr_rank": 174,
+      "rank_99": 98,
+      "id": "3036",
+      "family": "solid",
+      "desc": "Plate  6 x  8",
+      "placements": 374,
+      "models": 149
+    },
+    {
+      "omr_rank": 175,
+      "rank_99": 99,
+      "id": "3030",
+      "family": "solid",
+      "desc": "Plate  4 x 10",
+      "placements": 374,
+      "models": 149
+    }
+  ]
+}

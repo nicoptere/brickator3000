@@ -1,0 +1,5 @@
+numpy>=1.24
+scipy>=1.10
+pillow>=9.5
+# Optional neural SDF backend (used by --method siren in scripts/encode_sdf.py):
+# torch>=2.1
