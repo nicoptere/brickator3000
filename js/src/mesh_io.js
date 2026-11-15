@@ -394,13 +394,16 @@ function pushBox(x0, x1, y0, y1, z0, z1, out) {
   const v = []; for (const x of [x0, x1]) for (const y of [y0, y1]) for (const z of [z0, z1]) v.push([x, y, z]);
   for (const [a, b, c, d] of [[0, 1, 3, 2], [4, 6, 7, 5], [0, 4, 5, 1], [2, 3, 7, 6], [0, 2, 6, 4], [1, 5, 7, 3]]) out.push(...v[a], ...v[b], ...v[c], ...v[a], ...v[c], ...v[d]);
 }
-function pushCyl(cx, cz, r, y0, y1, seg, out, r2 = r) {
+function pushCyl(cx, cz, r, y0, y1, seg, out, r2 = r, capBot = true, capTop = true) {
   for (let i = 0; i < seg; i++) {
-    const a0 = 2 * Math.PI * i / seg, a1 = 2 * Math.PI * (i + 1) / seg;
+    const a0 = 2 * Math.PI * i / seg, a1 = 2 * Math.PI * ((i + 1) % seg) / seg;
     const p0 = [cx + r * Math.cos(a0), cz + r * Math.sin(a0)], p1 = [cx + r * Math.cos(a1), cz + r * Math.sin(a1)];
     const q0 = [cx + r2 * Math.cos(a0), cz + r2 * Math.sin(a0)], q1 = [cx + r2 * Math.cos(a1), cz + r2 * Math.sin(a1)];
-    out.push(p0[0], y0, p0[1], p1[0], y0, p1[1], q1[0], y1, q1[1], p0[0], y0, p0[1], q1[0], y1, q1[1], q0[0], y1, q0[1],
-      cx, y1, cz, q0[0], y1, q0[1], q1[0], y1, q1[1]);
+    if (r > 1e-4 || r2 > 1e-4) {
+      out.push(p0[0], y0, p0[1], q1[0], y1, q1[1], p1[0], y0, p1[1], p0[0], y0, p0[1], q0[0], y1, q0[1], q1[0], y1, q1[1]);
+    }
+    if (capTop && r2 > 1e-4) out.push(cx, y1, cz, q1[0], y1, q1[1], q0[0], y1, q0[1]);
+    if (capBot && r > 1e-4) out.push(cx, y0, cz, p0[0], y0, p0[1], p1[0], y0, p1[1]);
   }
 }
 
@@ -424,13 +427,22 @@ function heightFieldMesh(c, out) {
     quad([X(i), 0, Z(0)], [X(i), h(i, 0), Z(0)], [X(i + 1), h(i + 1, 0), Z(0)], [X(i + 1), 0, Z(0)]);
     quad([X(i), 0, Z(nz)], [X(i + 1), 0, Z(nz)], [X(i + 1), h(i + 1, nz), Z(nz)], [X(i), h(i, nz), Z(nz)]);
   }
-  quad([X(0), 0, Z(0)], [X(nx), 0, Z(0)], [X(nx), 0, Z(nz)], [X(0), 0, Z(nz)]);
+  const bc = [0, 0, 0];
+  for (let j = 0; j < nz; j++) {
+    out.push(...bc, X(0), 0, Z(j + 1), X(0), 0, Z(j));
+    out.push(...bc, X(nx), 0, Z(j), X(nx), 0, Z(j + 1));
+  }
+  for (let i = 0; i < nx; i++) {
+    out.push(...bc, X(i), 0, Z(0), X(i + 1), 0, Z(0));
+    out.push(...bc, X(i + 1), 0, Z(nz), X(i), 0, Z(nz));
+  }
 }
 
 function indexed(tris) {
   const map = new Map(), pos = [], idx = new Uint32Array(tris.length / 3);
+  const f = (v) => ((+v.toFixed(3)) + 0).toFixed(3);
   for (let k = 0; k < tris.length; k += 3) {
-    const key = `${tris[k].toFixed(3)},${tris[k + 1].toFixed(3)},${tris[k + 2].toFixed(3)}`;
+    const key = `${f(tris[k])},${f(tris[k + 1])},${f(tris[k + 2])}`;
     let v = map.get(key); if (v === undefined) { v = pos.length / 3; map.set(key, v); pos.push(tris[k], tris[k + 1], tris[k + 2]); }
     idx[k / 3] = v;
   }
@@ -476,7 +488,7 @@ function partTemplate(c, rot) {
     const H = ch * PLATE;
     if (c.kind === 'round') {
       const rads = c.rad || Array(Math.round(ch)).fill(w * STUD / 2);
-      rads.forEach((r, l) => pushCyl(0, 0, r, l * PLATE, (l + 1) * PLATE, 20, out, l + 1 < rads.length ? rads[l + 1] : r));
+      rads.forEach((r, l) => pushCyl(0, 0, r, l * PLATE, (l + 1) * PLATE, 20, out, l + 1 < rads.length ? rads[l + 1] : r, l === 0, l === rads.length - 1));
     } else if (c.top && c.top.some((v) => Math.abs(v - c.top[0]) > 1e-3)) heightFieldMesh(c, out);
     else pushBox(-w * 10, w * 10, 0, H, -d * 10, d * 10, out);
     loc = Float32Array.from(out);

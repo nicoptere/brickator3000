@@ -416,35 +416,103 @@ def _rot_y(deg: float) -> np.ndarray:
     return np.array([[c, 0, s], [0, 1, 0], [-s, 0, c]], dtype=np.float32)
 
 
-def _stud_geo(r: float = 6.0, h: float = 4.0, seg: int = 12):
-    ang = np.linspace(0.0, 2.0 * math.pi, seg, endpoint=False)
-    ca, sa = np.cos(ang), np.sin(ang)
-    verts = []
-    idx = []
-    for i in range(seg):
-        j = (i + 1) % seg
-        b = len(verts)
-        verts.extend([
-            (r * ca[i], 0.0, r * sa[i]),
-            (r * ca[j], 0.0, r * sa[j]),
-            (r * ca[j], h, r * sa[j]),
-            (r * ca[i], h, r * sa[i]),
-            (0.0, h, 0.0),
-        ])
-        idx.extend([b, b + 1, b + 2, b, b + 2, b + 3, b + 4, b + 3, b + 2])
+def _index_tris(tris: list[tuple[float, float, float]]) -> tuple[np.ndarray, np.ndarray]:
+    """Deduplicate vertices cleanly so closed surfaces share exact manifold half-edges."""
+    vmap: dict[tuple[float, float, float], int] = {}
+    verts: list[tuple[float, float, float]] = []
+    idx: list[int] = []
+    for p in tris:
+        k = (round(float(p[0]), 3), round(float(p[1]), 3), round(float(p[2]), 3))
+        vi = vmap.get(k)
+        if vi is None:
+            vi = len(verts)
+            vmap[k] = vi
+            verts.append((float(p[0]), float(p[1]), float(p[2])))
+        idx.append(vi)
     return np.asarray(verts, dtype=np.float32), np.asarray(idx, dtype=np.uint32)
 
 
+def _push_cyl(
+    cx: float,
+    cz: float,
+    r0: float,
+    y0: float,
+    y1: float,
+    seg: int,
+    out: list[tuple[float, float, float]],
+    r1: float | None = None,
+) -> None:
+    """Append a closed, outward-oriented cylinder/frustum segment."""
+    if r1 is None:
+        r1 = r0
+    for i in range(seg):
+        a0 = 2.0 * math.pi * i / seg
+        a1 = 2.0 * math.pi * (i + 1) / seg
+        c0, s0 = math.cos(a0), math.sin(a0)
+        c1, s1 = math.cos(a1), math.sin(a1)
+        p0 = (cx + r0 * c0, y0, cz + r0 * s0)
+        p1 = (cx + r0 * c1, y0, cz + r0 * s1)
+        q0 = (cx + r1 * c0, y1, cz + r1 * s0)
+        q1 = (cx + r1 * c1, y1, cz + r1 * s1)
+        if r0 > 1e-4 or r1 > 1e-4:
+            out.extend((p0, q1, p1, p0, q0, q1))
+        if r1 > 1e-4:
+            out.extend(((cx, y1, cz), q1, q0))
+        if r0 > 1e-4:
+            out.extend(((cx, y0, cz), p0, p1))
+
+
+def _stud_geo(r: float = 6.0, h: float = 4.0, seg: int = 12) -> tuple[np.ndarray, np.ndarray]:
+    tris: list[tuple[float, float, float]] = []
+    _push_cyl(0.0, 0.0, r, 0.0, h, seg, tris, r)
+    return _index_tris(tris)
+
+
 _STUD_VERTS, _STUD_IDX = _stud_geo()
+
+
+def _cyl_part(c: dict, rot: int, ch: int) -> tuple[np.ndarray, np.ndarray, list[tuple[float, float, float]]]:
+    w, d = int(c["w"]), int(c["d"])
+    rads = [float(r) for r in (c.get("rad") or [w * STUD * 0.5] * max(1, int(ch)))]
+    tris: list[tuple[float, float, float]] = []
+    seg = 20
+    n_lay = len(rads)
+    # Build single continuous outer shell across plate layers (bottom at l=0, top at l=n_lay-1)
+    for l in range(n_lay):
+        r0 = rads[l]
+        r1 = rads[l + 1] if l + 1 < n_lay else r0
+        y0, y1 = l * PLATE, (l + 1) * PLATE
+        for i in range(seg):
+            a0 = 2.0 * math.pi * i / seg
+            a1 = 2.0 * math.pi * (i + 1) / seg
+            c0, s0 = math.cos(a0), math.sin(a0)
+            c1, s1 = math.cos(a1), math.sin(a1)
+            p0, p1 = (r0 * c0, y0, r0 * s0), (r0 * c1, y0, r0 * s1)
+            q0, q1 = (r1 * c0, y1, r1 * s0), (r1 * c1, y1, r1 * s1)
+            if r0 > 1e-4 or r1 > 1e-4:
+                tris.extend((p0, q1, p1, p0, q0, q1))
+            if l == 0 and r0 > 1e-4:
+                tris.extend(((0.0, 0.0, 0.0), p0, p1))
+            if l == n_lay - 1 and r1 > 1e-4:
+                tris.extend(((0.0, y1, 0.0), q1, q0))
+    V, I = _index_tris(tris)
+    R = _rot_y(rot)
+    V = V @ R.T
+    cx, cz = w * 10.0, d * 10.0
+    stud_y = len(rads) * PLATE
+    studs_out = []
+    for si, sj in c.get("stud_cells", []):
+        p = R @ np.array([(si + 0.5) * STUD - cx, stud_y, (sj + 0.5) * STUD - cz], dtype=np.float32)
+        studs_out.append((float(p[0]), float(p[1]), float(p[2])))
+    return V, I, studs_out
 
 
 def _heightfield_part(c: dict, rot: int) -> tuple[np.ndarray, np.ndarray, list[tuple[float, float, float]]]:
     w, d = int(c["w"]), int(c["d"])
     nx, nz = w * 5, d * 5
     top = np.asarray(c["top"], dtype=np.float32).reshape(nz, nx)
-    bot = np.asarray(c["bot"], dtype=np.float32).reshape(nz, nx) if c.get("kind") == "inverted" and c.get("bot") else np.zeros_like(top)
 
-    tris = []
+    tris: list[tuple[float, float, float]] = []
     R = _rot_y(rot)
     cx, cz = w * 10.0, d * 10.0
 
@@ -473,13 +541,16 @@ def _heightfield_part(c: dict, rot: int) -> tuple[np.ndarray, np.ndarray, list[t
                      (xs[i], 0, zs[0]), (xs[i + 1], hc[0, i + 1], zs[0]), (xs[i + 1], 0, zs[0])))
         tris.extend(((xs[i], 0, zs[nz]), (xs[i + 1], 0, zs[nz]), (xs[i + 1], hc[nz, i + 1], zs[nz]),
                      (xs[i], 0, zs[nz]), (xs[i + 1], hc[nz, i + 1], zs[nz]), (xs[i], hc[nz, i], zs[nz])))
-    # Bottom cap
-    tris.extend((
-        (xs[0], 0, zs[0]), (xs[nx], 0, zs[0]), (xs[nx], 0, zs[nz]),
-        (xs[0], 0, zs[0]), (xs[nx], 0, zs[nz]), (xs[0], 0, zs[nz]),
-    ))
-    V = (np.asarray(tris, dtype=np.float32) @ R.T)
-    I = np.arange(len(V), dtype=np.uint32)
+    # Watertight bottom cap sharing exact perimeter border vertices (no T-junctions)
+    bot_c = (0.0, 0.0, 0.0)
+    for j in range(nz):
+        tris.extend((bot_c, (xs[0], 0, zs[j + 1]), (xs[0], 0, zs[j])))
+        tris.extend((bot_c, (xs[nx], 0, zs[j]), (xs[nx], 0, zs[j + 1])))
+    for i in range(nx):
+        tris.extend((bot_c, (xs[i], 0, zs[0]), (xs[i + 1], 0, zs[0])))
+        tris.extend((bot_c, (xs[i + 1], 0, zs[nz]), (xs[i], 0, zs[nz])))
+    V, I = _index_tris(tris)
+    V = (V @ R.T)
 
     studs_out = []
     for si, sj in c.get("stud_cells", []):
@@ -531,7 +602,9 @@ def build_bricks_mesh(pieces: list[dict], catalog: list[dict], color_mode: str =
         key = (pid, rot)
         if key not in tmpl_cache:
             c = by_id[pid]
-            if c.get("kind") in ("brick", "plate", "tile") and "top" not in c:
+            if c.get("kind") == "round":
+                tmpl_cache[key] = _cyl_part(c, rot, p["h"])
+            elif c.get("kind") in ("brick", "plate", "tile") and "top" not in c:
                 pw, pd = (c["d"], c["w"]) if rot in (90, 270) else (c["w"], c["d"])
                 tmpl_cache[key] = _box_part(pw, pd, p["h"], p.get("studs", []))
             elif c.get("kind") in ("brick", "plate") and np.allclose(c["top"], p["h"] * PLATE, atol=0.5):
