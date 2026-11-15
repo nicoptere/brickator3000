@@ -100,6 +100,7 @@ test('SDF encode + decode -> BrickPack -> valid GLB & LDR export (Stanford Bunny
   });
   assert.ok(packed.pack.pieces >= 5, `packed ${packed.pack.pieces} bricks`);
   assert.ok(packed.pack.softIoU > 0.45, `softIoU=${packed.pack.softIoU}`);
+  assert.equal(packed.pack.components, 1, 'must form a single stud-connected component with zero floating parts');
 
   // Also test packing directly from encoded SDF header+data
   const packedFromSdf = await packModelAsync(encoded, {
@@ -109,6 +110,7 @@ test('SDF encode + decode -> BrickPack -> valid GLB & LDR export (Stanford Bunny
     colors,
   });
   assert.ok(packedFromSdf.pack.pieces >= 5);
+  assert.equal(packedFromSdf.pack.components, 1, 'SDF pack must form a single connected component');
 
   const mesh = buildBricksMesh(packed.pieces, catalog);
   const glb = exportGLB(mesh);

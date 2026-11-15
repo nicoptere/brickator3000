@@ -372,6 +372,28 @@ export function pack(T, fields, variants, { phase = 'auto', policy = {}, seed = 
       place(n - 1); bridges++; bridgeCost += -best.g;
     }
   }
+  // ---- 6. guarantee zero floating pieces / single stud-connected component when connect > 0
+  if (P.connect > 0 && P.enforceSingleComponent !== false && aliveN > 0) {
+    const uf = ufBuild(), val = new Map(), members = new Map(), minB = new Map();
+    for (let s = 0; s < aliveN; s++) {
+      const k = aliveL[s], r = uf.find(k), b = anc(k)[1];
+      val.set(r, (val.get(r) || 0) + cg[pieces[k].c]);
+      minB.set(r, Math.min(minB.get(r) ?? Infinity, b));
+      (members.get(r) || members.set(r, []).get(r)).push(k);
+    }
+    if (val.size > 1) {
+      const globalMinB = Math.min(...minB.values());
+      const main = [...val].sort((x, y) => {
+        const ga = minB.get(x[0]) === globalMinB ? 1 : 0, gb = minB.get(y[0]) === globalMinB ? 1 : 0;
+        return gb - ga || y[1] - x[1];
+      })[0][0];
+      for (const [r, ks] of members) if (r !== main) {
+        for (const k of ks) remove(k);
+        pruned += ks.length;
+        prunedGain += val.get(r);
+      }
+    }
+  }
   // ---- result in the app's piece format (i = x cell, j = z cell, b = plate level)
   const out = livePieces();
   const stats = { candidates: n, surfaceCells: surf.length, lnsIters: iters, core: nCore, greedy: +greedyObj.toFixed(1), objective: +objective.toFixed(1), lnsAccepted: accepted, lnsImproved: improved,

@@ -83,9 +83,11 @@ class TestBrickPackPython(unittest.TestCase):
             res = pack_model(bunny, catalog=cat, studs=10, effort="quick", colors=colors)
             self.assertGreaterEqual(res["pack"]["pieces"], 5)
             self.assertGreater(res["pack"]["softIoU"], 0.45)
+            self.assertEqual(res["pack"]["components"], 1)
 
             res_sdf = pack_model((hdr2, data2), catalog=cat, studs=10, effort="quick", colors=colors)
             self.assertGreaterEqual(res_sdf["pack"]["pieces"], 5)
+            self.assertEqual(res_sdf["pack"]["components"], 1)
 
             mesh = build_bricks_mesh(res["pieces"], cat)
             glb_path = export_glb(mesh, td_p / "bunny_bricks.glb")
